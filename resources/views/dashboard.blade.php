@@ -68,6 +68,72 @@
 
 </div>
 
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="card-base">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3>10 Obat Terlaris</h3>
+                <p class="text-caption mt-1">Berdasarkan total jumlah obat terjual.</p>
+            </div>
+            <span class="badge-success">Terlaris</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-custom min-w-full">
+                <thead class="table-custom-header">
+                    <tr>
+                        <th class="w-14">No</th>
+                        <th>Nama Obat</th>
+                        <th class="text-right">Terjual</th>
+                    </tr>
+                </thead>
+                <tbody class="table-custom-body divide-y divide-gray-150">
+                    @forelse ($topSellingMedicines as $index => $medicine)
+                        <tr>
+                            <td class="table-num">{{ $index + 1 }}</td>
+                            <td class="font-medium text-gray-800">{{ $medicine->nama }}</td>
+                            <td class="table-num font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="p-4 text-center text-caption">Belum ada data penjualan.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-base">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3>10 Obat Paling Sedikit Terjual</h3>
+                <p class="text-caption mt-1">Termasuk obat yang belum pernah terjual.</p>
+            </div>
+            <span class="badge-warning">Perlu perhatian</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-custom min-w-full">
+                <thead class="table-custom-header">
+                    <tr>
+                        <th class="w-14">No</th>
+                        <th>Nama Obat</th>
+                        <th class="text-right">Terjual</th>
+                    </tr>
+                </thead>
+                <tbody class="table-custom-body divide-y divide-gray-150">
+                    @forelse ($leastSellingMedicines as $index => $medicine)
+                        <tr>
+                            <td class="table-num">{{ $index + 1 }}</td>
+                            <td class="font-medium text-gray-800">{{ $medicine->nama }}</td>
+                            <td class="table-num font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="3" class="p-4 text-center text-caption">Belum ada data obat.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Member Stats Card -->
     <div class="card-base">

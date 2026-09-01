@@ -70,6 +70,26 @@ class DashboardController extends Controller
         $todaySalesTotal = Penjualan::whereDate('tanggal', now()->format('Y-m-d'))->sum('total');
         $todayDiscountTotal = DiscountUsage::whereDate('created_at', now()->format('Y-m-d'))->sum('nominal');
 
+        $topSellingMedicines = DB::table('detail_penjualans as detail_penjualan')
+            ->join('detail_penerimaans as detail_penerimaan', 'detail_penjualan.detail_penerimaan_id', '=', 'detail_penerimaan.id')
+            ->join('barangs as barang', 'detail_penerimaan.barang_id', '=', 'barang.id')
+            ->select('barang.id', 'barang.nama', DB::raw('SUM(detail_penjualan.jumlah) as total_terjual'))
+            ->groupBy('barang.id', 'barang.nama')
+            ->orderByDesc('total_terjual')
+            ->orderBy('barang.nama')
+            ->limit(10)
+            ->get();
+
+        $leastSellingMedicines = DB::table('barangs as barang')
+            ->leftJoin('detail_penerimaans as detail_penerimaan', 'barang.id', '=', 'detail_penerimaan.barang_id')
+            ->leftJoin('detail_penjualans as detail_penjualan', 'detail_penerimaan.id', '=', 'detail_penjualan.detail_penerimaan_id')
+            ->select('barang.id', 'barang.nama', DB::raw('COALESCE(SUM(detail_penjualan.jumlah), 0) as total_terjual'))
+            ->groupBy('barang.id', 'barang.nama')
+            ->orderBy('total_terjual')
+            ->orderBy('barang.nama')
+            ->limit(10)
+            ->get();
+
         return view('dashboard', compact(
             'totalMembers',
             'newMembersThisMonth',
@@ -83,7 +103,9 @@ class DashboardController extends Controller
             'nonMemberSalesTotal',
             'todayTransactionsCount',
             'todaySalesTotal',
-            'todayDiscountTotal'
+            'todayDiscountTotal',
+            'topSellingMedicines',
+            'leastSellingMedicines'
         ));
     }
 
