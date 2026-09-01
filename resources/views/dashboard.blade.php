@@ -30,6 +30,21 @@
         </div>
     </div>
 
+    <!-- Card 4: Total Active Sales -->
+    <div class="card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Total Omset Penjualan</span>
+            <span class="text-2xl font-bold text-gray-800 block mt-1.5">Rp {{ number_format($memberSalesTotal + $nonMemberSalesTotal, 0, ',', '.') }}</span>
+            <span class="text-caption block mt-1">Rp {{ number_format($memberSalesTotal, 0, ',', '.') }} dari Member</span>
+        </div>
+        <div class="bg-amber-50 text-amber-600 rounded-lg p-3 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+        </div>
+    </div>
+
+
     <!-- Card 2: Total Discount Given This Month -->
     <div class="card-base hoverable flex items-center justify-between">
         <div>
@@ -58,19 +73,7 @@
         </div>
     </div>
 
-    <!-- Card 4: Total Active Sales -->
-    <div class="card-base hoverable flex items-center justify-between">
-        <div>
-            <span class="text-caption font-semibold uppercase tracking-wider block">Total Omset Penjualan</span>
-            <span class="text-2xl font-bold text-gray-800 block mt-1.5">Rp {{ number_format($memberSalesTotal + $nonMemberSalesTotal, 0, ',', '.') }}</span>
-            <span class="text-caption block mt-1">Rp {{ number_format($memberSalesTotal, 0, ',', '.') }} dari Member</span>
-        </div>
-        <div class="bg-amber-50 text-amber-600 rounded-lg p-3 shrink-0">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-            </svg>
-        </div>
-    </div>
+
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
