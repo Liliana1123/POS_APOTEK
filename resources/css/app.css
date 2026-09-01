@@ -336,13 +336,13 @@ h3, .h3 {
 }
 
 .table-custom-header {
-    background-color: #f8fafc; /* slate-50 */
-    color: var(--color-text-muted);
+    background-color: #2563eb; /* blue-600 */
+    color: #ffffff;
     text-transform: uppercase;
     font-weight: 600;
     font-size: 0.625rem;
     letter-spacing: 0.05em;
-    border-b: 1px solid var(--color-border-custom);
+    border-bottom: 1px solid #1d4ed8; /* blue-700 */
 }
 
 .table-custom-header th {

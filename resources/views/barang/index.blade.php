@@ -85,9 +85,9 @@
                     <th scope="col" class="text-right w-44">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
+            <tbody class="table-custom-body divide-gray-150">
                 @forelse ($barangs as $index => $barang)
-                    <tr>
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-100' }}">
                         <td class="table-num">{{ $barangs->firstItem() + $index }}</td>
                         <td>
                             <div class="font-semibold text-gray-800">{{ $barang->nama }}</div>
