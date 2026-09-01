@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMART POS — UML Diagram</title>
+<link rel="icon" href="🧮">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0F1117;
+    --surface: #151820;
+    --surface-alt: #1B1F29;
+    --border: #2A2F3E;
+    --accent: #06B6D4;
+    --accent-dim: rgba(6,182,212,0.08);
+    --accent-glow: rgba(6,182,212,0.15);
+    --text: #E2E8F0;
+    --text-dim: #9CA3AF;
+    --text-faint: #6B7280;
+    --green: #34D399;
+    --amber: #FBBF24;
+    --rose: #FB7185;
+    --purple: #A78BFA;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F9FAFB;
+      --surface: #FFFFFF;
+      --surface-alt: #F3F4F6;
+      --border: #E5E7EB;
+      --accent: #0891B2;
+      --accent-dim: rgba(8,145,178,0.06);
+      --accent-glow: rgba(8,145,178,0.12);
+      --text: #111827;
+      --text-dim: #6B7280;
+      --text-faint: #9CA3AF;
+      --green: #059669;
+      --amber: #D97706;
+      --rose: #DC2626;
+      --purple: #7C3AED;
+    }
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  header {
+    text-align: left;
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(6,182,212,0.2);
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  header p {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-top: 0.5rem;
+  }
+
+  /* Toc */
+  .toc {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    height: fit-content;
+  }
+
+  .toc h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    margin-bottom: 0.75rem;
+  }
+
+  .toc ul {
+    list-style: none;
+    space-y: 2px;
+  }
+
+  .toc li {
+    margin-bottom: 4px;
+  }
+
+  .toc a {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: block;
+    transition: all 0.15s;
+  }
+
+  .toc a:hover {
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  .toc a.active {
+    color: var(--accent);
+    background: var(--accent-dim);
+    font-weight: 600;
+  }
+
+  /* Layout */
+  .page-wrapper {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* Section */
+  .section {
+    scroll-margin-top: 60px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(6,182,212,0.2);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .section-desc {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* Diagram Card */
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .diagram-card .mermaid {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-x: auto;
+  }
+
+  .diagram-card .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Info Cards */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 1.25rem;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+
+  .info-card h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-card.teal h4 { color: var(--accent); }
+  .info-card.green h4 { color: var(--green); }
+  .info-card.amber h4 { color: var(--amber); }
+  .info-card.rose h4 { color: var(--rose); }
+  .info-card.purple h4 { color: var(--purple); }
+
+  .info-card ul {
+    list-style: none;
+    font-size: 0.83rem;
+    color: var(--text-dim);
+  }
+
+  .info-card li {
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .info-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+  }
+
+  .info-card.teal li::before { background: var(--accent); }
+  .info-card.green li::before { background: var(--green); }
+  .info-card.amber li::before { background: var(--amber); }
+  .info-card.rose li::before { background: var(--rose); }
+  .info-card.purple li::before { background: var(--purple); }
+
+  /* Table */
+  .attr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-top: 1rem;
+  }
+
+  .attr-table th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+
+  .attr-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .attr-table tr:last-child td { border-bottom: none; }
+
+  .attr-table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .attr-table .pk { color: var(--amber); background: var(--amber-dim); }
+  .attr-table .fk { color: var(--purple); background: var(--purple-dim); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.8rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .page-wrapper {
+      grid-template-columns: 1fr;
+    }
+    .toc {
+      position: static;
+    }
+    .container { padding: 1rem; }
+    header { padding: 2rem 0 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">📐 UML Diagram</div>
+    <h1>SIMART POS — Sistem Informasi Apotek</h1>
+    <p>Diagram yang dihasilkan otomatis dari codebase: Use Case, ERD, Class Diagram, Activity Diagram. Project: Laravel 11 + Mermaid.</p>
+  </header>
+
+  <div class="page-wrapper">
+    <nav class="toc">
+      <h3>Daftar Isi</h3>
+      <ul>
+        <li><a href="#usecase" class="toc-link active">01 Use Case Diagram</a></li>
+        <li><a href="#erd" class="toc-link">02 ERD — Entity Relationship</a></li>
+        <li><a href="#class" class="toc-link">03 Class Diagram</a></li>
+        <li><a href="#activity" class="toc-link">04 Activity Diagram</a></li>
+      </ul>
+    </nav>
+
+    <main class="main-content">
+
+      <!-- ======================== USE CASE ======================== -->
+      <section class="section" id="usecase">
+        <div class="section-header">
+          <span class="section-num">01</span>
+          <h2>Use Case Diagram</h2>
+        </div>
+        <p class="section-desc">Interaksi aktor dengan fitur-fitur sistem POS Apotek. 2 peran aktif di routes: Admin dan Kasir. Middleware <code>role:admin</code> mengatur akses di <code>routes/web.php</code>.</p>
+
+        <div class="diagram-card">
+          <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#151820', 'primaryTextColor': '#E2E8F0', 'primaryBorderColor': '#06B6D4', 'lineColor': '#6B728B', 'secondaryColor': '#1B1F29', 'tertiaryColor': '#0F1117', 'fontSize': '13px', 'fontFamily': 'Inter', 'useMaxWidth': true}}}%%
+useCaseDiagram
+    actor Admin
+    actor Kasir
+
+    package "Auth" {
+      usecase "Login" as UC1
+      usecase "Logout" as UC2
+    }
+
+    package "Master Data" {
+      usecase "Kelola User" as UC3
+      usecase "Kelola Kategori" as UC4
+      usecase "Kelola Satuan" as UC5
+      usecase "Kelola Pabrik" as UC6
+      usecase "Kelola Supplier" as UC7
+      usecase "Kelola Pelanggan" as UC8
+      usecase "Kelola Barang" as UC9
+      usecase "Kelola Custom Discount" as UC10
+    }
+
+    package "Transaksi" {
+      usecase "Penerimaan Barang" as UC11
+      usecase "Catat Barang Rusak" as UC12
+      usecase "Transaksi Penjualan" as UC13
+      usecase "Register Member" as UC14
+    }
+
+    package "Laporan" {
+      usecase "Dashboard" as UC15
+      usecase "Laporan Stok" as UC16
+      usecase "Laporan Penerimaan" as UC17
+      usecase "Laporan Penjualan" as UC18
+      usecase "Laporan Rusak" as UC19
+      usecase "Laporan Laba-Rugi" as UC20
+      usecase "Laporan Diskon" as UC21
+      usecase "Activity Log" as UC22
+    }
+
+    Admin --> UC1
+    Admin --> UC3
+    Admin --> UC4
+    Admin --> UC5
+    Admin --> UC6
+    Admin --> UC7
+    Admin --> UC8
+    Admin --> UC9
+    Admin --> UC10
+    Admin --> UC11
+    Admin --> UC12
+    Admin --> UC16
+    Admin --> UC17
+    Admin --> UC18
+    Admin --> UC19
+    Admin --> UC20
+    Admin --> UC21
+    Admin --> UC22
+
+    Kasir --> UC1
+    Kasir --> UC13
+    Kasir --> UC14
+
+    UC2 --> UC1 : <<extend>>
+    UC22 --> UC1 : <<extend>>
+
+    note right of Admin
+      Akses penuh: semua fitur
+      Role = "admin"
+    end note
+
+    note right of Kasir
+      Fokus: penjualan saja
+      Role = "kasir"
+    end note
+          </pre>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card teal">
+            <h4>👤 Admin</h4>
+            <ul>
+              <li>Semua fitur master data</li>
+              <li>Semua laporan</li>
+              <li>Kelola user &amp; promosi</li>
+              <li>Penerimaan &amp; catat barang rusak</li>
+            </ul>
+          </div>
+          <div class="info-card amber">
+            <h4>💊 Kasir</h4>
+            <ul>
+              <li>Transaksi penjualan</li>
+              <li>Register member</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================== ERD ======================== -->
+      <section class="section" id="erd">
+        <div class="section-header">
+          <span class="section-num">02</span>
+          <h2>ERD — Entity Relationship Diagram</h2>
+        </div>
+        <p class="section-desc">14 entitas dengan relasi One-to-Many dan Many-to-Many (CustomDiscount↔Barang, CustomDiscount↔Kategori). Batch-based stok management dengan FEFO (First Expired First Out).</p>
+
+        <div class="diagram-card">
+          <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#151820', 'primaryTextColor': '#E2E8F0', 'primaryBorderColor': '#06B6D4', 'lineColor': '#6B728B', 'secondaryColor': '#1B1F29', 'tertiaryColor': '#0F1117', 'fontSize': '12px', 'fontFamily': 'Inter'}}}%%
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email
+        string password
+        string role "admin|apoteker|kasir"
+        boolean aktif
+        timestamp email_verified_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    KATEGORIS {
+        int id PK
+        string nama
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SATUANS {
+        int id PK
+        string nama
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PABRIKS {
+        int id PK
+        string nama
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SUPPLIERS {
+        int id PK
+        string nama
+        string telepon
+        text alamat
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PELANGGANS {
+        int id PK
+        string nama
+        string telepon
+        string member_id "unique, format MBR-XXXXXX"
+        boolean is_member
+        date member_since
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BARANGS {
+        int id PK
+        string nama
+        int kategori_id FK
+        int satuan_id FK
+        int pabrik_id FK
+        string barcode "unique, nullable"
+        boolean butuh_resep
+        int stok_minimum
+        boolean aktif
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PENERIMAANS {
+        int id PK
+        int user_id FK
+        int supplier_id FK
+        date tanggal
+        string no_faktur "unique"
+        boolean lunas
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DETAIL_PENERIMAANS {
+        int id PK
+        int penerimaan_id FK
+        int barang_id FK
+        string no_batch
+        decimal harga_beli "12,2"
+        decimal harga_jual "12,2"
+        date expired_date
+        int jumlah "jumlah diterima awal"
+        int stok "sisa stok batch"
+        boolean aktif
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PENJUALANS {
+        int id PK
+        int user_id FK
+        int pelanggan_id FK "nullable"
+        date tanggal
+        string no_faktur "unique"
+        decimal total "12,2, default 0"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DETAIL_PENJUALANS {
+        int id PK
+        int penjualan_id FK
+        int detail_penerimaan_id FK
+        decimal harga_jual "12,2"
+        int jumlah
+        decimal diskon "12,2, default 0"
+        decimal subtotal "12,2"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    RUSAKS {
+        int id PK
+        int detail_penerimaan_id FK
+        date tanggal
+        int jumlah
+        text keterangan "nullable"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CUSTOM_DISCOUNTS {
+        int id PK
+        string nama
+        int persentase "0-50"
+        date tanggal_mulai
+        date tanggal_selesai
+        boolean aktif
+        string cakupan "semua|kategori|barang|kombinasi"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CUSTOM_DISCOUNT_CATEGORIES {
+        int custom_discount_id FK
+        int kategori_id FK
+    }
+
+    CUSTOM_DISCOUNT_BARANGS {
+        int custom_discount_id FK
+        int barang_id FK
+    }
+
+    DISCOUNT_USAGES {
+        int id PK
+        int penjualan_id FK
+        int detail_penjualan_id FK
+        int barang_id FK "nullable"
+        string barang_nama
+        string jenis "member|custom"
+        int custom_discount_id FK "nullable"
+        string custom_discount_nama "nullable"
+        int persentase
+        decimal nominal "12,2"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ACTIVITY_LOGS {
+        int id PK
+        int user_id FK "nullable"
+        string user_name
+        string action
+        string target "nullable"
+        timestamp created_at "useCurrent"
+    }
+
+    USERS ||--o{ PENERIMAANS : "user_id"
+    USERS ||--o{ PENJUALANS : "user_id"
+    USERS ||--o{ ACTIVITY_LOGS : "user_id"
+    SUPPLIERS ||--o{ PENERIMAANS : "supplier_id"
+    PENERIMAANS ||--|{ DETAIL_PENERIMAANS : "penerimaan_id"
+    BARANGS ||--o{ DETAIL_PENERIMAANS : "barang_id"
+    DETAIL_PENERIMAANS ||--o{ RUSAKS : "detail_penerimaan_id"
+    DETAIL_PENERIMAANS ||--o{ DETAIL_PENJUALANS : "detail_penerimaan_id"
+    KATEGORIS ||--o{ BARANGS : "kategori_id"
+    SATUANS ||--o{ BARANGS : "satuan_id"
+    PABRIKS ||--o{ BARANGS : "pabrik_id"
+    PELANGGANS ||--o{ PENJUALANS : "pelanggan_id"
+    PENJUALANS ||--|{ DETAIL_PENJUALANS : "penjualan_id"
+    PENJUALANS ||--|{ DISCOUNT_USAGES : "penjualan_id"
+    DETAIL_PENJUALANS ||--|{ DISCOUNT_USAGES : "detail_penjualan_id"
+    BARANGS ||--o{ DISCOUNT_USAGES : "barang_id"
+    CUSTOM_DISCOUNTS ||--o{ DISCOUNT_USAGES : "custom_discount_id"
+    CUSTOM_DISCOUNTS }o--o{ KATEGORIS : "via custom_discount_categories"
+    CUSTOM_DISCOUNTS }o--o{ BARANGS : "via custom_discount_barangs"
+      </pre>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card purple">
+            <h4>🔑 Primary Key</h4>
+            <ul>
+              <li>Semua tabel: <code>id</code> (BIGINT auto-increment)</li>
+              <li><code>no_faktur</code> — unique (penerimaan &amp; penjualan)</li>
+              <li><code>barcode</code> — unique (barang)</li>
+              <li><code>member_id</code> — unique (format MBR-XXXXXX)</li>
+            </ul>
+          </div>
+          <div class="info-card rose">
+            <h4>🔗 Foreign Key</h4>
+            <ul>
+              <li>cascadeOnDelete: detail_penerimaan, detail_penjualan, discount_usage</li>
+              <li>setNull/delete: user_id di activity_logs</li>
+            </ul>
+          </div>
+          <div class="info-card green">
+            <h4>📦 Batch System</h4>
+            <ul>
+              <li>FEFO ordering: <code>expired_date ASC</code></li>
+              <li>Index: <code>['barang_id', 'expired_date']</code></li>
+              <li>Stok = <code>jumlah - (terjual + rusak)</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================== CLASS DIAGRAM ======================== -->
+      <section class="section" id="class">
+        <div class="section-header">
+          <span class="section-num">03</span>
+          <h2>Class Diagram</h2>
+        </div>
+        <p class="section-desc">15 model Eloquent (extends <code>Model</code>) + 13 controller. Role <code>admin</code> &amp; <code>kasir</code> via <code>CheckRole</code> middleware. Relasi Eloquent: BelongsTo, HasMany, BelongsToMany.</p>
+
+        <div class="diagram-card">
+          <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#151820', 'primaryTextColor': '#E2E8F0', 'primaryBorderColor': '#06B6D4', 'lineColor': '#6B728B', 'secondaryColor': '#1B1F29', 'tertiaryColor': '#0F1117', 'fontSize': '12px', 'fontFamily': 'Inter'}}}%%
+classDiagram
+    class User {
+        <<model>>
+        +int id
+        +string name
+        +string email
+        +string password
+        +string role "admin|apoteker|kasir"
+        +boolean aktif
+        +isAdmin() bool
+        +isApoteker() bool
+        +isKasir() bool
+        +penerimaan() HasMany
+        +penjualan() HasMany
+    }
+
+    class Kategori {
+        <<model>>
+        +int id
+        +string nama
+        +barang() HasMany
+    }
+
+    class Satuan {
+        <<model>>
+        +int id
+        +string nama
+        +barang() HasMany
+    }
+
+    class Pabrik {
+        <<model>>
+        +int id
+        +string nama
+        +barang() HasMany
+    }
+
+    class Supplier {
+        <<model>>
+        +int id
+        +string nama
+        +string telepon
+        +text alamat
+        +penerimaan() HasMany
+    }
+
+    class Pelanggan {
+        <<model>>
+        +int id
+        +string nama
+        +string telepon
+        +string member_id
+        +boolean is_member
+        +date member_since
+        +static generateMemberId() string
+        +penjualan() HasMany
+        +discountUsages() HasManyThrough
+    }
+
+    class Barang {
+        <<model>>
+        +int id
+        +string nama
+        +int kategori_id
+        +int satuan_id
+        +int pabrik_id
+        +string barcode
+        +boolean butuh_resep
+        +int stok_minimum
+        +boolean aktif
+        +kategori() BelongsTo
+        +satuan() BelongsTo
+        +pabrik() BelongsTo
+        +detailPenerimaan() HasMany
+        +stokTotal() int
+        +batchFefo() HasMany
+        +stokMenipis() bool
+        +hargaJualTerkini() ?float
+    }
+
+    class Penerimaan {
+        <<model>>
+        +int id
+        +int user_id
+        +int supplier_id
+        +date tanggal
+        +string no_faktur
+        +boolean lunas
+        +user() BelongsTo
+        +supplier() BelongsTo
+        +detail() HasMany
+    }
+
+    class DetailPenerimaan {
+        <<model>>
+        +int id
+        +int penerimaan_id
+        +int barang_id
+        +string no_batch
+        +decimal harga_beli
+        +decimal harga_jual
+        +date expired_date
+        +int jumlah
+        +int stok
+        +boolean aktif
+        +penerimaan() BelongsTo
+        +barang() BelongsTo
+        +detailPenjualan() HasMany
+        +rusak() HasMany
+        +scopeMendekatiExpired(days)
+        +sudahExpired() bool
+    }
+
+    class Penjualan {
+        <<model>>
+        +int id
+        +int user_id
+        +int pelanggan_id "nullable"
+        +date tanggal
+        +string no_faktur
+        +decimal total
+        +user() BelongsTo
+        +pelanggan() BelongsTo
+        +detail() HasMany
+    }
+
+    class DetailPenjualan {
+        <<model>>
+        +int id
+        +int penjualan_id
+        +int detail_penerimaan_id
+        +decimal harga_jual
+        +int jumlah
+        +decimal diskon
+        +decimal subtotal
+        +penjualan() BelongsTo
+        +detailPenerimaan() BelongsTo
+        +barang() "delegates to detailPenerimaan.barang"
+    }
+
+    class Rusak {
+        <<model>>
+        +int id
+        +int detail_penerimaan_id
+        +date tanggal
+        +int jumlah
+        +text keterangan
+        +detailPenerimaan() BelongsTo
+    }
+
+    class CustomDiscount {
+        <<model>>
+        +int id
+        +string nama
+        +int persentase
+        +date tanggal_mulai
+        +date tanggal_selesai
+        +boolean aktif
+        +string cakupan "semua|kategori|barang|kombinasi"
+        +kategoris() BelongsToMany
+        +barangs() BelongsToMany
+        +scopeAktifHariIni()
+        +static getPercentForBarang(Barang) int
+    }
+
+    class DiscountUsage {
+        <<model>>
+        +int id
+        +int penjualan_id
+        +int detail_penjualan_id
+        +int barang_id "nullable"
+        +string barang_nama
+        +string jenis "member|custom"
+        +int custom_discount_id "nullable"
+        +string custom_discount_nama "nullable"
+        +int persentase
+        +decimal nominal
+        +penjualan() BelongsTo
+        +barang() BelongsTo
+        +customDiscount() BelongsTo
+    }
+
+    class ActivityLog {
+        <<model>>
+        +int id
+        +int user_id "nullable"
+        +string user_name
+        +string action
+        +string target "nullable"
+        +created_at
+        +user() BelongsTo
+        +static log(action, target)
+    }
+
+    class CheckRole {
+        <<middleware>>
+        +handle(Request, roles[])
+    }
+
+    class AuthController {
+        <<controller>>
+        +create() view
+        +store(Request) redirect
+        +destroy(Request) redirect
+    }
+
+    User -->|1|..|{ Penerimaan : penerimaan()
+    User -->|1|..|{ Penjualan : penjualan()
+    User -->|1|..|{ ActivityLog : activityLogs()
+    Supplier -->|1|..|{ Penerimaan : penerimaan()
+    Penerimaan -->|1|--|{ DetailPenerimaan : detail()
+    Barang -->|1|..|{ DetailPenerimaan : detailPenerimaan()
+    Kategori -->|1|..|{ Barang : barang()
+    Satuan -->|1|..|{ Barang : barang()
+    Pabrik -->|1|..|{ Barang : barang()
+    DetailPenerimaan -->|1|..|{ DetailPenjualan : detailPenjualan()
+    DetailPenerimaan -->|1|..|{ Rusak : rusak()
+    Penjualan -->|1|--|{ DetailPenjualan : detail()
+    Pelanggan -->|1|..|{ Penjualan : penjualan()
+    Penjualan -->|1|..|{ DiscountUsage : discountUsages()
+    DetailPenjualan -->|1|..|{ DiscountUsage : discountUsages()
+    CustomDiscount }|--o| Kategori : kategoris()
+    CustomDiscount }|--o| Barang : barangs()
+    Barang -->|1|..|{ DiscountUsage : discountUsages()
+    CustomDiscount -->|1|..|{ DiscountUsage : discountUsages()
+    CheckRole ..> User : validates role
+    CheckRole ..> routes : middleware
+    AuthController ..> User : authenticates
+          </pre>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card teal">
+            <h4>📁 Controllers</h4>
+            <ul>
+              <li>Controller (base)</li>
+              <li>Auth\\LoginController</li>
+              <li>DashboardController</li>
+              <li>BarangController</li>
+              <li>KategoriController</li>
+              <li>PabrikController</li>
+              <li>SupplierController</li>
+              <li>PelangganController</li>
+              <li>PenjualanController</li>
+              <li>PenerimaanController</li>
+              <li>RusakController</li>
+              <li>LaporanController</li>
+              <li>CustomDiscountController</li>
+            </ul>
+          </div>
+          <div class="info-card amber">
+            <h4>🔐 Middleware</h4>
+            <ul>
+              <li><code>role:admin</code> — master data, laporan, penerimaan, rusak</li>
+              <li><code>auth</code> — penjualan (admin &amp; kasir)</li>
+              <li>403 on unauthorized</li>
+            </ul>
+          </div>
+          <div class="info-card rose">
+            <h4>📦 Trait / Helper</h4>
+            <ul>
+              <li><code>Authenticatable</code> (User extends)</li>
+              <li>Eloquent <code>Casts</code>: boolean, date</li>
+              <li>Custom scopes & static methods</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================== ACTIVITY ======================== -->
+      <section class="section" id="activity">
+        <div class="section-header">
+          <span class="section-num">04</span>
+          <h2>Activity Diagram — Proses Transaksi Penjualan</h2>
+        </div>
+        <p class="section-desc">Alur kasir memproses transaksi dari scan barang hingga cetak struk. Validasi stok dilakukan via <code>lockForUpdate()</code> sebelum data disimpan. Semua dijalankan dalam satu <code>DB::transaction()</code>.</p>
+
+        <div class="diagram-card">
+          <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#151820', 'primaryTextColor': '#E2E8F0', 'primaryBorderColor': '#06B6D4', 'lineColor': '#6B728B', 'secondaryColor': '#1B1F29', 'tertiaryColor': '#0F1117', 'fontSize': '12px', 'fontFamily': 'Inter'}}}%%
+flowchart TD
+    A([Kasir Login]) --> B[Pilih / Scan Produk]
+    B --> C{Barcode ditemukan?}
+    C -->|Tidak| B
+    C -->|Ya| D[Cari Barang lewat Barcode]
+    D --> E{Barang ditemukan &amp; aktif?}
+    E -->|Tidak| B
+    E -->|Ya| F{Masih ada stok?}
+    F -->|Tidak| B
+    F -->|Ya| G[Tambah ke Keranjang]
+    G --> H{Tambah lagi?}
+    H -->|Ya| B
+    H -->|Tidak| I[Pilih Pelanggan]
+    I --> J{Cek Membership?}
+    J -->|Member| K[Ambil diskon member &lt; 50%]
+    J -->|Umum| L[Tanpa diskon member]
+    K --> M[Hitung grand total]
+    L --> M
+    M --> Q{Input uang pembayaran}
+    Q --> R{Uang &ge; total?}
+    R -->|Tidak cukup| Q
+    R -->|Cukup| S[Buka DB::transaction]
+    S --> T[Loop per item: lockForUpdate batch FEFO]
+    T --> U{Stok batch cukup?}
+    U -->|Tidak| V[Batalkan → Rollback]
+    U -->|Ya| W[Buat DetailPenjualan + hitung diskon gabungan]
+    W --> X[decrement stok batch]
+    X --> Y{Item lain?}
+    Y -->|Ya| T
+    Y -->|Tidak| Z[Update total Bayar]
+    Z --> AA[Simpan DiscountUsage jika diskon &gt; 0]
+    AA --> AB[Cetak struk]
+    AB --> AC[Buat ActivityLog]
+    AC --> AD[Commit Transaction]
+    AD --> AE([Selesai])
+    V --> AF([Gagal — Rollback DB])
+    style A fill:#1B1F29,stroke:#06B6D4,color:#E2E8F0
+    style AE fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+    style AF fill:#1B1F29,stroke:#FB7185,color:#E2E8F0
+    style C fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style E fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style F fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style H fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style J fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style R fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style U fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style Y fill:#151820,stroke:#FBBF24,color:#E2E8F0
+    style S fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+    style T fill:#1B1F29,stroke:#06B6D4,color:#E2E8F0
+    style W fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+    style Z fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+    style AA fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+    style AD fill:#1B1F29,stroke:#34D399,color:#E2E8F0
+          </pre>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card teal">
+            <h4>✅ Validasi</h4>
+            <ul>
+              <li>Stok per batch: <code>lockForUpdate()</code> sebelum simpan</li>
+              <li>FEFO: <code>expired_date ASC</code> diproses duluan</li>
+              <li>Diskon gabungan cap max 50%</li>
+              <li>Uang harus ≥ grand total</li>
+            </ul>
+          </div>
+          <div class="info-card green">
+            <h4>💾 Database</h4>
+            <ul>
+              <li><code>DB::transaction()</code> — rollback otomatis jika stok kurang</li>
+              <li><code>lockForUpdate()</code> — prevent race condition</li>
+              <li>decrement stok per batch, set <code>aktif=false</code> jika habis</li>
+            </ul>
+          </div>
+          <div class="info-card rose">
+            <h4>📋 Audit Trail</h4>
+            <ul>
+              <li>ActivityLog: <code>"Transaksi Penjualan"</code></li>
+              <li>DiscountUsage: catat diskon member &amp; custom per item</li>
+              <li>Export CSV tersedia di semua halaman laporan</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>SIMART POS — UML Diagram &middot; Generated from Laravel codebase &middot; 2026</p>
+  </footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { curve: 'linear', useMaxWidth: true, htmlLabels: true },
+    er: { layoutDirection: 'TB', minEntityWidth: 100 },
+    class: { useMaxWidth: true }
+  });
+
+  // TOC highlight on scroll
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.id;
+      const link = document.querySelector(`.toc-link[href="#${id}"]`);
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

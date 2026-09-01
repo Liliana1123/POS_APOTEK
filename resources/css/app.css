@@ -1,0 +1,516 @@
+@import "tailwindcss";
+
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
+@theme {
+    --color-primary: #2563eb; /* blue-600 */
+    --color-primary-hover: #1d4ed8; /* blue-700 */
+    --color-secondary: #475569; /* slate-600 */
+    --color-secondary-hover: #334155; /* slate-700 */
+    --color-success: #16a34a; /* green-600 */
+    --color-success-hover: #15803d; /* green-700 */
+    --color-warning: #d97706; /* amber-600 */
+    --color-warning-hover: #b45309; /* amber-700 */
+    --color-danger: #dc2626; /* red-600 */
+    --color-danger-hover: #b91c1c; /* red-700 */
+    --color-info: #0284c7; /* sky-600 */
+    --color-info-hover: #0369a1; /* sky-700 */
+    --color-background: #f8fafc; /* slate-50 */
+    --color-surface: #ffffff;
+    --color-border-custom: #e2e8f0; /* slate-200 */
+    --color-text-main: #0f172a; /* slate-900 */
+    --color-text-muted: #64748b; /* slate-500 */
+    
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* ==========================================================================
+   Typography Base Standards
+   ========================================================================== */
+body {
+    font-family: var(--font-sans);
+    color: var(--color-text-main);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, .h1 {
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: 700;
+    line-height: 2rem;
+    color: var(--color-text-main);
+}
+
+h2, .h2 {
+    font-size: 1.25rem; /* text-xl */
+    font-weight: 700;
+    line-height: 1.75rem;
+    color: var(--color-text-main);
+}
+
+h3, .h3 {
+    font-size: 1rem; /* text-base */
+    font-weight: 600;
+    line-height: 1.5rem;
+    color: var(--color-text-main);
+}
+
+.text-small {
+    font-size: 0.75rem; /* text-xs */
+    line-height: 1rem;
+}
+
+.text-caption {
+    font-size: 0.625rem; /* text-[10px] */
+    line-height: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Button System Classes
+   ========================================================================== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem; /* text-xs */
+    padding: 0.375rem 1rem; /* px-4 py-1.5 */
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid transparent;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+.btn-primary:active {
+    transform: scale(0.98);
+}
+.btn-primary:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary);
+}
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem; /* text-xs */
+    padding: 0.375rem 1rem; /* px-4 py-1.5 */
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid var(--color-border-custom);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background-color: var(--color-surface);
+    color: var(--color-text-main);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.btn-secondary:hover {
+    background-color: #f1f5f9; /* slate-100 */
+}
+.btn-secondary:active {
+    transform: scale(0.98);
+}
+.btn-secondary:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-secondary);
+}
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-destructive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem; /* text-xs */
+    padding: 0.375rem 1rem; /* px-4 py-1.5 */
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid transparent;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background-color: var(--color-danger);
+    color: var(--color-surface);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.btn-destructive:hover {
+    background-color: var(--color-danger-hover);
+}
+.btn-destructive:active {
+    transform: scale(0.98);
+}
+.btn-destructive:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-danger);
+}
+.btn-destructive:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem; /* text-xs */
+    padding: 0.375rem 1rem; /* px-4 py-1.5 */
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid transparent;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    color: var(--color-text-muted);
+}
+.btn-ghost:hover {
+    background-color: #f1f5f9; /* slate-100 */
+    color: var(--color-text-main);
+}
+.btn-ghost:active {
+    transform: scale(0.98);
+}
+.btn-ghost:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-secondary);
+}
+.btn-ghost:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Form System Classes
+   ========================================================================== */
+.form-input {
+    width: 100%;
+    border: 1px solid #cbd5e1; /* border-gray-300 */
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
+    font-size: 0.75rem; /* text-xs */
+    color: var(--color-text-main);
+    background-color: var(--color-surface);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.form-input:hover {
+    border-color: #94a3b8; /* border-slate-400 */
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.form-input:disabled {
+    background-color: #f1f5f9; /* slate-100 */
+    color: #94a3b8; /* slate-400 */
+    cursor: not-allowed;
+}
+.form-input[readonly] {
+    background-color: #f8fafc; /* slate-50 */
+    cursor: default;
+}
+.form-input.error {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+/* ==========================================================================
+   Badge / Status Pills System
+   ========================================================================== */
+.badge-success {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem; /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
+    border-radius: 0.25rem; /* rounded */
+    background-color: #f0fdf4; /* green-50 */
+    color: var(--color-success-hover);
+}
+
+.badge-warning {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem; /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
+    border-radius: 0.25rem; /* rounded */
+    background-color: #fffbeb; /* amber-50 */
+    color: var(--color-warning-hover);
+}
+
+.badge-danger {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem; /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
+    border-radius: 0.25rem; /* rounded */
+    background-color: #fef2f2; /* red-50 */
+    color: var(--color-danger-hover);
+}
+
+.badge-info {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem; /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
+    border-radius: 0.25rem; /* rounded */
+    background-color: #f0f9ff; /* sky-50 */
+    color: var(--color-info-hover);
+}
+
+.badge-neutral {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem; /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
+    border-radius: 0.25rem; /* rounded */
+    background-color: #f1f5f9; /* slate-100 */
+    color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Card Foundation
+   ========================================================================== */
+.card-base {
+    background-color: var(--color-surface);
+    border-radius: 0.75rem; /* rounded-xl */
+    border: 1px solid var(--color-border-custom);
+    padding: 1.25rem; /* p-5 */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    transition: box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-base.hoverable:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+}
+
+/* ==========================================================================
+   Table Foundation
+   ========================================================================== */
+.table-custom-container {
+    background-color: var(--color-surface);
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border-custom);
+    overflow: hidden;
+}
+
+.table-custom {
+    width: 100%;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.table-custom-header {
+    background-color: #f8fafc; /* slate-50 */
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    border-b: 1px solid var(--color-border-custom);
+}
+
+.table-custom-header th {
+    padding: 0.75rem 1.25rem; /* px-5 py-3 */
+}
+
+.table-custom-body td {
+    padding: 0.875rem 1.25rem; /* px-5 py-3.5 */
+    color: #334155; /* slate-700 */
+}
+
+.table-custom-body tr {
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-custom-body tr:hover {
+    background-color: #f8fafc; /* slate-50 */
+}
+
+/* Numeric Columns */
+.table-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Alert / Toast Foundation
+   ========================================================================== */
+.alert-success {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid #bbf7d0;
+    background-color: #f0fdf4;
+    color: var(--color-success-hover);
+}
+
+.alert-danger {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid #fecaca;
+    background-color: #fef2f2;
+    color: var(--color-danger-hover);
+}
+
+.alert-warning {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid #fef3c7;
+    background-color: #fffbeb;
+    color: var(--color-warning-hover);
+}
+
+.alert-info {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid #bae6fd;
+    background-color: #f0f9ff;
+    color: var(--color-info-hover);
+}
+
+/* ==========================================================================
+   Modal Foundation
+   ========================================================================== */
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.5); /* slate-900 with opacity */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.modal-container-custom {
+    background-color: var(--color-surface);
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* shadow-2xl */
+    border: 1px solid var(--color-border-custom);
+    width: 100%;
+    max-width: 28rem; /* max-w-md */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header-custom {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border-custom);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-body-custom {
+    padding: 1.5rem;
+    font-size: 0.75rem;
+    color: #334155;
+}
+
+.modal-footer-custom {
+    padding: 1rem 1.5rem;
+    background-color: #f8fafc;
+    border-top: 1px solid var(--color-border-custom);
+    display: flex;
+    justify-content: end;
+    gap: 0.5rem;
+}
+
+/* ==========================================================================
+   Empty / Loading State Foundation
+   ========================================================================== */
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.empty-state-title {
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin-top: 0.5rem;
+}
+
+.empty-state-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 0.25rem;
+    max-width: 18rem;
+}
+
+.spinner {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border-left-color: var(--color-primary);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* ==========================================================================
+   Utility Override: ensure .hidden always beats component display rules
+   (Tailwind v4 does not add !important to display:none)
+   ========================================================================== */
+.modal-backdrop-custom.hidden {
+    display: none !important;
+}
