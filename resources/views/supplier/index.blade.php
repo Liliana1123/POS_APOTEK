@@ -8,8 +8,11 @@
         <h1>Daftar Supplier</h1>
         <p class="text-caption mt-1">Kelola data penyalur/distributor obat.</p>
     </div>
-    <a href="{{ route('supplier.create') }}" class="btn-primary">
-        + Tambah Supplier
+    <a href="{{ route('supplier.create') }}" class="btn-primary flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15"></path>
+        </svg>
+        <span>Tambah Supplier</span>
     </a>
 </div>
 
@@ -38,29 +41,40 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <table class="table-custom">
+    <div class="overflow-x-auto">
+        <table class="table-custom min-w-[50rem]">
         <thead class="table-custom-header">
             <tr>
                 <th scope="col" class="w-16">No</th>
                 <th scope="col">Nama Supplier</th>
                 <th scope="col" class="w-44">Telepon</th>
                 <th scope="col">Alamat</th>
-                <th scope="col" class="text-right w-44">Aksi</th>
+                <th scope="col" class="text-right w-36">Aksi</th>
             </tr>
         </thead>
-        <tbody class="table-custom-body divide-y divide-gray-150">
+        <tbody class="table-custom-body">
             @forelse ($suppliers as $index => $supplier)
-                <tr>
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     <td class="table-num">{{ $suppliers->firstItem() + $index }}</td>
                     <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
                     <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '-' }}</td>
                     <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '-' }}</td>
-                    <td class="text-right space-x-1.5">
-                        <a href="{{ route('supplier.edit', $supplier) }}" class="btn-secondary py-1 px-2.5 text-[10px]">Edit</a>
-                        <form action="{{ route('supplier.destroy', $supplier) }}" method="POST" class="inline">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn-destructive py-1 px-2.5 text-[10px]">Hapus</button>
-                        </form>
+                    <td class="text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <a href="{{ route('supplier.edit', $supplier) }}" class="btn-secondary !p-1.5" title="Edit">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path>
+                                </svg>
+                            </a>
+                            <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @empty
@@ -87,6 +101,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 
 <div class="mt-4">{{ $suppliers->links() }}</div>
