@@ -15,7 +15,7 @@
 </div>
 
 <!-- Stats Grid (Top KPIs) -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
     <!-- Card 1: Total Members -->
     <div class="card-base hoverable flex items-center justify-between">
         <div>
@@ -28,12 +28,12 @@
         </div>
     </div>
 
-    <!-- Card 4: Total Active Sales -->
+    <!-- Card 4: Total Gross Sales -->
     <div class="card-base hoverable flex items-center justify-between">
         <div>
-            <span class="text-caption font-semibold uppercase tracking-wider block">Total Omset Penjualan</span>
-            <span class="text-2xl font-bold text-gray-800 block mt-1.5">Rp {{ number_format($memberSalesTotal + $nonMemberSalesTotal, 0, ',', '.') }}</span>
-            <span class="text-caption block mt-1">Rp {{ number_format($memberSalesTotal, 0, ',', '.') }} dari Member</span>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Omset Kotor</span>
+            <span class="text-2xl font-bold text-gray-800 block mt-1.5">Rp {{ number_format($totalSalesGross, 0, ',', '.') }}</span>
+            <span class="text-caption block mt-1">Sebelum dikurangi diskon</span>
         </div>
         <div class="bg-amber-50 text-amber-600 rounded-lg p-3 shrink-0">
             <x-heroicon-o-arrow-trending-up class="w-5 h-5" />
@@ -41,7 +41,31 @@
     </div>
 
 
-    <!-- Card 2: Total Discount Given This Month -->
+    <!-- Card: Total Discount -->
+    <div class="card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Total Diskon</span>
+            <span class="text-2xl font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscount, 0, ',', '.') }}</span>
+            <span class="text-caption block mt-1">Total diskon seluruh transaksi</span>
+        </div>
+        <div class="bg-green-50 text-green-600 rounded-lg p-3 shrink-0">
+            <x-heroicon-o-currency-dollar class="w-5 h-5" />
+        </div>
+    </div>
+
+    <!-- Card: Real Net Sales -->
+    <div class="card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Real Omset / Omset Bersih</span>
+            <span class="text-2xl font-bold text-blue-700 block mt-1.5">Rp {{ number_format($realSalesTotal, 0, ',', '.') }}</span>
+            <span class="text-caption block mt-1">Omset kotor - total diskon</span>
+        </div>
+        <div class="bg-blue-50 text-blue-600 rounded-lg p-3 shrink-0">
+            <x-heroicon-o-calculator class="w-5 h-5" />
+        </div>
+    </div>
+
+    <!-- Card: Monthly Discount Summary -->
     <div class="card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Total Hemat (Bulan Ini)</span>
@@ -77,27 +101,29 @@
             </div>
             <span class="badge-success">Terlaris</span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="table-custom-container shadow-sm">
+            <div class="overflow-x-auto">
             <table class="table-custom min-w-full">
                 <thead class="table-custom-header">
                     <tr>
-                        <th class="w-14">No</th>
-                        <th>Nama Obat</th>
-                        <th class="text-right">Terjual</th>
+                        <th class="w-16 text-center">No</th>
+                        <th class="text-center">Nama Obat</th>
+                        <th class="w-28 text-center">Terjual</th>
                     </tr>
                 </thead>
                 <tbody class="table-custom-body divide-y divide-gray-150">
                     @forelse ($topSellingMedicines as $index => $medicine)
-                        <tr>
-                            <td class="table-num">{{ $index + 1 }}</td>
-                            <td class="font-medium text-gray-800">{{ $medicine->nama }}</td>
-                            <td class="table-num font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
+                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} align-middle">
+                            <td class="text-center font-medium">{{ $index + 1 }}</td>
+                            <td class="text-center font-medium text-gray-800">{{ $medicine->nama }}</td>
+                            <td class="text-center font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="3" class="p-4 text-center text-caption">Belum ada data penjualan.</td></tr>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -109,27 +135,29 @@
             </div>
             <span class="badge-warning">Perlu perhatian</span>
         </div>
-        <div class="overflow-x-auto">
+        <div class="table-custom-container shadow-sm">
+            <div class="overflow-x-auto">
             <table class="table-custom min-w-full">
                 <thead class="table-custom-header">
                     <tr>
-                        <th class="w-14">No</th>
-                        <th>Nama Obat</th>
-                        <th class="text-right">Terjual</th>
+                        <th class="w-16 text-center">No</th>
+                        <th class="text-center">Nama Obat</th>
+                        <th class="w-28 text-center">Terjual</th>
                     </tr>
                 </thead>
                 <tbody class="table-custom-body divide-y divide-gray-150">
                     @forelse ($leastSellingMedicines as $index => $medicine)
-                        <tr>
-                            <td class="table-num">{{ $index + 1 }}</td>
-                            <td class="font-medium text-gray-800">{{ $medicine->nama }}</td>
-                            <td class="table-num font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
+                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }} align-middle">
+                            <td class="text-center font-medium">{{ $index + 1 }}</td>
+                            <td class="text-center font-medium text-gray-800">{{ $medicine->nama }}</td>
+                            <td class="text-center font-bold text-gray-800">{{ number_format($medicine->total_terjual) }}</td>
                         </tr>
                     @empty
                         <tr><td colspan="3" class="p-4 text-center text-caption">Belum ada data obat.</td></tr>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

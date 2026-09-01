@@ -65,6 +65,14 @@ class DashboardController extends Controller
               });
         })->sum('total');
 
+        // Omset kotor dan diskon dihitung dari detail transaksi agar tidak bergantung pada stok.
+        $totalSalesGross = (float) DB::table('detail_penjualans')
+            ->selectRaw('COALESCE(SUM(harga_jual * jumlah), 0) as total')
+            ->value('total');
+        $totalDiscount = (float) DB::table('detail_penjualans')
+            ->sum('diskon');
+        $realSalesTotal = $totalSalesGross - $totalDiscount;
+
         // Stats Hari Ini (Fase 5)
         $todayTransactionsCount = Penjualan::whereDate('tanggal', now()->format('Y-m-d'))->count();
         $todaySalesTotal = Penjualan::whereDate('tanggal', now()->format('Y-m-d'))->sum('total');
@@ -101,6 +109,9 @@ class DashboardController extends Controller
             'biggestDiscountPromo',
             'totalDiscountThisMonth',
             'nonMemberSalesTotal',
+            'totalSalesGross',
+            'totalDiscount',
+            'realSalesTotal',
             'todayTransactionsCount',
             'todaySalesTotal',
             'todayDiscountTotal',
