@@ -55,10 +55,10 @@
         <table class="table-custom min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
+                    <th scope="col" class="w-32">Member ID</th>
                     <th scope="col">Nama</th>
                     <th scope="col" class="w-36">Telepon</th>
                     <th scope="col" class="w-28">Status</th>
-                    <th scope="col" class="w-32">Member ID</th>
                     <th scope="col" class="text-center w-28">Transaksi</th>
                     <th scope="col" class="text-right w-36">Total Belanja</th>
                     <th scope="col" class="text-right w-36">Total Hemat</th>
@@ -68,6 +68,7 @@
             <tbody class="table-custom-body divide-y divide-gray-150">
                 @forelse ($pelanggans as $pelanggan)
                     <tr>
+                        <td class="font-mono text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $pelanggan->nama }}</td>
                         <td class="text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
                         <td>
@@ -77,7 +78,6 @@
                                 <span class="badge-neutral">Non-Member</span>
                             @endif
                         </td>
-                        <td class="font-mono text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
                         <td class="text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
                         <td class="table-num font-semibold text-gray-800">
                             Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
