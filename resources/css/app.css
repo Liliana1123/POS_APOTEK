@@ -345,6 +345,14 @@ h3, .h3 {
     border-bottom: 1px solid #1d4ed8; /* blue-700 */
 }
 
+/* Indent sub-menu links inside collapsible sidebar groups for hierarchy */
+.sidebar-group-items > a {
+    padding-left: 1.75rem; /* pl-7 */
+}
+.sidebar-group-items > a.bg-white {
+    padding-left: 1.5rem; /* pl-6 — slightly less to offset the 4px left border */
+}
+
 .table-custom-header th {
     padding: 0.75rem 1.25rem; /* px-5 py-3 */
 }

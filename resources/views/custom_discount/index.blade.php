@@ -8,8 +8,9 @@
         <h1>Manajemen Custom Discount (Promo)</h1>
         <p class="text-caption mt-1">Kelola promo, periode aktif, dan cakupan obat/barang.</p>
     </div>
-    <a href="{{ route('custom-discount.create') }}" class="btn-primary py-2 px-4 shrink-0">
-        + Tambah Promo
+    <a href="{{ route('custom-discount.create') }}" class="btn-primary flex items-center gap-2 shrink-0">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Tambah Promo</span>
     </a>
 </div>
 
@@ -45,8 +46,8 @@
             </select>
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="btn-primary py-1.5 px-5">
-                Filter
+            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+                <x-heroicon-o-funnel class="w-4 h-4" />
             </button>
             <a href="{{ route('custom-discount.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                 Reset
@@ -71,7 +72,7 @@
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
-                @forelse ($discounts as $discount)
+                @forelse ($discounts as $index => $discount)
                     @php
                         $today = now()->format('Y-m-d');
                         $startDate = $discount->tanggal_mulai->format('Y-m-d');
@@ -91,7 +92,7 @@
                             $statusClass = 'badge-success';
                         }
                     @endphp
-                    <tr>
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
                         <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
                         <td class="text-green-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
                         <td class="text-gray-600">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
@@ -106,17 +107,21 @@
                                 {{ $statusText }}
                             </span>
                         </td>
-                        <td class="text-right space-x-2">
+                        <td class="text-right space-x-1">
                             <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">
                                 @csrf
                                 <button type="submit" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">
                                     {{ $discount->aktif ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             </form>
-                            <a href="{{ route('custom-discount.edit', $discount) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Edit</a>
+                            <a href="{{ route('custom-discount.edit', $discount) }}" class="btn-secondary !p-1.5" title="Edit">
+                                <x-heroicon-o-pencil class="w-4 h-4" />
+                            </a>
                             <form action="{{ route('custom-discount.destroy', $discount) }}" method="POST" class="inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 font-semibold text-xs py-1 px-1.5">Hapus</button>
+                                <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
                             </form>
                         </td>
                     </tr>
