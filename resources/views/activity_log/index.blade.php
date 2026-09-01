@@ -59,8 +59,8 @@
             <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="btn-primary flex-1 py-2">
-                Filter
+            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+                <x-heroicon-o-funnel class="w-4 h-4" />
             </button>
             @if(request()->anyFilled(['cari', 'dari', 'sampai']))
                 <a href="{{ route('activity-log') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
@@ -89,9 +89,9 @@
                     <th scope="col">Rincian Target</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
-                @forelse ($logs as $log)
-                    <tr>
+            <tbody class="table-custom-body">
+                @forelse ($logs as $index => $log)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
                         <td class="font-mono text-gray-600">{{ $log->created_at->format('d M Y H:i:s') }}</td>
                         <td class="font-semibold text-gray-800">{{ $log->user_name }}</td>
                         <td>

@@ -36,6 +36,10 @@ class SupplierController extends Controller
 
         Supplier::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Supplier berhasil ditambahkan.'], 201);
+        }
+
         return redirect()->route('supplier.index')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
@@ -53,6 +57,10 @@ class SupplierController extends Controller
         ]);
 
         $supplier->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Supplier berhasil diperbarui.']);
+        }
 
         return redirect()->route('supplier.index')->with('success', 'Supplier berhasil diperbarui.');
     }

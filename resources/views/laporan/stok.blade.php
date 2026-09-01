@@ -68,10 +68,10 @@
                         <th scope="col" class="text-center w-28">Status</th>
                     </tr>
                 </thead>
-                <tbody class="table-custom-body divide-y divide-gray-150">
-                    @forelse ($barangs as $index => $barang)
-                        @php $stok = $barang->stokTotal(); @endphp
-                        <tr>
+<tbody class="table-custom-body">
+                @forelse ($barangs as $index => $barang)
+                    @php $stok = $barang->stokTotal(); @endphp
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
                             <td class="table-num">{{ $index + 1 }}</td>
                             <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                             <td class="text-gray-600">{{ $barang->kategori->nama ?? '—' }}</td>
@@ -119,9 +119,9 @@
                         <th scope="col" class="text-right w-32">Sisa Stok</th>
                     </tr>
                 </thead>
-                <tbody class="table-custom-body divide-y divide-gray-150">
+                <tbody class="table-custom-body">
                     @forelse ($mendekatiExpired as $index => $item)
-                        <tr>
+                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
                             <td class="table-num">{{ $index + 1 }}</td>
                             <td class="font-medium text-gray-800">{{ $item->barang->nama ?? '—' }}</td>
                             <td class="font-mono text-gray-600">{{ $item->no_batch }}</td>
