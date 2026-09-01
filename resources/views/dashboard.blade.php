@@ -2,8 +2,80 @@
 @section('title', 'Dashboard')
 
 @section('content')
+<style>
+    .dashboard-page {
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    .dashboard-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dashboard-kpi {
+        min-height: 136px;
+        padding: 1.125rem 1.25rem;
+        border-color: #dbe4ef;
+    }
+
+    .dashboard-kpi-value {
+        font-size: 1.35rem;
+        line-height: 1.75rem;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .dashboard-kpi-icon {
+        display: grid;
+        place-items: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+    }
+
+    .dashboard-panel {
+        height: 100%;
+        padding: 1.25rem;
+    }
+
+    .dashboard-panel-heading {
+        min-height: 3.25rem;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        white-space: nowrap;
+    }
+
+    .dashboard-table td:nth-child(2),
+    .dashboard-table th:nth-child(2) {
+        width: 100%;
+    }
+
+    @media (max-width: 639px) {
+        .dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .dashboard-kpi-value {
+            font-size: 1.15rem;
+        }
+
+        .dashboard-panel {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="dashboard-page">
 <!-- Page Header -->
-<div class="mb-6">
+<div class="dashboard-header mb-6">
     <h1>Selamat datang, {{ auth()->user()->name }}</h1>
     <p class="text-caption mt-1">
         @if (auth()->user()->isAdmin())
@@ -15,76 +87,76 @@
 </div>
 
 <!-- Stats Grid (Top KPIs) -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+<div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
     <!-- Card 1: Total Members -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Total Member</span>
-            <span class="text-2xl font-bold text-gray-800 block mt-1.5">{{ number_format($totalMembers) }}</span>
+            <span class="dashboard-kpi-value font-bold text-gray-800 block mt-1.5">{{ number_format($totalMembers) }}</span>
             <span class="text-caption block mt-1">+{{ $newMembersThisMonth }} baru bulan ini</span>
         </div>
-        <div class="bg-blue-50 text-blue-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
             <x-heroicon-o-user-group class="w-5 h-5" />
         </div>
     </div>
 
     <!-- Card 4: Total Gross Sales -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Omset Kotor</span>
-            <span class="text-2xl font-bold text-gray-800 block mt-1.5">Rp {{ number_format($totalSalesGross, 0, ',', '.') }}</span>
+            <span class="dashboard-kpi-value font-bold text-gray-800 block mt-1.5">Rp {{ number_format($totalSalesGross, 0, ',', '.') }}</span>
             <span class="text-caption block mt-1">Sebelum dikurangi diskon</span>
         </div>
-        <div class="bg-amber-50 text-amber-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-amber-50 text-amber-600 shrink-0">
             <x-heroicon-o-arrow-trending-up class="w-5 h-5" />
         </div>
     </div>
 
 
     <!-- Card: Total Discount -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Total Diskon</span>
-            <span class="text-2xl font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscount, 0, ',', '.') }}</span>
+            <span class="dashboard-kpi-value font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscount, 0, ',', '.') }}</span>
             <span class="text-caption block mt-1">Total diskon seluruh transaksi</span>
         </div>
-        <div class="bg-green-50 text-green-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-green-50 text-green-600 shrink-0">
             <x-heroicon-o-currency-dollar class="w-5 h-5" />
         </div>
     </div>
 
     <!-- Card: Real Net Sales -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Real Omset / Omset Bersih</span>
-            <span class="text-2xl font-bold text-blue-700 block mt-1.5">Rp {{ number_format($realSalesTotal, 0, ',', '.') }}</span>
+            <span class="dashboard-kpi-value font-bold text-blue-700 block mt-1.5">Rp {{ number_format($realSalesTotal, 0, ',', '.') }}</span>
             <span class="text-caption block mt-1">Omset kotor - total diskon</span>
         </div>
-        <div class="bg-blue-50 text-blue-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
             <x-heroicon-o-calculator class="w-5 h-5" />
         </div>
     </div>
 
     <!-- Card: Monthly Discount Summary -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Total Hemat (Bulan Ini)</span>
-            <span class="text-2xl font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscountThisMonth, 0, ',', '.') }}</span>
+            <span class="dashboard-kpi-value font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscountThisMonth, 0, ',', '.') }}</span>
             <span class="text-caption block mt-1">Rp {{ number_format($memberSavingsTotal, 0, ',', '.') }} dari Member</span>
         </div>
-        <div class="bg-green-50 text-green-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-green-50 text-green-600 shrink-0">
             <x-heroicon-o-currency-dollar class="w-5 h-5" />
         </div>
     </div>
 
     <!-- Card 3: Active Custom Discounts -->
-    <div class="card-base hoverable flex items-center justify-between">
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Promo Custom Aktif</span>
-            <span class="text-2xl font-bold text-purple-600 block mt-1.5">{{ number_format($activePromosCount) }}</span>
+            <span class="dashboard-kpi-value font-bold text-purple-600 block mt-1.5">{{ number_format($activePromosCount) }}</span>
             <span class="text-caption block mt-1">berjalan pada hari ini</span>
         </div>
-        <div class="bg-purple-50 text-purple-600 rounded-lg p-3 shrink-0">
+        <div class="dashboard-kpi-icon bg-purple-50 text-purple-600 shrink-0">
             <x-heroicon-o-gift class="w-5 h-5" />
         </div>
     </div>
@@ -93,8 +165,8 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="card-base">
-        <div class="flex items-center justify-between mb-4">
+    <div class="dashboard-panel card-base">
+        <div class="dashboard-panel-heading flex items-start justify-between gap-3 mb-4">
             <div>
                 <h3>10 Obat Terlaris</h3>
                 <p class="text-caption mt-1">Berdasarkan total jumlah obat terjual.</p>
@@ -103,7 +175,7 @@
         </div>
         <div class="table-custom-container shadow-sm">
             <div class="overflow-x-auto">
-            <table class="table-custom min-w-full">
+            <table class="dashboard-table table-custom min-w-full">
                 <thead class="table-custom-header">
                     <tr>
                         <th class="w-16 text-center">No</th>
@@ -127,8 +199,8 @@
         </div>
     </div>
 
-    <div class="card-base">
-        <div class="flex items-center justify-between mb-4">
+    <div class="dashboard-panel card-base">
+        <div class="dashboard-panel-heading flex items-start justify-between gap-3 mb-4">
             <div>
                 <h3>10 Obat Paling Sedikit Terjual</h3>
                 <p class="text-caption mt-1">Termasuk obat yang belum pernah terjual.</p>
@@ -137,7 +209,7 @@
         </div>
         <div class="table-custom-container shadow-sm">
             <div class="overflow-x-auto">
-            <table class="table-custom min-w-full">
+            <table class="dashboard-table table-custom min-w-full">
                 <thead class="table-custom-header">
                     <tr>
                         <th class="w-16 text-center">No</th>
@@ -164,7 +236,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Member Stats Card -->
-    <div class="card-base">
+    <div class="dashboard-panel card-base">
         <h3 class="mb-4">Statistik Belanja Member</h3>
         <div class="space-y-4 text-small">
             <div class="flex justify-between border-b pb-2">
@@ -183,7 +255,7 @@
     </div>
 
     <!-- Promo Highlights Card -->
-    <div class="card-base">
+    <div class="dashboard-panel card-base">
         <h3 class="mb-4">Performa Promo Custom</h3>
         <div class="space-y-4 text-small">
             <div class="border-b pb-2">
@@ -208,7 +280,7 @@
     </div>
 
     <!-- Quick Access Card -->
-    <div class="card-base flex flex-col justify-between">
+    <div class="dashboard-panel card-base flex flex-col justify-between">
         <div>
             <h3 class="mb-2">Akses Cepat Kasir POS</h3>
             <p class="text-small text-gray-500 leading-relaxed">
@@ -226,5 +298,6 @@
             @endif
         </div>
     </div>
+</div>
 </div>
 @endsection
