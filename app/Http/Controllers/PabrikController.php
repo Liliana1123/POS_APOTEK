@@ -30,6 +30,10 @@ class PabrikController extends Controller
 
         Pabrik::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Pabrik berhasil ditambahkan.'], 201);
+        }
+
         return redirect()->route('pabrik.index')->with('success', 'Pabrik berhasil ditambahkan.');
     }
 
@@ -45,6 +49,10 @@ class PabrikController extends Controller
         ]);
 
         $pabrik->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Pabrik berhasil diperbarui.']);
+        }
 
         return redirect()->route('pabrik.index')->with('success', 'Pabrik berhasil diperbarui.');
     }
