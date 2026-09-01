@@ -13,18 +13,26 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-150 p-4 mb-6">
-    <form method="GET" action="{{ route('penjualan.index') }}" class="flex gap-2">
-        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
-            class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs w-64 focus:ring-blue-500 font-mono">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-1.5 rounded-lg font-semibold transition-colors">
-            Cari
-        </button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('penjualan.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-1.5 rounded-lg font-semibold transition-colors flex items-center justify-center">
-                Clear
-            </a>
-        @endif
+<div class="card-base p-4 mb-6">
+    <form method="GET" action="{{ route('penjualan.index') }}" class="flex flex-wrap gap-2 items-center">
+        <div class="relative shrink-0 w-full sm:w-64">
+            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
+                class="form-input pr-8">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </span>
+            </div>
+            <button type="submit" class="btn-primary py-1.5 px-4">
+                Cari
+            </button>
+            @if(request()->filled('cari'))
+                <a href="{{ route('penjualan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                    Clear
+                </a>
+            @endif
+        
     </form>
 </div>
 

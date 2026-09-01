@@ -45,7 +45,7 @@
                         </svg>
                     </button>
                     @if (auth()->user()->isAdmin())
-                        <div class="sidebar-group-items hidden">
+                        <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
                             <a href="{{ route('barang.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('barang.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
@@ -94,7 +94,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
-                    <div class="sidebar-group-items hidden">
+                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
                         <a href="{{ route('penjualan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penjualan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -127,7 +127,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
-                    <div class="sidebar-group-items hidden">
+                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
                         <a href="{{ route('laporan.stok') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.stok') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -177,7 +177,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
-                    <div class="sidebar-group-items hidden">
+                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
                         <a href="{{ route('custom-discount.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('custom-discount.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0h-4m0 0v13m0 0h6m-6 0H6"></path>
@@ -196,6 +196,28 @@
 
             </nav>
         </div>
+
+        <!-- Restore sidebar group state synchronously (blocking) to prevent flicker -->
+        <script>
+            // Runs during HTML parsing, before first paint. Uses inline style directly
+            // (no scrollHeight/CSS dependency), so expanded groups render open with no flicker.
+            (function () {
+                document.querySelectorAll('.sidebar-group').forEach(function (group) {
+                    var name = group.dataset.group;
+                    var saved = localStorage.getItem('sidebar-group-' + name);
+                    var items = group.querySelector('.sidebar-group-items');
+                    if (!items) return;
+                    var active = items.querySelector('a[class*="border-white"]');
+                    var expand = saved === '1' || !!active;
+                    if (expand) {
+                        items.style.maxHeight = '999px';
+                        items.setAttribute('data-expanded', '1');
+                        var arrow = items.previousElementSibling ? items.previousElementSibling.querySelector('.sidebar-group-arrow') : null;
+                        if (arrow) arrow.classList.add('rotate-90');
+                    }
+                });
+            })();
+        </script>
 
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
@@ -313,29 +335,27 @@
                 }
             });
 
-            // Sidebar Group Accordion Toggle
+            // Sidebar Group Accordion Toggle (smooth, class-only anti-flicker)
             document.querySelectorAll('.sidebar-group-header').forEach(function(header) {
                 header.addEventListener('click', function() {
                     const group = this.closest('.sidebar-group');
                     const items = group.querySelector('.sidebar-group-items');
                     const arrow = this.querySelector('.sidebar-group-arrow');
+                    const groupName = group.dataset.group;
                     
-                    items.classList.toggle('hidden');
+                    const isExpanded = items.getAttribute('data-expanded') === '1';
+                    
+                    if (isExpanded) {
+                        items.style.maxHeight = '0px';
+                        items.setAttribute('data-expanded', '0');
+                        localStorage.setItem('sidebar-group-' + groupName, '0');
+                    } else {
+                        items.style.maxHeight = '999px';
+                        items.setAttribute('data-expanded', '1');
+                        localStorage.setItem('sidebar-group-' + groupName, '1');
+                    }
                     arrow.classList.toggle('rotate-90');
                 });
-            });
-
-            // Auto-expand group if it has active route
-            document.querySelectorAll('.sidebar-group-items').forEach(function(items) {
-                const activeLink = items.querySelector('a[class*="border-white"]');
-                if (activeLink) {
-                    items.classList.remove('hidden');
-                    const header = items.previousElementSibling;
-                    if (header) {
-                        const arrow = header.querySelector('.sidebar-group-arrow');
-                        if (arrow) arrow.classList.add('rotate-90');
-                    }
-                }
             });
         });
 
