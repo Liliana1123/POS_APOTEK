@@ -65,6 +65,7 @@
             </colgroup>
             <thead class="table-custom-header">
                 <tr>
+                    <th scope="col" class="px-2 py-3 text-center align-middle whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">Aksi</th>
                     <th scope="col" class="px-3 py-3 text-center align-middle">Member ID</th>
                     <th scope="col" class="px-3 py-3 text-center align-middle">Nama</th>
                     <th scope="col" class="px-3 py-3 text-center align-middle">Telepon</th>
@@ -72,29 +73,11 @@
                     <th scope="col" class="px-3 py-3 text-center align-middle">Transaksi</th>
                     <th scope="col" class="px-3 py-3 text-center align-middle">Total Belanja</th>
                     <th scope="col" class="px-3 py-3 text-center align-middle">Total Hemat</th>
-                    <th scope="col" class="px-2 py-3 text-center align-middle whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">Aksi</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
                 @forelse ($pelanggans as $pelanggan)
                     <tr>
-                        <td class="px-3 py-3 align-middle font-mono text-left text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-3 py-3 align-middle text-left text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle text-center">
-                            @if ($pelanggan->is_member)
-                                <span class="badge-success">Member</span>
-                            @else
-                                <span class="badge-neutral">Non-Member</span>
-                            @endif
-                        </td>
-                        <td class="px-3 py-3 align-middle text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-gray-800">
-                            Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
-                        </td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-green-600">
-                            Rp {{ number_format($pelanggan->total_hemat ?? 0, 0, ',', '.') }}
-                        </td>
                         <td class="px-2 py-3 align-middle text-center whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">
                             <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
                                 <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
@@ -129,6 +112,23 @@
                                     </button>
                                 </form>
                             </div>
+                        </td>
+                        <td class="px-3 py-3 align-middle font-mono text-left text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
+                        <td class="px-3 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
+                        <td class="px-3 py-3 align-middle text-left text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="px-3 py-3 align-middle text-center">
+                            @if ($pelanggan->is_member)
+                                <span class="badge-success">Member</span>
+                            @else
+                                <span class="badge-neutral">Non-Member</span>
+                            @endif
+                        </td>
+                        <td class="px-3 py-3 align-middle text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
+                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-gray-800">
+                            Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-green-600">
+                            Rp {{ number_format($pelanggan->total_hemat ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>
                 @empty
