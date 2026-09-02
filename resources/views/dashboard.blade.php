@@ -21,6 +21,36 @@
         min-height: 136px;
         padding: 1.125rem 1.25rem;
         border-color: #dbe4ef;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-kpi::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: #2563eb;
+    }
+
+    .dashboard-kpi:nth-child(2)::before {
+        background: #f59e0b;
+    }
+
+    .dashboard-kpi:nth-child(3)::before {
+        background: #16a34a;
+    }
+
+    .dashboard-kpi:nth-child(4)::before {
+        background: #0f766e;
+    }
+
+    .dashboard-kpi:nth-child(5)::before {
+        background: #059669;
+    }
+
+    .dashboard-kpi:nth-child(6)::before {
+        background: #9333ea;
     }
 
     .dashboard-kpi-value {
@@ -45,6 +75,30 @@
 
     .dashboard-panel-heading {
         min-height: 3.25rem;
+    }
+
+    .dashboard-panel-heading h3 {
+        position: relative;
+        padding-left: 0.75rem;
+    }
+
+    .dashboard-panel-heading h3::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.2rem;
+        bottom: 0.2rem;
+        width: 3px;
+        border-radius: 999px;
+        background: #2563eb;
+    }
+
+    .dashboard-panel:nth-child(2) .dashboard-panel-heading h3::before {
+        background: #f59e0b;
+    }
+
+    .dashboard-insight {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
     }
 
     .dashboard-table th,
@@ -165,7 +219,7 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="dashboard-panel card-base">
+    <div class="dashboard-panel dashboard-insight card-base">
         <div class="dashboard-panel-heading flex items-start justify-between gap-3 mb-4">
             <div>
                 <h3>10 Obat Terlaris</h3>
@@ -199,7 +253,7 @@
         </div>
     </div>
 
-    <div class="dashboard-panel card-base">
+    <div class="dashboard-panel dashboard-insight card-base">
         <div class="dashboard-panel-heading flex items-start justify-between gap-3 mb-4">
             <div>
                 <h3>10 Obat Paling Sedikit Terjual</h3>
@@ -280,7 +334,7 @@
     </div>
 
     <!-- Quick Access Card -->
-    <div class="dashboard-panel card-base flex flex-col justify-between">
+    <div class="dashboard-panel dashboard-insight card-base flex flex-col justify-between">
         <div>
             <h3 class="mb-2">Akses Cepat Kasir POS</h3>
             <p class="text-small text-gray-500 leading-relaxed">
