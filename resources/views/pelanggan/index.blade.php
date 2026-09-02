@@ -52,49 +52,83 @@
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[55rem]">
+        <table class="table-custom min-w-[72rem] w-full table-fixed">
+            <colgroup>
+                <col style="width: 12%;">
+                <col style="width: 18%;">
+                <col style="width: 14%;">
+                <col style="width: 12%;">
+                <col style="width: 10%;">
+                <col style="width: 14%;">
+                <col style="width: 14%;">
+                <col style="width: 16%;">
+            </colgroup>
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-32">Member ID</th>
-                    <th scope="col">Nama</th>
-                    <th scope="col" class="w-36">Telepon</th>
-                    <th scope="col" class="w-28">Status</th>
-                    <th scope="col" class="text-center w-28">Transaksi</th>
-                    <th scope="col" class="text-right w-36">Total Belanja</th>
-                    <th scope="col" class="text-right w-36">Total Hemat</th>
-                    <th scope="col" class="text-right w-56">Aksi</th>
+                    <th scope="col" class="px-2 py-3 text-center align-middle whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">Aksi</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Member ID</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Nama</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Telepon</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Status</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Transaksi</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Belanja</th>
+                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Hemat</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
                 @forelse ($pelanggans as $pelanggan)
                     <tr>
-                        <td class="font-mono text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
-                        <td class="font-medium text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
-                        <td>
+                        <td class="px-2 py-3 align-middle text-center whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">
+                            <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
+                                <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
+                                        <circle cx="12" cy="12" r="2.5"/>
+                                    </svg>
+                                </a>
+                                <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-yellow-500" style="color: #F59E0B; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Edit" aria-label="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
+                                    </svg>
+                                </a>
+                                @if ($pelanggan->is_member)
+                                    <button type="button" onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-violet-500" style="color: #7C3AED; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Kartu" aria-label="Kartu">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 14h2"/>
+                                        </svg>
+                                    </button>
+                                @endif
+                                <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" class="inline" style="display: inline;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-red-500" style="color: #DC2626; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Hapus" aria-label="Hapus" onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l1-14"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 align-middle font-mono text-left text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
+                        <td class="px-3 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
+                        <td class="px-3 py-3 align-middle text-left text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="px-3 py-3 align-middle text-center">
                             @if ($pelanggan->is_member)
                                 <span class="badge-success">Member</span>
                             @else
                                 <span class="badge-neutral">Non-Member</span>
                             @endif
                         </td>
-                        <td class="text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
-                        <td class="table-num font-semibold text-gray-800">
+                        <td class="px-3 py-3 align-middle text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
+                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-gray-800">
                             Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
                         </td>
-                        <td class="table-num font-semibold text-green-600">
+                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-green-600">
                             Rp {{ number_format($pelanggan->total_hemat ?? 0, 0, ',', '.') }}
-                        </td>
-                        <td class="text-right space-x-2">
-                            <a href="{{ route('pelanggan.show', $pelanggan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
-                            <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Edit</a>
-                            @if ($pelanggan->is_member)
-                                <button onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold text-green-600 hover:text-green-700">Kartu</button>
-                            @endif
-                            <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" class="inline">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 font-semibold text-xs py-1 px-1.5">Hapus</button>
-                            </form>
                         </td>
                     </tr>
                 @empty
