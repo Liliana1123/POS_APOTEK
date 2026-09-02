@@ -8,8 +8,9 @@
         <h1>Daftar Penerimaan Barang</h1>
         <p class="text-caption mt-1">Kelola data faktur obat masuk, supplier, dan status pembayaran.</p>
     </div>
-    <a href="{{ route('penerimaan.create') }}" class="btn-primary">
-        + Faktur Penerimaan Baru
+    <a href="{{ route('penerimaan.create') }}" class="btn-primary flex items-center gap-2">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Faktur Penerimaan Baru</span>
     </a>
 </div>
 
@@ -23,9 +24,7 @@
                     <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
                         class="form-input pr-8 font-mono">
                     <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                     </span>
                 </div>
             </div>
@@ -72,9 +71,9 @@
                     <th scope="col" class="text-right w-44">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
+            <tbody class="table-custom-body">
                 @forelse ($penerimaans as $index => $penerimaan)
-                    <tr>
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="table-num">{{ $penerimaans->firstItem() + $index }}</td>
                         <td class="font-semibold text-gray-800 font-mono">{{ $penerimaan->no_faktur }}</td>
                         <td class="text-gray-600">{{ $penerimaan->tanggal->format('d M Y') }}</td>
@@ -88,11 +87,17 @@
                             @endif
                         </td>
                         <td class="text-right space-x-1.5">
-                            <a href="{{ route('penerimaan.show', $penerimaan) }}" class="btn-secondary py-1 px-2.5 text-[10px]">Detail</a>
-                            <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST" class="inline">
+                            <div class="flex items-center justify-end gap-1">
+                            <a href="{{ route('penerimaan.show', $penerimaan) }}" class="btn-secondary !p-1.5" title="Detail">
+                                <x-heroicon-o-eye class="w-4 h-4" />
+                            </a>
+                            <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-destructive py-1 px-2.5 text-[10px]">Hapus</button>
+                                <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
                             </form>
+                        </div>
                         </td>
                     </tr>
                 @empty

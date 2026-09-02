@@ -30,6 +30,10 @@ class SatuanController extends Controller
 
         Satuan::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Satuan berhasil ditambahkan.'], 201);
+        }
+
         return redirect()->route('satuan.index')->with('success', 'Satuan berhasil ditambahkan.');
     }
 
@@ -45,6 +49,10 @@ class SatuanController extends Controller
         ]);
 
         $satuan->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Satuan berhasil diperbarui.']);
+        }
 
         return redirect()->route('satuan.index')->with('success', 'Satuan berhasil diperbarui.');
     }

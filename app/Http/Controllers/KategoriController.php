@@ -30,6 +30,10 @@ class KategoriController extends Controller
 
         Kategori::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Kategori berhasil ditambahkan.'], 201);
+        }
+
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
 
@@ -45,6 +49,10 @@ class KategoriController extends Controller
         ]);
 
         $kategori->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Kategori berhasil diperbarui.']);
+        }
 
         return redirect()->route('kategori.index')->with('success', 'Kategori berhasil diperbarui.');
     }

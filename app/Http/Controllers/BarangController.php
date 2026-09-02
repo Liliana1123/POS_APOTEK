@@ -7,6 +7,7 @@ use App\Models\Kategori;
 use App\Models\Pabrik;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class BarangController extends Controller
 {
@@ -35,8 +36,10 @@ class BarangController extends Controller
 
         $barangs = $query->orderBy('nama')->paginate(15)->withQueryString();
         $kategoris = Kategori::orderBy('nama')->get();
+        $satuans = Satuan::orderBy('nama')->get();
+        $pabriks = Pabrik::orderBy('nama')->get();
 
-        return view('barang.index', compact('barangs', 'kategoris'));
+        return view('barang.index', compact('barangs', 'kategoris', 'satuans', 'pabriks'));
     }
 
     public function create()
@@ -63,6 +66,10 @@ class BarangController extends Controller
         $data['butuh_resep'] = $request->boolean('butuh_resep');
 
         Barang::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Barang berhasil ditambahkan.'], 201);
+        }
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan.');
     }
@@ -93,6 +100,10 @@ class BarangController extends Controller
         $data['aktif'] = $request->boolean('aktif');
 
         $barang->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Barang berhasil diperbarui.']);
+        }
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui.');
     }
