@@ -48,7 +48,7 @@
         </thead>
         <tbody class="table-custom-body">
             @forelse ($satuans as $index => $satuan)
-                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     <td class="table-num">{{ $satuans->firstItem() + $index }}</td>
                     <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
                     <td class="text-right">

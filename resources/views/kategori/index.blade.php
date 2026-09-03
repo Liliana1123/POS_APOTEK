@@ -48,7 +48,7 @@
         </thead>
         <tbody class="table-custom-body">
             @forelse ($kategoris as $index => $kategori)
-                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     <td class="table-num">{{ $kategoris->firstItem() + $index }}</td>
                     <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
                     <td class="text-right">
