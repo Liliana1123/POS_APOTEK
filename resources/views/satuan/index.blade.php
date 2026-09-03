@@ -41,20 +41,18 @@
         <table class="table-custom min-w-[50rem]">
         <thead class="table-custom-header">
             <tr>
-                <th scope="col" class="w-16">No</th>
-                <th scope="col">Nama Satuan</th>
-                <th scope="col" class="text-right w-36">Aksi</th>
+                <th scope="col" class="w-32 text-center align-middle">Aksi</th>
+                <th scope="col" class="w-28 text-center align-middle">No</th>
+                <th scope="col" class="text-left align-middle">Nama Satuan</th>
             </tr>
         </thead>
         <tbody class="table-custom-body">
             @forelse ($satuans as $index => $satuan)
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
-                    <td class="table-num">{{ $satuans->firstItem() + $index }}</td>
-                    <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
-                    <td class="text-right">
-                        <div class="flex items-center justify-end gap-1">
+                    <td class="w-32 text-center align-middle">
+                        <div class="flex items-center justify-center gap-1">
                                     <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-satuan"
+                                    class="btn-secondary action-icon-button action-icon-edit !p-1.5 btn-edit-satuan"
                                     style="color: #F59E0B;"
                                     title="Edit"
                                     data-id="{{ $satuan->id }}"
@@ -80,7 +78,7 @@
                                     @method('DELETE')
 
                                     <button type="submit"
-                                        class="btn-secondary !p-1.5"
+                                        class="btn-secondary action-icon-button action-icon-delete !p-1.5"
                                         style="color: #DC2626;"
                                         title="Hapus"
                                         aria-label="Hapus">
@@ -102,6 +100,8 @@
                                 </form>
                         </div>
                     </td>
+                    <td class="w-28 text-center align-middle">{{ $satuans->firstItem() + $index }}</td>
+                    <td class="font-medium text-gray-800 text-left align-middle">{{ $satuan->nama }}</td>
                 </tr>
             @empty
                 <tr>

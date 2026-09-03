@@ -52,33 +52,33 @@
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[72rem] w-full table-fixed">
+        <table class="table-custom min-w-[61rem] w-full table-fixed">
             <colgroup>
-                <col style="width: 12%;">
-                <col style="width: 18%;">
-                <col style="width: 14%;">
-                <col style="width: 12%;">
-                <col style="width: 10%;">
-                <col style="width: 14%;">
-                <col style="width: 14%;">
-                <col style="width: 16%;">
+                <col style="width: 136px;">
+                <col style="width: 120px;">
+                <col style="width: 130px;">
+                <col style="width: 120px;">
+                <col style="width: 90px;">
+                <col style="width: 85px;">
+                <col style="width: 125px;">
+                <col style="width: 125px;">
             </colgroup>
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="px-2 py-3 text-center align-middle whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">Aksi</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Member ID</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Nama</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Telepon</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Status</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Transaksi</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Belanja</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Hemat</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Aksi</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Member ID</th>
+                    <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
+                    <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">Telepon</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Status</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Transaksi</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Hemat</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
                 @forelse ($pelanggans as $pelanggan)
                     <tr>
-                        <td class="px-2 py-3 align-middle text-center whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">
+                        <td class="px-1 py-3 align-middle text-center whitespace-nowrap">
                             <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
                                 <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
@@ -113,21 +113,21 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="px-3 py-3 align-middle font-mono text-left text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-3 py-3 align-middle text-left text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle text-center">
+                        <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '—' }}</td>
+                        <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
+                        <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="px-1 py-3 align-middle text-center">
                             @if ($pelanggan->is_member)
                                 <span class="badge-success">Member</span>
                             @else
                                 <span class="badge-neutral">Non-Member</span>
                             @endif
                         </td>
-                        <td class="px-3 py-3 align-middle text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-gray-800">
+                        <td class="px-1 py-3 align-middle text-center font-medium text-gray-700 whitespace-nowrap">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
+                        <td class="px-1 py-3 align-middle text-center font-semibold text-gray-800 whitespace-nowrap">
                             Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
                         </td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-green-600">
+                        <td class="px-1 py-3 align-middle text-center font-semibold text-green-600 whitespace-nowrap">
                             Rp {{ number_format($pelanggan->total_hemat ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>

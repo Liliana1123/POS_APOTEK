@@ -41,24 +41,20 @@
         <table class="table-custom min-w-[50rem]">
         <thead class="table-custom-header">
             <tr>
-                <th scope="col" class="w-16">No</th>
-                <th scope="col">Nama Supplier</th>
-                <th scope="col" class="w-44">Telepon</th>
-                <th scope="col">Alamat</th>
-                <th scope="col" class="text-right w-36">Aksi</th>
+                <th scope="col" class="w-32 text-center align-middle">Aksi</th>
+                <th scope="col" class="w-24 text-center align-middle">No</th>
+                <th scope="col" class="w-48 text-left align-middle">Nama Supplier</th>
+                <th scope="col" class="w-40 text-left align-middle">Telepon</th>
+                <th scope="col" class="text-left align-middle">Alamat</th>
             </tr>
         </thead>
         <tbody class="table-custom-body">
             @forelse ($suppliers as $index => $supplier)
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                    <td class="table-num">{{ $suppliers->firstItem() + $index }}</td>
-                    <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
-                    <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '-' }}</td>
-                    <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '-' }}</td>
-                    <td class="text-right">
-                        <div class="flex items-center justify-end gap-1">
+                    <td class="w-32 text-center align-middle">
+                        <div class="flex items-center justify-center gap-1">
                         <button type="button"
-                                class="btn-secondary !p-1.5 btn-edit-satuan"
+                                class="btn-secondary action-icon-button action-icon-edit !p-1.5 btn-edit-satuan"
                                 style="color: #F59E0B;"
                                 title="Edit"
                                 data-id="{{ $supplier->id }}"
@@ -80,7 +76,7 @@
                                 <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
                                     @csrf @method('DELETE')
                                     <button type="submit"
-                                        class="btn-secondary !p-1.5"
+                                        class="btn-secondary action-icon-button action-icon-delete !p-1.5"
                                         style="color: #DC2626;"
                                         title="Hapus"
                                         aria-label="Hapus">
@@ -102,6 +98,10 @@
                                 </form>
                         </div>
                     </td>
+                    <td class="w-24 text-center align-middle">{{ $suppliers->firstItem() + $index }}</td>
+                    <td class="w-48 font-medium text-gray-800 text-left align-middle">{{ $supplier->nama }}</td>
+                    <td class="w-40 text-gray-600 font-mono text-left align-middle">{{ $supplier->telepon ?? '-' }}</td>
+                    <td class="text-gray-600 text-left truncate max-w-xs align-middle" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '-' }}</td>
                 </tr>
             @empty
                 <tr>
