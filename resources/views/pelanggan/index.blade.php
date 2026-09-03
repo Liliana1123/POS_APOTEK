@@ -52,12 +52,13 @@
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[61rem] w-full table-fixed">
+        <table class="customer-table table-custom min-w-[61rem] w-full table-fixed">
             <colgroup>
                 <col style="width: 136px;">
                 <col style="width: 120px;">
                 <col style="width: 130px;">
                 <col style="width: 120px;">
+                <col style="width: 100px;">
                 <col style="width: 90px;">
                 <col style="width: 85px;">
                 <col style="width: 125px;">
@@ -69,15 +70,16 @@
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Member ID</th>
                     <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
                     <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">Telepon</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Piutang</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Status</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Transaksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Hemat</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
+            <tbody class="table-custom-body">
                 @forelse ($pelanggans as $pelanggan)
-                    <tr>
+                    <tr class="customer-data-row">
                         <td class="px-1 py-3 align-middle text-center whitespace-nowrap">
                             <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
                                 <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
@@ -91,13 +93,41 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
                                     </svg>
                                 </a>
-                                @if ($pelanggan->is_member)
-                                    <button type="button" onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-violet-500" style="color: #7C3AED; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Kartu" aria-label="Kartu">
+                                <button type="button"
+                                    @if ($pelanggan->is_member)
+                                        onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')"
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-violet-500"
+                                        style="color: #7C3AED; padding: 0; min-width: 28px; width: 28px; height: 28px;"
+                                        title="Kartu"
+                                        aria-label="Kartu"
+                                    @else
+                                        disabled
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white opacity-50"
+                                        style="color: #9CA3AF; padding: 0; min-width: 28px; width: 28px; height: 28px; cursor: not-allowed;"
+                                        title="Kartu hanya untuk member"
+                                        aria-label="Kartu tidak tersedia"
+                                    @endif
+                                >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 14h2"/>
                                         </svg>
+                                </button>
+                                @if ($pelanggan->telepon)
+                                    @php
+                                        $nomorWhatsapp = preg_replace('/[^0-9]/', '', $pelanggan->telepon);
+                                        if (str_starts_with($nomorWhatsapp, '0')) {
+                                            $nomorWhatsapp = '62' . substr($nomorWhatsapp, 1);
+                                        }
+                                        $pesanWhatsapp = urlencode('Halo ' . $pelanggan->nama . ', kami mengingatkan saldo piutang Anda sebesar Rp ' . number_format($pelanggan->saldo_piutang ?? 0, 0, ',', '.') . '.');
+                                    @endphp
+                                    <a href="https://wa.me/{{ $nomorWhatsapp }}?text={{ $pesanWhatsapp }}" target="_blank" rel="noopener" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-green-600" style="color: #16A34A; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Hubungi WhatsApp" aria-label="Hubungi WhatsApp">
+                                        <span class="text-[10px] font-bold">WA</span>
+                                    </a>
+                                @else
+                                    <button type="button" disabled class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white opacity-50" style="color: #9CA3AF; padding: 0; min-width: 28px; width: 28px; height: 28px; cursor: not-allowed;" title="Nomor telepon belum tersedia" aria-label="WhatsApp tidak tersedia">
+                                        <span class="text-[10px] font-bold">WA</span>
                                     </button>
                                 @endif
                                 <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" class="inline" style="display: inline;">
@@ -116,6 +146,13 @@
                         <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '—' }}</td>
                         <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
                         <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="px-1 py-3 align-middle text-center font-semibold whitespace-nowrap">
+                            @if (($pelanggan->saldo_piutang ?? 0) > 0)
+                                <span class="badge-warning">Rp {{ number_format($pelanggan->saldo_piutang, 0, ',', '.') }}</span>
+                            @else
+                                <span class="badge-success">Lunas</span>
+                            @endif
+                        </td>
                         <td class="px-1 py-3 align-middle text-center">
                             @if ($pelanggan->is_member)
                                 <span class="badge-success">Member</span>
@@ -133,7 +170,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="p-0">
+                        <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">Pelanggan Tidak Ditemukan</div>
                                 <div class="empty-state-desc">Tidak ada data pelanggan yang terdaftar atau cocok dengan kata kunci pencarian.</div>

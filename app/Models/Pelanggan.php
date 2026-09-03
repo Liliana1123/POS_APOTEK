@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pelanggan extends Model
 {
-    protected $fillable = ['nama', 'telepon', 'member_id', 'is_member', 'member_since'];
+    protected $fillable = ['nama', 'telepon', 'member_id', 'is_member', 'member_since', 'saldo_piutang'];
 
     protected $casts = [
         'is_member' => 'boolean',
         'member_since' => 'date',
+        'saldo_piutang' => 'decimal:2',
     ];
 
     public static function generateMemberId(): string

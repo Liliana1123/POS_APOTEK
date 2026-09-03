@@ -28,6 +28,12 @@
         @error('telepon') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Saldo Piutang</label>
+        <input type="number" name="saldo_piutang" value="{{ old('saldo_piutang', $pelanggan->saldo_piutang ?? 0) }}" min="0" step="0.01" placeholder="0" class="form-input">
+        @error('saldo_piutang') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
     @if ($pelanggan->is_member)
         <div>
             <label class="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Member ID (Permanen)</label>

@@ -66,6 +66,7 @@ class PelangganController extends Controller
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
             'is_member' => 'nullable|boolean',
+            'saldo_piutang' => 'nullable|numeric|min:0',
         ]);
 
         $isMember = $request->boolean('is_member');
@@ -118,6 +119,7 @@ class PelangganController extends Controller
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
             'is_member' => 'nullable|boolean',
+            'saldo_piutang' => 'nullable|numeric|min:0',
         ]);
 
         if ($pelanggan->is_member) {

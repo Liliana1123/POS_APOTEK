@@ -28,6 +28,13 @@
         @error('telepon') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Saldo Piutang</label>
+        <input type="number" name="saldo_piutang" value="{{ old('saldo_piutang', 0) }}" min="0" step="0.01" placeholder="0" class="form-input">
+        @error('saldo_piutang') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
+
     <div class="flex items-center gap-2.5 pt-2">
         <input type="checkbox" name="is_member" id="is_member" value="1" @checked(old('is_member'))
             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
