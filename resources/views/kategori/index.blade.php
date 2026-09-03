@@ -39,33 +39,71 @@
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
-        <thead class="table-custom-header">
-            <tr>
-                <th scope="col" class="w-16">No</th>
-                <th scope="col">Nama Kategori</th>
-                <th scope="col" class="text-right w-36">Aksi</th>
+        <thead class="table-custom-header text-center align-middle">
+            <tr class="align-middle">
+                <th scope="col" class="w-32 text-center align-middle">Aksi</th>
+                <th scope="col" class="w-28 text-center align-middle">No</th>
+                <th scope="col" class="text-left align-middle">Nama Kategori</th>
             </tr>
         </thead>
-        <tbody class="table-custom-body">
+        <tbody class="table-custom-body text-center align-middle">
             @forelse ($kategoris as $index => $kategori)
-                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                    <td class="table-num">{{ $kategoris->firstItem() + $index }}</td>
-                    <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
-                    <td class="text-right">
-                        <div class="flex items-center justify-end gap-1">
-<button type="button" class="btn-secondary !p-1.5 btn-edit-kategori" title="Edit"
-                        data-id="{{ $kategori->id }}"
-                        data-json="{{ json_encode(['nama' => $kategori->nama], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil class="w-4 h-4" />
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }} align-middle">
+                    <td class="w-32 text-center align-middle">
+                        <div class="flex items-center justify-center gap-1">
+                                <button type="button"
+                                    class="btn-secondary action-icon-button action-icon-edit !p-1.5 btn-edit-kategori"
+                                    style="color: #F59E0B;"
+                                    title="Edit"
+                                    data-id="{{ $kategori->id }}"
+                                    data-json="{{ json_encode(['nama' => $kategori->nama], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-[4px] w-[4px]"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z" />
+
+                                    </svg>
                                 </button>
-                                <form action="{{ route('kategori.destroy', $kategori) }}" method="POST">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
+                                   <form action="{{ route('kategori.destroy', $kategori) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit"
+                                            class="btn-secondary action-icon-button action-icon-delete !p-1.5"
+                                            style="color: #DC2626;"
+                                            title="Hapus"
+                                            aria-label="Hapus"
+                                            onclick="return confirm('Yakin ingin menghapus kategori ini?')">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                class="h-[4px] w-[4px]"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                                stroke-width="1.8"
+                                                style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
+
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l-1-14"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
+
+                                            </svg>
+                                        </button>
+                                    </form>
                         </div>
                     </td>
+                    <td class="w-28 text-center align-middle">{{ $kategoris->firstItem() + $index }}</td>
+                    <td class="font-medium text-gray-800 text-left align-middle">{{ $kategori->nama }}</td>
                 </tr>
             @empty
                 <tr>

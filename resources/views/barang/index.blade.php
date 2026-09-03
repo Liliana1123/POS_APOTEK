@@ -5,7 +5,7 @@
 <!-- Page Header Pattern -->
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
     <div>
-        <h1>Daftar Barang & Obat</h1>
+       <h1 class="text-base font-semibold">Daftar Barang & Obat</h1>
         <p class="text-caption mt-1">Kelola data obat, kategori, resep, dan stok minimum.</p>
     </div>
     <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
@@ -71,32 +71,85 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[50rem]">
-            <thead class="table-custom-header">
+        <table class="table-custom table-fixed min-w-[68rem]">
+            <thead class="table-custom-header text-center align-middle">
                 <tr>
-                    <th scope="col" class="w-16">No</th>
-                    <th scope="col">Nama Barang / Produk</th>
-                    <th scope="col">Kategori</th>
-                    <th scope="col">Satuan</th>
+                    <th scope="col" class="w-28">Aksi</th>
+                    <th scope="col" class="w-14">No</th>
+                    <th scope="col" class="w-[24%]">Nama Barang / Produk</th>
+                    <th scope="col" class="w-[17%]">Kategori</th>
+                    <th scope="col" class="w-[12%]">Satuan</th>
                     <th scope="col" class="w-32">Stok</th>
-                    <th scope="col" class="text-center w-28">Resep</th>
-                    <th scope="col" class="text-center w-28">Status</th>
-                    <th scope="col" class="text-right w-36">Aksi</th>
+                    <th scope="col" class="w-32">Resep</th>
+                    <th scope="col" class="w-28">Status</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-gray-150">
+            <tbody class="table-custom-body divide-gray-150 align-middle">
                 @forelse ($barangs as $index => $barang)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="table-num">{{ $barangs->firstItem() + $index }}</td>
-                        <td>
+                        <td class="w-28 text-center align-middle">
+                            <div class="flex items-center justify-center gap-2">
+                                  <button type="button"
+                                    class="btn-secondary action-icon-button action-icon-edit !flex !h-8 !w-8 !items-center !justify-center !p-0 btn-edit-barang"
+                                    style="color: #F59E0B;"
+                                    title="Edit"
+                                    data-id="{{ $barang->id }}"
+                                    data-json="{{ json_encode(['nama' => $barang->nama, 'kategori_id' => $barang->kategori_id, 'satuan_id' => $barang->satuan_id, 'pabrik_id' => $barang->pabrik_id, 'barcode' => $barang->barcode, 'stok_minimum' => $barang->stok_minimum, 'butuh_resep' => (int) $barang->butuh_resep, 'aktif' => (int) $barang->aktif], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-[4px] w-[4px]"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z" />
+
+                                    </svg>
+                                </button>
+
+                               <form action="{{ route('barang.destroy', $barang) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="submit"
+                                    class="btn-secondary action-icon-button action-icon-delete !flex !h-8 !w-8 !items-center !justify-center !p-0"
+                                    style="color: #DC2626;"
+                                    title="Hapus"
+                                    aria-label="Hapus"
+                                    onclick="return confirm('Yakin ingin menghapus barang ini?')">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-[4px] w-[4px]"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
+
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l-1-14"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
+
+                                    </svg>
+                                </button>
+                         </form>
+                        </td>
+                        <td class="table-num text-center align-middle">{{ $barangs->firstItem() + $index }}</td>
+                        <td class="align-middle text-center">
                             <div class="font-semibold text-gray-800">{{ $barang->nama }}</div>
                             @if ($barang->barcode)
                                 <div class="text-[9px] text-gray-400 font-mono mt-0.5" title="Barcode">Code: {{ $barang->barcode }}</div>
                             @endif
                         </td>
-                        <td>{{ $barang->kategori->nama ?? '—' }}</td>
-                        <td>{{ $barang->satuan->nama ?? '—' }}</td>
-                        <td>
+                        <td class="align-middle text-center">{{ $barang->kategori->nama ?? '—' }}</td>
+                        <td class="align-middle text-center">{{ $barang->satuan->nama ?? '—' }}</td>
+                        <td class="align-middle text-center whitespace-nowrap">
                             @php $stok = $barang->stokTotal(); @endphp
                             @if ($stok <= 0)
                                 <span class="badge-danger">Habis</span>
@@ -106,34 +159,19 @@
                                 <span class="badge-success">{{ $stok }} &middot; Aman</span>
                             @endif
                         </td>
-                        <td class="text-center">
+                        <td class="text-center align-middle whitespace-nowrap">
                             @if ($barang->butuh_resep)
                                 <span class="badge-danger">Wajib Resep</span>
                             @else
                                 <span class="badge-neutral">Bebas</span>
                             @endif
                         </td>
-                        <td class="text-center">
+                        <td class="text-center align-middle whitespace-nowrap">
                             @if ($barang->aktif)
                                 <span class="badge-success">Aktif</span>
                             @else
                                 <span class="badge-neutral">Nonaktif</span>
                             @endif
-                        </td>
-                        <td class="text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button type="button" class="btn-secondary !p-1.5 btn-edit-barang" title="Edit"
-                                    data-id="{{ $barang->id }}"
-                                    data-json="{{ json_encode(['nama' => $barang->nama, 'kategori_id' => $barang->kategori_id, 'satuan_id' => $barang->satuan_id, 'pabrik_id' => $barang->pabrik_id, 'barcode' => $barang->barcode, 'stok_minimum' => $barang->stok_minimum, 'butuh_resep' => (int) $barang->butuh_resep, 'aktif' => (int) $barang->aktif], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil class="w-4 h-4" />
-                                </button>
-                                <form action="{{ route('barang.destroy', $barang) }}" method="POST">
-                                    @csrf @method('DELETE')
-<button type="submit" class="btn-destructive !p-1.5" title="Hapus">
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                                </form>
-                            </div>
                         </td>
                     </tr>
                 @empty
