@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pabrik extends Model
 {
-    protected $fillable = ['nama'];
+    protected $fillable = ['nama', 'telepon', 'alamat', 'pic'];
 
     public function barang(): HasMany
     {

@@ -11,9 +11,13 @@ class PabrikController extends Controller
     {
         $query = Pabrik::query();
         if ($request->filled('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->cari . '%')
+                  ->orWhere('telepon', 'like', '%' . $request->cari . '%')
+                  ->orWhere('pic', 'like', '%' . $request->cari . '%');
+            });
         }
-        $pabriks = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $pabriks = $query->orderBy('id')->paginate(15)->withQueryString();
         return view('pabrik.index', compact('pabriks'));
     }
 
@@ -26,6 +30,9 @@ class PabrikController extends Controller
     {
         $data = $request->validate([
             'nama' => 'required|string|max:255',
+            'telepon' => 'nullable|string|max:30',
+            'alamat' => 'nullable|string',
+            'pic' => 'nullable|string|max:255',
         ]);
 
         Pabrik::create($data);
@@ -46,6 +53,9 @@ class PabrikController extends Controller
     {
         $data = $request->validate([
             'nama' => 'required|string|max:255',
+            'telepon' => 'nullable|string|max:30',
+            'alamat' => 'nullable|string',
+            'pic' => 'nullable|string|max:255',
         ]);
 
         $pabrik->update($data);

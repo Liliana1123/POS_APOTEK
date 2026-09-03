@@ -3,35 +3,45 @@
 
 @section('content')
 <!-- Page Header Pattern -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1>Daftar Supplier</h1>
         <p class="text-caption mt-1">Kelola data penyalur/distributor obat.</p>
     </div>
-    <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Supplier</span>
-    </button>
+    <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Supplier</span>
+        </button>
+    </div>
 </div>
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('supplier.index') }}" class="flex flex-wrap gap-2 items-center">
-        <div class="relative shrink-0 w-full sm:w-64">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari supplier..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
+    <form method="GET" action="{{ route('supplier.index') }}" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Supplier</label>
+                <div class="relative">
+                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..."
+                        class="form-input pr-8">
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn-primary py-1.5 px-4">
-            Cari
-        </button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('supplier.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Clear
-            </a>
-        @endif
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @if(request()->filled('cari'))
+                <a href="{{ route('supplier.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                    Reset
+                </a>
+            @endif
+            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+            </button>
+        </div>
     </form>
 </div>
 
@@ -39,6 +49,7 @@
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
+<<<<<<< HEAD
         <thead class="table-custom-header">
             <tr>
                 <th scope="col" class="w-32 text-center align-middle">Aksi</th>
@@ -72,30 +83,43 @@
                                             stroke-linejoin="round"
                                             d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z" />
                                     </svg>
+=======
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="w-16">No</th>
+                    <th scope="col">Nama Supplier</th>
+                    <th scope="col" class="w-44">Telepon</th>
+                    <th scope="col">Alamat</th>
+                </tr>
+            </thead>
+            <tbody class="table-custom-body divide-gray-150">
+                @forelse ($suppliers as $index => $supplier)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="text-left">
+                            <div class="flex items-center justify-start gap-1">
+                                <button type="button"
+                                    class="btn-secondary !p-1.5 btn-edit-supplier"
+                                    style="color: #F59E0B;"
+                                    title="Edit"
+                                    data-id="{{ $supplier->id }}"
+                                    data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+>>>>>>> risang-fitur-data-master
                                 </button>
                                 <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
-                                    @csrf @method('DELETE')
+                                    @csrf
+                                    @method('DELETE')
                                     <button type="submit"
                                         class="btn-secondary action-icon-button action-icon-delete !p-1.5"
                                         style="color: #DC2626;"
                                         title="Hapus"
-                                        aria-label="Hapus">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="1.8"
-                                            style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
-
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l-1-14"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
-
-                                        </svg>
+                                        aria-label="Hapus"
+                                        onclick="return confirm('Yakin ingin menghapus supplier ini?')">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
+<<<<<<< HEAD
                         </div>
                     </td>
                     <td class="w-24 text-center align-middle">{{ $suppliers->firstItem() + $index }}</td>
@@ -113,20 +137,39 @@
                                 @else
                                     Supplier Kosong
                                 @endif
+=======
+>>>>>>> risang-fitur-data-master
                             </div>
-                            <div class="empty-state-desc">
-                                @if(request()->filled('cari'))
-                                    Tidak ada supplier yang cocok dengan kata kunci "{{ request('cari') }}".
-                                @else
-                                    Belum ada data supplier terdaftar di sistem.
-                                @endif
+                        </td>
+                        <td class="table-num">{{ $suppliers->firstItem() + $index }}</td>
+                        <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
+                        <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '—' }}</td>
+                        <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '—' }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="p-0">
+                            <div class="empty-state-container">
+                                <div class="empty-state-title">
+                                    @if(request()->filled('cari'))
+                                        Supplier Tidak Ditemukan
+                                    @else
+                                        Supplier Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->filled('cari'))
+                                        Tidak ada supplier yang cocok dengan kata kunci "{{ request('cari') }}".
+                                    @else
+                                        Belum ada data supplier terdaftar di sistem.
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 

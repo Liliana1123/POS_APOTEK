@@ -13,8 +13,8 @@ class PelangganController extends Controller
     {
         $query = Pelanggan::query();
 
-        if ($request->filled('q')) {
-            $search = $request->input('q');
+        if ($request->filled('cari')) {
+            $search = $request->input('cari');
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('telepon', 'like', "%{$search}%")
@@ -104,6 +104,14 @@ class PelangganController extends Controller
             }
         }
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pelanggan berhasil ditambahkan.',
+                'pelanggan' => $pelanggan->load('penjualan'),
+            ], 201);
+        }
+
         return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil ditambahkan.');
     }
 
@@ -158,6 +166,14 @@ class PelangganController extends Controller
         }
 
         $pelanggan->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pelanggan berhasil diperbarui.',
+                'pelanggan' => $pelanggan->load('penjualan'),
+            ]);
+        }
 
         return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil diperbarui.');
     }
