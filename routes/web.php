@@ -38,7 +38,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('pabrik', PabrikController::class)->except('show');
     Route::resource('supplier', SupplierController::class)->except('show');
     Route::resource('pelanggan', PelangganController::class);
-    Route::resource('barang', BarangController::class)->except('show');
+    Route::get('barang/export', [BarangController::class, 'export'])->name('barang.export');
+    Route::get('barang/import-template', [BarangController::class, 'importTemplate'])->name('barang.import-template');
+    Route::post('barang/import', [BarangController::class, 'import'])->name('barang.import');
+    Route::resource('barang', BarangController::class);
     Route::resource('custom-discount', CustomDiscountController::class)->except('show');
     Route::post('custom-discount/{custom_discount}/toggle', [CustomDiscountController::class, 'toggle'])->name('custom-discount.toggle');
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log');

@@ -8,43 +8,47 @@
         <h1>Daftar Pelanggan</h1>
         <p class="text-caption mt-1">Kelola data pelanggan & membership POS Apotek.</p>
     </div>
-    <a href="{{ route('pelanggan.create') }}" class="btn-primary py-2 px-4 shrink-0">
-        + Tambah Pelanggan
-    </a>
+    <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Pelanggan</span>
+        </button>
+    </div>
 </div>
-
-@if (session('success'))
-    <div class="alert-success p-3 mb-4">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if (session('error'))
-    <div class="alert-danger p-3 mb-4">
-        {{ session('error') }}
-    </div>
-@endif
 
 <!-- Filter Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('pelanggan.index') }}" class="flex flex-col md:flex-row gap-3">
-        <div class="flex-1">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama, nomor HP, atau Member ID..." class="form-input">
+    <form method="GET" action="{{ route('pelanggan.index') }}" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Pelanggan</label>
+                <div class="relative">
+                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, nomor HP, atau Member ID..."
+                        class="form-input pr-8">
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
+                <select name="status" class="form-input">
+                    <option value="">Semua Status</option>
+                    <option value="member" @selected(request('status') === 'member')>Member</option>
+                    <option value="non-member" @selected(request('status') === 'non-member')>Non-Member</option>
+                </select>
+            </div>
         </div>
-        <div class="w-full md:w-48">
-            <select name="status" class="form-input">
-                <option value="">Semua Status</option>
-                <option value="member" @selected(request('status') === 'member')>Member</option>
-                <option value="non-member" @selected(request('status') === 'non-member')>Non-Member</option>
-            </select>
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn-primary py-1.5 px-5">
-                Filter
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @if(request()->anyFilled(['cari', 'status']))
+                <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                    Reset
+                </a>
+            @endif
+            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+                <x-heroicon-o-funnel class="w-4 h-4" />
             </button>
-            <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Reset
-            </a>
         </div>
     </form>
 </div>
@@ -52,91 +56,104 @@
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[72rem] w-full table-fixed">
-            <colgroup>
-                <col style="width: 12%;">
-                <col style="width: 18%;">
-                <col style="width: 14%;">
-                <col style="width: 12%;">
-                <col style="width: 10%;">
-                <col style="width: 14%;">
-                <col style="width: 14%;">
-                <col style="width: 16%;">
-            </colgroup>
+        <table class="table-custom min-w-[72rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="px-2 py-3 text-center align-middle whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">Aksi</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Member ID</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Nama</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Telepon</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Status</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Transaksi</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Belanja</th>
-                    <th scope="col" class="px-3 py-3 text-center align-middle">Total Hemat</th>
+                    <th scope="col" class="text-center w-40">Aksi</th>
+                    <th scope="col" class="w-16">No</th>
+                    <th scope="col">Member ID</th>
+                    <th scope="col">Nama</th>
+                    <th scope="col" class="w-40">Telepon</th>
+                    <th scope="col" class="text-center w-28">Status</th>
+                    <th scope="col" class="text-center w-24">Transaksi</th>
+                    <th scope="col" class="text-center w-32">Total Belanja</th>
+                    <th scope="col" class="text-center w-32">Total Hemat</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
-                @forelse ($pelanggans as $pelanggan)
-                    <tr>
-                        <td class="px-2 py-3 align-middle text-center whitespace-nowrap" style="width: fit-content; min-width: 0; white-space: nowrap;">
-                            <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
-                                <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
-                                        <circle cx="12" cy="12" r="2.5"/>
-                                    </svg>
+                @forelse ($pelanggans as $index => $pelanggan)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="text-left">
+                            <div class="flex items-center justify-start gap-1">
+                                <a href="{{ route('pelanggan.show', $pelanggan) }}"
+                                    class="btn-secondary !p-1.5"
+                                    style="color: #2563EB;"
+                                    title="Detail"
+                                    aria-label="Detail">
+                                    <x-heroicon-o-eye class="w-4 h-4" />
                                 </a>
-                                <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-yellow-500" style="color: #F59E0B; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Edit" aria-label="Edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
-                                    </svg>
-                                </a>
+                                <button type="button"
+                                    class="btn-secondary !p-1.5 btn-edit-pelanggan"
+                                    style="color: #F59E0B;"
+                                    title="Edit"
+                                    aria-label="Edit"
+                                    data-id="{{ $pelanggan->id }}"
+                                    data-json="{{ json_encode([
+                                        'nama' => $pelanggan->nama,
+                                        'telepon' => $pelanggan->telepon,
+                                        'is_member' => (int) $pelanggan->is_member,
+                                    ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                </button>
                                 @if ($pelanggan->is_member)
-                                    <button type="button" onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-violet-500" style="color: #7C3AED; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Kartu" aria-label="Kartu">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 14h2"/>
-                                        </svg>
+                                    <button type="button" onclick="openCardModal('{{ addslashes($pelanggan->nama) }}', '{{ $pelanggan->member_id }}')"
+                                        class="btn-secondary !p-1.5"
+                                        style="color: #7C3AED;"
+                                        title="Kartu"
+                                        aria-label="Kartu">
+                                        <x-heroicon-o-credit-card class="w-4 h-4" />
                                     </button>
                                 @endif
-                                <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" class="inline" style="display: inline;">
+                                <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-red-500" style="color: #DC2626; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Hapus" aria-label="Hapus" onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l1-14"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
-                                        </svg>
+                                    <button type="submit"
+                                        class="btn-secondary !p-1.5"
+                                        style="color: #DC2626;"
+                                        title="Hapus"
+                                        aria-label="Hapus"
+                                        onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
                             </div>
                         </td>
-                        <td class="px-3 py-3 align-middle font-mono text-left text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-3 py-3 align-middle text-left text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
-                        <td class="px-3 py-3 align-middle text-center">
+                        <td class="table-num">{{ $pelanggans->firstItem() + $index }}</td>
+                        <td class="font-mono text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
+                        <td class="font-medium text-gray-800">{{ $pelanggan->nama }}</td>
+                        <td class="text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="text-center">
                             @if ($pelanggan->is_member)
                                 <span class="badge-success">Member</span>
                             @else
                                 <span class="badge-neutral">Non-Member</span>
                             @endif
                         </td>
-                        <td class="px-3 py-3 align-middle text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-gray-800">
+                        <td class="text-center font-medium text-gray-700">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
+                        <td class="text-center font-semibold text-gray-800">
                             Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
                         </td>
-                        <td class="px-3 py-3 align-middle table-num text-center font-semibold text-green-600">
+                        <td class="text-center font-semibold text-green-600">
                             Rp {{ number_format($pelanggan->total_hemat ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="p-0">
+                        <td colspan="9" class="p-0">
                             <div class="empty-state-container">
-                                <div class="empty-state-title">Pelanggan Tidak Ditemukan</div>
-                                <div class="empty-state-desc">Tidak ada data pelanggan yang terdaftar atau cocok dengan kata kunci pencarian.</div>
+                                <div class="empty-state-title">
+                                    @if(request()->anyFilled(['cari', 'status']))
+                                        Pelanggan Tidak Ditemukan
+                                    @else
+                                        Pelanggan Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->anyFilled(['cari', 'status']))
+                                        Tidak ada data pelanggan yang cocok dengan filter pencarian Anda.
+                                    @else
+                                        Belum ada data pelanggan terdaftar di sistem.
+                                    @endif
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -146,9 +163,36 @@
     </div>
 </div>
 
-<div class="mt-4">
-    {{ $pelanggans->links() }}
-</div>
+<div class="mt-4">{{ $pelanggans->links() }}</div>
+
+<!-- Modal Tambah / Edit Pelanggan -->
+<x-modal-form
+    id="modal-pelanggan"
+    create-title="Tambah Pelanggan"
+    edit-title="Edit Pelanggan"
+    create-url="{{ route('pelanggan.store') }}"
+    update-base="{{ url('pelanggan') }}"
+    create-btn="#btn-tambah-pelanggan"
+    edit-btn=".btn-edit-pelanggan"
+    width="max-w-md">
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Pelanggan <span class="text-red-500">*</span></label>
+        <input type="text" name="nama" required class="form-input" placeholder="Ketik nama pelanggan...">
+        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nomor HP / Telepon</label>
+        <input type="text" name="telepon" class="form-input" placeholder="Contoh: 08123456789">
+        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="telepon"></p>
+    </div>
+    <label class="flex items-start text-xs font-medium text-gray-700 cursor-pointer">
+        <input type="checkbox" name="is_member" value="1" class="mr-2.5 mt-0.5 rounded border-gray-300 focus:ring-blue-500 w-4 h-4 text-blue-600">
+        <div>
+            <span class="font-semibold">Daftar sebagai Member</span>
+            <p class="text-[10px] text-gray-400 mt-0.5">Member berhak mendapatkan diskon belanja {{ config('pos.diskon_member', 10) }}%.</p>
+        </div>
+    </label>
+</x-modal-form>
 
 <!-- Modal Kartu Member -->
 <div id="modal-card" class="modal-backdrop-custom hidden">
@@ -173,7 +217,7 @@
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Benefit Diskon</span>
                         <strong class="text-sm text-green-600 font-bold">{{ config('pos.diskon_member', 10) }}% OFF</strong>
                     </div>
-                    <div class="text-right">
+                    <div class="text-left">
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Status Kartu</span>
                         <strong class="text-xs text-blue-600 font-bold uppercase tracking-wider">ACTIVE</strong>
                     </div>
@@ -195,7 +239,7 @@
 function openCardModal(nama, memberId) {
     document.getElementById('card-name').textContent = nama;
     document.getElementById('card-id').textContent = memberId;
-    
+
     if (window.QRCode) {
         window.QRCode.toDataURL(memberId, { width: 128, margin: 1 }, function (err, url) {
             if (!err) {
@@ -207,7 +251,7 @@ function openCardModal(nama, memberId) {
     } else {
         console.error("QRCode library not loaded.");
     }
-    
+
     document.getElementById('modal-card').classList.remove('hidden');
 }
 
@@ -225,7 +269,7 @@ function printCard() {
     printWindow.document.write(printContent);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
-    
+
     printWindow.onload = function() {
         printWindow.focus();
         printWindow.print();
@@ -233,7 +277,6 @@ function printCard() {
     };
 }
 
-// Escape key to close card modal
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeCardModal();

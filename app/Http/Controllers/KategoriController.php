@@ -13,7 +13,7 @@ class KategoriController extends Controller
         if ($request->filled('cari')) {
             $query->where('nama', 'like', '%' . $request->cari . '%');
         }
-        $kategoris = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $kategoris = $query->orderBy('id')->paginate(15)->withQueryString();
         return view('kategori.index', compact('kategoris'));
     }
 
