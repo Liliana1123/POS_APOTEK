@@ -70,7 +70,7 @@
                     <th scope="col" class="text-center w-32">Total Hemat</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
+            <tbody class="table-custom-body divide-gray-150">
                 @forelse ($pelanggans as $index => $pelanggan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">

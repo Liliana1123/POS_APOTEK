@@ -40,9 +40,7 @@ class DatabaseSeeder extends Seeder
             Satuan::create(['nama' => $nama]);
         }
 
-        // Contoh pabrik (silakan sesuaikan/tambah sesuai kebutuhan)
-        foreach (['Kimia Farma', 'Kalbe Farma', 'Sanbe Farma', 'Dexa Medica'] as $nama) {
-            Pabrik::create(['nama' => $nama]);
-        }
+        // Data pabrik farmasi
+        $this->call(PabrikSeeder::class);
     }
 }

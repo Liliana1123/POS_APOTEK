@@ -67,6 +67,7 @@
         if (mode === 'edit') { titleEl.textContent = '{{ $editTitle }}'; submitBtn.textContent = 'Simpan Perubahan'; }
         else { titleEl.textContent = '{{ $createTitle }}'; submitBtn.textContent = '{{ $submitLabel }}'; }
         form.querySelectorAll('[data-edit-only]').forEach(function (el) { el.classList.toggle('hidden', mode !== 'edit'); });
+        form.querySelectorAll('[data-create-only]').forEach(function (el) { el.classList.toggle('hidden', mode !== 'create'); });
         backdrop.classList.remove('hidden');
         modalEl.classList.remove('hidden');
     }
@@ -121,8 +122,8 @@
             methodEl.value = 'PUT';
             form.dataset.url = updateBase + '/' + this.dataset.id;
             form.dataset.mode = 'edit';
-            prefillFromBtn(this);
             openModal('edit');
+            prefillFromBtn(this);
         });
     });
 
@@ -150,12 +151,5 @@
             .catch(function () { errorEl.textContent = 'Gagal menghubungi server.'; errorEl.classList.remove('hidden'); })
             .finally(function () { submitBtn.disabled = false; submitBtn.textContent = isEdit ? 'Simpan Perubahan' : '{{ $submitLabel }}'; });
     });
-
-    function showError(field, msgs) {
-        var el = form.querySelector('[data-error-for="' + field + '"]');
-        if (el) { el.textContent = msgs.join(' '); el.classList.remove('hidden'); }
-        var inp = form.querySelector('[name="' + field + '"]');
-        if (inp) inp.classList.add('border-red-500');
-    }
 })();
 </script>

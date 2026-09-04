@@ -83,11 +83,12 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom table-fixed min-w-[68rem]">
-            <thead class="table-custom-header text-center align-middle">
+        <table class="table-custom min-w-[72rem]">
+            <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-36">Aksi</th>
                     <th scope="col" class="w-32">Kode Apotek</th>
+                    <th scope="col" class="w-32">Kode KFA</th>
                     <th scope="col">Nama Barang</th>
                     <th scope="col" class="w-40">Merk</th>
                     <th scope="col" class="w-28">Satuan</th>
@@ -95,7 +96,7 @@
                     <th scope="col" class="text-center w-28">Status</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-gray-150 align-middle">
+            <tbody class="table-custom-body divide-gray-150">
                 @forelse ($barangs as $index => $barang)
                     @php
                         $stok = $barang->stokTotal();
@@ -171,52 +172,27 @@
                                         class="btn-secondary !p-1.5"
                                         style="color: #DC2626;"
                                         title="Hapus"
-                                        aria-label="Hapus"
-                                        onclick="return confirm('Yakin ingin menghapus barang ini?')">
+                                        aria-label="Hapus">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
                             </div>
                         </td>
-                        <td>{{ $barang->kode_apotek ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
-                        <td>{{ $stok }}</td>
-                        <td class="text-center">
-                            @if ($barang->aktif)
-                                <span class="badge-success">Aktif</span>
-                            @else
-                                <span class="badge-neutral">Nonaktif</span>
-                            @endif
-                        </td>
-                        <td class="table-num text-center align-middle">{{ $barangs->firstItem() + $index }}</td>
-                        <td class="align-middle text-center">
-                            <div class="font-semibold text-gray-800">{{ $barang->nama }}</div>
-                            @if ($barang->barcode)
-                                <div class="text-[9px] text-gray-400 font-mono mt-0.5" title="Barcode">Code: {{ $barang->barcode }}</div>
-                            @endif
-                        </td>
-                        <td class="align-middle text-center">{{ $barang->kategori->nama ?? '—' }}</td>
-                        <td class="align-middle text-center">{{ $barang->satuan->nama ?? '—' }}</td>
-                        <td class="align-middle text-center whitespace-nowrap">
-                            @php $stok = $barang->stokTotal(); @endphp
+                        <td class="whitespace-nowrap">
                             @if ($stok <= 0)
                                 <span class="badge-danger">Habis</span>
                             @elseif ($stok <= $barang->stok_minimum)
-                                <span class="badge-warning" title="Min: {{ $barang->stok_minimum }}">{{ $stok }} &middot; Menipis</span>
+                                <span class="badge-warning" title="Min: {{ $barang->stok_minimum }}">{{ $stok }} · Menipis</span>
                             @else
-                                <span class="badge-success">{{ $stok }} &middot; Aman</span>
+                                <span class="badge-success">{{ $stok }} · Aman</span>
                             @endif
                         </td>
-                        <td class="text-center align-middle whitespace-nowrap">
-                            @if ($barang->butuh_resep)
-                                <span class="badge-danger">Wajib Resep</span>
-                            @else
-                                <span class="badge-neutral">Bebas</span>
-                            @endif
-                        </td>
-                        <td class="text-center align-middle whitespace-nowrap">
+                        <td class="text-center whitespace-nowrap">
                             @if ($barang->aktif)
                                 <span class="badge-success">Aktif</span>
                             @else
@@ -226,7 +202,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-0">
+                        <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif']))
