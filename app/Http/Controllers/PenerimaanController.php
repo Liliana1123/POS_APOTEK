@@ -83,8 +83,7 @@ class PenerimaanController extends Controller
         ->duplicates();
         if ($kombinasiBatch->isNotEmpty()) {
             throw ValidationException::withMessages(['items' => 'Barang dan nomor batch yang sama tidak boleh dimasukkan lebih dari satu kali dalam satu faktur.',
-        ]);
-}
+        ]);}
 
         if ($pembayaranPertama > $totalFaktur) {
             throw ValidationException::withMessages(['pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total faktur.']);
@@ -141,6 +140,166 @@ class PenerimaanController extends Controller
         return view('penerimaan.show', compact('penerimaan'));
     }
 
+    public function edit(Penerimaan $penerimaan)
+    {
+        $penerimaan->load([
+            'supplier',
+            'detail.barang.pabrik',
+            'detail.barang.satuan',
+        ]);
+
+        $suppliers = Supplier::orderBy('nama')->get();
+
+        $barangs = Barang::with(['pabrik', 'satuan'])
+            ->where('aktif', true)
+            ->orderBy('nama')
+            ->get();
+
+        return view('penerimaan.edit', compact(
+            'penerimaan',
+            'suppliers',
+            'barangs'
+        ));
+    }
+
+    public function update(Request $request, Penerimaan $penerimaan)
+    {
+        $data = $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'keterangan' => 'nullable|string',
+            'tanggal' => 'required|date',
+            'no_faktur' => 'required|string|max:100|unique:penerimaans,no_faktur,' . $penerimaan->id,
+            'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
+
+            'items' => 'required|array|min:1',
+            'items.*.detail_id' => 'nullable|integer',
+            'items.*.barang_id' => 'required|exists:barangs,id',
+            'items.*.no_batch' => 'required|string|max:100',
+            'items.*.harga_beli' => 'required|numeric|min:0',
+            'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
+            'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
+            'items.*.no_rak' => 'required|string|max:50',
+            'items.*.jumlah' => 'required|integer|min:1',
+        ]);
+
+        $kombinasiBatch = collect($data['items'])
+            ->map(fn ($item) => $item['barang_id'] . '|' . $item['no_batch'])
+            ->duplicates();
+
+        if ($kombinasiBatch->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'items' => 'Barang dan nomor batch yang sama tidak boleh dimasukkan lebih dari satu kali dalam satu faktur.',
+            ]);
+        }
+
+        DB::transaction(function () use ($data, $penerimaan) {
+            $penerimaan->update([
+                'supplier_id' => $data['supplier_id'],
+                'telepon_supplier' => Supplier::findOrFail($data['supplier_id'])->telepon,
+                'keterangan' => $data['keterangan'] ?? null,
+                'tanggal' => $data['tanggal'],
+                'no_faktur' => $data['no_faktur'],
+                'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
+            ]);
+
+            $existingDetails = $penerimaan->detail()
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            $submittedDetailIds = collect($data['items'])
+                ->pluck('detail_id')
+                ->filter()
+                ->map(fn ($id) => (int) $id);
+
+            foreach ($data['items'] as $item) {
+                $detailId = isset($item['detail_id'])
+                    ? (int) $item['detail_id']
+                    : null;
+
+                    if ($detailId && $existingDetails->has($detailId)) {
+                        $detail = $existingDetails->get($detailId);
+
+                        $sudahDipakai = $detail->detailPenjualan()->exists()
+                            || $detail->rusak()->exists();
+
+                        if ($sudahDipakai) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh diedit.',
+                            ]);
+                        }
+                    }
+
+                if ($detailId && !$existingDetails->has($detailId)) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Detail penerimaan tidak valid.',
+                    ]);
+                }
+
+                if ($detailId) {
+                    $detail = $existingDetails->get($detailId);
+
+                    $detail->update([
+                        'barang_id' => $item['barang_id'],
+                        'no_batch' => $item['no_batch'],
+                        'harga_beli' => $item['harga_beli'],
+                        'harga_jual' => $item['harga_jual'],
+                        'expired_date' => $item['expired_date'],
+                        'no_rak' => $item['no_rak'],
+                        'jumlah' => $item['jumlah'],
+                        'stok' => $item['jumlah'],
+                        'aktif' => true,
+                    ]);
+                } else {
+                    $penerimaan->detail()->create([
+                        'barang_id' => $item['barang_id'],
+                        'no_batch' => $item['no_batch'],
+                        'harga_beli' => $item['harga_beli'],
+                        'harga_jual' => $item['harga_jual'],
+                        'expired_date' => $item['expired_date'],
+                        'no_rak' => $item['no_rak'],
+                        'jumlah' => $item['jumlah'],
+                        'stok' => $item['jumlah'],
+                        'aktif' => true,
+                    ]);
+                }
+            }
+
+            $existingDetails
+                ->except($submittedDetailIds->all())
+                ->each(function ($detail) {
+                    $detail->delete();
+                });
+
+            $totalFaktur = (float) $penerimaan->detail()
+                ->sum(DB::raw('harga_beli * jumlah'));
+
+            $totalDibayar = $penerimaan->totalDibayar();
+
+            if ($totalDibayar > $totalFaktur) {
+                throw ValidationException::withMessages([
+                    'items' => 'Perubahan tidak dapat disimpan karena total pembayaran sudah melebihi total faktur baru.',
+                ]);
+            }
+
+            $penerimaan->update([
+                'lunas' => $totalDibayar >= $totalFaktur,
+            ]);
+        });
+
+        return redirect()
+            ->route('penerimaan.index')
+            ->with('success', 'Penerimaan berhasil diperbarui.');
+    }
+
+
+    public function paymentForm(Penerimaan $penerimaan)
+    {
+        $penerimaan->load(['supplier', 'pembayaran.user']);
+
+        return view('penerimaan.payment', compact('penerimaan'));
+    }
+
     public function paymentStore(Request $request, Penerimaan $penerimaan)
     {
         $data = $request->validate([
@@ -179,6 +338,9 @@ class PenerimaanController extends Controller
 
     public function destroy(Penerimaan $penerimaan)
     {
+        if ($penerimaan->sisaTagihan() > 0) {
+            return back()->with('error', 'Penerimaan ini tidak bisa dihapus karena masih memiliki sisa tagihan.');
+        }
         $sudahDipakai = $penerimaan->detail()
             ->where(function ($query) {
                 $query->whereHas('detailPenjualan')->orWhereHas('rusak');

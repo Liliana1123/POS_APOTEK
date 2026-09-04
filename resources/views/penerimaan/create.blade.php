@@ -69,7 +69,21 @@
 
         <div class="table-custom-container">
             <div class="overflow-x-auto">
-                <table class="table-custom min-w-[55rem] mb-2">
+                <table class="table-custom min-w-[1150px] mb-2 table-fixed">
+                    <colgroup>
+                        <col class="w-[210px]">
+                        <col class="w-[100px]">
+                        <col class="w-[110px]">
+                        <col class="w-[125px]">
+                        <col class="w-[105px]">
+                        <col class="w-[105px]">
+                        <col class="w-[90px]">
+                        <col class="w-[90px]">
+                        <col class="w-[85px]">
+                        <col class="w-[110px]">
+                        <col class="w-[50px]">
+                    </colgroup>
+
                     <thead class="table-custom-header">
                         <tr>
                             <th scope="col" class="px-3 py-2">Barang <span class="text-red-500 font-bold">*</span></th>

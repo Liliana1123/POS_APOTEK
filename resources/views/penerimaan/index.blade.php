@@ -89,19 +89,32 @@
                         <td class="text-right space-x-1.5">
                             <div class="flex items-center justify-end gap-1">
                                 <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan"title="Detail"data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
+                                <a href="{{ route('penerimaan.edit', $penerimaan) }}"
+                                    class="btn-primary !p-1.5"
+                                    title="Edit">
+                                    <x-heroicon-o-pencil class="w-4 h-4" />
+                                </a>
                                 @if (!$penerimaan->lunas)
                                 <button type="button"
-                                class="btn-primary !p-1.5 btn-payment-penerimaan"
-                                title="Pembayaran">
-                                <x-heroicon-o-banknotes class="w-4 h-4" />
-                            </button>@endif
-                            <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
-                        </div>
+                                    class="btn-primary !p-1.5 btn-payment-penerimaan"
+                                    title="Pembayaran"
+                                    data-id="{{ $penerimaan->id }}">
+                                    <x-heroicon-o-banknotes class="w-4 h-4" />
+                                </button>@endif
+                                <a href="{{ route('penerimaan.print', $penerimaan) }}"
+                                    class="btn-secondary !p-1.5"
+                                    title="Print"
+                                    target="_blank">
+                                    <x-heroicon-o-printer class="w-4 h-4" />
+                                </a>
+
+                                <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -166,42 +179,140 @@
 </div>
 
 
+<!-- Modal Pembayaran Penerimaan -->
+<div id="modal-payment-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true">
+
+    <div class="modal-container-custom max-w-lg">
+
+        <div class="modal-header-custom">
+            <div>
+                <h2>Pembayaran Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Catat pembayaran untuk faktur penerimaan.
+                </p>
+            </div>
+
+            <button type="button"
+                id="btn-tutup-payment"
+                class="btn-secondary !p-1.5"
+                title="Tutup">
+                ✕
+            </button>
+        </div>
+
+        <div id="payment-penerimaan-content" class="modal-body-custom">
+            <div class="text-center py-8 text-gray-500">
+                Memuat pembayaran...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('modal-detail-penerimaan');
     const content = document.getElementById('detail-penerimaan-content');
     const btnTutup = document.getElementById('btn-tutup-detail');
-    
+
+    const paymentModal = document.getElementById('modal-payment-penerimaan');
+    const paymentContent = document.getElementById('payment-penerimaan-content');
+    const btnTutupPayment = document.getElementById('btn-tutup-payment');
+
+    // =========================
+    // MODAL DETAIL PENERIMAAN
+    // =========================
     document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {const url = button.dataset.url;modal.classList.remove('hidden');
-        content.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                Memuat detail...
-            </div>`;
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Gagal mengambil detail penerimaan.');
-                }
+        button.addEventListener('click', function () {
+            const url = button.dataset.url;
 
-                return response.text();
-            })
-            .then(html => {
-                content.innerHTML = html;
-            })
-            .catch(error => {
-                content.innerHTML = `
-                    <div class="text-center py-8 text-red-600">
-                        Gagal memuat detail penerimaan.
-                    </div>
-                `;
-                console.error(error);
-            });
+            modal.classList.remove('hidden');
+
+            content.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat detail...
+                </div>
+            `;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil detail penerimaan.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat detail penerimaan.
+                        </div>
+                    `;
+
+                    console.error(error);
+                });
+        });
     });
-});
 
+    // =========================
+    // MODAL PEMBAYARAN
+    // =========================
+    document.querySelectorAll('.btn-payment-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = button.dataset.id;
+
+            paymentModal.classList.remove('hidden');
+
+            paymentContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat pembayaran...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/payment-form`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil form pembayaran.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    paymentContent.innerHTML = html;
+                })
+                .catch(error => {
+                    paymentContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat form pembayaran.
+                        </div>
+                    `;
+
+                    console.error(error);
+                });
+        });
+    });
+
+    // =========================
+    // TUTUP MODAL DETAIL
+    // =========================
     btnTutup.addEventListener('click', function () {
         modal.classList.add('hidden');
+        content.innerHTML = '';
+    });
+
+    // =========================
+    // TUTUP MODAL PEMBAYARAN
+    // =========================
+    btnTutupPayment.addEventListener('click', function () {
+        paymentModal.classList.add('hidden');
+        paymentContent.innerHTML = '';
     });
 });
 </script>
