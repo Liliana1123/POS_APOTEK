@@ -88,9 +88,13 @@
                         </td>
                         <td class="text-right space-x-1.5">
                             <div class="flex items-center justify-end gap-1">
-                            <a href="{{ route('penerimaan.show', $penerimaan) }}" class="btn-secondary !p-1.5" title="Detail">
-                                <x-heroicon-o-eye class="w-4 h-4" />
-                            </a>
+                                <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan"title="Detail"data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
+                                @if (!$penerimaan->lunas)
+                                <button type="button"
+                                class="btn-primary !p-1.5 btn-payment-penerimaan"
+                                title="Pembayaran">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </button>@endif
                             <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
@@ -128,4 +132,78 @@
 </div>
 
 <div class="mt-4">{{ $penerimaans->links() }}</div>
+
+<!-- Modal Detail Penerimaan -->
+<div id="modal-detail-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true">
+
+    <div class="modal-container-custom max-w-5xl">
+
+        <div class="modal-header-custom">
+            <div>
+                <h2>Detail Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Informasi lengkap faktur penerimaan barang.
+                </p>
+            </div>
+
+            <button type="button"
+                id="btn-tutup-detail"
+                class="btn-secondary !p-1.5"
+                title="Tutup">
+                ✕
+            </button>
+        </div>
+
+        <div id="detail-penerimaan-content" class="modal-body-custom">
+            <div class="text-center py-8 text-gray-500">
+                Memuat detail...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('modal-detail-penerimaan');
+    const content = document.getElementById('detail-penerimaan-content');
+    const btnTutup = document.getElementById('btn-tutup-detail');
+    
+    document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {const url = button.dataset.url;modal.classList.remove('hidden');
+        content.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                Memuat detail...
+            </div>`;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil detail penerimaan.');
+                }
+
+                return response.text();
+            })
+            .then(html => {
+                content.innerHTML = html;
+            })
+            .catch(error => {
+                content.innerHTML = `
+                    <div class="text-center py-8 text-red-600">
+                        Gagal memuat detail penerimaan.
+                    </div>
+                `;
+                console.error(error);
+            });
+    });
+});
+
+    btnTutup.addEventListener('click', function () {
+        modal.classList.add('hidden');
+    });
+});
+</script>
+
 @endsection
