@@ -7,27 +7,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pelanggan extends Model
 {
-    protected $fillable = ['nama', 'telepon', 'member_id', 'is_member', 'member_since', 'saldo_piutang'];
+    protected $fillable = ['nama', 'telepon', 'member_id', 'is_member', 'member_aktif', 'member_since', 'saldo_piutang'];
 
     protected $casts = [
         'is_member' => 'boolean',
+        'member_aktif' => 'boolean',
         'member_since' => 'date',
         'saldo_piutang' => 'decimal:2',
     ];
 
     public static function generateMemberId(): string
     {
-        $lastMember = self::whereNotNull('member_id')
-            ->orderBy('member_id', 'desc')
-            ->first();
+        $lastNumber = self::whereNotNull('member_id')
+            ->where('member_id', 'like', 'MBR-%')
+            ->pluck('member_id')
+            ->map(fn (string $memberId): int => (int) substr($memberId, 4))
+            ->max();
 
-        $nextNumber = 1;
-        if ($lastMember) {
-            $lastNumber = (int) str_replace('MBR-', '', $lastMember->member_id);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        return 'MBR-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        return sprintf('MBR-%06d', $lastNumber === null ? 0 : $lastNumber + 1);
     }
 
     public function penjualan(): HasMany

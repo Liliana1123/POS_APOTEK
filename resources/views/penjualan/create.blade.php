@@ -52,9 +52,9 @@
                     class="form-input">
             </div>
 
-            <!-- Pencarian & Pemilihan Pelanggan/Member -->
+            <!-- Pencarian & Pemilihan Member -->
             <div class="mb-4 relative">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pelanggan / Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
                 <div class="flex gap-2">
                     <input type="text" id="pencarian-pelanggan" placeholder="Cari Member ID, Nama, atau HP..."
                         class="form-input">
@@ -67,11 +67,11 @@
                 <input type="hidden" name="pelanggan_id" id="selected-pelanggan-id" value="">
             </div>
 
-            <!-- Info Pelanggan Terpilih -->
+            <!-- Info Member Terpilih -->
             <div id="info-pelanggan-terpilih" class="mb-4 bg-gray-50 border border-gray-150 rounded-lg p-3 text-xs">
                 <div class="flex justify-between items-center">
                     <div>
-                        <span class="text-gray-400">Pelanggan:</span>
+                        <span class="text-gray-400">Member:</span>
                         <strong id="selected-pelanggan-nama" class="text-gray-800 ml-1">Umum</strong>
                         <span id="selected-pelanggan-member-id" class="font-mono text-blue-700 font-semibold ml-1"></span>
                     </div>
@@ -114,7 +114,7 @@
 <div id="modal-daftar-member" class="modal-backdrop-custom hidden">
     <div class="modal-container-custom max-w-sm w-full mx-4">
         <div class="modal-header-custom">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Daftar Member Baru / Upgrade</h3>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Tambah Member Baru</h3>
             <button type="button" id="btn-close-member-x" class="text-gray-400 hover:text-gray-600 font-bold text-base" aria-label="Tutup modal">&times;</button>
         </div>
         
@@ -122,7 +122,7 @@
 
         <form id="form-daftar-member" class="modal-body-custom space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Nama Pelanggan</label>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Nama Member</label>
                 <input type="text" id="member-nama" required class="form-input">
             </div>
             <div>
@@ -193,7 +193,7 @@ function renderKeranjang() {
     const ids = Object.keys(cart);
     keranjangKosong.style.display = ids.length === 0 ? 'block' : 'none';
 
-    const diskonMemberPercent = (selectedPelanggan && selectedPelanggan.is_member) ? selectedPelanggan.diskon_percent : 0;
+    const diskonMemberPercent = (selectedPelanggan && selectedPelanggan.is_member && selectedPelanggan.member_aktif) ? selectedPelanggan.diskon_percent : 0;
 
     keranjangItems.innerHTML = ids.map(id => {
         const item = cart[id];
@@ -303,13 +303,13 @@ pelangganSearchInput.addEventListener('input', () => {
                     ${p.telepon ? `<span class="text-gray-500 block text-[10px] font-mono mt-0.5">Telp: ${p.telepon}</span>` : ''}
                 </div>
                 <div>
-                    ${p.is_member ? `<span class="bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">${p.member_id}</span>` : '<span class="text-gray-400 text-[10px]">Non-Member</span>'}
+                    <span class="${p.member_aktif ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'} px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">${p.member_id} · ${p.member_aktif ? 'AKTIF' : 'TIDAK AKTIF'}</span>
                 </div>
             </button>
         `).join('');
         pelangganSearchHasil.classList.remove('hidden');
     } else {
-        pelangganSearchHasil.innerHTML = '<p class="text-xs text-gray-400 p-3 text-center">Pelanggan tidak ditemukan.</p>';
+        pelangganSearchHasil.innerHTML = '<p class="text-xs text-gray-400 p-3 text-center">Member tidak ditemukan.</p>';
         pelangganSearchHasil.classList.remove('hidden');
     }
 });
@@ -345,6 +345,13 @@ function selectPelanggan(pelanggan) {
         selectedPelangganMemberId.textContent = `(${pelanggan.member_id})`;
         badgeDiskonMember.classList.remove('hidden');
         labelDiskonPercent.textContent = pelanggan.diskon_percent;
+        if (!pelanggan.member_aktif) {
+            badgeDiskonMember.className = 'mt-2 badge-neutral inline-block';
+            badgeDiskonMember.firstChild.textContent = 'Member TIDAK AKTIF - Diskon: ';
+        } else {
+            badgeDiskonMember.className = 'mt-2 badge-success inline-block';
+            badgeDiskonMember.firstChild.textContent = 'Diskon Member Aktif: ';
+        }
     } else {
         selectedPelangganMemberId.textContent = '';
         badgeDiskonMember.classList.add('hidden');

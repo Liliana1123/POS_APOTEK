@@ -11,7 +11,8 @@ class PelangganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pelanggan::query();
+        $query = Pelanggan::query()
+            ->where('is_member', true);
 
         if ($request->filled('cari')) {
             $search = $request->input('cari');
@@ -22,19 +23,10 @@ class PelangganController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $status = $request->input('status');
-            if ($status === 'member') {
-                $query->where('is_member', true);
-            } elseif ($status === 'non-member') {
-                $query->where('is_member', false);
-            }
-        }
-
         $pelanggans = $query->withCount('penjualan')
             ->withSum('penjualan as total_belanja', 'total')
             ->withSum('discountUsages as total_hemat', 'nominal')
-            ->orderBy('nama')
+            ->orderBy('member_id', 'asc')
             ->paginate(15)
             ->withQueryString();
 
@@ -64,32 +56,24 @@ class PelangganController extends Controller
     {
         $data = $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:30',
-            'is_member' => 'nullable|boolean',
+            'telepon' => 'required|string|max:30',
             'saldo_piutang' => 'nullable|numeric|min:0',
         ]);
 
-        $isMember = $request->boolean('is_member');
         $attempts = 0;
         $maxAttempts = 5;
         $saved = false;
+        $pelanggan = null;
 
         while ($attempts < $maxAttempts && !$saved) {
             try {
-                DB::transaction(function () use ($data, $isMember, &$saved) {
-                    if ($isMember) {
-                        $data['member_id'] = Pelanggan::generateMemberId();
-                        $data['is_member'] = true;
-                        $data['member_since'] = now();
-                    } else {
-                        $data['member_id'] = null;
-                        $data['is_member'] = false;
-                        $data['member_since'] = null;
-                    }
+            DB::transaction(function () use ($data, &$saved, &$pelanggan) {
+                    $data['member_id'] = Pelanggan::generateMemberId();
+                    $data['is_member'] = true;
+                    $data['member_aktif'] = true;
+                    $data['member_since'] = now();
                     $pelanggan = Pelanggan::create($data);
-                    if ($isMember) {
-                        \App\Models\ActivityLog::log('Register Member', "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}");
-                    }
+                    \App\Models\ActivityLog::log('Register Member', "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}");
                     $saved = true;
                 });
             } catch (QueryException $e) {
@@ -108,12 +92,12 @@ class PelangganController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pelanggan berhasil ditambahkan.',
+                'message' => 'Membership berhasil ditambahkan.',
                 'pelanggan' => $pelanggan->load('penjualan'),
             ], 201);
         }
 
-        return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil ditambahkan.');
+        return redirect()->route('pelanggan.index')->with('success', 'Membership berhasil ditambahkan.');
     }
 
     public function edit(Pelanggan $pelanggan)
@@ -125,46 +109,15 @@ class PelangganController extends Controller
     {
         $data = $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:30',
-            'is_member' => 'nullable|boolean',
+            'telepon' => 'required|string|max:30',
+            'member_aktif' => 'sometimes|boolean',
             'saldo_piutang' => 'nullable|numeric|min:0',
         ]);
 
         if ($pelanggan->is_member) {
-            // Jangan izinkan mengubah status membership atau member_id jika sudah member
-            unset($data['is_member']);
-            unset($data['member_id']);
-        } else {
-            $isMember = $request->boolean('is_member');
-            if ($isMember) {
-                $attempts = 0;
-                $maxAttempts = 5;
-                $saved = false;
-
-                while ($attempts < $maxAttempts && !$saved) {
-                    try {
-                        DB::transaction(function () use (&$data, $pelanggan, &$saved) {
-                            $data['member_id'] = Pelanggan::generateMemberId();
-                            $data['is_member'] = true;
-                            $data['member_since'] = now();
-                            $pelanggan->update($data);
-                            \App\Models\ActivityLog::log('Upgrade Member', "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}");
-                            $saved = true;
-                        });
-                    } catch (QueryException $e) {
-                        if ($e->getCode() == '23000') {
-                            $attempts++;
-                            if ($attempts >= $maxAttempts) {
-                                throw $e;
-                            }
-                            usleep(100000);
-                        } else {
-                            throw $e;
-                        }
-                    }
-                }
-                return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil diperbarui menjadi member.');
-            }
+            $data['member_aktif'] = $request->has('member_aktif')
+                ? $request->boolean('member_aktif')
+                : ($pelanggan->member_aktif ?? true);
         }
 
         $pelanggan->update($data);
@@ -172,23 +125,23 @@ class PelangganController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pelanggan berhasil diperbarui.',
+                'message' => 'Membership berhasil diperbarui.',
                 'pelanggan' => $pelanggan->load('penjualan'),
             ]);
         }
 
-        return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil diperbarui.');
+        return redirect()->route('pelanggan.index')->with('success', 'Membership berhasil diperbarui.');
     }
 
     public function destroy(Pelanggan $pelanggan)
     {
         if ($pelanggan->penjualan()->exists()) {
-            return back()->with('error', 'Pelanggan tidak bisa dihapus karena punya riwayat transaksi.');
+            return back()->with('error', 'Membership tidak bisa dihapus karena punya riwayat transaksi.');
         }
 
         $pelanggan->delete();
 
-        return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil dihapus.');
+        return redirect()->route('pelanggan.index')->with('success', 'Membership berhasil dihapus.');
     }
 
     public function registerMember(Request $request)
@@ -218,7 +171,8 @@ class PelangganController extends Controller
                         'telepon' => $pelanggan->telepon,
                         'is_member' => true,
                         'member_id' => $pelanggan->member_id,
-                        'diskon_percent' => config('pos.diskon_member', 10),
+                        'member_aktif' => (bool) $pelanggan->member_aktif,
+                        'diskon_percent' => $pelanggan->member_aktif ? config('pos.diskon_member', 10) : 0,
                     ]
                 ]);
             }
@@ -231,6 +185,7 @@ class PelangganController extends Controller
                         $pelanggan->nama = $nama;
                         $pelanggan->member_id = Pelanggan::generateMemberId();
                         $pelanggan->is_member = true;
+                        $pelanggan->member_aktif = true;
                         $pelanggan->member_since = now();
                         $pelanggan->save();
                         \App\Models\ActivityLog::log('Upgrade Member', "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}");
@@ -257,7 +212,8 @@ class PelangganController extends Controller
                     'telepon' => $pelanggan->telepon,
                     'is_member' => true,
                     'member_id' => $pelanggan->member_id,
-                    'diskon_percent' => config('pos.diskon_member', 10),
+                    'member_aktif' => (bool) $pelanggan->member_aktif,
+                    'diskon_percent' => $pelanggan->member_aktif ? config('pos.diskon_member', 10) : 0,
                 ]
             ]);
         }
@@ -273,6 +229,7 @@ class PelangganController extends Controller
                         'telepon' => $telepon,
                         'member_id' => Pelanggan::generateMemberId(),
                         'is_member' => true,
+                        'member_aktif' => true,
                         'member_since' => now(),
                     ]);
                     \App\Models\ActivityLog::log('Register Member', "Member ID: {$newPelanggan->member_id}, Nama: {$newPelanggan->nama}");
@@ -299,6 +256,7 @@ class PelangganController extends Controller
                 'telepon' => $newPelanggan->telepon,
                 'is_member' => true,
                 'member_id' => $newPelanggan->member_id,
+                'member_aktif' => true,
                 'diskon_percent' => config('pos.diskon_member', 10),
             ]
         ]);

@@ -1,17 +1,17 @@
 @extends('layouts.app')
-@section('title', 'Pelanggan')
+@section('title', 'Membership')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Daftar Pelanggan</h1>
-        <p class="text-caption mt-1">Kelola data pelanggan & membership POS Apotek.</p>
+        <h1>Daftar Membership</h1>
+        <p class="text-caption mt-1">Kelola data membership POS Apotek.</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap">
         <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
             <x-heroicon-o-plus class="w-4 h-4" />
-            <span>Tambah Pelanggan</span>
+            <span>Tambah Membership</span>
         </button>
     </div>
 </div>
@@ -30,18 +30,10 @@
                     </span>
                 </div>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
-                <select name="status" class="form-input">
-                    <option value="">Semua Status</option>
-                    <option value="member" @selected(request('status') === 'member')>Member</option>
-                    <option value="non-member" @selected(request('status') === 'non-member')>Non-Member</option>
-                </select>
-            </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'status']))
+            @if(request()->filled('cari'))
                 <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
@@ -141,7 +133,7 @@
                                         style="color: #DC2626;"
                                         title="Hapus"
                                         aria-label="Hapus"
-                                        onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
+                                        onclick="return confirm('Yakin ingin menghapus membership ini?')">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
@@ -158,10 +150,10 @@
                             @endif
                         </td>
                         <td class="px-1 py-3 align-middle text-center">
-                            @if ($pelanggan->is_member)
-                                <span class="badge-success">Member</span>
+                            @if ($pelanggan->member_aktif)
+                                <span class="badge-success">AKTIF</span>
                             @else
-                                <span class="badge-neutral">Non-Member</span>
+                                <span class="badge-danger">TIDAK AKTIF</span>
                             @endif
                         </td>
                         <td class="px-1 py-3 align-middle text-center font-medium text-gray-700 whitespace-nowrap">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
@@ -177,17 +169,17 @@
                         <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'status']))
-                                        Pelanggan Tidak Ditemukan
+                                    @if(request()->filled('cari'))
+                                        Membership Tidak Ditemukan
                                     @else
-                                        Pelanggan Kosong
+                                        Membership Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'status']))
-                                        Tidak ada data pelanggan yang cocok dengan filter pencarian Anda.
+                                    @if(request()->filled('cari'))
+                                        Tidak ada data membership yang cocok dengan filter pencarian Anda.
                                     @else
-                                        Belum ada data pelanggan terdaftar di sistem.
+                                        Belum ada data membership terdaftar di sistem.
                                     @endif
                                 </div>
                             </div>
@@ -204,30 +196,23 @@
 <!-- Modal Tambah / Edit Pelanggan -->
 <x-modal-form
     id="modal-pelanggan"
-    create-title="Tambah Pelanggan"
-    edit-title="Edit Pelanggan"
+    create-title="Tambah Membership"
+    edit-title="Edit Membership"
     create-url="{{ route('pelanggan.store') }}"
     update-base="{{ url('pelanggan') }}"
     create-btn="#btn-tambah-pelanggan"
     edit-btn=".btn-edit-pelanggan"
     width="max-w-md">
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Pelanggan <span class="text-red-500">*</span></label>
-        <input type="text" name="nama" required class="form-input" placeholder="Ketik nama pelanggan...">
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Membership <span class="text-red-500">*</span></label>
+        <input type="text" name="nama" required class="form-input" placeholder="Ketik nama membership...">
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nomor HP / Telepon</label>
-        <input type="text" name="telepon" class="form-input" placeholder="Contoh: 08123456789">
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nomor HP / Telepon <span class="text-red-500">*</span></label>
+        <input type="text" name="telepon" required class="form-input" placeholder="Contoh: 08123456789">
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="telepon"></p>
     </div>
-    <label class="flex items-start text-xs font-medium text-gray-700 cursor-pointer">
-        <input type="checkbox" name="is_member" value="1" class="mr-2.5 mt-0.5 rounded border-gray-300 focus:ring-blue-500 w-4 h-4 text-blue-600">
-        <div>
-            <span class="font-semibold">Daftar sebagai Member</span>
-            <p class="text-[10px] text-gray-400 mt-0.5">Member berhak mendapatkan diskon belanja {{ config('pos.diskon_member', 10) }}%.</p>
-        </div>
-    </label>
 </x-modal-form>
 
 <!-- Modal Kartu Member -->
