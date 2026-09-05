@@ -18,30 +18,22 @@
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('pabrik.index') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Pabrik</label>
-                <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+    <form method="GET" action="{{ route('pabrik.index') }}" class="flex flex-wrap gap-2 items-center">
+        <div class="relative shrink-0 w-full sm:w-64">
+            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..."
+                class="form-input pr-8">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+            </span>
         </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->filled('cari'))
-                <a href="{{ route('pabrik.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
-                </a>
-            @endif
-            <button type="submit" class="btn-primary !p-1.5" title="Filter">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-            </button>
-        </div>
+        <button type="submit" class="btn-primary py-1.5 px-4">
+            Cari
+        </button>
+        @if(request()->filled('cari'))
+            <a href="{{ route('pabrik.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                Reset
+            </a>
+        @endif
     </form>
 </div>
 
