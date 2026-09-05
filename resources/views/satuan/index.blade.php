@@ -52,6 +52,7 @@
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama Satuan</th>
                 </tr>
             </thead>
@@ -82,11 +83,12 @@
                                 </form>
                             </div>
                         </td>
+                        <td class="table-num">{{ $satuan->id }}</td>
                         <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="2" class="p-0">
+                        <td colspan="3" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->filled('cari'))
