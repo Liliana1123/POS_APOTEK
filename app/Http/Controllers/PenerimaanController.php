@@ -37,8 +37,10 @@ class PenerimaanController extends Controller
             $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
         }
 
+        $perPage = $request->input('per_page', 15);
+
         $penerimaans = $query->withSum('pembayaran', 'jumlah')
-            ->orderByDesc('tanggal')->paginate(15)->withQueryString();
+            ->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
         $suppliers = Supplier::orderBy('nama')->get();
         $barangs = Barang::with(['pabrik', 'satuan'])->where('aktif', true)->orderBy('nama')->get();
 

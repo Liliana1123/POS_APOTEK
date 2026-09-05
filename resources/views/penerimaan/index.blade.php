@@ -144,7 +144,29 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $penerimaans->links() }}</div>
+<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <div class="flex items-center gap-2 text-sm text-gray-600">
+        <span>Tampilkan</span>
+
+        <select
+            name="per_page"
+            class="form-input py-1.5 w-20"
+            onchange="this.form.submit()"
+        >
+            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
+            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
+            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
+            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
+            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
+        </select>
+
+        <span>data</span>
+    </div>
+
+    <div>
+        {{ $penerimaans->links() }}
+    </div>
+</div>
 
 <!-- Modal Detail Penerimaan -->
 <div id="modal-detail-penerimaan"

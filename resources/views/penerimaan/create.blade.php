@@ -187,11 +187,25 @@ function tambahBaris() {
     const tempTr = document.createElement('tbody');
     tempTr.innerHTML = html;
     tbody.appendChild(tempTr.firstElementChild);
+
+    if (oldItems[rowIndex]) {
+        const item = oldItems[rowIndex];
+        const row = tbody.lastElementChild;
+
+        row.querySelector('[name$="[barang_id]"]').value = item.barang_id || '';
+        row.querySelector('[name$="[no_batch]"]').value = item.no_batch || '';
+        row.querySelector('[name$="[expired_date]"]').value = item.expired_date || '';
+        row.querySelector('[name$="[harga_beli]"]').value = item.harga_beli || '';
+        row.querySelector('[name$="[harga_jual]"]').value = item.harga_jual || '';
+        row.querySelector('[name$="[no_rak]"]').value = item.no_rak || '';
+        row.querySelector('[name$="[jumlah]"]').value = item.jumlah || '';
+    }
     rowIndex++;
     emptyHint.style.display = 'none';
     updateTotal();
 }
 
+const oldItems = @json(old('items', []));
 document.getElementById('btn-tambah-item').addEventListener('click', tambahBaris);
 
 tbody.addEventListener('click', function (e) {
@@ -226,6 +240,12 @@ document.getElementById('form-penerimaan').addEventListener('submit', function (
 });
 
 // Mulai dengan 1 baris kosong
-tambahBaris();
+if (oldItems.length > 0) {
+    oldItems.forEach(() => {
+        tambahBaris();
+    });
+} else {
+    tambahBaris();
+}
 </script>
 @endsection
