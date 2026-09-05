@@ -46,8 +46,9 @@
             </select>
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+            <button type="submit" class="btn-primary flex items-center gap-2">
                 <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
             <a href="{{ route('custom-discount.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                 Reset
