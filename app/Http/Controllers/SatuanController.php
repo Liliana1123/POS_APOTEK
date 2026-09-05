@@ -13,7 +13,7 @@ class SatuanController extends Controller
         if ($request->filled('cari')) {
             $query->where('nama', 'like', '%' . $request->cari . '%');
         }
-        $satuans = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $satuans = $query->orderBy('id')->paginate(15)->withQueryString();
         return view('satuan.index', compact('satuans'));
     }
 

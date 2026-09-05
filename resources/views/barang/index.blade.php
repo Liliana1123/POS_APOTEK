@@ -83,11 +83,12 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom table-fixed min-w-[68rem]">
-            <thead class="table-custom-header text-center align-middle">
+        <table class="table-custom min-w-[72rem]">
+            <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-36">Aksi</th>
                     <th scope="col" class="w-32">Kode Apotek</th>
+                    <th scope="col" class="w-32">Kode KFA</th>
                     <th scope="col">Nama Barang</th>
                     <th scope="col" class="w-40">Merk</th>
                     <th scope="col" class="w-28">Satuan</th>
@@ -95,7 +96,7 @@
                     <th scope="col" class="text-center w-28">Status</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-gray-150 align-middle">
+            <tbody class="table-custom-body divide-gray-150">
                 @forelse ($barangs as $index => $barang)
                     @php
                         $stok = $barang->stokTotal();
@@ -171,14 +172,14 @@
                                         class="btn-secondary !p-1.5"
                                         style="color: #DC2626;"
                                         title="Hapus"
-                                        aria-label="Hapus"
-                                        onclick="return confirm('Yakin ingin menghapus barang ini?')">
+                                        aria-label="Hapus">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
                             </div>
                         </td>
-                        <td>{{ $barang->kode_apotek ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
@@ -193,7 +194,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-0">
+                        <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif']))

@@ -21,6 +21,16 @@ class LaporanController extends Controller
             ->orderBy('nama')
             ->get();
 
+        $stokPerBatch = DetailPenerimaan::with(['barang.kategori'])
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
+            ->orderBy(
+            Barang::select('nama')
+                ->whereColumn('barangs.id', 'detail_penerimaans.barang_id')
+            )
+            ->orderBy('expired_date')
+            ->get();    
+
         $mendekatiExpired = DetailPenerimaan::with('barang')
             ->where('aktif', true)
             ->where('stok', '>', 0)
@@ -44,7 +54,7 @@ class LaporanController extends Controller
             return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
         }
 
-        return view('laporan.stok', compact('barangs', 'mendekatiExpired'));
+        return view('laporan.stok', compact('barangs', 'stokPerBatch', 'mendekatiExpired'));
     }
 
     // Laporan penerimaan barang dalam rentang tanggal

@@ -61,7 +61,8 @@ class RusakController extends Controller
             Rusak::create($data);
 
             $batch->decrement('stok', $data['jumlah']);
-            if ($batch->stok - $data['jumlah'] <= 0) {
+            $batch->refresh();
+            if ($batch->stok <= 0) {
                 $batch->update(['aktif' => false]);
             }
         });

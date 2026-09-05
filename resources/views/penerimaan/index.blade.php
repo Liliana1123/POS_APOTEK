@@ -88,16 +88,33 @@
                         </td>
                         <td class="text-right space-x-1.5">
                             <div class="flex items-center justify-end gap-1">
-                            <a href="{{ route('penerimaan.show', $penerimaan) }}" class="btn-secondary !p-1.5" title="Detail">
-                                <x-heroicon-o-eye class="w-4 h-4" />
-                            </a>
-                            <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
-                        </div>
+                                <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan"title="Detail"data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
+                                <a href="{{ route('penerimaan.edit', $penerimaan) }}"
+                                    class="btn-primary !p-1.5"
+                                    title="Edit">
+                                    <x-heroicon-o-pencil class="w-4 h-4" />
+                                </a>
+                                @if (!$penerimaan->lunas)
+                                <button type="button"
+                                    class="btn-primary !p-1.5 btn-payment-penerimaan"
+                                    title="Pembayaran"
+                                    data-id="{{ $penerimaan->id }}">
+                                    <x-heroicon-o-banknotes class="w-4 h-4" />
+                                </button>@endif
+                                <a href="{{ route('penerimaan.print', $penerimaan) }}"
+                                    class="btn-secondary !p-1.5"
+                                    title="Print"
+                                    target="_blank">
+                                    <x-heroicon-o-printer class="w-4 h-4" />
+                                </a>
+
+                                <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -127,5 +144,199 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $penerimaans->links() }}</div>
+<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <div class="flex items-center gap-2 text-sm text-gray-600">
+        <span>Tampilkan</span>
+
+        <select
+            name="per_page"
+            class="form-input py-1.5 w-20"
+            onchange="this.form.submit()"
+        >
+            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
+            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
+            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
+            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
+            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
+        </select>
+
+        <span>data</span>
+    </div>
+
+    <div>
+        {{ $penerimaans->links() }}
+    </div>
+</div>
+
+<!-- Modal Detail Penerimaan -->
+<div id="modal-detail-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true">
+
+    <div class="modal-container-custom max-w-5xl">
+
+        <div class="modal-header-custom">
+            <div>
+                <h2>Detail Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Informasi lengkap faktur penerimaan barang.
+                </p>
+            </div>
+
+            <button type="button"
+                id="btn-tutup-detail"
+                class="btn-secondary !p-1.5"
+                title="Tutup">
+                ✕
+            </button>
+        </div>
+
+        <div id="detail-penerimaan-content" class="modal-body-custom">
+            <div class="text-center py-8 text-gray-500">
+                Memuat detail...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- Modal Pembayaran Penerimaan -->
+<div id="modal-payment-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true">
+
+    <div class="modal-container-custom max-w-lg">
+
+        <div class="modal-header-custom">
+            <div>
+                <h2>Pembayaran Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Catat pembayaran untuk faktur penerimaan.
+                </p>
+            </div>
+
+            <button type="button"
+                id="btn-tutup-payment"
+                class="btn-secondary !p-1.5"
+                title="Tutup">
+                ✕
+            </button>
+        </div>
+
+        <div id="payment-penerimaan-content" class="modal-body-custom">
+            <div class="text-center py-8 text-gray-500">
+                Memuat pembayaran...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('modal-detail-penerimaan');
+    const content = document.getElementById('detail-penerimaan-content');
+    const btnTutup = document.getElementById('btn-tutup-detail');
+
+    const paymentModal = document.getElementById('modal-payment-penerimaan');
+    const paymentContent = document.getElementById('payment-penerimaan-content');
+    const btnTutupPayment = document.getElementById('btn-tutup-payment');
+
+    // =========================
+    // MODAL DETAIL PENERIMAAN
+    // =========================
+    document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const url = button.dataset.url;
+
+            modal.classList.remove('hidden');
+
+            content.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat detail...
+                </div>
+            `;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil detail penerimaan.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat detail penerimaan.
+                        </div>
+                    `;
+
+                    console.error(error);
+                });
+        });
+    });
+
+    // =========================
+    // MODAL PEMBAYARAN
+    // =========================
+    document.querySelectorAll('.btn-payment-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = button.dataset.id;
+
+            paymentModal.classList.remove('hidden');
+
+            paymentContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat pembayaran...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/payment-form`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil form pembayaran.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    paymentContent.innerHTML = html;
+                })
+                .catch(error => {
+                    paymentContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat form pembayaran.
+                        </div>
+                    `;
+
+                    console.error(error);
+                });
+        });
+    });
+
+    // =========================
+    // TUTUP MODAL DETAIL
+    // =========================
+    btnTutup.addEventListener('click', function () {
+        modal.classList.add('hidden');
+        content.innerHTML = '';
+    });
+
+    // =========================
+    // TUTUP MODAL PEMBAYARAN
+    // =========================
+    btnTutupPayment.addEventListener('click', function () {
+        paymentModal.classList.add('hidden');
+        paymentContent.innerHTML = '';
+    });
+});
+</script>
+
 @endsection

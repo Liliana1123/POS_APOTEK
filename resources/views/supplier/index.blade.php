@@ -35,11 +35,11 @@
 
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[50rem]">
+            <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-36">Aksi</th>
-                    <th scope="col" class="w-16">No</th>
+                    <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama Supplier</th>
                     <th scope="col" class="w-44">Telepon</th>
                     <th scope="col">Alamat</th>
@@ -62,7 +62,7 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="table-num">{{ $suppliers->firstItem() + $index }}</td>
+                        <td class="table-num">{{ $supplier->id }}</td>
                         <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
                         <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '—' }}</td>

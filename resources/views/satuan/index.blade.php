@@ -39,19 +39,19 @@
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
-        <thead class="table-custom-header">
-            <tr>
-                <th scope="col" class="w-36">Aksi</th>
-                <th scope="col" class="w-16">No</th>
-                <th scope="col">Nama Satuan</th>
-            </tr>
-        </thead>
-        <tbody class="table-custom-body">
-            @forelse ($satuans as $index => $satuan)
-                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
-                    <td class="text-center">
-                        <div class="flex items-center justify-center gap-1">
-                                    <button type="button"
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="w-16">ID</th>
+                    <th scope="col">Nama Satuan</th>
+                </tr>
+            </thead>
+            <tbody class="table-custom-body divide-gray-150">
+                @forelse ($satuans as $index => $satuan)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="text-left">
+                            <div class="flex items-center justify-start gap-1">
+                                <button type="button"
                                     class="btn-secondary !p-1.5 btn-edit-satuan"
                                     style="color: #F59E0B;"
                                     title="Edit"
@@ -98,35 +98,35 @@
                                         </svg>
                                     </button>
                                 </form>
-                        </div>
-                    </td>
-                    <td class="table-num">{{ $satuans->firstItem() + $index }}</td>
-                    <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->filled('cari'))
-                                    Pencarian Tidak Ditemukan
-                                @else
-                                    Satuan Kosong
-                                @endif
                             </div>
-                            <div class="empty-state-desc">
-                                @if(request()->filled('cari'))
-                                    Tidak ada satuan yang cocok dengan kata kunci "{{ request('cari') }}".
-                                @else
-                                    Belum ada data satuan terdaftar di sistem.
-                                @endif
+                        </td>
+                        <td class="table-num">{{ $satuan->id }}</td>
+                        <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div class="empty-state-container">
+                                <div class="empty-state-title">
+                                    @if(request()->filled('cari'))
+                                        Satuan Tidak Ditemukan
+                                    @else
+                                        Satuan Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->filled('cari'))
+                                        Tidak ada satuan yang cocok dengan kata kunci "{{ request('cari') }}".
+                                    @else
+                                        Belum ada data satuan terdaftar di sistem.
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 

@@ -38,19 +38,19 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom table-fixed min-w-[50rem] text-center">
-        <thead class="table-custom-header text-center align-middle">
-            <tr class="align-middle">
-                <th scope="col" class="w-32 text-center align-middle">Aksi</th>
-                <th scope="col" class="w-16 text-center align-middle">No</th>
-                <th scope="col" class="text-center align-middle">Nama Kategori</th>
-            </tr>
-        </thead>
-        <tbody class="table-custom-body text-center align-middle">
-            @forelse ($kategoris as $index => $kategori)
-                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }} align-middle">
-                    <td class="w-32 text-center align-middle">
-                        <div class="flex items-center justify-center gap-1">
+        <table class="table-custom min-w-[50rem]">
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="w-16">ID</th>
+                    <th scope="col">Nama Kategori</th>
+                </tr>
+            </thead>
+            <tbody class="table-custom-body divide-gray-150">
+                @forelse ($kategoris as $index => $kategori)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="text-left">
+                            <div class="flex items-center justify-start gap-1">
                                 <button type="button"
                                     class="btn-secondary !p-1.5 btn-edit-kategori"
                                     style="color: #F59E0B;"
@@ -73,62 +73,47 @@
 
                                     </svg>
                                 </button>
-                                   <form action="{{ route('kategori.destroy', $kategori) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="submit"
-                                            class="btn-secondary !p-1.5"
-                                            style="color: #DC2626;"
-                                            title="Hapus"
-                                            aria-label="Hapus"
-                                            onclick="return confirm('Yakin ingin menghapus kategori ini?')">
-
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                class="h-[4px] w-[4px]"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                stroke-width="1.8"
-                                                style="width: 16px; height: 16px; flex-shrink: 0; display: block;">
-
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l1 14h10l-1-14"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
-
-                                            </svg>
-                                        </button>
-                                    </form>
-                        </div>
-                    </td>
-                    <td class="w-16 table-num text-center align-middle">{{ $kategoris->firstItem() + $index }}</td>
-                    <td class="font-medium text-gray-800 text-center align-middle">{{ $kategori->nama }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->filled('cari'))
-                                    Pencarian Tidak Ditemukan
-                                @else
-                                    Kategori Kosong
-                                @endif
+                                <form action="{{ route('kategori.destroy', $kategori) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="btn-secondary !p-1.5"
+                                        style="color: #DC2626;"
+                                        title="Hapus"
+                                        aria-label="Hapus"
+                                        onclick="return confirm('Yakin ingin menghapus kategori ini?')">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
+                                </form>
                             </div>
-                            <div class="empty-state-desc">
-                                @if(request()->filled('cari'))
-                                    Tidak ada kategori yang cocok dengan kata kunci "{{ request('cari') }}".
-                                @else
-                                    Belum ada data kategori terdaftar di sistem.
-                                @endif
+                        </td>
+                        <td class="table-num">{{ $kategori->id }}</td>
+                        <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div class="empty-state-container">
+                                <div class="empty-state-title">
+                                    @if(request()->filled('cari'))
+                                        Kategori Tidak Ditemukan
+                                    @else
+                                        Kategori Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->filled('cari'))
+                                        Tidak ada kategori yang cocok dengan kata kunci "{{ request('cari') }}".
+                                    @else
+                                        Belum ada data kategori terdaftar di sistem.
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
