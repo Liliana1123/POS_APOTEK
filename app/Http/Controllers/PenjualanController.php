@@ -27,13 +27,17 @@ class PenjualanController extends Controller
 
     public function create()
     {
-        $pelanggans = Pelanggan::orderBy('nama')->get()->map(fn($p) => [
+        $pelanggans = Pelanggan::where('is_member', true)
+            ->orderBy('nama')
+            ->get()
+            ->map(fn($p) => [
             'id' => $p->id,
             'nama' => $p->nama,
             'telepon' => $p->telepon,
             'is_member' => $p->is_member,
+            'member_aktif' => (bool) ($p->member_aktif ?? true),
             'member_id' => $p->member_id,
-            'diskon_percent' => $p->is_member ? min(50, config('pos.diskon_member', 10)) : 0,
+            'diskon_percent' => ($p->member_aktif ?? true) ? min(50, config('pos.diskon_member', 10)) : 0,
         ]);
 
         // Cuma barang yang aktif & masih ada stok yang bisa dijual
@@ -67,12 +71,16 @@ class PenjualanController extends Controller
         try {
             $penjualan = DB::transaction(function () use ($data, $request) {
                 // Tentukan diskon member dari backend
-                $isMember = false;
                 $diskonMemberPercent = 0;
                 if (!empty($data['pelanggan_id'])) {
                     $pelanggan = Pelanggan::find($data['pelanggan_id']);
-                    if ($pelanggan && $pelanggan->is_member) {
-                        $isMember = true;
+                    if (!$pelanggan || !$pelanggan->is_member) {
+                        throw ValidationException::withMessages([
+                            'pelanggan_id' => 'Pelanggan yang dipilih bukan Member yang valid.',
+                        ]);
+                    }
+
+                    if ($pelanggan->member_aktif) {
                         $diskonMemberPercent = min(50, config('pos.diskon_member', 10));
                     }
                 }

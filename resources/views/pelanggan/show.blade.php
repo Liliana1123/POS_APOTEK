@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Detail Pelanggan')
+@section('title', 'Detail Membership')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Profil Pelanggan</h1>
+        <h1>Profil Membership</h1>
         <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -30,10 +30,10 @@
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
                 <span class="text-xs text-gray-500 mt-1 block">
-                    @if ($pelanggan->is_member)
-                        <span class="badge-success">Member</span>
+                    @if ($pelanggan->member_aktif)
+                        <span class="badge-success">AKTIF</span>
                     @else
-                        <span class="badge-neutral">Umum</span>
+                        <span class="badge-danger">TIDAK AKTIF</span>
                     @endif
                 </span>
             </div>
@@ -91,7 +91,7 @@
 <!-- Transaction History List -->
 <div class="table-custom-container">
     <div class="p-4 border-b bg-gray-50/50">
-        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Pelanggan</h3>
+        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Membership</h3>
     </div>
     
     <div class="overflow-x-auto">
@@ -124,7 +124,7 @@
                         <td colspan="5" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">Riwayat Transaksi Kosong</div>
-                                <div class="empty-state-desc">Pelanggan ini belum pernah melakukan transaksi penjualan di apotek.</div>
+                                <div class="empty-state-desc">Membership ini belum pernah melakukan transaksi penjualan di apotek.</div>
                             </div>
                         </td>
                     </tr>

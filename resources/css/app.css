@@ -485,11 +485,27 @@ h3,
     /* slate-50 */
 }
 
+.customer-data-row {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.customer-table .customer-data-row:nth-child(even) {
+    background-color: #e5e7eb;
+}
+
+.customer-table {
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
 /* Numeric Columns */
 .table-num {
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
+
+
 
 /* ==========================================================================
    Alert / Toast Foundation
