@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetailPenerimaan extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'penerimaan_id', 'barang_id', 'no_batch', 'harga_beli', 'harga_jual',
-        'expired_date', 'jumlah', 'stok', 'aktif',
+        'expired_date', 'no_rak', 'jumlah', 'stok', 'aktif',
     ];
 
     protected $casts = [
