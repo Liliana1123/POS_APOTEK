@@ -29,7 +29,7 @@
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('barang.index') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
                 <div class="relative">
@@ -65,16 +65,26 @@
                     <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
                 </select>
             </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
+                <select name="stok" class="form-input">
+                    <option value="">Semua</option>
+                    <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
+                    <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
+                    <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+                </select>
+            </div>
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif']))
+            @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
                 <a href="{{ route('barang.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
             @endif
-            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+            <button type="submit" class="btn-primary flex items-center gap-2">
                 <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -205,14 +215,14 @@
                         <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif']))
+                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
                                         Barang Tidak Ditemukan
                                     @else
                                         Barang Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif']))
+                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
                                         Tidak ada produk obat yang cocok dengan filter kriteria pencarian Anda.
                                     @else
                                         Belum ada data barang/obat terdaftar di sistem POS.

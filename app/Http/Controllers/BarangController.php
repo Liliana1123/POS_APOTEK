@@ -38,6 +38,37 @@ class BarangController extends Controller
             $query->where('butuh_resep', $request->butuh_resep === '1');
         }
 
+        if ($request->filled('stok')) {
+            $stok = $request->stok;
+            if ($stok === 'habis') {
+                $query->whereRaw('NOT EXISTS (
+                    SELECT 1 FROM detail_penerimaans dp
+                    WHERE dp.barang_id = barangs.id
+                    AND dp.aktif = 1
+                    AND dp.stok > 0
+                )');
+            } elseif ($stok === 'menipis') {
+                $query->whereRaw('EXISTS (
+                    SELECT 1 FROM detail_penerimaans dp
+                    WHERE dp.barang_id = barangs.id
+                    AND dp.aktif = 1
+                    AND dp.stok > 0
+                )')->whereRaw('(
+                    SELECT COALESCE(SUM(dp.stok), 0) FROM detail_penerimaans dp
+                    WHERE dp.barang_id = barangs.id
+                    AND dp.aktif = 1
+                    AND dp.stok > 0
+                ) <= barangs.stok_minimum');
+            } elseif ($stok === 'aman') {
+                $query->whereRaw('(
+                    SELECT COALESCE(SUM(dp.stok), 0) FROM detail_penerimaans dp
+                    WHERE dp.barang_id = barangs.id
+                    AND dp.aktif = 1
+                    AND dp.stok > 0
+                ) > barangs.stok_minimum');
+            }
+        }
+
         $barangs = $query->orderBy('kode_apotek')->paginate(15)->withQueryString();
         $kategoris = Kategori::orderBy('nama')->get();
         $satuans = Satuan::orderBy('nama')->get();

@@ -59,8 +59,9 @@
             <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="btn-primary !p-1.5" title="Filter">
+            <button type="submit" class="btn-primary flex items-center gap-2">
                 <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
             @if(request()->anyFilled(['cari', 'dari', 'sampai']))
                 <a href="{{ route('activity-log') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
