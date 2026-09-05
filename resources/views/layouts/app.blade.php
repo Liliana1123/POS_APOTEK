@@ -63,7 +63,7 @@
                     </a>
 <a href="{{ route('pelanggan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                         <x-heroicon-o-user class="w-4 h-4" />
-                        <span>Pelanggan / Member</span>
+                        <span>Membership</span>
                     </a>
                         </div>
                     @endif

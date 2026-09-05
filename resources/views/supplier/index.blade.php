@@ -2,50 +2,37 @@
 @section('title', 'Supplier')
 
 @section('content')
-<!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1>Daftar Supplier</h1>
         <p class="text-caption mt-1">Kelola data penyalur/distributor obat.</p>
     </div>
-    <div class="flex items-center gap-2 flex-wrap">
-        <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
-            <x-heroicon-o-plus class="w-4 h-4" />
-            <span>Tambah Supplier</span>
-        </button>
-    </div>
+    <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Tambah Supplier</span>
+    </button>
 </div>
 
-<!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('supplier.index') }}" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Supplier</label>
                 <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
+                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..." class="form-input pr-8">
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"><x-heroicon-o-magnifying-glass class="w-4 h-4" /></span>
                 </div>
             </div>
         </div>
-
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->filled('cari'))
-                <a href="{{ route('supplier.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
-                </a>
+                <a href="{{ route('supplier.index') }}" class="btn-secondary py-1.5 px-4">Reset</a>
             @endif
-            <button type="submit" class="btn-primary !p-1.5" title="Filter">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-            </button>
+            <button type="submit" class="btn-primary !p-1.5" title="Filter"><x-heroicon-o-funnel class="w-4 h-4" /></button>
         </div>
     </form>
 </div>
 
-<!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
             <table class="table-custom min-w-[50rem]">
@@ -63,23 +50,13 @@
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
                             <div class="flex items-center justify-start gap-1">
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-supplier"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    data-id="{{ $supplier->id }}"
-                                    data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                                <button type="button" class="btn-secondary !p-1.5 btn-edit-supplier" style="color: #F59E0B;" title="Edit" data-id="{{ $supplier->id }}" data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </button>
                                 <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                        class="btn-secondary action-icon-button action-icon-delete !p-1.5"
-                                        style="color: #DC2626;"
-                                        title="Hapus"
-                                        aria-label="Hapus"
-                                        onclick="return confirm('Yakin ingin menghapus supplier ini?')">
+                                    <button type="submit" class="btn-secondary !p-1.5" style="color: #DC2626;" title="Hapus" aria-label="Hapus" onclick="return confirm('Yakin ingin menghapus supplier ini?')">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
