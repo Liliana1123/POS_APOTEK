@@ -60,7 +60,6 @@
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-40">Aksi</th>
-                    <th scope="col" class="w-16">No</th>
                     <th scope="col">Member ID</th>
                     <th scope="col">Nama</th>
                     <th scope="col" class="w-40">Telepon</th>
@@ -117,7 +116,6 @@
                                 </form>
                             </div>
                         </td>
-                        <td class="table-num">{{ $pelanggans->firstItem() + $index }}</td>
                         <td class="font-mono text-gray-600">{{ $pelanggan->member_id ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $pelanggan->nama }}</td>
                         <td class="text-gray-600">{{ $pelanggan->telepon ?? '—' }}</td>
@@ -138,7 +136,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="p-0">
+                        <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->anyFilled(['cari', 'status']))

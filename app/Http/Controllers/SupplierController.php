@@ -17,7 +17,7 @@ class SupplierController extends Controller
                   ->orWhere('alamat', 'like', '%' . $request->cari . '%');
             });
         }
-        $suppliers = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $suppliers = $query->orderBy('id')->paginate(15)->withQueryString();
         return view('supplier.index', compact('suppliers'));
     }
 

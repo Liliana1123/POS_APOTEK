@@ -34,7 +34,7 @@ class PelangganController extends Controller
         $pelanggans = $query->withCount('penjualan')
             ->withSum('penjualan as total_belanja', 'total')
             ->withSum('discountUsages as total_hemat', 'nominal')
-            ->orderBy('nama')
+            ->orderBy('id')
             ->paginate(15)
             ->withQueryString();
 
