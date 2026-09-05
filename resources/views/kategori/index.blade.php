@@ -86,19 +86,34 @@
                                     </button>
                                 </form>
                             </div>
-                            <div class="empty-state-desc">
-                                @if(request()->filled('cari'))
-                                    Tidak ada kategori yang cocok dengan kata kunci "{{ request('cari') }}".
-                                @else
-                                    Belum ada data kategori terdaftar di sistem.
-                                @endif
+                        </td>
+                        <td class="table-num">{{ $kategori->id }}</td>
+                        <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div class="empty-state-container">
+                                <div class="empty-state-title">
+                                    @if(request()->filled('cari'))
+                                        Kategori Tidak Ditemukan
+                                    @else
+                                        Kategori Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->filled('cari'))
+                                        Tidak ada kategori yang cocok dengan kata kunci "{{ request('cari') }}".
+                                    @else
+                                        Belum ada data kategori terdaftar di sistem.
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
