@@ -30,11 +30,7 @@
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
                 <span class="text-xs text-gray-500 mt-1 block">
-                    @if ($pelanggan->member_aktif)
-                        <span class="badge-success">AKTIF</span>
-                    @else
-                        <span class="badge-danger">TIDAK AKTIF</span>
-                    @endif
+                        <span class="badge-success">Member Aktif</span>
                 </span>
             </div>
         </div>
@@ -48,9 +44,21 @@
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Nomor Telepon / HP</span>
                 <span class="text-gray-800">{{ $pelanggan->telepon ?? '—' }}</span>
             </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Alamat</span>
+                <span class="text-gray-800 whitespace-pre-line">{{ $pelanggan->alamat ?? '—' }}</span>
+            </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Lahir</span>
+                <span class="text-gray-800">{{ $pelanggan->tanggal_lahir ? $pelanggan->tanggal_lahir->format('d M Y') : '—' }}</span>
+            </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Keterangan</span>
+                <span class="text-gray-800 whitespace-pre-line">{{ $pelanggan->keterangan ?? '—' }}</span>
+            </div>
             @if ($pelanggan->is_member)
                 <div>
-                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Member Sejak</span>
+                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
                     <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
                 </div>
             @endif
@@ -81,7 +89,7 @@
         <div class="card-base p-6 flex flex-col justify-between">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Total Penghematan</span>
             <div class="mt-4">
-                <span class="text-2xl font-extrabold text-green-600 block font-mono">Rp {{ number_format($pelanggan->total_hemat, 0, ',', '.') }}</span>
+                <span class="text-2xl font-extrabold text-green-600 block font-mono">Rp {{ number_format($pelanggan->total_diskon, 0, ',', '.') }}</span>
                 <span class="text-xs text-gray-500 mt-1 block font-sans">akumulasi hemat diskon</span>
             </div>
         </div>

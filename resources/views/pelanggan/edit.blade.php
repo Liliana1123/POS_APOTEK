@@ -6,7 +6,7 @@
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1>Edit Membership</h1>
-        <p class="text-caption mt-1">Ubah nama, Telepon, dan Status Membership.</p>
+        <p class="text-caption mt-1">Ubah data profil member.</p>
     </div>
     <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4 shrink-0">
         &larr; Kembali
@@ -23,15 +23,27 @@
     </div>
 
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nomor HP / Telepon</label>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nomor HP / Telepon <span class="text-red-500 font-bold">*</span></label>
         <input type="text" name="telepon" value="{{ old('telepon', $pelanggan->telepon) }}" placeholder="Contoh: 08123456789" class="form-input">
         @error('telepon') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
     </div>
 
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Saldo Piutang</label>
-        <input type="number" name="saldo_piutang" value="{{ old('saldo_piutang', $pelanggan->saldo_piutang ?? 0) }}" min="0" step="0.01" placeholder="0" class="form-input">
-        @error('saldo_piutang') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Alamat <span class="text-red-500 font-bold">*</span></label>
+        <textarea name="alamat" required class="form-input" rows="3">{{ old('alamat', $pelanggan->alamat) }}</textarea>
+        @error('alamat') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Lahir</label>
+        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', optional($pelanggan->tanggal_lahir)->format('Y-m-d')) }}" class="form-input">
+        @error('tanggal_lahir') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
+        <textarea name="keterangan" class="form-input" rows="3">{{ old('keterangan', $pelanggan->keterangan) }}</textarea>
+        @error('keterangan') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
     </div>
 
     <div>
@@ -40,11 +52,8 @@
     </div>
 
     <div>
-        <label for="member_aktif" class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Status Membership</label>
-        <select name="member_aktif" id="member_aktif" class="form-input">
-            <option value="1" @selected((string) old('member_aktif', $pelanggan->member_aktif ?? true) === '1')>AKTIF</option>
-            <option value="0" @selected((string) old('member_aktif', $pelanggan->member_aktif ?? true) === '0')>TIDAK AKTIF</option>
-        </select>
+        <label class="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Status Member</label>
+        <div class="form-input bg-gray-50 text-gray-500">Member Aktif</div>
     </div>
 
     <div class="flex gap-2 border-t pt-4">

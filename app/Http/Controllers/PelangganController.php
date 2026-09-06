@@ -25,7 +25,7 @@ class PelangganController extends Controller
 
         $pelanggans = $query->withCount('penjualan')
             ->withSum('penjualan as total_belanja', 'total')
-            ->withSum('discountUsages as total_hemat', 'nominal')
+            ->withSum('discountUsages as total_diskon', 'nominal')
             ->orderBy('member_id', 'asc')
             ->paginate(15)
             ->withQueryString();
@@ -37,7 +37,7 @@ class PelangganController extends Controller
     {
         $pelanggan->loadCount('penjualan');
         $pelanggan->total_belanja = $pelanggan->penjualan()->sum('total');
-        $pelanggan->total_hemat = $pelanggan->discountUsages()->sum('nominal');
+        $pelanggan->total_diskon = $pelanggan->discountUsages()->sum('nominal');
 
         $penjualans = $pelanggan->penjualan()
             ->orderByDesc('tanggal')
@@ -57,7 +57,9 @@ class PelangganController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'telepon' => 'required|string|max:30',
-            'saldo_piutang' => 'nullable|numeric|min:0',
+            'alamat' => 'required|string|max:1000',
+            'tanggal_lahir' => 'nullable|date',
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         $attempts = 0;
@@ -110,15 +112,12 @@ class PelangganController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'telepon' => 'required|string|max:30',
-            'member_aktif' => 'sometimes|boolean',
-            'saldo_piutang' => 'nullable|numeric|min:0',
+            'alamat' => 'required|string|max:1000',
+            'tanggal_lahir' => 'nullable|date',
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
-        if ($pelanggan->is_member) {
-            $data['member_aktif'] = $request->has('member_aktif')
-                ? $request->boolean('member_aktif')
-                : ($pelanggan->member_aktif ?? true);
-        }
+        $data['member_aktif'] = true;
 
         $pelanggan->update($data);
 

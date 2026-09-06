@@ -28,6 +28,24 @@
         @error('telepon') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Alamat <span class="text-red-500 font-bold">*</span></label>
+        <textarea name="alamat" required class="form-input" rows="3">{{ old('alamat') }}</textarea>
+        @error('alamat') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Lahir</label>
+        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="form-input">
+        @error('tanggal_lahir') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
+        <textarea name="keterangan" class="form-input" rows="3">{{ old('keterangan') }}</textarea>
+        @error('keterangan') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
+    </div>
+
     <div class="flex gap-2 border-t pt-4">
         <button type="submit" class="btn-primary py-2 px-6">Simpan</button>
         <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">Batal</a>
