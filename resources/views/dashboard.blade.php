@@ -196,7 +196,7 @@
         <div>
             <span class="text-caption font-semibold uppercase tracking-wider block">Total Hemat (Bulan Ini)</span>
             <span class="dashboard-kpi-value font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscountThisMonth, 0, ',', '.') }}</span>
-            <span class="text-caption block mt-1">Rp {{ number_format($memberSavingsTotal, 0, ',', '.') }} dari Member</span>
+            <span class="text-caption block mt-1">Diskon aktual transaksi member</span>
         </div>
         <div class="dashboard-kpi-icon bg-green-50 text-green-600 shrink-0">
             <x-heroicon-o-currency-dollar class="w-5 h-5" />

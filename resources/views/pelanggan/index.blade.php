@@ -1,17 +1,17 @@
 @extends('layouts.app')
-@section('title', 'Membership')
+@section('title', 'Pelanggan/Member')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Daftar Membership</h1>
-        <p class="text-caption mt-1">Kelola data membership POS Apotek.</p>
+        <h1>Daftar Pelanggan / Member</h1>
+        <p class="text-caption mt-1">Kelola data pelanggan dan member POS Apotek.</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap">
         <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
             <x-heroicon-o-plus class="w-4 h-4" />
-            <span>Tambah Membership</span>
+            <span>+ Tambah Pelanggan</span>
         </button>
     </div>
 </div>
@@ -21,7 +21,7 @@
     <form method="GET" action="{{ route('pelanggan.index') }}" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Pelanggan</label>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari pelanggan/member</label>
                 <div class="relative">
                     <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, nomor HP, atau Member ID..."
                         class="form-input pr-8">
@@ -30,10 +30,19 @@
                     </span>
                 </div>
             </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status Member</label>
+                <select name="status" class="form-input">
+                    <option value="semua" @selected($status === 'semua')>Semua</option>
+                    <option value="umum" @selected($status === 'umum')>Member Pelanggan Umum</option>
+                    <option value="nakes" @selected($status === 'nakes')>Member Keluarga Nakes</option>
+                    <option value="belum_member" @selected($status === 'belum_member')>Belum Member</option>
+                </select>
+            </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->filled('cari'))
+            @if(request()->filled('cari') || $status !== 'semua')
                 <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
@@ -46,16 +55,53 @@
     </form>
 </div>
 
+<!-- Period Statistics -->
+<div class="card-base p-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+            <h2 class="text-base font-semibold text-gray-800">Statistik Pelanggan</h2>
+            <p class="text-caption mt-1">Ringkasan berdasarkan periode transaksi.</p>
+        </div>
+        <div class="flex items-center gap-1 flex-wrap">
+            @foreach(['hari' => 'Hari', 'minggu' => '1 Minggu', 'bulan' => 'Bulan', 'tahun' => 'Tahun'] as $value => $label)
+                <a href="{{ request()->fullUrlWithQuery(['periode' => $value]) }}"
+                    class="{{ $periode === $value ? 'btn-primary' : 'btn-secondary' }} py-1.5 px-3 text-xs">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="rounded-lg bg-blue-50 p-4">
+            <span class="text-caption block">Total Member Aktif</span>
+            <strong class="text-xl text-blue-700 block mt-1">{{ number_format($totalMemberAktif) }}</strong>
+        </div>
+        <div class="rounded-lg bg-amber-50 p-4">
+            <span class="text-caption block">Total Piutang</span>
+            <strong class="text-xl text-amber-700 block mt-1">Rp {{ number_format($totalPiutang, 0, ',', '.') }}</strong>
+        </div>
+        <div class="rounded-lg bg-green-50 p-4">
+            <span class="text-caption block">Total Diskon</span>
+            <strong class="text-xl text-green-700 block mt-1">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</strong>
+        </div>
+        <div class="rounded-lg bg-slate-50 p-4">
+            <span class="text-caption block">Total Belanja</span>
+            <strong class="text-xl text-slate-700 block mt-1">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</strong>
+        </div>
+    </div>
+</div>
+
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="customer-table table-custom min-w-[61rem] w-full table-fixed">
+        <table class="customer-table table-custom min-w-[80rem] w-full table-fixed">
             <colgroup>
                 <col style="width: 100px;">
                 <col style="width: 120px;">
                 <col style="width: 130px;">
                 <col style="width: 120px;">
-                <col style="width: 90px;">
+                <col style="width: 180px;">
+                <col style="width: 120px;">
                 <col style="width: 85px;">
                 <col style="width: 125px;">
                 <col style="width: 125px;">
@@ -65,8 +111,9 @@
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Aksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Member ID</th>
                     <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
-                    <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">Telepon</th>
+                    <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">No HP</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Status Member</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Piutang</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Total Transaksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Diskon</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
@@ -88,13 +135,37 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
                                     </svg>
                                 </a>
+                                @if($pelanggan->is_member && $pelanggan->member_id)
+                                    <button type="button" onclick="openCardModal(@js($pelanggan->nama), @js($pelanggan->member_id))" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Cetak Kartu Member" aria-label="Cetak Kartu Member">
+                                        <x-heroicon-o-credit-card class="w-3 h-3" />
+                                    </button>
+                                @endif
+                                <form method="POST" action="{{ route('pelanggan.destroy', $pelanggan) }}" onsubmit="return confirm('Hapus data pelanggan ini?')" class="inline-flex">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-red-500" style="color: #DC2626; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Hapus" aria-label="Hapus">
+                                        <x-heroicon-o-trash class="w-3 h-3" />
+                                    </button>
+                                </form>
+                                <button type="button" disabled class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-300 cursor-not-allowed" style="padding: 0; min-width: 28px; width: 28px; height: 28px;" title="WhatsApp tersedia pada tahap Penjualan/Kasir" aria-label="WhatsApp">
+                                    <x-heroicon-o-chat-bubble-left-ellipsis class="w-3 h-3" />
+                                </button>
                             </div>
                         </td>
-                        <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '—' }}</td>
+                        <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '-' }}</td>
                         <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '—' }}</td>
+                        <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</td>
                         <td class="px-1 py-3 align-middle text-center">
-                            <span class="badge-success">Member Aktif</span>
+                            @if(!$pelanggan->is_member)
+                                <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-red-700">BELUM MEMBER</span>
+                            @elseif(strtolower(trim((string) $pelanggan->keterangan)) === 'keluarga nakes')
+                                <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-purple-700">MEMBER KELUARGA NAKES</span>
+                            @else
+                                <span class="badge-success">MEMBER PELANGGAN UMUM</span>
+                            @endif
+                        </td>
+                        <td class="px-1 py-3 align-middle text-center font-semibold text-amber-700 whitespace-nowrap">
+                            Rp {{ number_format($pelanggan->saldo_piutang ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-1 py-3 align-middle text-center font-medium text-gray-700 whitespace-nowrap">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
                         <td class="px-1 py-3 align-middle text-center font-semibold text-green-600 whitespace-nowrap">
@@ -106,20 +177,20 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="p-0">
+                        <td colspan="10" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->filled('cari'))
-                                        Membership Tidak Ditemukan
+                                    @if(request()->filled('cari') || $status !== 'semua')
+                                        Pelanggan Tidak Ditemukan
                                     @else
-                                        Membership Kosong
+                                        Pelanggan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
                                     @if(request()->filled('cari'))
-                                        Tidak ada data membership yang cocok dengan filter pencarian Anda.
+                                        Tidak ada data pelanggan yang cocok dengan filter Anda.
                                     @else
-                                        Belum ada data membership terdaftar di sistem.
+                                        Belum ada data pelanggan terdaftar di sistem.
                                     @endif
                                 </div>
                             </div>
@@ -136,15 +207,15 @@
 <!-- Modal Tambah / Edit Pelanggan -->
 <x-modal-form
     id="modal-pelanggan"
-    create-title="Tambah Membership"
-    edit-title="Edit Membership"
+    create-title="Tambah Pelanggan"
+    edit-title="Edit Pelanggan"
     create-url="{{ route('pelanggan.store') }}"
     update-base="{{ url('pelanggan') }}"
     create-btn="#btn-tambah-pelanggan"
     edit-btn=".btn-edit-pelanggan"
     width="max-w-md">
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Membership <span class="text-red-500">*</span></label>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Pelanggan <span class="text-red-500">*</span></label>
         <input type="text" name="nama" required class="form-input" placeholder="Ketik nama membership...">
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
     </div>

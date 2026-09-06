@@ -37,7 +37,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('satuan', SatuanController::class)->except('show');
     Route::resource('pabrik', PabrikController::class)->except('show');
     Route::resource('supplier', SupplierController::class)->except('show');
-    Route::resource('pelanggan', PelangganController::class)->except('destroy');
+    Route::resource('pelanggan', PelangganController::class);
     Route::get('barang/export', [BarangController::class, 'export'])->name('barang.export');
     Route::get('barang/import-template', [BarangController::class, 'importTemplate'])->name('barang.import-template');
     Route::post('barang/import', [BarangController::class, 'import'])->name('barang.import');

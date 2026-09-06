@@ -11,8 +11,47 @@ class PelangganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pelanggan::query()
-            ->where('is_member', true);
+        $status = $request->input('status', 'semua');
+        $allowedStatuses = ['semua', 'umum', 'nakes', 'belum_member'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            $status = 'semua';
+        }
+
+        $periode = $request->input('periode', 'bulan');
+        $allowedPeriods = ['hari', 'minggu', 'bulan', 'tahun'];
+        if (!in_array($periode, $allowedPeriods, true)) {
+            $periode = 'bulan';
+        }
+
+        $periodStart = match ($periode) {
+            'hari' => now()->startOfDay(),
+            'minggu' => now()->startOfWeek(),
+            'tahun' => now()->startOfYear(),
+            default => now()->startOfMonth(),
+        };
+        $periodEnd = match ($periode) {
+            'hari' => now()->endOfDay(),
+            'minggu' => now()->endOfWeek(),
+            'tahun' => now()->endOfYear(),
+            default => now()->endOfMonth(),
+        };
+
+        $query = Pelanggan::query();
+
+        if ($status === 'umum') {
+            $query->where('is_member', true)
+                ->where(function ($q) {
+                    $q->whereNull('keterangan')
+                        ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
+                });
+        } elseif ($status === 'nakes') {
+            $query->where('is_member', true)
+                ->whereRaw("LOWER(TRIM(keterangan)) = 'keluarga nakes'");
+        } elseif ($status === 'belum_member') {
+            $query->where(function ($q) {
+                $q->where('is_member', false)->orWhereNull('is_member');
+            });
+        }
 
         if ($request->filled('cari')) {
             $search = $request->input('cari');
@@ -23,14 +62,48 @@ class PelangganController extends Controller
             });
         }
 
-        $pelanggans = $query->withCount('penjualan')
-            ->withSum('penjualan as total_belanja', 'total')
-            ->withSum('discountUsages as total_diskon', 'nominal')
-            ->orderBy('member_id', 'asc')
+        $pelanggans = $query->withCount(['penjualan' => function ($q) use ($periodStart, $periodEnd) {
+                $q->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
+            }])
+            ->withSum(['penjualan as total_belanja' => function ($q) use ($periodStart, $periodEnd) {
+                $q->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
+            }], 'total')
+            ->withSum(['discountUsages as total_diskon' => function ($q) use ($periodStart, $periodEnd) {
+                $q->whereHas('penjualan', function ($penjualan) use ($periodStart, $periodEnd) {
+                    $penjualan->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
+                });
+            }], 'nominal')
+            ->orderByRaw('member_id IS NULL, member_id asc')
             ->paginate(15)
             ->withQueryString();
 
-        return view('pelanggan.index', compact('pelanggans'));
+        $totalMemberAktif = Pelanggan::where('is_member', true)
+            ->where('member_aktif', true)
+            ->where(function ($q) use ($periodEnd) {
+                $q->whereNull('member_since')
+                    ->orWhereDate('member_since', '<=', $periodEnd->toDateString());
+            })
+            ->count();
+        // saldo_piutang is a current balance and has no transaction date.
+        // Use the same customer filters as the table so the card stays connected.
+        $totalPiutang = (float) (clone $query)->sum('saldo_piutang');
+        $totalDiskon = (float) DB::table('discount_usages')
+            ->join('penjualans', 'penjualans.id', '=', 'discount_usages.penjualan_id')
+            ->whereBetween('penjualans.tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()])
+            ->sum('discount_usages.nominal');
+        $totalBelanja = (float) DB::table('penjualans')
+            ->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()])
+            ->sum('total');
+
+        return view('pelanggan.index', compact(
+            'pelanggans',
+            'status',
+            'periode',
+            'totalMemberAktif',
+            'totalPiutang',
+            'totalDiskon',
+            'totalBelanja'
+        ));
     }
 
     public function show(Pelanggan $pelanggan)
