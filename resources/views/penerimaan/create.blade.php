@@ -63,7 +63,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
             <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                + Tambah Baris
+                + Tambah Item Barang
             </button>
         </div>
 
@@ -209,8 +209,8 @@ const oldItems = @json(old('items', []));
 document.getElementById('btn-tambah-item').addEventListener('click', tambahBaris);
 
 tbody.addEventListener('click', function (e) {
-    if (e.target.classList.contains('btn-hapus-row')) {
-        e.target.closest('tr').remove();
+    if (e.target.closest('.btn-hapus-row')) {
+    e.target.closest('tr').remove();
         if (tbody.children.length === 0) {
             emptyHint.style.display = 'block';
         }

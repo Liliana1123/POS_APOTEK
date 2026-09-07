@@ -83,7 +83,7 @@
 
 <div class="card-base p-0 overflow-hidden mb-6">
 
-    <div class="px-5 py-4 border-b bg-gray-50/50">
+    <div class="px-5 py-4 bg-gray-50/50">
         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">
             Stok Per Batch
         </h3>
@@ -195,13 +195,13 @@
 
                                 @elseif ($expiredDate->lte($today->copy()->addMonth()))
 
-                                    <span class="badge-warning">
+                                    <span class="badge-orange">
                                         ≤ 1 Bulan
                                     </span>
 
                                 @elseif ($expiredDate->lte($today->copy()->addMonths(3)))
 
-                                    <span class="badge-orange">
+                                    <span class="badge-warning">
                                         ≤ 3 Bulan
                                     </span>
 
@@ -279,7 +279,7 @@
 
 <div class="card-base p-0 overflow-hidden">
 
-    <div class="px-5 py-4 border-b bg-gray-50/50">
+    <div class="px-5 py-4 bg-gray-50/50">
 
         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">
             Batch Mendekati Expired (&le; 90 Hari)

@@ -25,6 +25,16 @@ class PenerimaanController extends Controller
             $query->where('supplier_id', $request->supplier_id);
         }
 
+        if ($request->filled('status_pembayaran')) {
+            if ($request->status_pembayaran === 'lunas') {
+                $query->where('lunas', true);
+            }
+
+            if ($request->status_pembayaran === 'belum_lunas') {
+                $query->where('lunas', false);
+            }
+        }
+
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
         }
