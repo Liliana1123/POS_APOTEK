@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Detail Membership')
+@section('title', 'Profil Pelanggan / Member')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Profil Membership</h1>
+        <h1>Detail Profil Pelanggan / Member</h1>
         <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -19,7 +19,7 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <!-- Profil Card -->
+    <!-- Status Member -->
     <div class="card-base p-6 md:col-span-1">
         <div class="flex items-center gap-3.5 border-b pb-4 mb-4">
             <div class="bg-blue-50 text-blue-600 rounded-full p-3">
@@ -29,9 +29,32 @@
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
-                <span class="text-xs text-gray-500 mt-1 block">
-                        <span class="badge-success">Member Aktif</span>
-                </span>
+                @php
+                    $statusMember = trim((string) $pelanggan->status_member);
+                @endphp
+
+                @if($statusMember === 'Member Keluarga Nakes')
+                    <span
+                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
+                        style="background-color: #F3E8FF; color: #7E22CE;"
+                    >
+                        Member Keluarga Nakes
+                    </span>
+                @elseif($statusMember === 'Member Only')
+                    <span
+                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
+                        style="background-color: #FEF9C3; color: #A16207;"
+                    >
+                        Member Only
+                    </span>
+                @else
+                    <span
+                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
+                        style="background-color: #DCFCE7; color: #15803D;"
+                    >
+                        Member Pelanggan Tetap
+                    </span>
+                @endif
             </div>
         </div>
 
@@ -99,7 +122,7 @@
 <!-- Transaction History List -->
 <div class="table-custom-container">
     <div class="p-4 border-b bg-gray-50/50">
-        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Membership</h3>
+        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Pelanggan / Member</h3>
     </div>
     
     <div class="overflow-x-auto">

@@ -9,49 +9,53 @@ use Illuminate\Database\QueryException;
 
 class PelangganController extends Controller
 {
-    public function index(Request $request)
-    {
-        $status = $request->input('status', 'semua');
-        $allowedStatuses = ['semua', 'umum', 'nakes', 'belum_member'];
-        if (!in_array($status, $allowedStatuses, true)) {
-            $status = 'semua';
-        }
+public function index(Request $request)
+{
+    $status = $request->input('status', 'semua');
+    $allowedStatuses = ['semua', 'pelanggan_tetap', 'keluarga_nakes', 'member_only'];
 
-        $periode = $request->input('periode', 'bulan');
-        $allowedPeriods = ['hari', 'minggu', 'bulan', 'tahun'];
-        if (!in_array($periode, $allowedPeriods, true)) {
-            $periode = 'bulan';
-        }
+    if (!in_array($status, $allowedStatuses, true)) {
+        $status = 'semua';
+    }
 
-        $periodStart = match ($periode) {
-            'hari' => now()->startOfDay(),
-            'minggu' => now()->startOfWeek(),
-            'tahun' => now()->startOfYear(),
-            default => now()->startOfMonth(),
-        };
-        $periodEnd = match ($periode) {
-            'hari' => now()->endOfDay(),
-            'minggu' => now()->endOfWeek(),
-            'tahun' => now()->endOfYear(),
-            default => now()->endOfMonth(),
-        };
+    $statusPiutang = $request->input('status_piutang', 'semua');
+    $allowedStatusPiutang = [
+        'semua',
+        'lunas',
+        'belum_lunas',
+    ];
 
-        $query = Pelanggan::query();
+    if (!in_array($statusPiutang, $allowedStatusPiutang, true)) {
+        $statusPiutang = 'semua';
+    }
 
-        if ($status === 'umum') {
-            $query->where('is_member', true)
-                ->where(function ($q) {
-                    $q->whereNull('keterangan')
-                        ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
-                });
-        } elseif ($status === 'nakes') {
-            $query->where('is_member', true)
-                ->whereRaw("LOWER(TRIM(keterangan)) = 'keluarga nakes'");
-        } elseif ($status === 'belum_member') {
-            $query->where(function ($q) {
-                $q->where('is_member', false)->orWhereNull('is_member');
+    $query = Pelanggan::query();
+
+    if ($status === 'pelanggan_tetap') {
+    $query->where('is_member', true)
+        ->where(function ($q) {
+            $q->whereNull('keterangan')
+              ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
+        });
+    } elseif ($status === 'keluarga_nakes') {
+        $query->where('is_member', true)
+            ->whereRaw("LOWER(TRIM(keterangan)) = 'keluarga nakes'");
+    } elseif ($status === 'member_only') {
+        $query->where('is_member', true)
+            ->where(function ($q) {
+                $q->whereNull('keterangan')
+                ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
             });
-        }
+    }
+
+    if ($statusPiutang === 'lunas') {
+    $query->where(function ($q) {
+        $q->whereNull('saldo_piutang')
+          ->orWhere('saldo_piutang', '<=', 0);
+    });
+    } elseif ($statusPiutang === 'belum_lunas') {
+        $query->where('saldo_piutang', '>', 0);
+    }
 
         if ($request->filled('cari')) {
             $search = $request->input('cari');
@@ -62,48 +66,19 @@ class PelangganController extends Controller
             });
         }
 
-        $pelanggans = $query->withCount(['penjualan' => function ($q) use ($periodStart, $periodEnd) {
-                $q->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
-            }])
-            ->withSum(['penjualan as total_belanja' => function ($q) use ($periodStart, $periodEnd) {
-                $q->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
-            }], 'total')
-            ->withSum(['discountUsages as total_diskon' => function ($q) use ($periodStart, $periodEnd) {
-                $q->whereHas('penjualan', function ($penjualan) use ($periodStart, $periodEnd) {
-                    $penjualan->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()]);
-                });
-            }], 'nominal')
-            ->orderByRaw('member_id IS NULL, member_id asc')
-            ->paginate(15)
-            ->withQueryString();
+        $pelanggans = $query
+        ->withCount('penjualan')
+        ->withSum('penjualan as total_belanja', 'total')
+        ->withSum('discountUsages as total_diskon', 'nominal')
+        ->orderByRaw('member_id IS NULL, member_id asc')
+        ->paginate(15)
+        ->withQueryString();
 
-        $totalMemberAktif = Pelanggan::where('is_member', true)
-            ->where('member_aktif', true)
-            ->where(function ($q) use ($periodEnd) {
-                $q->whereNull('member_since')
-                    ->orWhereDate('member_since', '<=', $periodEnd->toDateString());
-            })
-            ->count();
-        // saldo_piutang is a current balance and has no transaction date.
-        // Use the same customer filters as the table so the card stays connected.
-        $totalPiutang = (float) (clone $query)->sum('saldo_piutang');
-        $totalDiskon = (float) DB::table('discount_usages')
-            ->join('penjualans', 'penjualans.id', '=', 'discount_usages.penjualan_id')
-            ->whereBetween('penjualans.tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()])
-            ->sum('discount_usages.nominal');
-        $totalBelanja = (float) DB::table('penjualans')
-            ->whereBetween('tanggal', [$periodStart->toDateString(), $periodEnd->toDateString()])
-            ->sum('total');
-
-        return view('pelanggan.index', compact(
-            'pelanggans',
-            'status',
-            'periode',
-            'totalMemberAktif',
-            'totalPiutang',
-            'totalDiskon',
-            'totalBelanja'
-        ));
+            return view('pelanggan.index', compact(
+        'pelanggans',
+        'status',
+        'statusPiutang'
+));
     }
 
     public function show(Pelanggan $pelanggan)
@@ -128,12 +103,12 @@ class PelangganController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nama' => 'required|string|max:255',
-            'telepon' => 'required|string|max:30',
-            'alamat' => 'required|string|max:1000',
-            'tanggal_lahir' => 'nullable|date',
-            'keterangan' => 'nullable|string|max:1000',
-        ]);
+    'nama' => 'required|string|max:255',
+    'telepon' => 'required|string|max:30',
+    'alamat' => 'required|string',
+    'tanggal_lahir' => 'nullable|date',
+    'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
+    ]);
 
         $attempts = 0;
         $maxAttempts = 5;

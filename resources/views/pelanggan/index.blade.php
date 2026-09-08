@@ -11,7 +11,7 @@
     <div class="flex items-center gap-2 flex-wrap">
         <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
             <x-heroicon-o-plus class="w-4 h-4" />
-            <span>+ Tambah Pelanggan</span>
+            <span>Tambah Pelanggan</span>
         </button>
     </div>
 </div>
@@ -20,26 +20,71 @@
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('pelanggan.index') }}" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari pelanggan/member</label>
-                <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, nomor HP, atau Member ID..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status Member</label>
-                <select name="status" class="form-input">
-                    <option value="semua" @selected($status === 'semua')>Semua</option>
-                    <option value="umum" @selected($status === 'umum')>Member Pelanggan Umum</option>
-                    <option value="nakes" @selected($status === 'nakes')>Member Keluarga Nakes</option>
-                    <option value="belum_member" @selected($status === 'belum_member')>Belum Member</option>
-                </select>
-            </div>
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Cari pelanggan/member
+        </label>
+
+        <div class="relative">
+            <input
+                type="text"
+                name="cari"
+                value="{{ request('cari') }}"
+                placeholder="Cari nama, nomor HP, atau ID Pelanggan..."
+                class="form-input pr-8"
+            >
+
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+            </span>
         </div>
+    </div>
+
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Status Member
+        </label>
+
+        <select name="status" class="form-input">
+        <option value="semua" @selected($status === 'semua')>
+            Semua
+        </option>
+
+        <option value="pelanggan_tetap" @selected($status === 'pelanggan_tetap')>
+            Member Pelanggan Tetap
+        </option>
+
+        <option value="keluarga_nakes" @selected($status === 'keluarga_nakes')>
+            Member Keluarga Nakes
+        </option>
+
+        <option value="member_only" @selected($status === 'member_only')>
+            Member Only
+        </option>
+    </select>
+    </div>
+
+    <div>
+    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+        Status Piutang
+    </label>
+
+    <select name="status_piutang" class="form-input">
+        <option value="semua" @selected($statusPiutang === 'semua')>
+            Semua
+        </option>
+
+        <option value="lunas" @selected($statusPiutang === 'lunas')>
+            Lunas
+        </option>
+
+        <option value="belum_lunas" @selected($statusPiutang === 'belum_lunas')>
+            Belum Lunas
+        </option>
+    </select>
+</div>
+
+</div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->filled('cari') || $status !== 'semua')
@@ -55,66 +100,28 @@
     </form>
 </div>
 
-<!-- Period Statistics -->
-<div class="card-base p-4 mb-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div>
-            <h2 class="text-base font-semibold text-gray-800">Statistik Pelanggan</h2>
-            <p class="text-caption mt-1">Ringkasan berdasarkan periode transaksi.</p>
-        </div>
-        <div class="flex items-center gap-1 flex-wrap">
-            @foreach(['hari' => 'Hari', 'minggu' => '1 Minggu', 'bulan' => 'Bulan', 'tahun' => 'Tahun'] as $value => $label)
-                <a href="{{ request()->fullUrlWithQuery(['periode' => $value]) }}"
-                    class="{{ $periode === $value ? 'btn-primary' : 'btn-secondary' }} py-1.5 px-3 text-xs">
-                    {{ $label }}
-                </a>
-            @endforeach
-        </div>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="rounded-lg bg-blue-50 p-4">
-            <span class="text-caption block">Total Member Aktif</span>
-            <strong class="text-xl text-blue-700 block mt-1">{{ number_format($totalMemberAktif) }}</strong>
-        </div>
-        <div class="rounded-lg bg-amber-50 p-4">
-            <span class="text-caption block">Total Piutang</span>
-            <strong class="text-xl text-amber-700 block mt-1">Rp {{ number_format($totalPiutang, 0, ',', '.') }}</strong>
-        </div>
-        <div class="rounded-lg bg-green-50 p-4">
-            <span class="text-caption block">Total Diskon</span>
-            <strong class="text-xl text-green-700 block mt-1">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</strong>
-        </div>
-        <div class="rounded-lg bg-slate-50 p-4">
-            <span class="text-caption block">Total Belanja</span>
-            <strong class="text-xl text-slate-700 block mt-1">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</strong>
-        </div>
-    </div>
-</div>
-
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="customer-table table-custom min-w-[80rem] w-full table-fixed">
             <colgroup>
-                <col style="width: 100px;">
+                <col style="width: 125px;">
                 <col style="width: 120px;">
+                <col style="width: 150px;">
                 <col style="width: 130px;">
-                <col style="width: 120px;">
-                <col style="width: 180px;">
-                <col style="width: 120px;">
-                <col style="width: 85px;">
-                <col style="width: 125px;">
-                <col style="width: 125px;">
+                <col style="width: 190px;">
+                <col style="width: 130px;">
+                <col style="width: 140px;">
+                <col style="width: 140px;">
             </colgroup>
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Aksi</th>
-                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Member ID</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">ID Pelanggan</th>
                     <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
                     <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">No HP</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Status Member</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Piutang</th>
-                    <th scope="col" class="px-1 py-3 text-center align-middle">Total Transaksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Diskon</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
                 </tr>
@@ -136,7 +143,19 @@
                                     </svg>
                                 </a>
                                 @if($pelanggan->is_member && $pelanggan->member_id)
-                                    <button type="button" onclick="openCardModal(@js($pelanggan->nama), @js($pelanggan->member_id))" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Cetak Kartu Member" aria-label="Cetak Kartu Member">
+                                    <button
+                                        type="button"
+                                        onclick="openCardModal(
+                                            @js($pelanggan->nama),
+                                            @js($pelanggan->member_id),
+                                            @js($pelanggan->penjualan_count),
+                                            @js($pelanggan->status_member)
+                                        )"
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500"
+                                        style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;"
+                                        title="Cetak Kartu Member"
+                                        aria-label="Cetak Kartu Member"
+                                    >
                                         <x-heroicon-o-credit-card class="w-3 h-3" />
                                     </button>
                                 @endif
@@ -156,18 +175,44 @@
                         <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
                         <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</td>
                         <td class="px-1 py-3 align-middle text-center">
-                            @if(!$pelanggan->is_member)
-                                <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-red-700">BELUM MEMBER</span>
-                            @elseif(strtolower(trim((string) $pelanggan->keterangan)) === 'keluarga nakes')
-                                <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-purple-700">MEMBER KELUARGA NAKES</span>
+                           @php
+                                $statusMember = trim((string) $pelanggan->status_member);
+                            @endphp
+
+                            @if($statusMember === 'Member Keluarga Nakes')
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                    style="background-color: #F3E8FF; color: #7E22CE;"
+                                >
+                                    Member Keluarga Nakes
+                                </span>
+                            @elseif($statusMember === 'Member Only')
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                    style="background-color: #FEF9C3; color: #A16207;"
+                                >
+                                    Member Only
+                                </span>
                             @else
-                                <span class="badge-success">MEMBER PELANGGAN UMUM</span>
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                                    style="background-color: #DCFCE7; color: #15803D;"
+                                >
+                                    Member Pelanggan Tetap
+                                </span>
                             @endif
                         </td>
-                        <td class="px-1 py-3 align-middle text-center font-semibold text-amber-700 whitespace-nowrap">
-                            Rp {{ number_format($pelanggan->saldo_piutang ?? 0, 0, ',', '.') }}
+                        <td class="px-4 py-3">
+                            @if(($pelanggan->saldo_piutang ?? 0) > 0)
+                                <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                    Belum Lunas
+                                </span>
+                            @else
+                                <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                    Lunas
+                                </span>
+                            @endif
                         </td>
-                        <td class="px-1 py-3 align-middle text-center font-medium text-gray-700 whitespace-nowrap">{{ $pelanggan->penjualan_count ?? 0 }}x</td>
                         <td class="px-1 py-3 align-middle text-center font-semibold text-green-600 whitespace-nowrap">
                             Rp {{ number_format($pelanggan->total_diskon ?? 0, 0, ',', '.') }}
                         </td>
@@ -177,10 +222,15 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="p-0">
+                        <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->filled('cari') || $status !== 'semua')
+                                   @if(
+                                        request()->filled('cari') ||
+                                        request()->filled('tanggal_awal') ||
+                                        request()->filled('tanggal_akhir') ||
+                                        $status !== 'semua'
+                                    )
                                         Pelanggan Tidak Ditemukan
                                     @else
                                         Pelanggan Kosong
@@ -235,9 +285,27 @@
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="tanggal_lahir"></p>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Keterangan</label>
-        <textarea name="keterangan" class="form-input" rows="2"></textarea>
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="keterangan"></p>
+    <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">
+        Status Member <span class="text-red-500">*</span>
+    </label>
+
+    <select name="status_member" required class="form-input">
+        <option value="">Pilih status member</option>
+        <option value="Member Pelanggan Tetap">
+            Member Pelanggan Tetap
+        </option>
+        <option value="Member Keluarga Nakes">
+            Member Keluarga Nakes
+        </option>
+        <option value="Member Only">
+            Member Only
+        </option>
+    </select>
+
+    <p
+        class="modal-field-error text-red-600 text-xs mt-1 hidden"
+        data-error-for="status_member">
+    </p>
     </div>
 </x-modal-form>
 
@@ -248,7 +316,12 @@
         <div id="print-area" class="border-2 border-blue-600 rounded-xl p-5 bg-gradient-to-br from-blue-50 to-white text-blue-900 w-full shadow-sm mx-auto font-sans">
             <div class="flex justify-between items-center border-b pb-2.5 mb-4">
                 <span class="font-bold text-sm tracking-wider uppercase text-blue-800">Apotek Membership</span>
-                <span class="badge-success text-[8px] tracking-widest font-bold">MEMBER CARD</span>
+                <span
+                    id="card-status-member"
+                    class="inline-flex items-center rounded-full px-2 py-1 text-[8px] tracking-widest font-bold uppercase bg-green-100 text-green-700"
+                >
+                    MEMBER PELANGGAN TETAP
+                </span>
             </div>
             <div class="space-y-3 text-xs mb-4">
                 <div>
@@ -263,10 +336,6 @@
                     <div>
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Benefit Diskon</span>
                         <strong class="text-sm text-green-600 font-bold">{{ config('pos.diskon_member', 10) }}% OFF</strong>
-                    </div>
-                    <div class="text-left">
-                        <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Status Kartu</span>
-                        <strong class="text-xs text-blue-600 font-bold uppercase tracking-wider">ACTIVE</strong>
                     </div>
                 </div>
             </div>
@@ -283,18 +352,56 @@
 </div>
 
 <script>
-function openCardModal(nama, memberId) {
+function openCardModal(nama, memberId, totalTransaksi, statusMember) {
     document.getElementById('card-name').textContent = nama;
     document.getElementById('card-id').textContent = memberId;
 
+    // Status member
+    const statusElement = document.getElementById('card-status-member');
+
+    statusElement.textContent = statusMember || 'Member Pelanggan Tetap';
+
+    // Reset warna status
+    statusElement.classList.remove(
+        'bg-green-100',
+        'text-green-700',
+        'bg-purple-100',
+        'text-purple-700',
+        'bg-yellow-100',
+        'text-yellow-700'
+    );
+
+    // Tentukan warna berdasarkan status member
+    if (statusMember === 'Member Keluarga Nakes') {
+        statusElement.classList.add(
+            'bg-purple-100',
+            'text-purple-700'
+        );
+    } else if (statusMember === 'Member Only') {
+        statusElement.classList.add(
+            'bg-yellow-100',
+            'text-yellow-700'
+        );
+    } else {
+        statusElement.classList.add(
+            'bg-green-100',
+            'text-green-700'
+        );
+    }
+
+    // Generate QR Code
     if (window.QRCode) {
-        window.QRCode.toDataURL(memberId, { width: 128, margin: 1 }, function (err, url) {
-            if (!err) {
-                document.getElementById('card-qrcode').src = url;
-            } else {
-                console.error(err);
+        window.QRCode.toDataURL(
+            memberId,
+            { width: 128, margin: 1 },
+            function (err, url) {
+                if (!err) {
+                    document.getElementById('card-qrcode').src = url;
+                } else {
+                    console.error(err);
+                }
             }
-        });
+        );
     } else {
         console.error("QRCode library not loaded.");
     }

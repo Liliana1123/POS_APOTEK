@@ -8,8 +8,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Pelanggan extends Model
 {
     protected $fillable = [
-        'nama', 'telepon', 'alamat', 'tanggal_lahir', 'keterangan',
-        'member_id', 'is_member', 'member_aktif', 'member_since', 'saldo_piutang',
+        'nama',
+        'telepon',
+        'alamat',
+        'tanggal_lahir',
+        'keterangan',
+        'member_id',
+        'is_member',
+        'member_aktif',
+        'member_since',
+        'saldo_piutang',
+        'status_member',
     ];
 
     protected $casts = [
@@ -25,10 +34,15 @@ class Pelanggan extends Model
         $lastNumber = self::whereNotNull('member_id')
             ->where('member_id', 'like', 'MBR-%')
             ->pluck('member_id')
-            ->map(fn (string $memberId): int => (int) substr($memberId, 4))
+            ->map(function ($id) {
+                return (int) substr($id, 4);
+            })
             ->max();
 
-        return sprintf('MBR-%06d', $lastNumber === null ? 0 : $lastNumber + 1);
+        return sprintf(
+            'MBR-%06d',
+            $lastNumber === null ? 1 : $lastNumber + 1
+        );
     }
 
     public function penjualan(): HasMany
@@ -38,6 +52,11 @@ class Pelanggan extends Model
 
     public function discountUsages()
     {
-        return $this->hasManyThrough(DiscountUsage::class, Penjualan::class, 'pelanggan_id', 'penjualan_id');
+        return $this->hasManyThrough(
+            DiscountUsage::class,
+            Penjualan::class,
+            'pelanggan_id',
+            'penjualan_id'
+        );
     }
 }

@@ -54,9 +54,9 @@
 
             <!-- Pencarian & Pemilihan Member -->
             <div class="mb-4 relative">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pelanggan / Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
                 <div class="flex gap-2">
-                    <input type="text" id="pencarian-pelanggan" placeholder="Cari Member ID, Nama, atau HP..."
+                    <input type="text" id="pencarian-pelanggan" placeholder="Cari Nama, Member ID, atau HP..."
                         class="form-input">
                     <button type="button" id="btn-tambah-member" class="btn-secondary whitespace-nowrap">
                         + Member
@@ -65,13 +65,15 @@
                 <!-- Dropdown hasil pencarian pelanggan -->
                 <div id="hasil-pencarian-pelanggan" class="absolute left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 hidden"></div>
                 <input type="hidden" name="pelanggan_id" id="selected-pelanggan-id" value="">
+                <input type="hidden" name="pelanggan_nama" id="pelanggan-nama">
+                <input type="hidden" name="pelanggan_telepon" id="pelanggan-telepon">
             </div>
 
             <!-- Info Member Terpilih -->
             <div id="info-pelanggan-terpilih" class="mb-4 bg-gray-50 border border-gray-150 rounded-lg p-3 text-xs">
                 <div class="flex justify-between items-center">
                     <div>
-                        <span class="text-gray-400">Member:</span>
+                        <span class="text-gray-400">Pelanggan:</span>
                         <strong id="selected-pelanggan-nama" class="text-gray-800 ml-1">Umum</strong>
                         <span id="selected-pelanggan-member-id" class="font-mono text-blue-700 font-semibold ml-1"></span>
                     </div>
@@ -149,9 +151,12 @@ const totalDisplay = document.getElementById('total-display');
 const form = document.getElementById('form-penjualan');
 
 // Pelanggan elements
+
 const pelangganSearchInput = document.getElementById('pencarian-pelanggan');
 const pelangganSearchHasil = document.getElementById('hasil-pencarian-pelanggan');
 const selectedPelangganIdInput = document.getElementById('selected-pelanggan-id');
+const pelangganNamaInput = document.getElementById('pelanggan-nama');
+const pelangganTeleponInput = document.getElementById('pelanggan-telepon');
 const selectedPelangganNama = document.getElementById('selected-pelanggan-nama');
 const selectedPelangganMemberId = document.getElementById('selected-pelanggan-member-id');
 const btnResetPelanggan = document.getElementById('btn-reset-pelanggan');
@@ -159,6 +164,7 @@ const badgeDiskonMember = document.getElementById('badge-diskon-member');
 const labelDiskonPercent = document.getElementById('label-diskon-percent');
 
 // Modal elements
+
 const modalDaftarMember = document.getElementById('modal-daftar-member');
 const btnTambahMember = document.getElementById('btn-tambah-member');
 const btnCancelMember = document.getElementById('btn-cancel-member');
@@ -282,7 +288,15 @@ inputBayar.addEventListener('input', hitungKembalian);
 
 // Pelanggan Search Logic
 pelangganSearchInput.addEventListener('input', () => {
-    const v = pelangganSearchInput.value.trim().toLowerCase();
+    const nilaiAsli = pelangganSearchInput.value.trim();
+    const v = nilaiAsli.toLowerCase();
+
+    // Jika user mengetik pelanggan baru dan belum memilih hasil pencarian,
+    // simpan nama yang diketik untuk diproses oleh backend.
+    if (selectedPelangganIdInput.value === '') {
+        pelangganNamaInput.value = nilaiAsli;
+        pelangganTeleponInput.value = '';
+    }
     if (!v) {
         pelangganSearchHasil.innerHTML = '';
         pelangganSearchHasil.classList.add('hidden');
@@ -297,13 +311,21 @@ pelangganSearchInput.addEventListener('input', () => {
 
     if (hasil.length > 0) {
         pelangganSearchHasil.innerHTML = hasil.map(p => `
-            <button type="button" data-id="${p.id}" class="btn-select-pelanggan w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50 border-b border-gray-150 last:border-0 flex justify-between items-center transition-colors">
+           <button type="button" data-id="${p.id}" class="btn-select-pelanggan w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50 border-b border-gray-150 last:border-0 flex justify-between items-center transition-colors">
                 <div>
                     <strong class="text-gray-800 font-medium">${p.nama}</strong>
                     ${p.telepon ? `<span class="text-gray-500 block text-[10px] font-mono mt-0.5">Telp: ${p.telepon}</span>` : ''}
                 </div>
                 <div>
-                    <span class="${p.member_aktif ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'} px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">${p.member_id} · ${p.member_aktif ? 'AKTIF' : 'TIDAK AKTIF'}</span>
+                    ${
+                        p.is_member
+                            ? `<span class="bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">
+                                ${p.member_id ?? '-'} · MEMBER
+                            </span>`
+                            : `<span class="bg-red-50 text-red-700 px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">
+                                BELUM MEMBER
+                            </span>`
+                    }
                 </div>
             </button>
         `).join('');
@@ -339,7 +361,8 @@ document.addEventListener('click', (e) => {
 function selectPelanggan(pelanggan) {
     selectedPelanggan = pelanggan;
     selectedPelangganIdInput.value = pelanggan.id;
-    selectedPelangganNama.textContent = pelanggan.nama;
+    pelangganNamaInput.value = pelanggan.nama || '';
+    pelangganTeleponInput.value = pelanggan.telepon || '';
     
     if (pelanggan.is_member) {
         selectedPelangganMemberId.textContent = `(${pelanggan.member_id})`;
@@ -364,12 +387,21 @@ function selectPelanggan(pelanggan) {
 
 btnResetPelanggan.addEventListener('click', () => {
     selectedPelanggan = null;
+
     selectedPelangganIdInput.value = '';
+    pelangganNamaInput.value = '';
+    pelangganTeleponInput.value = '';
+
+    pelangganSearchInput.value = '';
+
     selectedPelangganNama.textContent = 'Umum';
     selectedPelangganMemberId.textContent = '';
+
     badgeDiskonMember.classList.add('hidden');
     labelDiskonPercent.textContent = '0';
+
     btnResetPelanggan.classList.add('hidden');
+
     renderKeranjang();
 });
 

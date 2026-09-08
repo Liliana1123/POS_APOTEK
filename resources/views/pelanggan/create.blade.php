@@ -41,10 +41,32 @@
     </div>
 
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
-        <textarea name="keterangan" class="form-input" rows="3">{{ old('keterangan') }}</textarea>
-        @error('keterangan') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
+    <label for="status_member" class="block text-sm font-medium text-gray-700 mb-1">
+        Status Member <span class="text-red-500">*</span>
+    </label>
+
+    <select
+        id="status_member"
+        name="status_member"
+        required
+        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+    >
+        <option value="">Pilih status member</option>
+        <option value="Member Pelanggan Tetap">
+            Member Pelanggan Tetap
+        </option>
+        <option value="Member Keluarga Nakes">
+            Member Keluarga Nakes
+        </option>
+        <option value="Member Only">
+            Member Only
+        </option>
+    </select>
+
+    @error('status_member')
+        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+    @enderror
+</div>
 
     <div class="flex gap-2 border-t pt-4">
         <button type="submit" class="btn-primary py-2 px-6">Simpan</button>
