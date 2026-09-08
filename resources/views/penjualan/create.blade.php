@@ -92,14 +92,36 @@
                 <span id="total-display" class="text-sm font-bold text-gray-800">Rp 0</span>
             </div>
 
-            <!-- Payment & Change Calculator Section -->
+            <!-- Payment Section -->
             <div class="border-t pt-3 space-y-3 mb-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Bayar (Uang Tunai) <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F8]</span></label>
-                    <input type="number" id="input-bayar" placeholder="Masukkan nominal pembayaran..."
-                        class="form-input font-mono font-semibold text-right">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                        Metode Pembayaran
+                    </label>
+                    <select name="metode_pembayaran" id="metode-pembayaran" class="form-input" required>
+                        <option value="cash">Cash</option>
+                        <option value="qris">QRIS</option>
+                        <option value="debit">Debit</option>
+                        <option value="piutang">Piutang</option>
+                    </select>
                 </div>
-                <div class="flex justify-between items-center text-xs">
+
+                <div id="bagian-pembayaran-cash">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                        Bayar (Uang Tunai)
+                        <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F8]</span>
+                    </label>
+                    <input type="number" id="input-bayar" placeholder="Masukkan nominal pembayaran..."
+                        class="form-input font-mono font-semibold text-right" min="0">
+                </div>
+
+                <div id="info-pembayaran-piutang"
+                    class="hidden bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                    Transaksi akan dicatat sebagai <strong>Piutang</strong>.
+                    Pembayaran dapat dilakukan kemudian melalui halaman Pelanggan/Member.
+                </div>
+
+                <div id="baris-kembalian" class="flex justify-between items-center text-xs">
                     <span id="label-kembalian" class="font-semibold text-gray-500">Kembalian:</span>
                     <strong id="display-kembalian" class="text-xs text-gray-400">Masukkan jumlah pembayaran</strong>
                 </div>
@@ -243,18 +265,58 @@ function renderKeranjang() {
     totalDisplay.textContent = formatRupiah(total);
     
     currentTotal = total;
-    hitungKembalian();
+    updateMetodePembayaran();
 }
 
-// Payment and Change Calculator JavaScript
+// Payment and Change Calculator
 let currentTotal = 0;
+const metodePembayaran = document.getElementById('metode-pembayaran');
+const bagianPembayaranCash = document.getElementById('bagian-pembayaran-cash');
+const infoPembayaranPiutang = document.getElementById('info-pembayaran-piutang');
 const inputBayar = document.getElementById('input-bayar');
+const barisKembalian = document.getElementById('baris-kembalian');
 const displayKembalian = document.getElementById('display-kembalian');
 const labelKembalian = document.getElementById('label-kembalian');
 const submitButton = form.querySelector('button[type="submit"]');
+const opsiPiutang = metodePembayaran.querySelector('option[value="piutang"]');
+
+function pelangganMemberAktif() {
+    return !!(selectedPelanggan && selectedPelanggan.is_member && selectedPelanggan.member_aktif);
+}
+
+function updateMetodePembayaran() {
+    const metode = metodePembayaran.value;
+    const adaKeranjang = Object.keys(cart).length > 0;
+    const memberAktif = pelangganMemberAktif();
+
+    if (opsiPiutang) {
+        opsiPiutang.disabled = !memberAktif;
+    }
+
+    if (metode === 'piutang' && !memberAktif) {
+        metodePembayaran.value = 'cash';
+        updateMetodePembayaran();
+        return;
+    }
+
+    bagianPembayaranCash.classList.toggle('hidden', metode !== 'cash');
+    infoPembayaranPiutang.classList.toggle('hidden', metode !== 'piutang');
+    barisKembalian.classList.toggle('hidden', metode !== 'cash');
+
+    if (metode === 'cash') {
+        hitungKembalian();
+    } else if (metode === 'piutang') {
+        submitButton.disabled = !adaKeranjang || !memberAktif;
+    } else {
+        submitButton.disabled = !adaKeranjang;
+    }
+}
 
 function hitungKembalian() {
+    if (metodePembayaran.value !== 'cash') return;
+
     const valStr = inputBayar.value.trim();
+
     if (!valStr) {
         displayKembalian.textContent = 'Masukkan jumlah pembayaran';
         displayKembalian.className = 'text-xs text-gray-400';
@@ -285,6 +347,7 @@ function hitungKembalian() {
 }
 
 inputBayar.addEventListener('input', hitungKembalian);
+metodePembayaran.addEventListener('change', updateMetodePembayaran);
 
 // Pelanggan Search Logic
 pelangganSearchInput.addEventListener('input', () => {
@@ -517,17 +580,27 @@ form.addEventListener('submit', (e) => {
         return;
     }
     
-    // Safety check for payment < total on frontend
-    const valStr = inputBayar.value.trim();
-    if (!valStr) {
-        e.preventDefault();
-        alert('Masukkan nominal pembayaran terlebih dahulu.');
-        return;
+    const metode = metodePembayaran.value;
+
+    if (metode === 'cash') {
+        const valStr = inputBayar.value.trim();
+        if (!valStr) {
+            e.preventDefault();
+            alert('Masukkan nominal pembayaran terlebih dahulu.');
+            return;
+        }
+
+        const bayar = parseFloat(valStr) || 0;
+        if (bayar < currentTotal) {
+            e.preventDefault();
+            alert('Pembayaran masih kurang.');
+            return;
+        }
     }
-    const bayar = parseFloat(valStr) || 0;
-    if (bayar < currentTotal) {
+
+    if (metode === 'piutang' && !pelangganMemberAktif()) {
         e.preventDefault();
-        alert('Pembayaran masih kurang.');
+        alert('Pembayaran piutang hanya dapat digunakan oleh member yang aktif.');
         return;
     }
 

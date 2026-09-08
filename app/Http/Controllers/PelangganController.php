@@ -74,7 +74,7 @@ public function index(Request $request)
         'pelanggans',
         'status',
         'statusPiutang'
-));
+        ));
     }
 
     public function show(Pelanggan $pelanggan)
@@ -152,27 +152,28 @@ public function index(Request $request)
     }
 
    public function update(Request $request, Pelanggan $pelanggan)
-    {
-        $data = $request->validate([
-            'nama' => 'required|string|max:255',
-            'telepon' => 'required|string|max:30',
-            'alamat' => 'required|string|max:1000',
-            'tanggal_lahir' => 'nullable|date',
+{
+    $data = $request->validate([
+        'nama' => 'required|string|max:255',
+        'telepon' => 'required|string|max:30',
+        'alamat' => 'required|string|max:1000',
+        'tanggal_lahir' => 'nullable|date',
+    ]);
+
+    // Hanya mengubah data yang boleh diedit
+    $pelanggan->update($data);
+
+    if ($request->expectsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Data pelanggan/member berhasil diperbarui.',
+            'pelanggan' => $pelanggan->load('penjualan'),
         ]);
-
-        $pelanggan->update($data);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Data pelanggan/member berhasil diperbarui.',
-                'pelanggan' => $pelanggan->load('penjualan'),
-            ]);
-        }
-
-        return redirect()->route('pelanggan.index')
-            ->with('success', 'Data pelanggan/member berhasil diperbarui.');
     }
+
+    return redirect()->route('pelanggan.index')
+        ->with('success', 'Data pelanggan/member berhasil diperbarui.');
+}
 
     public function destroy(Pelanggan $pelanggan)
     {

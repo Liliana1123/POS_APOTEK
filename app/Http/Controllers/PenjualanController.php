@@ -67,6 +67,7 @@ class PenjualanController extends Controller
             'pelanggan_telepon' => 'nullable|string|max:30',
             'tanggal' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penjualans,no_faktur',
+            'metode_pembayaran' => 'required|in:cash,qris,debit,piutang',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.jumlah' => 'required|integer|min:1',
@@ -150,13 +151,24 @@ class PenjualanController extends Controller
                     if ($pelanggan->is_member && ($pelanggan->member_aktif ?? false)) {
                         $diskonMemberPercent = min(50, config('pos.diskon_member', 10));
                     }
+
+                    // Piutang hanya boleh untuk member yang aktif
+                    if ($data['metode_pembayaran'] === 'piutang') {
+                        if (!$pelanggan->is_member || !($pelanggan->member_aktif ?? false)) {
+                            throw ValidationException::withMessages([
+                                'metode_pembayaran' => 'Pembayaran dengan piutang hanya dapat digunakan oleh member yang aktif.',
+                            ]);
+                        }
+                    }
                 }
+                
                 $penjualan = Penjualan::create([
                     'user_id' => $request->user()->id,
                     'pelanggan_id' => $data['pelanggan_id'] ?? null,
                     'tanggal' => $data['tanggal'],
                     'no_faktur' => $data['no_faktur'],
                     'total' => 0,
+                    'metode_pembayaran' => $data['metode_pembayaran'],
                 ]);
 
                 $totalFaktur = 0;
@@ -291,8 +303,13 @@ class PenjualanController extends Controller
                 }
 
                 $penjualan->update(['total' => $totalFaktur]);
-
-                \App\Models\ActivityLog::log('Transaksi Penjualan', "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2));
+                if ($data['metode_pembayaran'] === 'piutang') {
+                    $pelanggan->increment('saldo_piutang', $totalFaktur);
+                }
+                \App\Models\ActivityLog::log(
+                    'Transaksi Penjualan',
+                    "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2)
+                );
 
                 return $penjualan;
             });
