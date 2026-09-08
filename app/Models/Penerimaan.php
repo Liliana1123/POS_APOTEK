@@ -14,13 +14,15 @@ class Penerimaan extends Model
 
     protected $fillable = [
         'user_id', 'supplier_id', 'telepon_supplier', 'keterangan',
-        'tanggal', 'no_faktur', 'lunas', 'jatuh_tempo',
+        'tanggal', 'tanggal_faktur', 'no_faktur', 'ppn', 'lunas', 'jatuh_tempo',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'tanggal_faktur' => 'date',
         'jatuh_tempo' => 'date',
         'lunas' => 'boolean',
+        'ppn' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -48,6 +50,16 @@ class Penerimaan extends Model
         return (float) $this->detail()->sum(DB::raw('harga_beli * jumlah'));
     }
 
+    public function totalTagihan(): float
+    {
+        return $this->totalFaktur() + (float) $this->ppn;
+    }
+    
+    public function kelebihanPembayaran(): float
+    {
+        return max(0, $this->totalDibayar() - $this->totalTagihan());
+    }
+
     public function totalDibayar(): float
     {
         return (float) $this->pembayaran()->sum('jumlah');
@@ -55,6 +67,6 @@ class Penerimaan extends Model
 
     public function sisaTagihan(): float
     {
-        return max(0, $this->totalFaktur() - $this->totalDibayar());
+        return max(0, $this->totalTagihan() - $this->totalDibayar());
     }
 }

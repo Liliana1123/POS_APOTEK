@@ -35,7 +35,19 @@
                 class="form-input font-mono font-semibold" placeholder="Nomor faktur masuk...">
         </div>
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Penerimaan <span class="text-red-500 font-bold">*</span></label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Tanggal Faktur <span class="text-red-500 font-bold">*</span>
+            </label>
+            <input
+                type="date"
+                name="tanggal_faktur"
+                value="{{ old('tanggal_faktur') }}"
+                required
+                class="form-input"
+            >
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Terima <span class="text-red-500 font-bold">*</span></label>
             <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
                 class="form-input">
         </div>
@@ -106,10 +118,31 @@
 
         <p class="text-xs text-gray-400 text-center py-4" id="empty-hint">Belum ada baris. Klik "+ Tambah Baris" untuk mulai input.</p>
         <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
-            <span>Total Faktur:</span>
+            <span>Total Belanja:</span>
             <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
         </div>
-    </div>
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+            <label for="ppn">PPN (Opsional)</label>
+            <input
+                type="number"
+                name="ppn"
+                id="ppn"
+                value="{{ old('ppn', 0) }}"
+                min="0"
+                step="0.01"
+                class="form-input w-full sm:w-40 text-right font-mono"
+                placeholder="0"
+            >
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+            <span>Total Tagihan:</span>
+            <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
+        </div>
+
+        </div>
+            <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        </div>
 
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
         <div>
@@ -168,6 +201,9 @@ const tbody = document.getElementById('item-rows');
 const template = document.getElementById('row-template');
 const emptyHint = document.getElementById('empty-hint');
 const totalFaktur = document.getElementById('total-faktur');
+const ppn = document.getElementById('ppn');
+const totalTagihan = document.getElementById('total-tagihan');
+
 
 function formatRupiah(value) { return 'Rp ' + Math.round(value).toLocaleString('id-ID'); }
 function updateTotal() {
@@ -180,6 +216,8 @@ function updateTotal() {
         row.querySelector('.subtotal-field').textContent = formatRupiah(subtotal);
     });
     totalFaktur.textContent = formatRupiah(total);
+    const nilaiPpn = parseFloat(ppn.value) || 0;
+    totalTagihan.textContent = formatRupiah(total + nilaiPpn);
 }
 
 function tambahBaris() {
@@ -227,6 +265,7 @@ tbody.addEventListener('change', function (e) {
     }
 });
 tbody.addEventListener('input', updateTotal);
+ppn.addEventListener('input', updateTotal);
 
 document.getElementById('supplier_id').addEventListener('change', function () {
     document.getElementById('telepon_supplier').value = this.selectedOptions[0]?.dataset.telepon || '';

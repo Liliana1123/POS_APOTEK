@@ -60,6 +60,20 @@
 
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                Tanggal Faktur <span class="text-red-500 font-bold">*</span>
+            </label>
+
+            <input
+                type="date"
+                name="tanggal_faktur"
+                value="{{ old('tanggal_faktur', $penerimaan->tanggal_faktur?->format('Y-m-d')) }}"
+                required
+                class="form-input"
+            >
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
                 Tanggal Penerimaan <span class="text-red-500 font-bold">*</span>
             </label>
 
@@ -361,9 +375,30 @@
         </p>
 
         <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
-            <span>Total Faktur:</span>
+            <span>Total Belanja:</span>
 
             <span id="total-faktur" class="text-blue-700 font-mono">
+                Rp 0
+            </span>
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+            <label for="ppn">PPN (Opsional)</label>
+            <input
+                type="number"
+                name="ppn"
+                id="ppn"
+                value="{{ old('ppn', $penerimaan->ppn ?? 0) }}"
+                min="0"
+                step="0.01"
+                class="form-input w-full sm:w-40 text-right font-mono"
+                placeholder="0"
+            >
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+            <span>Total Tagihan:</span>
+            <span id="total-tagihan" class="text-blue-700 font-mono">
                 Rp 0
             </span>
         </div>
@@ -568,6 +603,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const template = document.getElementById('row-template');
     const emptyHint = document.getElementById('empty-hint');
     const totalFaktur = document.getElementById('total-faktur');
+    const ppnInput = document.getElementById('ppn');
+    const totalTagihan = document.getElementById('total-tagihan');
 
     function formatRupiah(value) {
         return 'Rp ' + Math.round(value).toLocaleString('id-ID');
@@ -599,6 +636,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         totalFaktur.textContent = formatRupiah(total);
+        const ppn = parseFloat(ppnInput.value) || 0;
+        totalTagihan.textContent = formatRupiah(total + ppn);
     }
 
     function tambahBaris() {
@@ -658,6 +697,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     tbody.addEventListener('input', updateTotal);
+    ppnInput.addEventListener('input', updateTotal);
 
     document.getElementById('supplier_id')
         .addEventListener('change', function () {

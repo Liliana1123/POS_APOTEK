@@ -68,12 +68,15 @@ class PenerimaanController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            
             'supplier_id' => 'required|exists:suppliers,id',
             'telepon_supplier' => 'nullable|string|max:30',
             'keterangan' => 'nullable|string',
             'tanggal' => 'required|date',
+            'tanggal_faktur' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penerimaans,no_faktur',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
+            'ppn' => 'nullable|numeric|min:0',
             'pembayaran_pertama' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
@@ -84,10 +87,11 @@ class PenerimaanController extends Controller
             'items.*.no_rak' => 'required|string|max:50',
             'items.*.jumlah' => 'required|integer|min:1',
         ]);
-
         $data['supplier_id'] = (int) $data['supplier_id'];
         $supplier = Supplier::findOrFail($data['supplier_id']);
         $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah']);
+        $ppn = (float) ($data['ppn'] ?? 0);
+        $totalTagihan = $totalFaktur + $ppn;
         $pembayaranPertama = (float) ($data['pembayaran_pertama'] ?? 0);
         
         $kombinasiBatch = collect($data['items'])
@@ -97,22 +101,25 @@ class PenerimaanController extends Controller
             throw ValidationException::withMessages(['items' => 'Barang dan nomor batch yang sama tidak boleh dimasukkan lebih dari satu kali dalam satu faktur.',
         ]);}
 
-        if ($pembayaranPertama > $totalFaktur) {
-            throw ValidationException::withMessages(['pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total faktur.']);
+        if ($pembayaranPertama > $totalTagihan) {
+            throw ValidationException::withMessages(['pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total tagihan.']);
         }
         if ($pembayaranPertama > 0 && empty($data['jatuh_tempo']) && $pembayaranPertama < $totalFaktur) {
             throw ValidationException::withMessages(['jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.']);
         }
 
-        DB::transaction(function () use ($data, $request, $supplier, $pembayaranPertama) {
+        DB::transaction(function () use ($data, $request, $supplier, $pembayaranPertama, $totalTagihan) {
+            
             $penerimaan = Penerimaan::create([
                 'user_id' => $request->user()->id,
                 'supplier_id' => $data['supplier_id'],
                 'telepon_supplier' => $supplier->telepon,
                 'keterangan' => $data['keterangan'] ?? null,
                 'tanggal' => $data['tanggal'],
+                'tanggal_faktur' => $data['tanggal_faktur'],
                 'no_faktur' => $data['no_faktur'],
-                'lunas' => $pembayaranPertama >= collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah']),
+                'ppn' => $data['ppn'] ?? 0,
+                'lunas' => $pembayaranPertama >= $totalTagihan,
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
             ]);
 
@@ -128,10 +135,14 @@ class PenerimaanController extends Controller
                     'jumlah' => $item['jumlah'],
                     'stok' => $item['jumlah'],
                     'aktif' => true,
+
+                    
                 ]);
+              
             }
 
             if ($pembayaranPertama > 0) {
+                
                 PembayaranPenerimaan::create([
                     'penerimaan_id' => $penerimaan->id,
                     'user_id' => $request->user()->id,
@@ -148,7 +159,6 @@ class PenerimaanController extends Controller
     public function show(Penerimaan $penerimaan)
     {
         $penerimaan->load(['user', 'supplier', 'detail.barang.pabrik', 'detail.barang.satuan', 'pembayaran.user']);
-
         return view('penerimaan.show', compact('penerimaan'));
     }
 
@@ -180,7 +190,9 @@ class PenerimaanController extends Controller
             'supplier_id' => 'required|exists:suppliers,id',
             'keterangan' => 'nullable|string',
             'tanggal' => 'required|date',
+            'tanggal_faktur' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penerimaans,no_faktur,' . $penerimaan->id,
+            'ppn' => 'nullable|numeric|min:0',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
 
             'items' => 'required|array|min:1',
@@ -210,6 +222,8 @@ class PenerimaanController extends Controller
                 'telepon_supplier' => Supplier::findOrFail($data['supplier_id'])->telepon,
                 'keterangan' => $data['keterangan'] ?? null,
                 'tanggal' => $data['tanggal'],
+                'tanggal_faktur' => $data['tanggal_faktur'],
+                'ppn' => $data['ppn'] ?? 0,
                 'no_faktur' => $data['no_faktur'],
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
             ]);
@@ -228,6 +242,7 @@ class PenerimaanController extends Controller
                 $detailId = isset($item['detail_id'])
                     ? (int) $item['detail_id']
                     : null;
+                    
 
                     if ($detailId && $existingDetails->has($detailId)) {
                         $detail = $existingDetails->get($detailId);
@@ -286,16 +301,14 @@ class PenerimaanController extends Controller
             $totalFaktur = (float) $penerimaan->detail()
                 ->sum(DB::raw('harga_beli * jumlah'));
 
+            $ppn = (float) ($data['ppn'] ?? 0);
+            $totalTagihan = $totalFaktur + $ppn;
+
             $totalDibayar = $penerimaan->totalDibayar();
 
-            if ($totalDibayar > $totalFaktur) {
-                throw ValidationException::withMessages([
-                    'items' => 'Perubahan tidak dapat disimpan karena total pembayaran sudah melebihi total faktur baru.',
-                ]);
-            }
-
+            
             $penerimaan->update([
-                'lunas' => $totalDibayar >= $totalFaktur,
+                'lunas' => $totalDibayar >= $totalTagihan,
             ]);
         });
 
@@ -320,9 +333,9 @@ class PenerimaanController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $totalFaktur = $penerimaan->totalFaktur();
+        $totalTagihan = $penerimaan->totalTagihan();
         $totalDibayar = $penerimaan->totalDibayar();
-        $sisa = max(0, $totalFaktur - $totalDibayar);
+        $sisa = max(0, $totalTagihan - $totalDibayar);
         if ((float) $data['jumlah'] > $sisa) {
             throw ValidationException::withMessages(['jumlah' => 'Pembayaran tidak boleh melebihi sisa tagihan.']);
         }
@@ -335,7 +348,7 @@ class PenerimaanController extends Controller
                 'jumlah' => $data['jumlah'],
                 'keterangan' => $data['keterangan'] ?? null,
             ]);
-            $penerimaan->update(['lunas' => ($totalDibayar + (float) $data['jumlah']) >= $totalFaktur]);
+            $penerimaan->update(['lunas' => ($totalDibayar + (float) $data['jumlah']) >= $totalTagihan]);
         });
 
         return back()->with('success', 'Pembayaran penerimaan berhasil disimpan.');
