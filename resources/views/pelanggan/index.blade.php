@@ -179,27 +179,59 @@
                                 $statusMember = trim((string) $pelanggan->status_member);
                             @endphp
 
-                            @if($statusMember === 'Member Keluarga Nakes')
-                                <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    style="background-color: #F3E8FF; color: #7E22CE;"
-                                >
-                                    Member Keluarga Nakes
-                                </span>
-                            @elseif($statusMember === 'Member Only')
-                                <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    style="background-color: #FEF9C3; color: #A16207;"
-                                >
-                                    Member Only
-                                </span>
-                            @else
-                                <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    style="background-color: #DCFCE7; color: #15803D;"
-                                >
-                                    Member Pelanggan Tetap
-                                </span>
+                                @if($statusMember === 'Member Keluarga Nakes') 
+                                <span 
+                                    class="inline-flex items-center justify-center text-center" 
+                                    style=" 
+                                        font-size: 0.5625rem; 
+                                        font-weight: 600; 
+                                        text-transform: uppercase; 
+                                        letter-spacing: 0.05em; 
+                                        line-height: 1.2; 
+                                        padding: 0.125rem 0.5rem; 
+                                        border-radius: 0.25rem; 
+                                        background-color: #F3E8FF; 
+                                        color: #7E22CE; 
+                                    " 
+                                > 
+                                    Member Keluarga Nakes 
+                                </span> 
+
+                            @elseif($statusMember === 'Member Only') 
+                                <span 
+                                    class="inline-flex items-center justify-center text-center" 
+                                    style=" 
+                                        font-size: 0.5625rem; 
+                                        font-weight: 600; 
+                                        text-transform: uppercase; 
+                                        letter-spacing: 0.05em; 
+                                        line-height: 1.2; 
+                                        padding: 0.125rem 0.5rem; 
+                                        border-radius: 0.25rem; 
+                                        background-color: #FEF9C3; 
+                                        color: #A16207; 
+                                    " 
+                                > 
+                                    Member Only 
+                                </span> 
+
+                            @else 
+                                <span 
+                                    class="inline-flex items-center justify-center text-center" 
+                                    style=" 
+                                        font-size: 0.5625rem; 
+                                        font-weight: 600; 
+                                        text-transform: uppercase; 
+                                        letter-spacing: 0.05em; 
+                                        line-height: 1.2; 
+                                        padding: 0.125rem 0.5rem; 
+                                        border-radius: 0.25rem; 
+                                        background-color: #DCFCE7; 
+                                        color: #15803D; 
+                                    " 
+                                > 
+                                    Member Pelanggan Tetap 
+                                </span> 
                             @endif
                         </td>
                         <td class="px-4 py-3">
@@ -257,8 +289,8 @@
 <!-- Modal Tambah / Edit Pelanggan -->
 <x-modal-form
     id="modal-pelanggan"
-    create-title="Tambah Pelanggan"
-    edit-title="Edit Pelanggan"
+    create-title="Tambah Pelanggan / Member"
+    edit-title="Edit Pelanggan / Member"
     create-url="{{ route('pelanggan.store') }}"
     update-base="{{ url('pelanggan') }}"
     create-btn="#btn-tambah-pelanggan"
@@ -284,11 +316,11 @@
         <input type="date" name="tanggal_lahir" class="form-input">
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="tanggal_lahir"></p>
     </div>
-    <div>
+
+    <div id="status-member-field">
     <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">
         Status Member <span class="text-red-500">*</span>
     </label>
-
     <select name="status_member" required class="form-input">
         <option value="">Pilih status member</option>
         <option value="Member Pelanggan Tetap">

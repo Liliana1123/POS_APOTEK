@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Edit Pelanggan')
+@section('title', 'Edit Pelanggan / Member')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Edit Membership</h1>
-        <p class="text-caption mt-1">Ubah data profil member.</p>
+        <h1>Edit Pelanggan / Member</h1>
+        <p class="text-caption mt-1">Ubah data profil pelanggan / member.</p>
     </div>
     <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4 shrink-0">
         &larr; Kembali
@@ -15,6 +15,11 @@
 
 <form action="{{ route('pelanggan.update', $pelanggan) }}" method="POST" class="card-base p-6 max-w-md space-y-4">
     @csrf @method('PUT')
+
+    <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Member ID (Permanen)</label>
+        <input type="text" value="{{ $pelanggan->member_id }}" disabled readonly class="form-input bg-gray-50 font-mono text-gray-400 border-gray-200">
+    </div>
 
     <div>
         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nama Membership <span class="text-red-500 font-bold">*</span></label>
@@ -41,19 +46,10 @@
     </div>
 
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
-        <textarea name="keterangan" class="form-input" rows="3">{{ old('keterangan', $pelanggan->keterangan) }}</textarea>
-        @error('keterangan') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Member ID (Permanen)</label>
-        <input type="text" value="{{ $pelanggan->member_id }}" disabled readonly class="form-input bg-gray-50 font-mono text-gray-400 border-gray-200">
-    </div>
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-400 mb-1.5 font-sans">Status Member</label>
-        <div class="form-input bg-gray-50 text-gray-500">Member Aktif</div>
+        <label class="form-label">Status Member</label>
+        <div class="form-input bg-gray-100">
+            {{ $pelanggan->status_member }}
+        </div>
     </div>
 
     <div class="flex gap-2 border-t pt-4">

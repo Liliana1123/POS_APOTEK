@@ -33,19 +33,15 @@ public function index(Request $request)
 
     if ($status === 'pelanggan_tetap') {
     $query->where('is_member', true)
-        ->where(function ($q) {
-            $q->whereNull('keterangan')
-              ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
-        });
+          ->where('status_member', 'Member Pelanggan Tetap');
     } elseif ($status === 'keluarga_nakes') {
         $query->where('is_member', true)
-            ->whereRaw("LOWER(TRIM(keterangan)) = 'keluarga nakes'");
+            ->where('status_member', 'Member Keluarga Nakes');
     } elseif ($status === 'member_only') {
         $query->where('is_member', true)
-            ->where(function ($q) {
-                $q->whereNull('keterangan')
-                ->orWhereRaw("LOWER(TRIM(keterangan)) <> 'keluarga nakes'");
-            });
+            ->where('status_member', 'Member Only');
+    } else {
+        $query->where('is_member', true);
     }
 
     if ($statusPiutang === 'lunas') {
@@ -155,29 +151,27 @@ public function index(Request $request)
         return view('pelanggan.edit', compact('pelanggan'));
     }
 
-    public function update(Request $request, Pelanggan $pelanggan)
+   public function update(Request $request, Pelanggan $pelanggan)
     {
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'telepon' => 'required|string|max:30',
             'alamat' => 'required|string|max:1000',
             'tanggal_lahir' => 'nullable|date',
-            'keterangan' => 'nullable|string|max:1000',
         ]);
-
-        $data['member_aktif'] = true;
 
         $pelanggan->update($data);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Membership berhasil diperbarui.',
+                'message' => 'Data pelanggan/member berhasil diperbarui.',
                 'pelanggan' => $pelanggan->load('penjualan'),
             ]);
         }
 
-        return redirect()->route('pelanggan.index')->with('success', 'Membership berhasil diperbarui.');
+        return redirect()->route('pelanggan.index')
+            ->with('success', 'Data pelanggan/member berhasil diperbarui.');
     }
 
     public function destroy(Pelanggan $pelanggan)

@@ -33,27 +33,59 @@
                     $statusMember = trim((string) $pelanggan->status_member);
                 @endphp
 
-                @if($statusMember === 'Member Keluarga Nakes')
-                    <span
-                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
-                        style="background-color: #F3E8FF; color: #7E22CE;"
-                    >
-                        Member Keluarga Nakes
-                    </span>
-                @elseif($statusMember === 'Member Only')
-                    <span
-                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
-                        style="background-color: #FEF9C3; color: #A16207;"
-                    >
-                        Member Only
-                    </span>
-                @else
-                    <span
-                        class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase"
-                        style="background-color: #DCFCE7; color: #15803D;"
-                    >
-                        Member Pelanggan Tetap
-                    </span>
+                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #F3E8FF; 
+                            color: #7E22CE; 
+                        " 
+                    > 
+                        Member Keluarga Nakes 
+                    </span> 
+
+                @elseif($pelanggan->status_member === 'Member Only') 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #FEF9C3; 
+                            color: #A16207; 
+                        " 
+                    > 
+                        Member Only 
+                    </span> 
+
+                @else 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #DCFCE7; 
+                            color: #15803D; 
+                        " 
+                    > 
+                        Member Pelanggan Tetap 
+                    </span> 
                 @endif
             </div>
         </div>
