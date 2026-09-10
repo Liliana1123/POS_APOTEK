@@ -193,16 +193,8 @@
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
-                        <td class="whitespace-nowrap">
-                            @if ($stok <= 0)
-                                <span class="badge-danger">Habis</span>
-                            @elseif ($stok <= $barang->stok_minimum)
-                                <span class="badge-warning" title="Min: {{ $barang->stok_minimum }}">{{ $stok }} · Menipis</span>
-                            @else
-                                <span class="badge-success">{{ $stok }} · Aman</span>
-                            @endif
-                        </td>
-                        <td class="text-center whitespace-nowrap">
+                        <td>{{ $stok }}</td>
+                        <td class="text-center">
                             @if ($barang->aktif)
                                 <span class="badge-success">Aktif</span>
                             @else

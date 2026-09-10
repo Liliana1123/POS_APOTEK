@@ -11,6 +11,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\RusakController;
 use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\CustomDiscountController;
 
@@ -68,6 +69,22 @@ Route::middleware(['auth', 'role:admin'])->prefix('laporan')->name('laporan.')->
     Route::get('/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
     Route::get('/diskon', [LaporanController::class, 'diskon'])->name('diskon');
 });
+
+Route::get(
+    'pelanggan/{pelanggan}/piutang',
+    [PembayaranPiutangController::class, 'pelanggan']
+)->name('pelanggan.piutang');
+
+Route::get(
+    'penjualan/{penjualan}/piutang/payment-form',
+    [PembayaranPiutangController::class, 'form']
+)->name('penjualan.piutang.payments.form');
+
+Route::post(
+    'penjualan/{penjualan}/piutang/payments',
+    [PembayaranPiutangController::class, 'store']
+)->name('penjualan.piutang.payments.store');
+
 
 
 // ==== CONTOH pemakaian middleware role untuk modul lain nanti ====

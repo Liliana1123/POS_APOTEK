@@ -34,7 +34,15 @@ class DashboardController extends Controller
         })->sum('total');
 
         // 5. Total Penghematan Member (Rupiah diskon member)
-        $memberSavingsTotal = DiscountUsage::where('jenis', 'member')->sum('nominal');
+        $memberSavingsTotal = DiscountUsage::query()
+            ->whereHas('penjualan.pelanggan', function ($q) {
+                $q->where('is_member', true);
+            })
+            ->whereHas('penjualan', function ($q) {
+                $q->whereMonth('tanggal', now()->month)
+                    ->whereYear('tanggal', now()->year);
+            })
+            ->sum('nominal');
 
         // 6. Promo Aktif Hari Ini
         $activePromosCount = CustomDiscount::aktifHariIni()->count();
@@ -69,8 +77,9 @@ class DashboardController extends Controller
         $totalSalesGross = (float) DB::table('detail_penjualans')
             ->selectRaw('COALESCE(SUM(harga_jual * jumlah), 0) as total')
             ->value('total');
-        $totalDiscount = (float) DB::table('detail_penjualans')
-            ->sum('diskon');
+        // DiscountUsage stores the actual split between member and custom discount.
+        // Summing this audit avoids counting the same custom discount twice.
+        $totalDiscount = (float) DiscountUsage::sum('nominal');
         $realSalesTotal = $totalSalesGross - $totalDiscount;
 
         // Stats Hari Ini (Fase 5)

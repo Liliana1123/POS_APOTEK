@@ -27,7 +27,7 @@ class PenjualanController extends Controller
 
     public function create()
     {
-        $pelanggans = Pelanggan::where('is_member', true)
+        $pelanggans = Pelanggan::orderBy('nama')
             ->orderBy('nama')
             ->get()
             ->map(fn($p) => [
@@ -37,7 +37,9 @@ class PenjualanController extends Controller
             'is_member' => $p->is_member,
             'member_aktif' => (bool) ($p->member_aktif ?? true),
             'member_id' => $p->member_id,
-            'diskon_percent' => ($p->member_aktif ?? true) ? min(50, config('pos.diskon_member', 10)) : 0,
+            'diskon_percent' => ($p->is_member && ($p->member_aktif ?? false))
+            ? min(50, config('pos.diskon_member', 10))
+            : 0,
         ]);
 
         // Cuma barang yang aktif & masih ada stok yang bisa dijual
@@ -61,8 +63,11 @@ class PenjualanController extends Controller
     {
         $data = $request->validate([
             'pelanggan_id' => 'nullable|exists:pelanggans,id',
+            'pelanggan_nama' => 'nullable|string|max:255',
+            'pelanggan_telepon' => 'nullable|string|max:30',
             'tanggal' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penjualans,no_faktur',
+            'metode_pembayaran' => 'required|in:cash,qris,debit,piutang',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.jumlah' => 'required|integer|min:1',
@@ -70,27 +75,100 @@ class PenjualanController extends Controller
 
         try {
             $penjualan = DB::transaction(function () use ($data, $request) {
-                // Tentukan diskon member dari backend
-                $diskonMemberPercent = 0;
-                if (!empty($data['pelanggan_id'])) {
-                    $pelanggan = Pelanggan::find($data['pelanggan_id']);
-                    if (!$pelanggan || !$pelanggan->is_member) {
-                        throw ValidationException::withMessages([
-                            'pelanggan_id' => 'Pelanggan yang dipilih bukan Member yang valid.',
+
+                        // Tentukan pelanggan yang digunakan dalam transaksi
+                if (empty($data['pelanggan_id'])) {
+
+                    // Jika nama pelanggan diisi
+                    if (!empty($data['pelanggan_nama'])) {
+
+                        $pelanggan = null;
+
+                        // Cari berdasarkan nomor HP jika tersedia
+                        if (!empty($data['pelanggan_telepon'])) {
+                            $pelanggan = Pelanggan::where(
+                                'telepon',
+                                $data['pelanggan_telepon']
+                            )->first();
+                        }
+
+                        // Jika belum ditemukan, cari berdasarkan nama
+                        if (!$pelanggan) {
+                            $pelanggan = Pelanggan::where(
+                                'nama',
+                                $data['pelanggan_nama']
+                            )->first();
+                        }
+
+                        // Jika belum ada, buat pelanggan belum member
+                        if (!$pelanggan) {
+                            $pelanggan = Pelanggan::create([
+                                'nama' => $data['pelanggan_nama'],
+                                'telepon' => $data['pelanggan_telepon'] ?? null,
+                                'alamat' => null,
+                                'tanggal_lahir' => null,
+                                'keterangan' => null,
+                                'member_id' => null,
+                                'is_member' => false,
+                                'member_aktif' => false,
+                                'member_since' => null,
+                                'saldo_piutang' => 0,
+                            ]);
+                        }
+
+                    } else {
+
+                        // Jika tidak ada nama, buat pelanggan Umum baru
+                        $pelanggan = Pelanggan::create([
+                            'nama' => 'Umum',
+                            'telepon' => null,
+                            'alamat' => null,
+                            'tanggal_lahir' => null,
+                            'keterangan' => 'Pelanggan Umum',
+                            'member_id' => Pelanggan::generateUmumId(),
+                            'is_member' => false,
+                            'member_aktif' => false,
+                            'member_since' => null,
+                            'saldo_piutang' => 0,
                         ]);
                     }
 
-                    if ($pelanggan->member_aktif) {
-                        $diskonMemberPercent = min(50, config('pos.diskon_member', 10));
-                    }
+                    // Hubungkan transaksi dengan pelanggan tersebut
+                    $data['pelanggan_id'] = $pelanggan->id;
                 }
 
+    // Tentukan diskon member dari backend
+    $diskonMemberPercent = 0;
+                if (!empty($data['pelanggan_id'])) {
+                    $pelanggan = Pelanggan::find($data['pelanggan_id']);
+
+                    if (!$pelanggan) {
+                        throw ValidationException::withMessages([
+                            'pelanggan_id' => 'Data pelanggan tidak ditemukan.',
+                        ]);
+                    }
+
+                    if ($pelanggan->is_member && ($pelanggan->member_aktif ?? false)) {
+                        $diskonMemberPercent = min(50, config('pos.diskon_member', 10));
+                    }
+
+                    // Piutang hanya boleh untuk member yang aktif
+                    if ($data['metode_pembayaran'] === 'piutang') {
+                        if (!$pelanggan->is_member || !($pelanggan->member_aktif ?? false)) {
+                            throw ValidationException::withMessages([
+                                'metode_pembayaran' => 'Pembayaran dengan piutang hanya dapat digunakan oleh member yang aktif.',
+                            ]);
+                        }
+                    }
+                }
+                
                 $penjualan = Penjualan::create([
                     'user_id' => $request->user()->id,
                     'pelanggan_id' => $data['pelanggan_id'] ?? null,
                     'tanggal' => $data['tanggal'],
                     'no_faktur' => $data['no_faktur'],
                     'total' => 0,
+                    'metode_pembayaran' => $data['metode_pembayaran'],
                 ]);
 
                 $totalFaktur = 0;
@@ -225,8 +303,13 @@ class PenjualanController extends Controller
                 }
 
                 $penjualan->update(['total' => $totalFaktur]);
-
-                \App\Models\ActivityLog::log('Transaksi Penjualan', "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2));
+                if ($data['metode_pembayaran'] === 'piutang') {
+                    $pelanggan->increment('saldo_piutang', $totalFaktur);
+                }
+                \App\Models\ActivityLog::log(
+                    'Transaksi Penjualan',
+                    "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2)
+                );
 
                 return $penjualan;
             });

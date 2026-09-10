@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Detail Membership')
+@section('title', 'Profil Pelanggan / Member')
 
 @section('content')
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1>Profil Membership</h1>
+        <h1>Detail Profil Pelanggan / Member</h1>
         <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -19,7 +19,7 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <!-- Profil Card -->
+    <!-- Status Member -->
     <div class="card-base p-6 md:col-span-1">
         <div class="flex items-center gap-3.5 border-b pb-4 mb-4">
             <div class="bg-blue-50 text-blue-600 rounded-full p-3">
@@ -29,13 +29,64 @@
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
-                <span class="text-xs text-gray-500 mt-1 block">
-                    @if ($pelanggan->member_aktif)
-                        <span class="badge-success">AKTIF</span>
-                    @else
-                        <span class="badge-danger">TIDAK AKTIF</span>
-                    @endif
-                </span>
+                @php
+                    $statusMember = trim((string) $pelanggan->status_member);
+                @endphp
+
+                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #F3E8FF; 
+                            color: #7E22CE; 
+                        " 
+                    > 
+                        Member Keluarga Nakes 
+                    </span> 
+
+                @elseif($pelanggan->status_member === 'Member Only') 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #FEF9C3; 
+                            color: #A16207; 
+                        " 
+                    > 
+                        Member Only 
+                    </span> 
+
+                @else 
+                    <span 
+                        class="inline-flex items-center justify-center text-center" 
+                        style=" 
+                            font-size: 0.5625rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.05em; 
+                            line-height: 1.2; 
+                            padding: 0.125rem 0.5rem; 
+                            border-radius: 0.25rem; 
+                            background-color: #DCFCE7; 
+                            color: #15803D; 
+                        " 
+                    > 
+                        Member Pelanggan Tetap 
+                    </span> 
+                @endif
             </div>
         </div>
 
@@ -48,9 +99,21 @@
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Nomor Telepon / HP</span>
                 <span class="text-gray-800">{{ $pelanggan->telepon ?? '—' }}</span>
             </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Alamat</span>
+                <span class="text-gray-800 whitespace-pre-line">{{ $pelanggan->alamat ?? '—' }}</span>
+            </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Lahir</span>
+                <span class="text-gray-800">{{ $pelanggan->tanggal_lahir ? $pelanggan->tanggal_lahir->format('d M Y') : '—' }}</span>
+            </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Keterangan</span>
+                <span class="text-gray-800 whitespace-pre-line">{{ $pelanggan->keterangan ?? '—' }}</span>
+            </div>
             @if ($pelanggan->is_member)
                 <div>
-                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Member Sejak</span>
+                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
                     <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
                 </div>
             @endif
@@ -81,7 +144,7 @@
         <div class="card-base p-6 flex flex-col justify-between">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Total Penghematan</span>
             <div class="mt-4">
-                <span class="text-2xl font-extrabold text-green-600 block font-mono">Rp {{ number_format($pelanggan->total_hemat, 0, ',', '.') }}</span>
+                <span class="text-2xl font-extrabold text-green-600 block font-mono">Rp {{ number_format($pelanggan->total_diskon, 0, ',', '.') }}</span>
                 <span class="text-xs text-gray-500 mt-1 block font-sans">akumulasi hemat diskon</span>
             </div>
         </div>
@@ -91,7 +154,7 @@
 <!-- Transaction History List -->
 <div class="table-custom-container">
     <div class="p-4 border-b bg-gray-50/50">
-        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Membership</h3>
+        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Pelanggan / Member</h3>
     </div>
     
     <div class="overflow-x-auto">
