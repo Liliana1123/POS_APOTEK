@@ -9,10 +9,49 @@ use Illuminate\Database\QueryException;
 
 class PelangganController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Pelanggan::query()
-            ->where('is_member', true);
+public function index(Request $request)
+{
+    $status = $request->input('status', 'semua');
+    $allowedStatuses = ['semua', 'pelanggan_tetap', 'keluarga_nakes', 'member_only'];
+
+    if (!in_array($status, $allowedStatuses, true)) {
+        $status = 'semua';
+    }
+
+    $statusPiutang = $request->input('status_piutang', 'semua');
+    $allowedStatusPiutang = [
+        'semua',
+        'lunas',
+        'belum_lunas',
+    ];
+
+    if (!in_array($statusPiutang, $allowedStatusPiutang, true)) {
+        $statusPiutang = 'semua';
+    }
+
+    $query = Pelanggan::query();
+
+    if ($status === 'pelanggan_tetap') {
+    $query->where('is_member', true)
+          ->where('status_member', 'Member Pelanggan Tetap');
+    } elseif ($status === 'keluarga_nakes') {
+        $query->where('is_member', true)
+            ->where('status_member', 'Member Keluarga Nakes');
+    } elseif ($status === 'member_only') {
+        $query->where('is_member', true)
+            ->where('status_member', 'Member Only');
+    } else {
+        $query->where('is_member', true);
+    }
+
+    if ($statusPiutang === 'lunas') {
+    $query->where(function ($q) {
+        $q->whereNull('saldo_piutang')
+          ->orWhere('saldo_piutang', '<=', 0);
+    });
+    } elseif ($statusPiutang === 'belum_lunas') {
+        $query->where('saldo_piutang', '>', 0);
+    }
 
         if ($request->filled('cari')) {
             $search = $request->input('cari');
@@ -23,21 +62,26 @@ class PelangganController extends Controller
             });
         }
 
-        $pelanggans = $query->withCount('penjualan')
-            ->withSum('penjualan as total_belanja', 'total')
-            ->withSum('discountUsages as total_hemat', 'nominal')
-            ->orderBy('member_id', 'asc')
-            ->paginate(15)
-            ->withQueryString();
+        $pelanggans = $query
+        ->withCount('penjualan')
+        ->withSum('penjualan as total_belanja', 'total')
+        ->withSum('discountUsages as total_diskon', 'nominal')
+        ->orderByRaw('member_id IS NULL, member_id asc')
+        ->paginate(15)
+        ->withQueryString();
 
-        return view('pelanggan.index', compact('pelanggans'));
+            return view('pelanggan.index', compact(
+        'pelanggans',
+        'status',
+        'statusPiutang'
+        ));
     }
 
     public function show(Pelanggan $pelanggan)
     {
         $pelanggan->loadCount('penjualan');
         $pelanggan->total_belanja = $pelanggan->penjualan()->sum('total');
-        $pelanggan->total_hemat = $pelanggan->discountUsages()->sum('nominal');
+        $pelanggan->total_diskon = $pelanggan->discountUsages()->sum('nominal');
 
         $penjualans = $pelanggan->penjualan()
             ->orderByDesc('tanggal')
@@ -55,10 +99,12 @@ class PelangganController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nama' => 'required|string|max:255',
-            'telepon' => 'required|string|max:30',
-            'saldo_piutang' => 'nullable|numeric|min:0',
-        ]);
+    'nama' => 'required|string|max:255',
+    'telepon' => 'required|string|max:30',
+    'alamat' => 'required|string',
+    'tanggal_lahir' => 'nullable|date',
+    'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
+    ]);
 
         $attempts = 0;
         $maxAttempts = 5;
@@ -105,33 +151,29 @@ class PelangganController extends Controller
         return view('pelanggan.edit', compact('pelanggan'));
     }
 
-    public function update(Request $request, Pelanggan $pelanggan)
-    {
-        $data = $request->validate([
-            'nama' => 'required|string|max:255',
-            'telepon' => 'required|string|max:30',
-            'member_aktif' => 'sometimes|boolean',
-            'saldo_piutang' => 'nullable|numeric|min:0',
+   public function update(Request $request, Pelanggan $pelanggan)
+{
+    $data = $request->validate([
+        'nama' => 'required|string|max:255',
+        'telepon' => 'required|string|max:30',
+        'alamat' => 'required|string|max:1000',
+        'tanggal_lahir' => 'nullable|date',
+    ]);
+
+    // Hanya mengubah data yang boleh diedit
+    $pelanggan->update($data);
+
+    if ($request->expectsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Data pelanggan/member berhasil diperbarui.',
+            'pelanggan' => $pelanggan->load('penjualan'),
         ]);
-
-        if ($pelanggan->is_member) {
-            $data['member_aktif'] = $request->has('member_aktif')
-                ? $request->boolean('member_aktif')
-                : ($pelanggan->member_aktif ?? true);
-        }
-
-        $pelanggan->update($data);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Membership berhasil diperbarui.',
-                'pelanggan' => $pelanggan->load('penjualan'),
-            ]);
-        }
-
-        return redirect()->route('pelanggan.index')->with('success', 'Membership berhasil diperbarui.');
     }
+
+    return redirect()->route('pelanggan.index')
+        ->with('success', 'Data pelanggan/member berhasil diperbarui.');
+}
 
     public function destroy(Pelanggan $pelanggan)
     {

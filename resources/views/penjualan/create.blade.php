@@ -54,9 +54,9 @@
 
             <!-- Pencarian & Pemilihan Member -->
             <div class="mb-4 relative">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pelanggan / Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
                 <div class="flex gap-2">
-                    <input type="text" id="pencarian-pelanggan" placeholder="Cari Member ID, Nama, atau HP..."
+                    <input type="text" id="pencarian-pelanggan" placeholder="Cari Nama, Member ID, atau HP..."
                         class="form-input">
                     <button type="button" id="btn-tambah-member" class="btn-secondary whitespace-nowrap">
                         + Member
@@ -65,13 +65,15 @@
                 <!-- Dropdown hasil pencarian pelanggan -->
                 <div id="hasil-pencarian-pelanggan" class="absolute left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 hidden"></div>
                 <input type="hidden" name="pelanggan_id" id="selected-pelanggan-id" value="">
+                <input type="hidden" name="pelanggan_nama" id="pelanggan-nama">
+                <input type="hidden" name="pelanggan_telepon" id="pelanggan-telepon">
             </div>
 
             <!-- Info Member Terpilih -->
             <div id="info-pelanggan-terpilih" class="mb-4 bg-gray-50 border border-gray-150 rounded-lg p-3 text-xs">
                 <div class="flex justify-between items-center">
                     <div>
-                        <span class="text-gray-400">Member:</span>
+                        <span class="text-gray-400">Pelanggan:</span>
                         <strong id="selected-pelanggan-nama" class="text-gray-800 ml-1">Umum</strong>
                         <span id="selected-pelanggan-member-id" class="font-mono text-blue-700 font-semibold ml-1"></span>
                     </div>
@@ -90,14 +92,36 @@
                 <span id="total-display" class="text-sm font-bold text-gray-800">Rp 0</span>
             </div>
 
-            <!-- Payment & Change Calculator Section -->
+            <!-- Payment Section -->
             <div class="border-t pt-3 space-y-3 mb-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Bayar (Uang Tunai) <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F8]</span></label>
-                    <input type="number" id="input-bayar" placeholder="Masukkan nominal pembayaran..."
-                        class="form-input font-mono font-semibold text-right">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                        Metode Pembayaran
+                    </label>
+                    <select name="metode_pembayaran" id="metode-pembayaran" class="form-input" required>
+                        <option value="cash">Cash</option>
+                        <option value="qris">QRIS</option>
+                        <option value="debit">Debit</option>
+                        <option value="piutang">Piutang</option>
+                    </select>
                 </div>
-                <div class="flex justify-between items-center text-xs">
+
+                <div id="bagian-pembayaran-cash">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                        Bayar (Uang Tunai)
+                        <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F8]</span>
+                    </label>
+                    <input type="number" id="input-bayar" placeholder="Masukkan nominal pembayaran..."
+                        class="form-input font-mono font-semibold text-right" min="0">
+                </div>
+
+                <div id="info-pembayaran-piutang"
+                    class="hidden bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                    Transaksi akan dicatat sebagai <strong>Piutang</strong>.
+                    Pembayaran dapat dilakukan kemudian melalui halaman Pelanggan/Member.
+                </div>
+
+                <div id="baris-kembalian" class="flex justify-between items-center text-xs">
                     <span id="label-kembalian" class="font-semibold text-gray-500">Kembalian:</span>
                     <strong id="display-kembalian" class="text-xs text-gray-400">Masukkan jumlah pembayaran</strong>
                 </div>
@@ -149,9 +173,12 @@ const totalDisplay = document.getElementById('total-display');
 const form = document.getElementById('form-penjualan');
 
 // Pelanggan elements
+
 const pelangganSearchInput = document.getElementById('pencarian-pelanggan');
 const pelangganSearchHasil = document.getElementById('hasil-pencarian-pelanggan');
 const selectedPelangganIdInput = document.getElementById('selected-pelanggan-id');
+const pelangganNamaInput = document.getElementById('pelanggan-nama');
+const pelangganTeleponInput = document.getElementById('pelanggan-telepon');
 const selectedPelangganNama = document.getElementById('selected-pelanggan-nama');
 const selectedPelangganMemberId = document.getElementById('selected-pelanggan-member-id');
 const btnResetPelanggan = document.getElementById('btn-reset-pelanggan');
@@ -159,6 +186,7 @@ const badgeDiskonMember = document.getElementById('badge-diskon-member');
 const labelDiskonPercent = document.getElementById('label-diskon-percent');
 
 // Modal elements
+
 const modalDaftarMember = document.getElementById('modal-daftar-member');
 const btnTambahMember = document.getElementById('btn-tambah-member');
 const btnCancelMember = document.getElementById('btn-cancel-member');
@@ -237,18 +265,58 @@ function renderKeranjang() {
     totalDisplay.textContent = formatRupiah(total);
     
     currentTotal = total;
-    hitungKembalian();
+    updateMetodePembayaran();
 }
 
-// Payment and Change Calculator JavaScript
+// Payment and Change Calculator
 let currentTotal = 0;
+const metodePembayaran = document.getElementById('metode-pembayaran');
+const bagianPembayaranCash = document.getElementById('bagian-pembayaran-cash');
+const infoPembayaranPiutang = document.getElementById('info-pembayaran-piutang');
 const inputBayar = document.getElementById('input-bayar');
+const barisKembalian = document.getElementById('baris-kembalian');
 const displayKembalian = document.getElementById('display-kembalian');
 const labelKembalian = document.getElementById('label-kembalian');
 const submitButton = form.querySelector('button[type="submit"]');
+const opsiPiutang = metodePembayaran.querySelector('option[value="piutang"]');
+
+function pelangganMemberAktif() {
+    return !!(selectedPelanggan && selectedPelanggan.is_member && selectedPelanggan.member_aktif);
+}
+
+function updateMetodePembayaran() {
+    const metode = metodePembayaran.value;
+    const adaKeranjang = Object.keys(cart).length > 0;
+    const memberAktif = pelangganMemberAktif();
+
+    if (opsiPiutang) {
+        opsiPiutang.disabled = !memberAktif;
+    }
+
+    if (metode === 'piutang' && !memberAktif) {
+        metodePembayaran.value = 'cash';
+        updateMetodePembayaran();
+        return;
+    }
+
+    bagianPembayaranCash.classList.toggle('hidden', metode !== 'cash');
+    infoPembayaranPiutang.classList.toggle('hidden', metode !== 'piutang');
+    barisKembalian.classList.toggle('hidden', metode !== 'cash');
+
+    if (metode === 'cash') {
+        hitungKembalian();
+    } else if (metode === 'piutang') {
+        submitButton.disabled = !adaKeranjang || !memberAktif;
+    } else {
+        submitButton.disabled = !adaKeranjang;
+    }
+}
 
 function hitungKembalian() {
+    if (metodePembayaran.value !== 'cash') return;
+
     const valStr = inputBayar.value.trim();
+
     if (!valStr) {
         displayKembalian.textContent = 'Masukkan jumlah pembayaran';
         displayKembalian.className = 'text-xs text-gray-400';
@@ -279,10 +347,19 @@ function hitungKembalian() {
 }
 
 inputBayar.addEventListener('input', hitungKembalian);
+metodePembayaran.addEventListener('change', updateMetodePembayaran);
 
 // Pelanggan Search Logic
 pelangganSearchInput.addEventListener('input', () => {
-    const v = pelangganSearchInput.value.trim().toLowerCase();
+    const nilaiAsli = pelangganSearchInput.value.trim();
+    const v = nilaiAsli.toLowerCase();
+
+    // Jika user mengetik pelanggan baru dan belum memilih hasil pencarian,
+    // simpan nama yang diketik untuk diproses oleh backend.
+    if (selectedPelangganIdInput.value === '') {
+        pelangganNamaInput.value = nilaiAsli;
+        pelangganTeleponInput.value = '';
+    }
     if (!v) {
         pelangganSearchHasil.innerHTML = '';
         pelangganSearchHasil.classList.add('hidden');
@@ -297,13 +374,21 @@ pelangganSearchInput.addEventListener('input', () => {
 
     if (hasil.length > 0) {
         pelangganSearchHasil.innerHTML = hasil.map(p => `
-            <button type="button" data-id="${p.id}" class="btn-select-pelanggan w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50 border-b border-gray-150 last:border-0 flex justify-between items-center transition-colors">
+           <button type="button" data-id="${p.id}" class="btn-select-pelanggan w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50 border-b border-gray-150 last:border-0 flex justify-between items-center transition-colors">
                 <div>
                     <strong class="text-gray-800 font-medium">${p.nama}</strong>
                     ${p.telepon ? `<span class="text-gray-500 block text-[10px] font-mono mt-0.5">Telp: ${p.telepon}</span>` : ''}
                 </div>
                 <div>
-                    <span class="${p.member_aktif ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'} px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">${p.member_id} · ${p.member_aktif ? 'AKTIF' : 'TIDAK AKTIF'}</span>
+                    ${
+                        p.is_member
+                            ? `<span class="bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">
+                                ${p.member_id ?? '-'} · MEMBER
+                            </span>`
+                            : `<span class="bg-red-50 text-red-700 px-2 py-0.5 rounded-full font-mono text-[9px] font-bold">
+                                BELUM MEMBER
+                            </span>`
+                    }
                 </div>
             </button>
         `).join('');
@@ -339,7 +424,8 @@ document.addEventListener('click', (e) => {
 function selectPelanggan(pelanggan) {
     selectedPelanggan = pelanggan;
     selectedPelangganIdInput.value = pelanggan.id;
-    selectedPelangganNama.textContent = pelanggan.nama;
+    pelangganNamaInput.value = pelanggan.nama || '';
+    pelangganTeleponInput.value = pelanggan.telepon || '';
     
     if (pelanggan.is_member) {
         selectedPelangganMemberId.textContent = `(${pelanggan.member_id})`;
@@ -364,12 +450,21 @@ function selectPelanggan(pelanggan) {
 
 btnResetPelanggan.addEventListener('click', () => {
     selectedPelanggan = null;
+
     selectedPelangganIdInput.value = '';
+    pelangganNamaInput.value = '';
+    pelangganTeleponInput.value = '';
+
+    pelangganSearchInput.value = '';
+
     selectedPelangganNama.textContent = 'Umum';
     selectedPelangganMemberId.textContent = '';
+
     badgeDiskonMember.classList.add('hidden');
     labelDiskonPercent.textContent = '0';
+
     btnResetPelanggan.classList.add('hidden');
+
     renderKeranjang();
 });
 
@@ -485,17 +580,27 @@ form.addEventListener('submit', (e) => {
         return;
     }
     
-    // Safety check for payment < total on frontend
-    const valStr = inputBayar.value.trim();
-    if (!valStr) {
-        e.preventDefault();
-        alert('Masukkan nominal pembayaran terlebih dahulu.');
-        return;
+    const metode = metodePembayaran.value;
+
+    if (metode === 'cash') {
+        const valStr = inputBayar.value.trim();
+        if (!valStr) {
+            e.preventDefault();
+            alert('Masukkan nominal pembayaran terlebih dahulu.');
+            return;
+        }
+
+        const bayar = parseFloat(valStr) || 0;
+        if (bayar < currentTotal) {
+            e.preventDefault();
+            alert('Pembayaran masih kurang.');
+            return;
+        }
     }
-    const bayar = parseFloat(valStr) || 0;
-    if (bayar < currentTotal) {
+
+    if (metode === 'piutang' && !pelangganMemberAktif()) {
         e.preventDefault();
-        alert('Pembayaran masih kurang.');
+        alert('Pembayaran piutang hanya dapat digunakan oleh member yang aktif.');
         return;
     }
 
