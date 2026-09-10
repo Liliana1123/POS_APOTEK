@@ -60,6 +60,28 @@
                     >
                 </div>
             </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Status Penerimaan
+                </label>
+
+                <select name="status_penerimaan" class="form-input">
+                    <option value="">Semua Status</option>
+
+                    <option value="lengkap" @selected(request('status_penerimaan') === 'lengkap')>
+                        Lengkap
+                    </option>
+
+                    <option value="belum_lengkap" @selected(request('status_penerimaan') === 'belum_lengkap')>
+                        Belum Lengkap
+                    </option>
+
+                    <option value="selesai" @selected(request('status_penerimaan') === 'selesai')>
+                        Selesai
+                    </option>
+                </select>
+            </div>
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                     Status Pembayaran
@@ -78,7 +100,7 @@
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran']))
+            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
                 <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
@@ -101,7 +123,8 @@
                     <th scope="col">Tanggal Terima</th>
                     <th scope="col">Supplier</th>
                     <th scope="col">Dicatat Oleh</th>
-                    <th scope="col" class="text-center">Status</th>
+                    <th scope="col" class="text-center">Status Penerimaan</th>
+                    <th scope="col" class="text-center">Status Pembayaran</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body ">
@@ -142,6 +165,16 @@
                         <td class="text-gray-600">{{ $penerimaan->tanggal->format('d M Y') }}</td>
                         <td class="font-medium text-gray-800">{{ $penerimaan->supplier->nama ?? '—' }}</td>
                         <td class="text-gray-600">{{ $penerimaan->user->name ?? '—' }}</td>
+                        <td class="text-center">
+                            @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
+                                <span class="badge-success">Lengkap</span>
+                            @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                                <span class="badge-warning">Belum Lengkap</span>
+                            @else
+                                <span class="badge-secondary">Selesai</span>
+                            @endif
+                        </td>
+
                         <td class="text-center">
                             @if ($penerimaan->lunas)
                                 <span class="badge-success">Lunas</span>

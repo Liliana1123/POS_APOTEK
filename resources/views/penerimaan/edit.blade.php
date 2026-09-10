@@ -139,6 +139,18 @@
                 placeholder="Keterangan penerimaan (opsional)"
             >
         </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                Jatuh Tempo
+            </label>
+
+            <input
+                type="date"
+                name="jatuh_tempo"
+                value="{{ old('jatuh_tempo', $penerimaan->jatuh_tempo?->format('Y-m-d')) }}"
+                class="form-input"
+            >
+        </div>
 
     </div>
 
@@ -208,7 +220,11 @@
                             </th>
 
                             <th scope="col" class="px-3 py-2 w-24 text-right">
-                                Jumlah <span class="text-red-500 font-bold">*</span>
+                                Jumlah Dipesan <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 w-24 text-right">
+                                Jumlah Diterima <span class="text-red-500 font-bold">*</span>
                             </th>
 
                             <th scope="col" class="px-3 py-2 w-24">
@@ -323,13 +339,25 @@
                                     <input
                                         type="number"
                                         min="1"
-                                        name="items[{{ $index }}][jumlah]"
-                                        value="{{ $item->jumlah }}"
+                                        name="items[{{ $index }}][jumlah_dipesan]"
+                                        value="{{ old("items.$index.jumlah_dipesan", $penerimaan->detailPesanan->firstWhere('barang_id', $item->barang_id)?->jumlah_dipesan) }}"
                                         required
-                                        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+                                        class="form-input py-1 px-2 text-right font-mono"
                                         placeholder="1"
                                     >
                                 </td>
+
+<td class="px-3 py-2">
+    <input
+        type="number"
+        min="0"
+        name="items[{{ $index }}][jumlah_diterima]"
+        value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
+        required
+        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+        placeholder="0"
+    >
+</td>
 
                                 <td class="px-3 py-2">
                                     <input
@@ -560,10 +588,21 @@
             <input
                 type="number"
                 min="1"
-                name="items[__i__][jumlah]"
+                name="items[__i__][jumlah_dipesan]"
+                required
+                class="form-input py-1 px-2 text-right font-mono"
+                placeholder="1"
+            >
+        </td>
+
+        <td class="px-3 py-2">
+            <input
+                type="number"
+                min="0"
+                name="items[__i__][jumlah_diterima]"
                 required
                 class="form-input py-1 px-2 text-right font-mono jumlah-field"
-                placeholder="1"
+                placeholder="0"
             >
         </td>
 

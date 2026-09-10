@@ -9,6 +9,15 @@
 
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 font-sans">
+            Tanggal Faktur
+        </span>
+        <strong class="text-gray-800 text-sm font-sans">
+            {{ $penerimaan->tanggal_faktur->format('d M Y') }}
+        </strong>
+    </div>
+
+    <div>
+        <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 font-sans">
             No. Faktur
         </span>
         <strong class="text-gray-800 text-sm font-mono">
@@ -35,6 +44,23 @@
             @endif
         </div>
     </div>
+
+    <div>
+        <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1 font-sans">
+            Status Penerimaan
+        </span>
+
+        <div class="mt-1">
+            @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
+                <span class="badge-success">Lengkap</span>
+            @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                <span class="badge-warning">Belum Lengkap</span>
+            @else
+                <span class="badge-secondary">Selesai</span>
+            @endif
+        </div>
+    </div>
+
 </div>
 
 <!-- Table list -->
@@ -68,7 +94,6 @@
                         <td class="text-center text-gray-600">{{ $item->barang->satuan->nama ?? '—' }}</td>
                         <td class="text-right font-mono font-semibold text-gray-800">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
                         <td class="table-num font-bold text-gray-700">{{ $item->jumlah }}</td>
-                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -77,13 +102,70 @@
         <div class="flex justify-end border-t border-gray-200 px-4 py-4">
             <div class="text-right">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    Total Faktur
+                    Total Belanja
                 </div>
                 <div class="text-xl font-bold font-mono text-gray-800">
                     Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}
                 </div>
             </div>
         </div>
+
+        <div class="flex justify-end px-4 py-2">
+            <div class="text-right">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    PPN
+                </div>
+                <div class="text-lg font-bold font-mono text-gray-800">
+                    Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end border-t border-gray-200 px-4 py-4">
+            <div class="text-right">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    Total Tagihan
+                </div>
+                <div class="text-xl font-bold font-mono text-gray-800">
+                    Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end px-4 py-2">
+            <div class="text-right">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    Total Dibayar
+                </div>
+                <div class="text-lg font-bold font-mono text-gray-800">
+                    Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}
+                </div>
+            </div>
+        </div>
+
+        @if ($penerimaan->sisaTagihan() > 0)
+            <div class="flex justify-end px-4 py-2">
+                <div class="text-right">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Kekurangan Pembayaran
+                    </div>
+                    <div class="text-lg font-bold font-mono text-red-600">
+                        Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if ($penerimaan->kelebihanPembayaran() > 0)
+            <div class="mt-2 text-right">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    Kelebihan Pembayaran
+                </div>
+                <div class="text-lg font-bold font-mono text-red-600">
+                    Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}
+                </div>
+            </div>
+        @endif
 
     </div>
 </div>

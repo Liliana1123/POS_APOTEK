@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\DetailPenerimaan;
+use App\Models\DetailPesananPenerimaan;
+use App\Models\RiwayatPenerimaan;
 use App\Models\Penerimaan;
 use App\Models\PembayaranPenerimaan;
 use App\Models\Supplier;
@@ -15,7 +17,11 @@ class PenerimaanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Penerimaan::with(['user', 'supplier']);
+        $query = Penerimaan::with([
+            'user',
+            'supplier',
+            'detailPesanan.riwayatPenerimaan',
+        ]);
 
         if ($request->filled('cari')) {
             $query->where('no_faktur', 'like', '%' . $request->cari . '%');
@@ -34,6 +40,81 @@ class PenerimaanController extends Controller
                 $query->where('lunas', false);
             }
         }
+
+        if ($request->filled('status_penerimaan')) {
+
+        // BELUM LENGKAP
+        if ($request->status_penerimaan === 'belum_lengkap') {
+            $query->whereHas('detailPesanan', function ($q) {
+                $q->whereRaw("
+                    jumlah_dipesan >
+                    (
+                        SELECT COALESCE(SUM(
+                            CASE
+                                WHEN jenis = 'penerimaan' THEN jumlah
+                                WHEN jenis = 'pembatalan' THEN jumlah
+                                ELSE 0
+                            END
+                        ), 0)
+                        FROM riwayat_penerimaans
+                        WHERE detail_pesanan_penerimaan_id = detail_pesanan_penerimaans.id
+                    )
+                ");
+            });
+        }
+
+        // LENGKAP
+        if ($request->status_penerimaan === 'lengkap') {
+            $query
+                ->whereDoesntHave('detailPesanan', function ($q) {
+                    $q->whereRaw("
+                        jumlah_dipesan >
+                        (
+                            SELECT COALESCE(SUM(
+                                CASE
+                                    WHEN jenis = 'penerimaan' THEN jumlah
+                                    WHEN jenis = 'pembatalan' THEN jumlah
+                                    ELSE 0
+                                END
+                            ), 0)
+                            FROM riwayat_penerimaans
+                            WHERE detail_pesanan_penerimaan_id = detail_pesanan_penerimaans.id
+                        )
+                    ");
+                })
+                ->whereDoesntHave('detailPesanan.riwayatPenerimaan', function ($q) {
+                    $q->where('jenis', 'pembatalan');
+                })
+                ->whereHas('detailPesanan');
+        }
+
+        // SELESAI
+        if ($request->status_penerimaan === 'selesai') {
+            $query
+                ->whereDoesntHave('detailPesanan', function ($q) {
+                    $q->whereRaw("
+                        jumlah_dipesan >
+                        (
+                            SELECT COALESCE(SUM(
+                                CASE
+                                    WHEN jenis = 'penerimaan' THEN jumlah
+                                    WHEN jenis = 'pembatalan' THEN jumlah
+                                    ELSE 0
+                                END
+                            ), 0)
+                            FROM riwayat_penerimaans
+                            WHERE detail_pesanan_penerimaan_id = detail_pesanan_penerimaans.id
+                        )
+                    ");
+                })
+                ->where(function ($q) {
+                    $q->doesntHave('detailPesanan')
+                        ->orWhereHas('detailPesanan.riwayatPenerimaan', function ($q) {
+                            $q->where('jenis', 'pembatalan');
+                        });
+                });
+        }
+    }
 
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
@@ -85,11 +166,20 @@ class PenerimaanController extends Controller
             'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
             'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
             'items.*.no_rak' => 'required|string|max:50',
-            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.jumlah_dipesan' => 'required|integer|min:1',
+            'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
+        foreach ($data['items'] as $index => $item) {
+            if ((int) $item['jumlah_diterima'] > (int) $item['jumlah_dipesan']) {
+                throw ValidationException::withMessages([
+                    "items.$index.jumlah_diterima" =>
+                        'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
+                ]);
+            }
+        }
         $data['supplier_id'] = (int) $data['supplier_id'];
         $supplier = Supplier::findOrFail($data['supplier_id']);
-        $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah']);
+        $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
         $ppn = (float) ($data['ppn'] ?? 0);
         $totalTagihan = $totalFaktur + $ppn;
         $pembayaranPertama = (float) ($data['pembayaran_pertama'] ?? 0);
@@ -104,9 +194,10 @@ class PenerimaanController extends Controller
         if ($pembayaranPertama > $totalTagihan) {
             throw ValidationException::withMessages(['pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total tagihan.']);
         }
-        if ($pembayaranPertama > 0 && empty($data['jatuh_tempo']) && $pembayaranPertama < $totalFaktur) {
-            throw ValidationException::withMessages(['jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.']);
-        }
+        if ($pembayaranPertama < $totalTagihan && empty($data['jatuh_tempo'])) {throw ValidationException::withMessages([
+            'jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.',
+        ]);
+    }
 
         DB::transaction(function () use ($data, $request, $supplier, $pembayaranPertama, $totalTagihan) {
             
@@ -124,7 +215,7 @@ class PenerimaanController extends Controller
             ]);
 
             foreach ($data['items'] as $item) {
-                DetailPenerimaan::create([
+                $detailPenerimaan = DetailPenerimaan::create([
                     'penerimaan_id' => $penerimaan->id,
                     'barang_id' => $item['barang_id'],
                     'no_batch' => $item['no_batch'],
@@ -132,12 +223,31 @@ class PenerimaanController extends Controller
                     'harga_jual' => $item['harga_jual'],
                     'expired_date' => $item['expired_date'],
                     'no_rak' => $item['no_rak'],
-                    'jumlah' => $item['jumlah'],
-                    'stok' => $item['jumlah'],
+                    'jumlah' => $item['jumlah_diterima'],
+                    'stok' => $item['jumlah_diterima'],
                     'aktif' => true,
 
                     
                 ]);
+
+                $detailPesanan = DetailPesananPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'barang_id' => $item['barang_id'],
+                    'jumlah_dipesan' => $item['jumlah_dipesan'],
+                ]);
+
+                if ((int) $item['jumlah_diterima'] > 0) {
+                    RiwayatPenerimaan::create([
+                        'penerimaan_id' => $penerimaan->id,
+                        'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                        'detail_penerimaan_id' => $detailPenerimaan->id,
+                        'jenis' => 'penerimaan',
+                        'jumlah' => $item['jumlah_diterima'],
+                        'tanggal' => $data['tanggal'],
+                        'keterangan' => 'Penerimaan awal',
+                        'user_id' => $request->user()->id,
+                    ]);
+                }
               
             }
 
@@ -158,7 +268,14 @@ class PenerimaanController extends Controller
 
     public function show(Penerimaan $penerimaan)
     {
-        $penerimaan->load(['user', 'supplier', 'detail.barang.pabrik', 'detail.barang.satuan', 'pembayaran.user']);
+        $penerimaan->load([
+            'user',
+            'supplier',
+            'detail.barang.pabrik',
+            'detail.barang.satuan',
+            'pembayaran.user'
+        ]);
+
         return view('penerimaan.show', compact('penerimaan'));
     }
 
@@ -168,6 +285,7 @@ class PenerimaanController extends Controller
             'supplier',
             'detail.barang.pabrik',
             'detail.barang.satuan',
+            'detailPesanan',
         ]);
 
         $suppliers = Supplier::orderBy('nama')->get();
@@ -203,8 +321,18 @@ class PenerimaanController extends Controller
             'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
             'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
             'items.*.no_rak' => 'required|string|max:50',
-            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.jumlah_dipesan' => 'required|integer|min:1',
+            'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
+
+        foreach ($data['items'] as $index => $item) {
+            if ((int) $item['jumlah_diterima'] > (int) $item['jumlah_dipesan']) {
+                throw ValidationException::withMessages([
+                    "items.$index.jumlah_diterima" =>
+                        'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
+                ]);
+            }
+        }
 
         $kombinasiBatch = collect($data['items'])
             ->map(fn ($item) => $item['barang_id'] . '|' . $item['no_batch'])
@@ -216,7 +344,7 @@ class PenerimaanController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($data, $penerimaan) {
+        DB::transaction(function () use ($data, $request, $penerimaan) {
             $penerimaan->update([
                 'supplier_id' => $data['supplier_id'],
                 'telepon_supplier' => Supplier::findOrFail($data['supplier_id'])->telepon,
@@ -242,20 +370,19 @@ class PenerimaanController extends Controller
                 $detailId = isset($item['detail_id'])
                     ? (int) $item['detail_id']
                     : null;
-                    
 
-                    if ($detailId && $existingDetails->has($detailId)) {
-                        $detail = $existingDetails->get($detailId);
+                if ($detailId && $existingDetails->has($detailId)) {
+                    $detail = $existingDetails->get($detailId);
 
-                        $sudahDipakai = $detail->detailPenjualan()->exists()
-                            || $detail->rusak()->exists();
+                    $sudahDipakai = $detail->detailPenjualan()->exists()
+                        || $detail->rusak()->exists();
 
-                        if ($sudahDipakai) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh diedit.',
-                            ]);
-                        }
+                    if ($sudahDipakai) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh diedit.',
+                        ]);
                     }
+                }
 
                 if ($detailId && !$existingDetails->has($detailId)) {
                     throw ValidationException::withMessages([
@@ -266,6 +393,58 @@ class PenerimaanController extends Controller
                 if ($detailId) {
                     $detail = $existingDetails->get($detailId);
 
+                    $detailPesanan = DetailPesananPenerimaan::where(
+                        'penerimaan_id',
+                        $penerimaan->id
+                    )
+                        ->where('barang_id', $detail->barang_id)
+                        ->first();
+
+                    if ($detailPesanan) {
+                        $totalRiwayat = $detailPesanan->totalDiterima()
+                            + $detailPesanan->totalDibatalkan();
+
+                        if ((int) $item['jumlah_dipesan'] < $totalRiwayat) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Jumlah dipesan tidak boleh lebih kecil dari jumlah penerimaan atau pembatalan yang sudah tercatat.',
+                            ]);
+                        }
+                    }
+
+                    $sudahAdaRiwayat = RiwayatPenerimaan::where(
+                        'detail_penerimaan_id',
+                        $detail->id
+                    )
+                        ->where('jenis', 'penerimaan')
+                        ->exists();
+
+                    if ($sudahAdaRiwayat) {
+                        $totalDiterima = RiwayatPenerimaan::where(
+                            'detail_penerimaan_id',
+                            $detail->id
+                        )
+                            ->where('jenis', 'penerimaan')
+                            ->sum('jumlah');
+
+                        if ((int) $item['jumlah_diterima'] !== (int) $totalDiterima) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Jumlah diterima tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
+                            ]);
+                        }
+                    }
+
+                    if ($sudahAdaRiwayat && (int) $item['barang_id'] !== (int) $detail->barang_id) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Barang tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
+                        ]);
+                    }
+
+                    if ($sudahAdaRiwayat && $item['no_batch'] !== $detail->no_batch) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Nomor batch tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
+                        ]);
+                    }
+
                     $detail->update([
                         'barang_id' => $item['barang_id'],
                         'no_batch' => $item['no_batch'],
@@ -273,30 +452,79 @@ class PenerimaanController extends Controller
                         'harga_jual' => $item['harga_jual'],
                         'expired_date' => $item['expired_date'],
                         'no_rak' => $item['no_rak'],
-                        'jumlah' => $item['jumlah'],
-                        'stok' => $item['jumlah'],
+                        'jumlah' => $item['jumlah_diterima'],
+                        'stok' => $detail->stok,
                         'aktif' => true,
                     ]);
+
+                    $detailPesanan = DetailPesananPenerimaan::firstOrNew([
+                        'penerimaan_id' => $penerimaan->id,
+                        'barang_id' => $item['barang_id'],
+                    ]);
+
+                    $detailPesanan->jumlah_dipesan = $item['jumlah_dipesan'];
+                    $detailPesanan->save();
                 } else {
-                    $penerimaan->detail()->create([
+                    $detailPenerimaan = $penerimaan->detail()->create([
                         'barang_id' => $item['barang_id'],
                         'no_batch' => $item['no_batch'],
                         'harga_beli' => $item['harga_beli'],
                         'harga_jual' => $item['harga_jual'],
                         'expired_date' => $item['expired_date'],
                         'no_rak' => $item['no_rak'],
-                        'jumlah' => $item['jumlah'],
-                        'stok' => $item['jumlah'],
+                        'jumlah' => $item['jumlah_diterima'],
+                        'stok' => $item['jumlah_diterima'],
                         'aktif' => true,
                     ]);
+
+                    $detailPesanan = DetailPesananPenerimaan::firstOrNew([
+                        'penerimaan_id' => $penerimaan->id,
+                        'barang_id' => $item['barang_id'],
+                    ]);
+
+                    $detailPesanan->jumlah_dipesan = $item['jumlah_dipesan'];
+                    $detailPesanan->save();
+
+                    if ((int) $item['jumlah_diterima'] > 0) {
+                        RiwayatPenerimaan::create([
+                            'penerimaan_id' => $penerimaan->id,
+                            'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                            'detail_penerimaan_id' => $detailPenerimaan->id,
+                            'jenis' => 'penerimaan',
+                            'jumlah' => $item['jumlah_diterima'],
+                            'tanggal' => $data['tanggal'],
+                            'keterangan' => 'Penerimaan melalui edit',
+                            'user_id' => $request->user()->id,
+                        ]);
+                    }
                 }
             }
 
-            $existingDetails
-                ->except($submittedDetailIds->all())
-                ->each(function ($detail) {
-                    $detail->delete();
-                });
+           $existingDetails
+            ->except($submittedDetailIds->all())
+            ->each(function ($detail) {
+                $sudahDipakai = $detail->detailPenjualan()->exists()
+                    || $detail->rusak()->exists();
+
+                $sudahAdaRiwayat = RiwayatPenerimaan::where(
+                    'detail_penerimaan_id',
+                    $detail->id
+                )->exists();
+
+                if ($sudahDipakai) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh dihapus.',
+                    ]);
+                }
+
+                if ($sudahAdaRiwayat) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Detail penerimaan yang sudah memiliki riwayat tidak boleh dihapus.',
+                    ]);
+                }
+
+                $detail->delete();
+            });
 
             $totalFaktur = (float) $penerimaan->detail()
                 ->sum(DB::raw('harga_beli * jumlah'));
@@ -304,9 +532,15 @@ class PenerimaanController extends Controller
             $ppn = (float) ($data['ppn'] ?? 0);
             $totalTagihan = $totalFaktur + $ppn;
 
-            $totalDibayar = $penerimaan->totalDibayar();
+             $totalDibayar = $penerimaan->totalDibayar();
 
-            
+            if ($totalDibayar < $totalTagihan && empty($data['jatuh_tempo'])) {
+                throw ValidationException::withMessages([
+                    'jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.',
+                ]);
+            }
+
+           
             $penerimaan->update([
                 'lunas' => $totalDibayar >= $totalTagihan,
             ]);
@@ -340,7 +574,7 @@ class PenerimaanController extends Controller
             throw ValidationException::withMessages(['jumlah' => 'Pembayaran tidak boleh melebihi sisa tagihan.']);
         }
 
-        DB::transaction(function () use ($data, $request, $penerimaan, $totalFaktur, $totalDibayar) {
+        DB::transaction(function () use ($data, $request, $penerimaan, $totalTagihan, $totalDibayar) {
             PembayaranPenerimaan::create([
                 'penerimaan_id' => $penerimaan->id,
                 'user_id' => $request->user()->id,

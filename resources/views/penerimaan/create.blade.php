@@ -105,7 +105,8 @@
                             <th scope="col" class="px-3 py-2 w-28 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-28 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-24">No. Rak <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah <span class="text-red-500 font-bold">*</span></th>
+                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
+                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-24">Satuan</th>
                             <th scope="col" class="px-3 py-2 w-32 text-right">Subtotal</th>
                             <th scope="col" class="px-3 py-2 w-12"></th>
@@ -185,7 +186,10 @@
         <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
-            <input type="number" min="1" name="items[__i__][jumlah]" required class="form-input py-1 px-2 text-right font-mono jumlah-field" placeholder="1">
+            <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
+        </td >
+        <td class="px-3 py-2">
+            <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
         </td>
         <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
@@ -210,7 +214,7 @@ function updateTotal() {
     let total = 0;
     tbody.querySelectorAll('tr').forEach(row => {
         const harga = parseFloat(row.querySelector('.harga-beli')?.value) || 0;
-        const jumlah = parseInt(row.querySelector('.jumlah-field')?.value, 10) || 0;
+        const jumlah = parseInt(row.querySelector('.jumlah-diterima-field')?.value, 10) || 0;
         const subtotal = harga * jumlah;
         total += subtotal;
         row.querySelector('.subtotal-field').textContent = formatRupiah(subtotal);
@@ -236,7 +240,8 @@ function tambahBaris() {
         row.querySelector('[name$="[harga_beli]"]').value = item.harga_beli || '';
         row.querySelector('[name$="[harga_jual]"]').value = item.harga_jual || '';
         row.querySelector('[name$="[no_rak]"]').value = item.no_rak || '';
-        row.querySelector('[name$="[jumlah]"]').value = item.jumlah || '';
+        row.querySelector('[name$="[jumlah_dipesan]"]').value = item.jumlah_dipesan || '';
+        row.querySelector('[name$="[jumlah_diterima]"]').value = item.jumlah_diterima || '';
     }
     rowIndex++;
     emptyHint.style.display = 'none';
