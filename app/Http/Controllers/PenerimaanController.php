@@ -444,7 +444,6 @@ class PenerimaanController extends Controller
                             'items' => 'Nomor batch tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
                         ]);
                     }
-
                     $detail->update([
                         'barang_id' => $item['barang_id'],
                         'no_batch' => $item['no_batch'],

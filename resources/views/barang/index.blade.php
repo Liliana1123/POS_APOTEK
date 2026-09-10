@@ -456,7 +456,7 @@
                     <span class="font-semibold">Barang aktif</span>
                     <p class="text-[10px] text-gray-400 mt-0.5">Produk tampil dan dapat dipakai transaksi baru.</p>
                 </div>
-            </label>
+            </label>                     
         </div>
     </div>
 </x-modal-form>
