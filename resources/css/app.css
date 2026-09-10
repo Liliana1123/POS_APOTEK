@@ -576,7 +576,13 @@ h3,
     }
     /* expanded: full row */
     #app-sidebar.sidebar-expanded .sidebar-group-items > a.bg-white {
+        background: #fff !important;
         border-radius: 0.5rem;
+    }
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a.bg-white,
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a.bg-white svg,
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a.bg-white span {
+        color: #1e40af !important;
     }
 
     /* Rail: logo center */
@@ -587,22 +593,6 @@ h3,
         justify-content: center;
         width: 100%;
     }
-    #app-sidebar:not(.sidebar-expanded) .sidebar-header .hidden.lg\:inline {
-        display: none;
-    }
-
-    /* Rail: user avatar center */
-    #app-sidebar:not(.sidebar-expanded) .sidebar-footer {
-        justify-content: center;
-    }
-    #app-sidebar:not(.sidebar-expanded) .sidebar-footer > div:first-child {
-        justify-content: center;
-        width: 100%;
-    }
-    #app-sidebar:not(.sidebar-expanded) .sidebar-footer form {
-        display: none;
-    }
-
     /* Rail: selected (Dashboard) - symmetric white pill, icon centered, no position change on hover */
     #app-sidebar:not(.sidebar-expanded) nav > a.bg-white {
         background: #fff !important;

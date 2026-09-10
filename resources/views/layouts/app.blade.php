@@ -216,7 +216,7 @@
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
             <div class="flex items-center gap-2 min-w-0">
-                <div class="w-8 h-8 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
                 <div class="min-w-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[200px] lg:group-hover:opacity-100 transition-all duration-200 ease-in-out">
