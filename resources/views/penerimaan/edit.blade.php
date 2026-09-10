@@ -60,6 +60,20 @@
 
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                Tanggal Faktur <span class="text-red-500 font-bold">*</span>
+            </label>
+
+            <input
+                type="date"
+                name="tanggal_faktur"
+                value="{{ old('tanggal_faktur', $penerimaan->tanggal_faktur?->format('Y-m-d')) }}"
+                required
+                class="form-input"
+            >
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
                 Tanggal Penerimaan <span class="text-red-500 font-bold">*</span>
             </label>
 
@@ -123,6 +137,18 @@
                 value="{{ old('keterangan', $penerimaan->keterangan) }}"
                 class="form-input"
                 placeholder="Keterangan penerimaan (opsional)"
+            >
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                Jatuh Tempo
+            </label>
+
+            <input
+                type="date"
+                name="jatuh_tempo"
+                value="{{ old('jatuh_tempo', $penerimaan->jatuh_tempo?->format('Y-m-d')) }}"
+                class="form-input"
             >
         </div>
 
@@ -194,7 +220,11 @@
                             </th>
 
                             <th scope="col" class="px-3 py-2 w-24 text-right">
-                                Jumlah <span class="text-red-500 font-bold">*</span>
+                                Jumlah Dipesan <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 w-24 text-right">
+                                Jumlah Diterima <span class="text-red-500 font-bold">*</span>
                             </th>
 
                             <th scope="col" class="px-3 py-2 w-24">
@@ -309,13 +339,25 @@
                                     <input
                                         type="number"
                                         min="1"
-                                        name="items[{{ $index }}][jumlah]"
-                                        value="{{ $item->jumlah }}"
+                                        name="items[{{ $index }}][jumlah_dipesan]"
+                                        value="{{ old("items.$index.jumlah_dipesan", $penerimaan->detailPesanan->firstWhere('barang_id', $item->barang_id)?->jumlah_dipesan) }}"
                                         required
-                                        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+                                        class="form-input py-1 px-2 text-right font-mono"
                                         placeholder="1"
                                     >
                                 </td>
+
+<td class="px-3 py-2">
+    <input
+        type="number"
+        min="0"
+        name="items[{{ $index }}][jumlah_diterima]"
+        value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
+        required
+        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+        placeholder="0"
+    >
+</td>
 
                                 <td class="px-3 py-2">
                                     <input
@@ -361,9 +403,30 @@
         </p>
 
         <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
-            <span>Total Faktur:</span>
+            <span>Total Belanja:</span>
 
             <span id="total-faktur" class="text-blue-700 font-mono">
+                Rp 0
+            </span>
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+            <label for="ppn">PPN (Opsional)</label>
+            <input
+                type="number"
+                name="ppn"
+                id="ppn"
+                value="{{ old('ppn', $penerimaan->ppn ?? 0) }}"
+                min="0"
+                step="0.01"
+                class="form-input w-full sm:w-40 text-right font-mono"
+                placeholder="0"
+            >
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+            <span>Total Tagihan:</span>
+            <span id="total-tagihan" class="text-blue-700 font-mono">
                 Rp 0
             </span>
         </div>
@@ -525,10 +588,21 @@
             <input
                 type="number"
                 min="1"
-                name="items[__i__][jumlah]"
+                name="items[__i__][jumlah_dipesan]"
+                required
+                class="form-input py-1 px-2 text-right font-mono"
+                placeholder="1"
+            >
+        </td>
+
+        <td class="px-3 py-2">
+            <input
+                type="number"
+                min="0"
+                name="items[__i__][jumlah_diterima]"
                 required
                 class="form-input py-1 px-2 text-right font-mono jumlah-field"
-                placeholder="1"
+                placeholder="0"
             >
         </td>
 
@@ -568,6 +642,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const template = document.getElementById('row-template');
     const emptyHint = document.getElementById('empty-hint');
     const totalFaktur = document.getElementById('total-faktur');
+    const ppnInput = document.getElementById('ppn');
+    const totalTagihan = document.getElementById('total-tagihan');
 
     function formatRupiah(value) {
         return 'Rp ' + Math.round(value).toLocaleString('id-ID');
@@ -599,6 +675,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         totalFaktur.textContent = formatRupiah(total);
+        const ppn = parseFloat(ppnInput.value) || 0;
+        totalTagihan.textContent = formatRupiah(total + ppn);
     }
 
     function tambahBaris() {
@@ -658,6 +736,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     tbody.addEventListener('input', updateTotal);
+    ppnInput.addEventListener('input', updateTotal);
 
     document.getElementById('supplier_id')
         .addEventListener('change', function () {

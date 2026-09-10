@@ -299,10 +299,24 @@
 
     <div class="total-section">
 
-        <div class="total-row grand-total">
-            <span>Total Faktur</span>
+        <div class="total-row">
+            <span>Total Belanja</span>
             <span>
                 Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}
+            </span>
+        </div>
+
+        <div class="total-row">
+            <span>PPN</span>
+            <span>
+                Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
+            </span>
+        </div>
+
+        <div class="total-row grand-total">
+            <span>Total Tagihan</span>
+            <span>
+                Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
             </span>
         </div>
 
@@ -313,12 +327,23 @@
             </span>
         </div>
 
-        <div class="total-row">
-            <span>Sisa Tagihan</span>
-            <span>
-                Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
-            </span>
-        </div>
+        @if ($penerimaan->sisaTagihan() > 0)
+            <div class="total-row" style="color: #dc2626; font-weight: bold;">
+                <span>Kekurangan Pembayaran</span>
+                <span>
+                    Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                </span>
+            </div>
+        @endif
+
+        @if ($penerimaan->kelebihanPembayaran() > 0)
+            <div class="total-row" style="color: #dc2626; font-weight: bold;">
+                <span>Kelebihan Pembayaran</span>
+                <span>
+                    Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}
+                </span>
+            </div>
+        @endif
 
     </div>
 

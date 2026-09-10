@@ -35,7 +35,19 @@
                 class="form-input font-mono font-semibold" placeholder="Nomor faktur masuk...">
         </div>
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Penerimaan <span class="text-red-500 font-bold">*</span></label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Tanggal Faktur <span class="text-red-500 font-bold">*</span>
+            </label>
+            <input
+                type="date"
+                name="tanggal_faktur"
+                value="{{ old('tanggal_faktur') }}"
+                required
+                class="form-input"
+            >
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Terima <span class="text-red-500 font-bold">*</span></label>
             <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
                 class="form-input">
         </div>
@@ -63,7 +75,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
             <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                + Tambah Baris
+                + Tambah Item Barang
             </button>
         </div>
 
@@ -93,7 +105,8 @@
                             <th scope="col" class="px-3 py-2 w-28 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-28 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-24">No. Rak <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah <span class="text-red-500 font-bold">*</span></th>
+                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
+                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
                             <th scope="col" class="px-3 py-2 w-24">Satuan</th>
                             <th scope="col" class="px-3 py-2 w-32 text-right">Subtotal</th>
                             <th scope="col" class="px-3 py-2 w-12"></th>
@@ -106,10 +119,31 @@
 
         <p class="text-xs text-gray-400 text-center py-4" id="empty-hint">Belum ada baris. Klik "+ Tambah Baris" untuk mulai input.</p>
         <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
-            <span>Total Faktur:</span>
+            <span>Total Belanja:</span>
             <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
         </div>
-    </div>
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+            <label for="ppn">PPN (Opsional)</label>
+            <input
+                type="number"
+                name="ppn"
+                id="ppn"
+                value="{{ old('ppn', 0) }}"
+                min="0"
+                step="0.01"
+                class="form-input w-full sm:w-40 text-right font-mono"
+                placeholder="0"
+            >
+        </div>
+
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+            <span>Total Tagihan:</span>
+            <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
+        </div>
+
+        </div>
+            <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        </div>
 
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
         <div>
@@ -152,7 +186,10 @@
         <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
-            <input type="number" min="1" name="items[__i__][jumlah]" required class="form-input py-1 px-2 text-right font-mono jumlah-field" placeholder="1">
+            <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
+        </td >
+        <td class="px-3 py-2">
+            <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
         </td>
         <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
@@ -168,18 +205,23 @@ const tbody = document.getElementById('item-rows');
 const template = document.getElementById('row-template');
 const emptyHint = document.getElementById('empty-hint');
 const totalFaktur = document.getElementById('total-faktur');
+const ppn = document.getElementById('ppn');
+const totalTagihan = document.getElementById('total-tagihan');
+
 
 function formatRupiah(value) { return 'Rp ' + Math.round(value).toLocaleString('id-ID'); }
 function updateTotal() {
     let total = 0;
     tbody.querySelectorAll('tr').forEach(row => {
         const harga = parseFloat(row.querySelector('.harga-beli')?.value) || 0;
-        const jumlah = parseInt(row.querySelector('.jumlah-field')?.value, 10) || 0;
+        const jumlah = parseInt(row.querySelector('.jumlah-diterima-field')?.value, 10) || 0;
         const subtotal = harga * jumlah;
         total += subtotal;
         row.querySelector('.subtotal-field').textContent = formatRupiah(subtotal);
     });
     totalFaktur.textContent = formatRupiah(total);
+    const nilaiPpn = parseFloat(ppn.value) || 0;
+    totalTagihan.textContent = formatRupiah(total + nilaiPpn);
 }
 
 function tambahBaris() {
@@ -198,7 +240,8 @@ function tambahBaris() {
         row.querySelector('[name$="[harga_beli]"]').value = item.harga_beli || '';
         row.querySelector('[name$="[harga_jual]"]').value = item.harga_jual || '';
         row.querySelector('[name$="[no_rak]"]').value = item.no_rak || '';
-        row.querySelector('[name$="[jumlah]"]').value = item.jumlah || '';
+        row.querySelector('[name$="[jumlah_dipesan]"]').value = item.jumlah_dipesan || '';
+        row.querySelector('[name$="[jumlah_diterima]"]').value = item.jumlah_diterima || '';
     }
     rowIndex++;
     emptyHint.style.display = 'none';
@@ -209,8 +252,8 @@ const oldItems = @json(old('items', []));
 document.getElementById('btn-tambah-item').addEventListener('click', tambahBaris);
 
 tbody.addEventListener('click', function (e) {
-    if (e.target.classList.contains('btn-hapus-row')) {
-        e.target.closest('tr').remove();
+    if (e.target.closest('.btn-hapus-row')) {
+    e.target.closest('tr').remove();
         if (tbody.children.length === 0) {
             emptyHint.style.display = 'block';
         }
@@ -227,6 +270,7 @@ tbody.addEventListener('change', function (e) {
     }
 });
 tbody.addEventListener('input', updateTotal);
+ppn.addEventListener('input', updateTotal);
 
 document.getElementById('supplier_id').addEventListener('change', function () {
     document.getElementById('telepon_supplier').value = this.selectedOptions[0]?.dataset.telepon || '';

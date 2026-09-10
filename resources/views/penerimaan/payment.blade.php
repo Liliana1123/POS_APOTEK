@@ -23,13 +23,33 @@
     <div class="grid grid-cols-3 gap-4">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
-                Total Faktur
+                Total Belanja
             </span>
             <strong class="font-mono text-gray-800">
                 Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}
             </strong>
         </div>
 
+        <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                PPN
+            </span>
+            <strong class="font-mono text-gray-800">
+                Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
+            </strong>
+        </div>
+
+        <div>
+            <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Total Tagihan
+            </span>
+            <strong class="font-mono font-bold text-blue-700">
+                Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+            </strong>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
                 Total Dibayar
@@ -47,6 +67,20 @@
                 Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
             </strong>
         </div>
+        @if ($penerimaan->kelebihanPembayaran() > 0)
+            <div class="border-t border-gray-200 pt-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        Kelebihan Pembayaran
+                    </span>
+
+                    <strong class="font-mono font-bold text-red-600">
+                        Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}
+                    </strong>
+                </div>
+            </div>
+        @endif
+
     </div>
 
         {{-- FORM PEMBAYARAN BARU --}}

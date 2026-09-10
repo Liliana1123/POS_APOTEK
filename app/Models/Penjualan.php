@@ -8,7 +8,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Penjualan extends Model
 {
-    protected $fillable = ['user_id', 'pelanggan_id', 'tanggal', 'no_faktur', 'total'];
+    protected $fillable = [
+    'user_id',
+    'pelanggan_id',
+    'tanggal',
+    'no_faktur',
+    'total',
+    'metode_pembayaran',
+];
 
     protected $casts = [
         'tanggal' => 'date',
@@ -27,5 +34,10 @@ class Penjualan extends Model
     public function detail(): HasMany
     {
         return $this->hasMany(DetailPenjualan::class);
+    }
+
+    public function pembayaranPiutang(): HasMany
+    {
+        return $this->hasMany(PembayaranPiutang::class);
     }
 }

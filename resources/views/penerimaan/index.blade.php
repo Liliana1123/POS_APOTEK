@@ -10,14 +10,14 @@
     </div>
     <a href="{{ route('penerimaan.create') }}" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Faktur Penerimaan Baru</span>
+        <span>Tambah Faktur Penerimaan Baru</span>
     </a>
 </div>
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">No. Faktur</label>
                 <div class="relative">
@@ -38,13 +38,69 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Tanggal</label>
-                <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-input">
+                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Tanggal Penerimaan
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <input
+                        type="date"
+                        name="tanggal_mulai"
+                        value="{{ request('tanggal_mulai') }}"
+                        class="form-input min-w-0"
+                    >
+
+                    <span class="text-sm text-gray-400">-</span>
+
+                    <input
+                        type="date"
+                        name="tanggal_akhir"
+                        value="{{ request('tanggal_akhir') }}"
+                        class="form-input min-w-0"
+                    >
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Status Penerimaan
+                </label>
+
+                <select name="status_penerimaan" class="form-input">
+                    <option value="">Semua Status</option>
+
+                    <option value="lengkap" @selected(request('status_penerimaan') === 'lengkap')>
+                        Lengkap
+                    </option>
+
+                    <option value="belum_lengkap" @selected(request('status_penerimaan') === 'belum_lengkap')>
+                        Belum Lengkap
+                    </option>
+
+                    <option value="selesai" @selected(request('status_penerimaan') === 'selesai')>
+                        Selesai
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Status Pembayaran
+                </label>
+
+                <select name="status_pembayaran" class="form-input">
+                    <option value="">Semua Status</option>
+                    <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>
+                        Lunas
+                    </option>
+                    <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>
+                        Belum Lunas
+                    </option>
+                </select>
             </div>
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal']))
+            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
                 <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
@@ -59,44 +115,33 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[50rem]">
+        <table class="table-custom min-w-[72rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-16">No</th>
+                    <th scope="col" class="text-center w-36">Aksi</th>
                     <th scope="col">No. Faktur</th>
                     <th scope="col">Tanggal Terima</th>
                     <th scope="col">Supplier</th>
                     <th scope="col">Dicatat Oleh</th>
-                    <th scope="col" class="text-center w-28">Status</th>
-                    <th scope="col" class="text-right w-44">Aksi</th>
+                    <th scope="col" class="text-center">Status Penerimaan</th>
+                    <th scope="col" class="text-center">Status Pembayaran</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body">
+            <tbody class="table-custom-body ">
                 @forelse ($penerimaans as $index => $penerimaan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="table-num">{{ $penerimaans->firstItem() + $index }}</td>
-                        <td class="font-semibold text-gray-800 font-mono">{{ $penerimaan->no_faktur }}</td>
-                        <td class="text-gray-600">{{ $penerimaan->tanggal->format('d M Y') }}</td>
-                        <td class="font-medium text-gray-800">{{ $penerimaan->supplier->nama ?? '—' }}</td>
-                        <td class="text-gray-600">{{ $penerimaan->user->name ?? '—' }}</td>
-                        <td class="text-center">
-                            @if ($penerimaan->lunas)
-                                <span class="badge-success">Lunas</span>
-                            @else
-                                <span class="badge-warning">Belum Lunas</span>
-                            @endif
-                        </td>
-                        <td class="text-right space-x-1.5">
-                            <div class="flex items-center justify-end gap-1">
-                                <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan"title="Detail"data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
+                        <td class="text-left space-x-1.5">
+                            <div class="flex items-center justify-star gap-1">
+                                <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan" style="color: #2563EB;" title="Lihat Detail" data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
                                 <a href="{{ route('penerimaan.edit', $penerimaan) }}"
-                                    class="btn-primary !p-1.5"
+                                    class="btn-secondary !p-1.5 btn-edit-penerimaan"
+                                    style="color: #F59E0B;"
                                     title="Edit">
-                                    <x-heroicon-o-pencil class="w-4 h-4" />
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </a>
                                 @if (!$penerimaan->lunas)
                                 <button type="button"
-                                    class="btn-primary !p-1.5 btn-payment-penerimaan"
+                                    class="btn-secondary !p-1.5 btn-payment-penerimaan" style="color: #16A34A;"
                                     title="Pembayaran"
                                     data-id="{{ $penerimaan->id }}">
                                     <x-heroicon-o-banknotes class="w-4 h-4" />
@@ -110,11 +155,32 @@
 
                                 <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn-destructive !p-1.5" title="Hapus">
+                                    <button type="submit" class="btn-secondary !p-1.5" style="color: #DC2626;" title="Hapus">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </form>
                             </div>
+                        </td>
+                        <td class="font-semibold text-gray-800 font-mono">{{ $penerimaan->no_faktur }}</td>
+                        <td class="text-gray-600">{{ $penerimaan->tanggal->format('d M Y') }}</td>
+                        <td class="font-medium text-gray-800">{{ $penerimaan->supplier->nama ?? '—' }}</td>
+                        <td class="text-gray-600">{{ $penerimaan->user->name ?? '—' }}</td>
+                        <td class="text-center">
+                            @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
+                                <span class="badge-success">Lengkap</span>
+                            @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                                <span class="badge-warning">Belum Lengkap</span>
+                            @else
+                                <span class="badge-secondary">Selesai</span>
+                            @endif
+                        </td>
+
+                        <td class="text-center">
+                            @if ($penerimaan->lunas)
+                                <span class="badge-success">Lunas</span>
+                            @else
+                                <span class="badge-warning">Belum Lunas</span>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -122,14 +188,14 @@
                         <td colspan="7" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
                                         Penerimaan Tidak Ditemukan
                                     @else
                                         Penerimaan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
                                         Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
                                     @else
                                         Belum ada data faktur masuk terdaftar di sistem.
@@ -338,5 +404,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+
 
 @endsection
