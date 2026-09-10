@@ -453,16 +453,7 @@ h3,
     /* blue-700 */
 }
 
-/* Indent sub-menu links inside collapsible sidebar groups for hierarchy */
-.sidebar-group-items>a {
-    padding-left: 1.75rem;
-    /* pl-7 */
-}
 
-.sidebar-group-items>a.bg-white {
-    padding-left: 1.5rem;
-    /* pl-6 — slightly less to offset the 4px left border */
-}
 
 .table-custom-header th {
     padding: 0.75rem 1.25rem;
@@ -483,6 +474,156 @@ h3,
 .table-custom-body tr:hover {
     background-color: #f8fafc;
     /* slate-50 */
+}
+
+/* Indent sub-menu links inside collapsible sidebar groups for hierarchy */
+.sidebar-group-items>a {
+    padding-left: 2.5rem;
+}
+
+.sidebar-group-items>a.bg-white {
+    padding-left: 2.25rem;
+}
+
+/* Rail mode: collapse labels, smooth transitions, icon-only active highlight */
+@media (min-width: 1024px) {
+    /* Width expand when expanded */
+    #app-sidebar.sidebar-expanded {
+        width: 15rem;
+    }
+    /* Main menu (nav a + group header): keep pinned LEFT in both states,
+       only labels/chevrons collapse/expand — icons never move */
+    #app-sidebar .sidebar-group-header {
+        transition: gap 0.2s ease;
+    }
+    #app-sidebar .sidebar-group-header > span {
+        transition: gap 0.2s ease;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-header > span,
+    #app-sidebar:not(.sidebar-expanded) nav > a {
+        gap: 0;
+        transition: gap 0.2s ease;
+    }
+    /* Labels: collapse to zero width with transition */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-items > a > span.truncate,
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-header > span > span.truncate,
+    #app-sidebar:not(.sidebar-expanded) nav > a > span.truncate {
+        width: 0;
+        max-width: 0;
+        min-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-width 0.2s ease, opacity 0.15s ease;
+    }
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a > span.truncate,
+    #app-sidebar.sidebar-expanded .sidebar-group-header > span > span.truncate,
+    #app-sidebar.sidebar-expanded nav > a > span.truncate {
+        max-width: 18rem;
+        opacity: 1;
+        transition: max-width 0.25s ease 0.05s, opacity 0.15s ease 0.05s;
+    }
+    /* Gap: 0 in rail with transition */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-items > a,
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-header > span,
+    #app-sidebar:not(.sidebar-expanded) nav > a {
+        gap: 0;
+        transition: gap 0.2s ease;
+    }
+    /* Force consistent left edge on ALL nav items in rail (override pl-2, border-l-4 from active states) */
+    #app-sidebar:not(.sidebar-expanded) nav a {
+        padding-left: 0.75rem !important;
+        border-left: none !important;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-items > a {
+        padding-left: 0.875rem !important;
+        border-left: none !important;
+    }
+    /* Chevron: collapse instead of display:none */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-header .sidebar-group-arrow {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-width 0.2s ease, opacity 0.15s ease;
+    }
+    #app-sidebar.sidebar-expanded .sidebar-group-header .sidebar-group-arrow {
+        max-width: 2rem;
+        opacity: 1;
+        transition: max-width 0.2s ease 0.05s, opacity 0.15s ease 0.05s;
+    }
+    /* Sub-items: padding-left in rail = 0.875rem (center w-4 icon = 22px, matching main w-5 center) */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-items > a {
+        padding-left: 0.875rem;
+        padding-right: 0.5rem;
+        position: relative;
+        transition: padding 0.2s ease;
+    }
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a {
+        padding-left: 2.5rem;
+        padding-right: 0.75rem;
+        transition: padding 0.2s ease 0.05s;
+    }
+    /* Active sub-item: bg on the row itself, same animation as top-level nav */
+    #app-sidebar .sidebar-group-items > a.bg-white {
+        background: rgba(255,255,255,0.2);
+        border-left: none !important;
+    }
+    /* rail: compact pill */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-group-items > a.bg-white {
+        width: fit-content !important;
+        border-radius: 0.5rem !important;
+        padding-left: 0.875rem !important;
+        padding-right: 0.875rem !important;
+    }
+    /* expanded: full row */
+    #app-sidebar.sidebar-expanded .sidebar-group-items > a.bg-white {
+        border-radius: 0.5rem;
+    }
+
+    /* Rail: logo center */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-header {
+        justify-content: center;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-header > div:first-child {
+        justify-content: center;
+        width: 100%;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-header .hidden.lg\:inline {
+        display: none;
+    }
+
+    /* Rail: user avatar center */
+    #app-sidebar:not(.sidebar-expanded) .sidebar-footer {
+        justify-content: center;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-footer > div:first-child {
+        justify-content: center;
+        width: 100%;
+    }
+    #app-sidebar:not(.sidebar-expanded) .sidebar-footer form {
+        display: none;
+    }
+
+    /* Rail: selected (Dashboard) - symmetric white pill, icon centered, no position change on hover */
+    #app-sidebar:not(.sidebar-expanded) nav > a.bg-white {
+        background: #fff !important;
+        border-left: none !important;
+        border-radius: 0.5rem !important;
+        width: fit-content !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        justify-content: flex-start;
+    }
+    #app-sidebar:not(.sidebar-expanded) nav > a.bg-white svg {
+        color: #1e40af;
+    }
+    /* Keep same left padding in expanded so icon x never moves */
+    #app-sidebar.sidebar-expanded nav > a.bg-white {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        background: #fff !important;
+        border-radius: 0.5rem !important;
+        border-left: none !important;
+    }
 }
 
 .customer-data-row {

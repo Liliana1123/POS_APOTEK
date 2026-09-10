@@ -14,12 +14,29 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity"></div>
 
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="fixed inset-y-0 left-0 w-60 bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 transform -translate-x-full lg:translate-x-0 lg:static lg:flex transition-transform duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-60 bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-20 transition-all duration-200 ease-in-out print:hidden">
+        <script>
+            (function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var timer;
+                sidebar.addEventListener('mouseenter', function () {
+                    clearTimeout(timer);
+                    sidebar.classList.add('sidebar-expanded');
+                });
+                sidebar.addEventListener('mouseleave', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        sidebar.classList.remove('sidebar-expanded');
+                    }, 150);
+                });
+            })();
+        </script>
         <div class="flex flex-col h-full overflow-y-auto">
             <!-- Sidebar Header -->
-            <div class="px-5 py-4 flex justify-between items-center">
-                <div class="font-bold text-base text-white tracking-wider flex items-center gap-2">
-                    <span>APOTEK KITA</span>
+            <div class="sidebar-header px-5 py-4 flex justify-between items-center">
+                <div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden">
+                    <span class="hidden lg:inline lg:group-hover:hidden shrink-0">AK</span>
+                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">APOTEK KITA</span>
                 </div>
                 <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Close menu">
                     <x-heroicon-o-x-mark class="w-5 h-5" />
@@ -28,66 +45,78 @@
 
             <!-- Navigation Links -->
             <nav class="flex-1 px-4 py-4 space-y-1.5">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('dashboard') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                    <x-heroicon-o-home class="w-4 h-4" />
-                    <span>Dashboard</span>
+                <a href="{{ route('dashboard') }}" title="Dashboard" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('dashboard') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                    <span class="flex items-center justify-center shrink-0">
+                        <x-heroicon-s-home class="w-5 h-5" />
+                    </span>
+                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap font-bold uppercase tracking-wider">Dashboard</span>
                 </a>
 
                 <!-- Group: Master Data -->
                 <div class="sidebar-group" data-group="master">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-[10px] text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span>Data Master</span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-3 h-3 transition-transform duration-200" />
+                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
+                        <span class="flex items-center gap-2.5 min-w-0">
+<span class="flex items-center justify-center shrink-0">
+                        <x-heroicon-s-cube class="w-5 h-5" />
+                            </span>
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Data Master</span>
+                        </span>
+                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
                     </button>
                     @if (auth()->user()->isAdmin())
                         <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                            <a href="{{ route('barang.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('barang.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-cube class="w-4 h-4" />
-                                <span>Barang / Produk</span>
+                            <a href="{{ route('barang.index') }}" title="Barang / Produk" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('barang.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-archive-box class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Barang / Produk</span>
                             </a>
-                    <a href="{{ route('kategori.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('kategori.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                        <x-heroicon-o-tag class="w-4 h-4" />
-                        <span>Kategori</span>
-                    </a>
-<a href="{{ route('satuan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('satuan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                        <x-heroicon-o-scale class="w-4 h-4" />
-                        <span>Satuan</span>
-                    </a>
-<a href="{{ route('pabrik.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pabrik.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                        <x-heroicon-o-building-storefront class="w-4 h-4" />
-                        <span>Pabrik</span>
-                    </a>
-<a href="{{ route('supplier.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('supplier.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                        <x-heroicon-o-user-group class="w-4 h-4" />
-                        <span>Supplier</span>
-                    </a>
-<a href="{{ route('pelanggan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                        <x-heroicon-o-user class="w-4 h-4" />
-                        <span>Pelanggan/Member</span>
-                    </a>
+<a href="{{ route('kategori.index') }}" title="Kategori" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('kategori.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+<x-heroicon-o-percent-badge class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Kategori</span>
+                            </a>
+<a href="{{ route('satuan.index') }}" title="Satuan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('satuan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-scale class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Satuan</span>
+                            </a>
+<a href="{{ route('pabrik.index') }}" title="Pabrik" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pabrik.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-building-storefront class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pabrik</span>
+                            </a>
+<a href="{{ route('supplier.index') }}" title="Supplier" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('supplier.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-building-office-2 class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Supplier</span>
+                            </a>
+<a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-user class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pelanggan / Member</span>
+                            </a>
                         </div>
                     @endif
                 </div>
 
                 <!-- Group: Transaksi -->
                 <div class="sidebar-group" data-group="transaksi">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-[10px] text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span>Transaksi</span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-3 h-3 transition-transform duration-200" />
+                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
+                        <span class="flex items-center gap-2.5 min-w-0">
+                            <span class="flex items-center justify-center shrink-0">
+                                <x-heroicon-s-banknotes class="w-5 h-5" />
+                            </span>
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Transaksi</span>
+                        </span>
+                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
                     </button>
                     <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('penjualan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penjualan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-banknotes class="w-4 h-4" />
-                            <span>Penjualan (Kasir)</span>
+                        <a href="{{ route('penjualan.index') }}" title="Penjualan (Kasir)" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penjualan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-shopping-cart class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Penjualan (Kasir)</span>
                         </a>
                         @if (auth()->user()->isAdmin())
-                            <a href="{{ route('penerimaan.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penerimaan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-truck class="w-4 h-4" />
-                                <span>Penerimaan barang</span>
+                            <a href="{{ route('penerimaan.index') }}" title="Penerimaan Barang" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penerimaan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-truck class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Penerimaan barang</span>
                             </a>
-                            <a href="{{ route('rusak.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('rusak.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-trash class="w-4 h-4" />
-                                <span>Barang rusak</span>
+                            <a href="{{ route('rusak.index') }}" title="Barang Rusak" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('rusak.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+<x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Barang rusak</span>
                             </a>
                         @endif
                     </div>
@@ -96,34 +125,39 @@
                 <!-- Group: Laporan (Admin Only) -->
                 @if (auth()->user()->isAdmin())
                 <div class="sidebar-group" data-group="laporan">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-[10px] text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span>Laporan</span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-3 h-3 transition-transform duration-200" />
+                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
+                        <span class="flex items-center gap-2.5 min-w-0">
+                            <span class="flex items-center justify-center shrink-0">
+                                <x-heroicon-s-chart-bar class="w-5 h-5" />
+                            </span>
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan</span>
+                        </span>
+                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
                     </button>
                     <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('laporan.stok') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.stok') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-document-chart-bar class="w-4 h-4" />
-                            <span>Laporan stok</span>
+                        <a href="{{ route('laporan.stok') }}" title="Laporan Stok" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.stok') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-document-chart-bar class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan stok</span>
                         </a>
-                        <a href="{{ route('laporan.penerimaan') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penerimaan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-document-duplicate class="w-4 h-4" />
-                            <span>Laporan penerimaan</span>
+                        <a href="{{ route('laporan.penerimaan') }}" title="Laporan Penerimaan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penerimaan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-document-duplicate class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan penerimaan</span>
                         </a>
-                        <a href="{{ route('laporan.penjualan') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penjualan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-currency-dollar class="w-4 h-4" />
-                            <span>Laporan penjualan</span>
+                        <a href="{{ route('laporan.penjualan') }}" title="Laporan Penjualan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penjualan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-currency-dollar class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan penjualan</span>
                         </a>
-                        <a href="{{ route('laporan.rusak') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.rusak') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-no-symbol class="w-4 h-4" />
-                            <span>Laporan barang rusak</span>
+                        <a href="{{ route('laporan.rusak') }}" title="Laporan Barang Rusak" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.rusak') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-no-symbol class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan barang rusak</span>
                         </a>
-                        <a href="{{ route('laporan.laba-rugi') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.laba-rugi') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-chart-bar class="w-4 h-4" />
-                            <span>Laporan laba-rugi</span>
+                        <a href="{{ route('laporan.laba-rugi') }}" title="Laporan Laba Rugi" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.laba-rugi') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-chart-pie class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan laba-rugi</span>
                         </a>
-                        <a href="{{ route('laporan.diskon') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.diskon') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-ticket class="w-4 h-4" />
-                            <span>Laporan diskon</span>
+                        <a href="{{ route('laporan.diskon') }}" title="Laporan Diskon" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.diskon') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-ticket class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan diskon</span>
                         </a>
                     </div>
                 </div>
@@ -132,18 +166,23 @@
                 <!-- Group: Promo & Log (Admin Only) -->
                 @if (auth()->user()->isAdmin())
                 <div class="sidebar-group" data-group="promo">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-[10px] text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span>Promo & Log</span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-3 h-3 transition-transform duration-200" />
+                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
+                        <span class="flex items-center gap-2.5 min-w-0">
+                            <span class="flex items-center justify-center shrink-0">
+                                <x-heroicon-s-gift class="w-5 h-5" />
+                            </span>
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Promo & Log</span>
+                        </span>
+                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
                     </button>
                     <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('custom-discount.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('custom-discount.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-gift class="w-4 h-4" />
-                            <span>Custom Discount</span>
+                        <a href="{{ route('custom-discount.index') }}" title="Custom Discount" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('custom-discount.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-tag class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Custom Discount</span>
                         </a>
-                        <a href="{{ route('activity-log') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('activity-log') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-book-open class="w-4 h-4" />
-                            <span>Log Aktivitas</span>
+                        <a href="{{ route('activity-log') }}" title="Log Aktivitas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('activity-log') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <x-heroicon-o-book-open class="w-4 h-4 shrink-0" />
+                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Log Aktivitas</span>
                         </a>
                     </div>
                 </div>
@@ -175,17 +214,17 @@
         </script>
 
         <!-- Sidebar Profile Card (Bottom) -->
-        <div class="p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 overflow-hidden">
+        <div class="sidebar-footer p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
+            <div class="flex items-center gap-2 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
-                <div class="overflow-hidden">
+                <div class="min-w-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[200px] lg:group-hover:opacity-100 transition-all duration-200 ease-in-out">
                     <span class="block text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</span>
                     <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ auth()->user()->role }}</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+            <form method="POST" action="{{ route('logout') }}" class="shrink-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[50px] lg:group-hover:opacity-100 transition-all duration-200 ease-in-out">
                 @csrf
                 <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout">
                     <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" />
