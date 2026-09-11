@@ -105,9 +105,8 @@
     <div class="overflow-x-auto">
         <table class="customer-table table-custom min-w-[80rem] w-full table-fixed">
             <colgroup>
-                <col style="width: 180px;">
+                <col style="width: 210px;">
                 <col style="width: 120px;">
-                <col style="width: 150px;">
                 <col style="width: 130px;">
                 <col style="width: 190px;">
                 <col style="width: 130px;">
@@ -118,10 +117,9 @@
                 <tr>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Aksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">ID Pelanggan</th>
-                    <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
-                    <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">No HP</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Nama & No Telp</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Status Member</th>
-                    <th scope="col" class="px-1 py-3 text-center align-middle">Piutang</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Status Piutang</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Diskon</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
                 </tr>
@@ -130,13 +128,20 @@
                 @forelse ($pelanggans as $pelanggan)
                     <tr class="customer-data-row">
                         <td class="px-1 py-3 align-middle text-center whitespace-nowrap">
-                            <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
-                                <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
+                            <div class="flex items-center justify-center gap-1.5 flex-nowrap" style="padding: 0; margin: 0;">
+                                <button
+                                    type="button"
+                                    class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500"
+                                    style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;"
+                                    title="Detail"
+                                    aria-label="Detail"
+                                    onclick="openDetailModal({{ $pelanggan->id }})"
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
                                         <circle cx="12" cy="12" r="2.5"/>
                                     </svg>
-                                </a>
+                                </button>
                                 <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-yellow-500" style="color: #F59E0B; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Edit" aria-label="Edit">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
@@ -184,8 +189,15 @@
                             </div>
                         </td>
                         <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '-' }}</td>
-                        <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</td>
+                        <td class="px-1 py-3 align-middle text-center">
+                            <div class="font-medium text-gray-800">
+                                {{ $pelanggan->nama }}
+                            </div>
+
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                {{ $pelanggan->telepon ?? '-' }}
+                            </div>
+                        </td>
                         <td class="px-1 py-3 align-middle text-center">
                            @php
                                 $statusMember = trim((string) $pelanggan->status_member);
@@ -246,7 +258,7 @@
                                 </span> 
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                       <td class="px-1 py-3 align-middle text-center">
                             @if(($pelanggan->saldo_piutang ?? 0) > 0)
                                 <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                                     Belum Lunas
@@ -273,7 +285,8 @@
                                         request()->filled('cari') ||
                                         request()->filled('tanggal_awal') ||
                                         request()->filled('tanggal_akhir') ||
-                                        $status !== 'semua'
+                                        $status !== 'semua' ||
+                                        $statusPiutang !== 'semua'
                                     )
                                         Pelanggan Tidak Ditemukan
                                     @else
@@ -352,6 +365,211 @@
     </p>
     </div>
 </x-modal-form>
+
+<!-- Modal Detail Pelanggan -->
+<div id="modal-detail-pelanggan" class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
+    <div class="modal-container-custom max-w-2xl w-full mx-4 bg-white rounded-xl shadow-xl max-h-[90vh] overflow-hidden">
+        <div class="flex items-center justify-between border-b px-5 py-4">
+            <div>
+                <h3 class="text-base font-semibold text-gray-800">Detail Pelanggan / Member</h3>
+                <p class="text-xs text-gray-500 mt-1">Informasi pelanggan dan riwayat transaksi.</p>
+            </div>
+            <button type="button" onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600" aria-label="Tutup">&times;</button>
+        </div>
+
+        <div class="overflow-y-auto max-h-[calc(90vh-120px)]">
+            <div class="p-5 space-y-3">
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">Nama</span>
+                    <span id="detail-nama" class="text-sm font-semibold text-gray-800 text-right">-</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">ID Pelanggan</span>
+                    <span id="detail-member-id" class="text-sm font-mono text-gray-800 text-right">-</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">No. Telp</span>
+                    <span id="detail-telepon" class="text-sm text-gray-800 text-right">-</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">Alamat</span>
+                    <span id="detail-alamat" class="text-sm text-gray-800 text-right max-w-[70%] whitespace-pre-line">Memuat...</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">Status Piutang</span>
+                    <span id="detail-status-piutang" class="text-sm font-semibold text-right">-</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">Total Piutang</span>
+                    <span id="detail-saldo-piutang" class="text-sm font-semibold text-gray-800 text-right">Rp 0</span>
+                </div>
+                <div class="flex justify-between gap-4 border-b pb-2">
+                    <span class="text-xs text-gray-500">Total Diskon</span>
+                    <span id="detail-total-diskon" class="text-sm font-semibold text-green-600 text-right">Rp 0</span>
+                </div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-xs text-gray-500">Total Belanja</span>
+                    <span id="detail-total-belanja" class="text-sm font-semibold text-gray-800 text-right">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="border-t px-5 py-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800">Riwayat Transaksi</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">Daftar transaksi yang dilakukan pelanggan.</p>
+                    </div>
+                    <span id="detail-jumlah-transaksi" class="text-xs text-gray-500">0 transaksi</span>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr class="border-b text-left text-xs text-gray-500">
+                                <th class="px-3 py-2 whitespace-nowrap">Tanggal</th>
+                                <th class="px-3 py-2 whitespace-nowrap">No. Faktur</th>
+                                <th class="px-3 py-2 whitespace-nowrap">Metode</th>
+                                <th class="px-3 py-2 text-right whitespace-nowrap">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-riwayat-body">
+                            <tr>
+                                <td colspan="4" class="px-3 py-5 text-center text-gray-400">Memuat riwayat transaksi...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer-custom flex justify-end border-t px-5 py-3">
+            <button type="button" onclick="closeDetailModal()" class="btn-secondary">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function formatDetailRupiah(angka) {
+    return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
+}
+
+function formatDetailTanggal(tanggal) {
+    if (!tanggal) return '-';
+    const parts = String(tanggal).split('-');
+    if (parts.length !== 3) return tanggal;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function labelMetodePembayaran(metode) {
+    const labels = {
+        cash: 'Cash',
+        qris: 'QRIS',
+        debit: 'Debit',
+        piutang: 'Piutang'
+    };
+    return labels[String(metode || '').toLowerCase()] || (metode || '-');
+}
+
+function openDetailModal(pelangganId) {
+    const modal = document.getElementById('modal-detail-pelanggan');
+    const historyBody = document.getElementById('detail-riwayat-body');
+
+    document.getElementById('detail-nama').textContent = '-';
+    document.getElementById('detail-member-id').textContent = '-';
+    document.getElementById('detail-telepon').textContent = '-';
+    document.getElementById('detail-alamat').textContent = 'Memuat...';
+    document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
+    document.getElementById('detail-total-diskon').textContent = 'Rp 0';
+    document.getElementById('detail-total-belanja').textContent = 'Rp 0';
+    document.getElementById('detail-status-piutang').textContent = '-';
+    document.getElementById('detail-status-piutang').className = 'text-sm font-semibold text-right';
+    document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
+    historyBody.innerHTML = '<tr><td colspan="4" class="px-3 py-5 text-center text-gray-400">Memuat riwayat transaksi...</td></tr>';
+
+    modal.classList.remove('hidden');
+
+    fetch(`{{ url('pelanggan') }}/${pelangganId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal memuat data pelanggan.');
+        }
+        return data;
+    })
+    .then(data => {
+        const pelanggan = data.pelanggan || {};
+        const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
+
+        document.getElementById('detail-nama').textContent = pelanggan.nama || '-';
+        document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
+        document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
+        document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
+        document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
+        document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
+        document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
+
+        const statusPiutang = document.getElementById('detail-status-piutang');
+        if (Number(pelanggan.saldo_piutang || 0) > 0) {
+            statusPiutang.textContent = 'Belum Lunas';
+            statusPiutang.className = 'text-sm font-semibold text-red-600 text-right';
+        } else {
+            statusPiutang.textContent = 'Lunas';
+            statusPiutang.className = 'text-sm font-semibold text-green-600 text-right';
+        }
+
+        document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
+        historyBody.innerHTML = '';
+
+        if (transaksi.length === 0) {
+            historyBody.innerHTML = '<tr><td colspan="4" class="px-3 py-5 text-center text-gray-400">Belum ada transaksi.</td></tr>';
+            return;
+        }
+
+        transaksi.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'border-b last:border-b-0';
+
+            const tanggal = document.createElement('td');
+            tanggal.className = 'px-3 py-2 whitespace-nowrap text-gray-700';
+            tanggal.textContent = formatDetailTanggal(item.tanggal);
+
+            const faktur = document.createElement('td');
+            faktur.className = 'px-3 py-2 whitespace-nowrap font-mono text-xs text-gray-700';
+            faktur.textContent = item.no_faktur || '-';
+
+            const metode = document.createElement('td');
+            metode.className = 'px-3 py-2 whitespace-nowrap text-gray-600';
+            metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
+
+            const total = document.createElement('td');
+            total.className = 'px-3 py-2 whitespace-nowrap text-right font-semibold text-gray-800';
+            total.textContent = formatDetailRupiah(item.total);
+
+            row.appendChild(tanggal);
+            row.appendChild(faktur);
+            row.appendChild(metode);
+            row.appendChild(total);
+            historyBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error(error);
+        document.getElementById('detail-alamat').textContent = 'Gagal memuat data';
+        document.getElementById('detail-status-piutang').textContent = '-';
+        historyBody.innerHTML = '<tr><td colspan="4" class="px-3 py-5 text-center text-red-500">Riwayat transaksi gagal dimuat.</td></tr>';
+    });
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('modal-detail-pelanggan');
+    if (modal) modal.classList.add('hidden');
+}
+</script>
 
 <!-- Modal Kartu Member -->
 <div id="modal-card" class="modal-backdrop-custom hidden">

@@ -118,19 +118,33 @@ class PenjualanController extends Controller
 
                     } else {
 
-                        // Jika tidak ada nama, buat pelanggan Umum baru
-                        $pelanggan = Pelanggan::create([
-                            'nama' => 'Umum',
-                            'telepon' => null,
-                            'alamat' => null,
-                            'tanggal_lahir' => null,
-                            'keterangan' => 'Pelanggan Umum',
-                            'member_id' => Pelanggan::generateUmumId(),
-                            'is_member' => false,
-                            'member_aktif' => false,
-                            'member_since' => null,
-                            'saldo_piutang' => 0,
-                        ]);
+                        // Jika tidak ada nama, gunakan Pelanggan Umum.
+                        // Pelanggan Umum bukan member dan tidak memiliki member_id.
+                        $pelanggan = Pelanggan::where('is_member', false)
+                            ->where(function ($query) {
+                                $query->where('keterangan', 'Pelanggan Umum')
+                                    ->orWhere(function ($q) {
+                                        $q->where('nama', 'Umum')
+                                            ->whereNull('member_id');
+                                    });
+                            })
+                            ->first();
+
+                        if (!$pelanggan) {
+                            $pelanggan = Pelanggan::create([
+                                'nama' => 'Umum',
+                                'telepon' => null,
+                                'alamat' => null,
+                                'tanggal_lahir' => null,
+                                'keterangan' => 'Pelanggan Umum',
+                                'member_id' => null,
+                                'is_member' => false,
+                                'member_aktif' => false,
+                                'member_since' => null,
+                                'saldo_piutang' => 0,
+                                'status_member' => null,
+                            ]);
+                        }  
                     }
 
                     // Hubungkan transaksi dengan pelanggan tersebut
