@@ -419,7 +419,7 @@
                 <tbody>
                     @foreach ($penerimaan->riwayatPenerimaan as $index => $riwayat)
 
-                        <tr>
+                        <tr style="{{ $riwayat->jenis === 'pembatalan' ? 'color: #dc2626; font-weight: bold;' : '' }}">
                             <td class="text-center">
                                 {{ $index + 1 }}
                             </td>

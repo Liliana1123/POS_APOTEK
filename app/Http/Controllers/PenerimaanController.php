@@ -739,7 +739,44 @@ class PenerimaanController extends Controller
                     'user_id' => $request->user()->id,
                 ]);
             }
+
+            foreach ($data['jumlah_pembatalan'] as $detailPesananId => $jumlahPembatalan) {
+
+                $jumlahPembatalan = (int) $jumlahPembatalan;
+
+                if ($jumlahPembatalan <= 0) {
+                    continue;
+                }
+
+                $detailPesanan = $penerimaan->detailPesanan
+                    ->firstWhere('id', $detailPesananId);
+
+                if (!$detailPesanan) {
+                    throw ValidationException::withMessages([
+                        'jumlah_pembatalan' => 'Detail barang tidak ditemukan dalam penerimaan ini.',
+                    ]);
+                }
+
+                RiwayatPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                    'detail_penerimaan_id' => null,
+                    'jenis' => 'pembatalan',
+                    'jumlah' => $jumlahPembatalan,
+                    'tanggal' => $data['tanggal_terima'],
+                    'keterangan' => $data['keterangan'] ?: 'Pembatalan kekurangan',
+                    'user_id' => $request->user()->id,
+                ]);
+            }
         });
+
+         $totalTagihan = $penerimaan->totalTagihan();
+        $totalDibayar = $penerimaan->totalDibayar();
+
+        $penerimaan->update([
+            'lunas' => $totalDibayar >= $totalTagihan,
+        ]);
+
 
         return response()->json([
             'success' => true,
