@@ -347,17 +347,17 @@
                                     >
                                 </td>
 
-<td class="px-3 py-2">
-    <input
-        type="number"
-        min="0"
-        name="items[{{ $index }}][jumlah_diterima]"
-        value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
-        required
-        class="form-input py-1 px-2 text-right font-mono jumlah-field"
-        placeholder="0"
-    >
-</td>
+                                <td class="px-3 py-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        name="items[{{ $index }}][jumlah_diterima]"
+                                        value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
+                                        required
+                                        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+                                        placeholder="0"
+                                    >
+                                </td>
 
                                 <td class="px-3 py-2">
                                     <input
@@ -410,18 +410,11 @@
             </span>
         </div>
 
-        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
-            <label for="ppn">PPN (Opsional)</label>
-            <input
-                type="number"
-                name="ppn"
-                id="ppn"
-                value="{{ old('ppn', $penerimaan->ppn ?? 0) }}"
-                min="0"
-                step="0.01"
-                class="form-input w-full sm:w-40 text-right font-mono"
-                placeholder="0"
-            >
+        <<div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+            <span>PPN (11%):</span>
+            <span id="ppn" class="text-blue-700 font-mono">
+                Rp 0
+            </span>
         </div>
 
         <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
@@ -674,9 +667,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
+        const nilaiPpn = total * 0.11;
+
         totalFaktur.textContent = formatRupiah(total);
-        const ppn = parseFloat(ppnInput.value) || 0;
-        totalTagihan.textContent = formatRupiah(total + ppn);
+        ppnInput.textContent = formatRupiah(nilaiPpn);
+        totalTagihan.textContent = formatRupiah(total + nilaiPpn);
     }
 
     function tambahBaris() {

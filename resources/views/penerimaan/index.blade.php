@@ -146,6 +146,17 @@
                                     data-id="{{ $penerimaan->id }}">
                                     <x-heroicon-o-banknotes class="w-4 h-4" />
                                 </button>@endif
+
+                                @if ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                                    <button type="button"
+                                        class="btn-secondary !p-1.5 btn-susulan-penerimaan"
+                                        style="color: #7C3AED;"
+                                        title="Penerimaan Susulan"
+                                        data-id="{{ $penerimaan->id }}">
+                                        <x-heroicon-o-arrow-path class="w-4 h-4" />
+                                    </button>
+                                @endif
+
                                 <a href="{{ route('penerimaan.print', $penerimaan) }}"
                                     class="btn-secondary !p-1.5"
                                     title="Print"
@@ -300,6 +311,37 @@
 </div>
 
 
+<!-- Modal Penerimaan Susulan -->
+<div
+    id="modal-susulan-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true"
+>
+    <div class="modal-container-custom max-w-6xl">
+        <div class="modal-header-custom">
+            <h3 class="text-lg font-semibold">
+                Penerimaan Susulan
+            </h3>
+
+            <button
+                type="button"
+                id="close-susulan-penerimaan"
+                class="..."
+            >
+                &times;
+            </button>
+        </div>
+
+        <div
+            id="susulan-penerimaan-content"
+            class="modal-body-custom"
+        >
+            Memuat...
+        </div>
+    </div>
+</div>
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -385,6 +427,113 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error(error);
                 });
         });
+    });
+
+
+     // =========================
+    // MODAL SUSULAN
+    // =========================
+    const susulanModal = document.getElementById('modal-susulan-penerimaan');
+    const susulanContent = document.getElementById('susulan-penerimaan-content');
+    const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
+
+    // BUKA FORM SUSULAN
+    document.querySelectorAll('.btn-susulan-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = button.dataset.id;
+
+            susulanModal.classList.remove('hidden');
+
+            susulanContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat formulir penerimaan susulan...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/susulan-form`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal memuat formulir penerimaan susulan.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    susulanContent.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error(error);
+
+                    susulanContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            ${error.message}
+                        </div>
+                    `;
+                });
+        });
+    });
+
+    // TUTUP FORM SUSULAN
+    if (closeSusulanButton) {
+        closeSusulanButton.addEventListener('click', function () {
+            susulanModal.classList.add('hidden');
+            susulanContent.innerHTML = '';
+        });
+    }
+
+    // SIMPAN PENERIMAAN SUSULAN
+    document.addEventListener('submit', function (event) {
+        if (event.target.id !== 'form-susulan-penerimaan') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const form = event.target;
+        const button = form.querySelector('#btn-simpan-susulan');
+
+        if (!button || button.disabled) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Menyimpan...';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+            .then(async response => {
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                        data.errors?.jumlah_susulan?.[0] ||
+                        'Gagal menyimpan penerimaan susulan.'
+                    );
+                }
+
+                return data;
+            })
+            .then(data => {
+                susulanModal.classList.add('hidden');
+                susulanContent.innerHTML = '';
+
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Penerimaan susulan:', error);
+
+                alert(error.message || 'Gagal menyimpan penerimaan susulan.');
+
+                button.disabled = false;
+                button.textContent = 'Simpan Penerimaan Susulan';
+            });
     });
 
     // =========================

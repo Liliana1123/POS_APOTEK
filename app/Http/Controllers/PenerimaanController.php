@@ -157,7 +157,6 @@ class PenerimaanController extends Controller
             'tanggal_faktur' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penerimaans,no_faktur',
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
-            'ppn' => 'nullable|numeric|min:0',
             'pembayaran_pertama' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
@@ -180,7 +179,7 @@ class PenerimaanController extends Controller
         $data['supplier_id'] = (int) $data['supplier_id'];
         $supplier = Supplier::findOrFail($data['supplier_id']);
         $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
-        $ppn = (float) ($data['ppn'] ?? 0);
+        $ppn = $totalFaktur * 0.11;
         $totalTagihan = $totalFaktur + $ppn;
         $pembayaranPertama = (float) ($data['pembayaran_pertama'] ?? 0);
         
@@ -199,7 +198,7 @@ class PenerimaanController extends Controller
         ]);
     }
 
-        DB::transaction(function () use ($data, $request, $supplier, $pembayaranPertama, $totalTagihan) {
+        DB::transaction(function () use ($data, $request, $supplier, $pembayaranPertama, $totalTagihan, $ppn) {
             
             $penerimaan = Penerimaan::create([
                 'user_id' => $request->user()->id,
@@ -209,7 +208,7 @@ class PenerimaanController extends Controller
                 'tanggal' => $data['tanggal'],
                 'tanggal_faktur' => $data['tanggal_faktur'],
                 'no_faktur' => $data['no_faktur'],
-                'ppn' => $data['ppn'] ?? 0,
+                'ppn' => $ppn,
                 'lunas' => $pembayaranPertama >= $totalTagihan,
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
             ]);
@@ -351,7 +350,6 @@ class PenerimaanController extends Controller
                 'keterangan' => $data['keterangan'] ?? null,
                 'tanggal' => $data['tanggal'],
                 'tanggal_faktur' => $data['tanggal_faktur'],
-                'ppn' => $data['ppn'] ?? 0,
                 'no_faktur' => $data['no_faktur'],
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
             ]);
@@ -528,7 +526,7 @@ class PenerimaanController extends Controller
             $totalFaktur = (float) $penerimaan->detail()
                 ->sum(DB::raw('harga_beli * jumlah'));
 
-            $ppn = (float) ($data['ppn'] ?? 0);
+            $ppn = $totalFaktur * 0.11;
             $totalTagihan = $totalFaktur + $ppn;
 
              $totalDibayar = $penerimaan->totalDibayar();
@@ -541,6 +539,7 @@ class PenerimaanController extends Controller
 
            
             $penerimaan->update([
+                'ppn' => $ppn,
                 'lunas' => $totalDibayar >= $totalTagihan,
             ]);
         });
@@ -585,6 +584,167 @@ class PenerimaanController extends Controller
         });
 
         return back()->with('success', 'Pembayaran penerimaan berhasil disimpan.');
+    }
+
+    public function susulanForm(Penerimaan $penerimaan)
+    {
+        abort_unless(
+            $penerimaan->statusPenerimaan() === 'BELUM LENGKAP',
+            404
+        );
+
+        $penerimaan->load([
+            'supplier',
+            'detailPesanan.riwayatPenerimaan',
+        ]);
+
+        $detailPesanan = $penerimaan->detailPesanan
+            ->filter(fn ($detail) => $detail->kekurangan() > 0)
+            ->values();
+
+        return view('penerimaan.susulan', compact(
+            'penerimaan',
+            'detailPesanan'
+        ));
+    }
+
+    public function susulanStore(Request $request, Penerimaan $penerimaan)
+    {
+        abort_unless(
+            $penerimaan->statusPenerimaan() === 'BELUM LENGKAP',
+            404
+        );
+
+        $data = $request->validate([
+            'tanggal_terima' => ['required', 'date'],
+            'keterangan' => ['nullable', 'string', 'max:1000'],
+            'jumlah_susulan' => ['required', 'array'],
+            'jumlah_susulan.*' => ['required', 'integer', 'min:0'],
+
+            'jumlah_pembatalan' => ['required', 'array'],
+            'jumlah_pembatalan.*' => ['required', 'integer', 'min:0'],
+
+            'detail' => ['required', 'array'],
+            'detail.*.no_batch' => ['required', 'string', 'max:100'],
+            'detail.*.expired_date' => ['required', 'date'],
+            'detail.*.harga_beli' => ['required', 'numeric', 'min:0'],
+            'detail.*.harga_jual' => ['required', 'numeric', 'min:0'],
+            'detail.*.no_rak' => ['required', 'string', 'max:50'],
+
+
+        ]);
+
+        $jumlahSusulanTotal = collect($data['jumlah_susulan'])
+            ->map(fn ($jumlah) => (int) $jumlah)
+            ->sum();
+
+        $jumlahPembatalanTotal = collect($data['jumlah_pembatalan'])
+            ->map(fn ($jumlah) => (int) $jumlah)
+            ->sum();
+
+        if ($jumlahSusulanTotal + $jumlahPembatalanTotal <= 0) {
+            throw ValidationException::withMessages([
+                'jumlah_susulan' => 'Minimal satu barang harus memiliki jumlah susulan atau pembatalan lebih dari 0.',
+            ]);
+        }
+
+        foreach ($data['jumlah_susulan'] as $detailPesananId => $jumlahSusulan) {
+            $jumlahPembatalan = (int) ($data['jumlah_pembatalan'][$detailPesananId] ?? 0);
+
+            $detail = $penerimaan->detailPesanan
+                ->firstWhere('id', $detailPesananId);
+
+            if (!$detail) {
+                abort(422, 'Detail barang tidak ditemukan dalam penerimaan ini.');
+            }
+
+            if (
+                (int) $jumlahSusulan + $jumlahPembatalan
+                > $detail->kekurangan()
+            ) {
+                abort(
+                    422,
+                    "Jumlah susulan dan pembatalan untuk {$detail->barang->nama} melebihi kekurangan."
+                );
+            }
+        }
+
+        $penerimaan->load('detailPesanan');
+        foreach ($request->jumlah_susulan as $detailPesananId => $jumlahSusulan) {
+            $detail = $penerimaan->detailPesanan
+                ->firstWhere('id', $detailPesananId);
+
+            if (!$detail) {
+                abort(422, 'Detail barang tidak ditemukan dalam penerimaan ini.');
+            }
+
+            if ((int) $jumlahSusulan > $detail->kekurangan()) {
+                abort(
+                    422,
+                    "Jumlah susulan untuk {$detail->barang->nama} melebihi kekurangan."
+                );
+            }
+        }
+
+        DB::transaction(function () use ($request, $penerimaan, $data) {
+
+            $penerimaan->load('detailPesanan');
+
+            foreach ($data['jumlah_susulan'] as $detailPesananId => $jumlahSusulan) {
+
+                $jumlahSusulan = (int) $jumlahSusulan;
+
+                if ($jumlahSusulan <= 0) {
+                    continue;
+                }
+
+                $detailPesanan = $penerimaan->detailPesanan
+                    ->firstWhere('id', $detailPesananId);
+
+                if (!$detailPesanan) {
+                    throw ValidationException::withMessages([
+                        'jumlah_susulan' => 'Detail barang tidak ditemukan dalam penerimaan ini.',
+                    ]);
+                }
+
+                $detailData = $data['detail'][$detailPesananId] ?? null;
+
+                if (!$detailData) {
+                    throw ValidationException::withMessages([
+                        'detail' => 'Data detail penerimaan susulan tidak lengkap.',
+                    ]);
+                }
+
+                $detailPenerimaan = DetailPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'barang_id' => $detailPesanan->barang_id,
+                    'no_batch' => $detailData['no_batch'],
+                    'harga_beli' => $detailData['harga_beli'],
+                    'harga_jual' => $detailData['harga_jual'],
+                    'expired_date' => $detailData['expired_date'],
+                    'no_rak' => $detailData['no_rak'],
+                    'jumlah' => $jumlahSusulan,
+                    'stok' => $jumlahSusulan,
+                    'aktif' => true,
+                ]);
+
+                RiwayatPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                    'detail_penerimaan_id' => $detailPenerimaan->id,
+                    'jenis' => 'penerimaan',
+                    'jumlah' => $jumlahSusulan,
+                    'tanggal' => $data['tanggal_terima'],
+                    'keterangan' => $data['keterangan'] ?: 'Penerimaan susulan',
+                    'user_id' => $request->user()->id,
+                ]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penerimaan susulan berhasil disimpan.',
+        ]);
     }
 
     public function print(Penerimaan $penerimaan)
