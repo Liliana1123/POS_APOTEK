@@ -34,10 +34,27 @@
         <div class="flex flex-col h-full overflow-y-auto">
             <!-- Sidebar Header -->
             <div class="sidebar-header px-5 py-4 flex justify-between items-center">
-                <div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden">
-                    <span class="hidden lg:inline lg:group-hover:hidden shrink-0">AK</span>
-                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">APOTEK KITA</span>
-                </div>
+                @php
+                    $apotek = \App\Models\InfoApotek::first();
+                    $abbr = $apotek->nama_apotek
+                        ? collect(explode(' ', $apotek->nama_apotek))
+                            ->take(2)
+                            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+                            ->implode('')
+                        : 'AK';
+                @endphp
+<div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden">
+                @if($apotek->logo)
+                    <img src="{{ asset('storage/' . $apotek->logo) }}"
+                         alt="{{ $apotek->nama_apotek }}"
+                         class="w-10 h-10 rounded-lg object-contain bg-white p-0.5 shrink-0">
+                @else
+                    <span class="hidden lg:inline lg:group-hover:hidden shrink-0">{{ $abbr }}</span>
+                @endif
+                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">
+                    {{ $apotek->nama_apotek ?? 'APOTEK KITA' }}
+                </span>
+            </div>
                 <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Close menu">
                     <x-heroicon-o-x-mark class="w-5 h-5" />
                 </button>
@@ -85,9 +102,17 @@
                                 <x-heroicon-o-building-office-2 class="w-4 h-4 shrink-0" />
                                 <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Supplier</span>
                             </a>
-<a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                            <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
                                 <x-heroicon-o-user class="w-4 h-4 shrink-0" />
                                 <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pelanggan / Member</span>
+                            </a>
+                            <a href="{{ route('user.index') }}" title="Kelola User" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('user.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-users class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Kelola User</span>
+                            </a>
+                            <a href="{{ route('pengaturan.index') }}" title="Pengaturan Apotek" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pengaturan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
+                                <x-heroicon-o-cog-6-tooth class="w-4 h-4 shrink-0" />
+                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pengaturan Apotek</span>
                             </a>
                         </div>
                     @endif

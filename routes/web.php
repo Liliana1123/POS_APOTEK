@@ -14,6 +14,8 @@ use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\CustomDiscountController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\PengaturanController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +47,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('barang', BarangController::class);
     Route::resource('custom-discount', CustomDiscountController::class)->except('show');
     Route::post('custom-discount/{custom_discount}/toggle', [CustomDiscountController::class, 'toggle'])->name('custom-discount.toggle');
+    Route::resource('user', UserController::class)->except('show');
+    Route::patch('user/{user}/toggle', [UserController::class, 'toggle'])->name('user.toggle');
+    Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
+    Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log');
 });
 

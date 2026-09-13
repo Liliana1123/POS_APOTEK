@@ -1,3 +1,6 @@
+@php
+    $apotek = \App\Models\InfoApotek::first();
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -167,7 +170,10 @@
 
     <div class="header">
         <h1>BUKTI PENERIMAAN BARANG</h1>
-        <p>POS Apotek</p>
+        <p>{{ $apotek->nama_apotek ?? 'POS Apotek' }}</p>
+        @if($apotek?->alamat)
+            <p>{{ $apotek->alamat }}</p>
+        @endif
     </div>
 
     <div class="info">
