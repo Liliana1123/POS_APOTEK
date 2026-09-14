@@ -226,6 +226,7 @@ class PelangganController extends Controller
             'telepon' => 'required|string|max:30',
             'alamat' => 'required|string|max:1000',
             'tanggal_lahir' => 'nullable|date',
+            'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
         ]);
 
         $pelanggan->update($data);
@@ -264,10 +265,12 @@ class PelangganController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
+            'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
         ]);
 
         $telepon = $request->input('telepon');
         $nama = $request->input('nama');
+        $statusMember = $request->input('status_member');
 
         $pelanggan = null;
 
@@ -300,12 +303,13 @@ class PelangganController extends Controller
 
             while ($attempts < $maxAttempts && !$saved) {
                 try {
-                    DB::transaction(function () use ($pelanggan, $nama, &$saved) {
+                    DB::transaction(function () use ($pelanggan, $nama, $statusMember, &$saved) {
                         $pelanggan->nama = $nama;
                         $pelanggan->member_id = Pelanggan::generateMemberId();
                         $pelanggan->is_member = true;
                         $pelanggan->member_aktif = true;
                         $pelanggan->member_since = now();
+                        $pelanggan->status_member = $statusMember;
                         $pelanggan->save();
 
                         \App\Models\ActivityLog::log(
@@ -358,7 +362,7 @@ class PelangganController extends Controller
 
         while ($attempts < $maxAttempts && !$saved) {
             try {
-                DB::transaction(function () use ($nama, $telepon, &$saved, &$newPelanggan) {
+                DB::transaction(function () use ($nama, $telepon, $statusMember, &$saved, &$newPelanggan) {
                     $newPelanggan = Pelanggan::create([
                         'nama' => $nama,
                         'telepon' => $telepon,
@@ -366,6 +370,7 @@ class PelangganController extends Controller
                         'is_member' => true,
                         'member_aktif' => true,
                         'member_since' => now(),
+                        'status_member' => $statusMember,
                         'saldo_piutang' => 0,
                     ]);
 

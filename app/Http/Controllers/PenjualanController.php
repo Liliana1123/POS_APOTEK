@@ -16,11 +16,37 @@ class PenjualanController extends Controller
     {
         $query = Penjualan::with(['user', 'pelanggan']);
 
+        // Pencarian nomor faktur
         if ($request->filled('cari')) {
-            $query->where('no_faktur', 'like', '%' . $request->cari . '%');
+            $query->where(
+                'no_faktur',
+                'like',
+                '%' . $request->cari . '%'
+            );
         }
 
-        $penjualans = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        // Filter tanggal awal
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate(
+                'tanggal',
+                '>=',
+                $request->tanggal_awal
+            );
+        }
+
+        // Filter tanggal akhir
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate(
+                'tanggal',
+                '<=',
+                $request->tanggal_akhir
+            );
+        }
+
+        $penjualans = $query
+            ->orderByDesc('tanggal')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('penjualan.index', compact('penjualans'));
     }
@@ -68,10 +94,24 @@ class PenjualanController extends Controller
             'tanggal' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penjualans,no_faktur',
             'metode_pembayaran' => 'required|in:cash,qris,debit,piutang',
+            'qris_lunas' => 'nullable|boolean',
+            'debit_lunas' => 'nullable|boolean',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.jumlah' => 'required|integer|min:1',
         ]);
+
+        if ($data['metode_pembayaran'] === 'qris' && !$request->boolean('qris_lunas')) {
+            throw ValidationException::withMessages([
+                'qris_lunas' => 'Konfirmasi pembayaran QRIS dengan mencentang Lunas.',
+            ]);
+        }
+
+        if ($data['metode_pembayaran'] === 'debit' && !$request->boolean('debit_lunas')) {
+            throw ValidationException::withMessages([
+                'debit_lunas' => 'Konfirmasi pembayaran Debit dengan mencentang Lunas.',
+            ]);
+        }
 
         try {
             $penjualan = DB::transaction(function () use ($data, $request) {

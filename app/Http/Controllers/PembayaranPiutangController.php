@@ -72,7 +72,7 @@ class PembayaranPiutangController extends Controller
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
-        DB::transaction(function () use ($data, $penjualan, $request) {
+        $sisaPiutangSetelahBayar = DB::transaction(function () use ($data, $penjualan, $request) {
             $penjualan->load('pelanggan');
 
             if (!$penjualan->pelanggan) {
@@ -131,11 +131,17 @@ class PembayaranPiutangController extends Controller
                 'saldo_piutang',
                 $data['jumlah']
             );
+
+            return max(
+                0,
+                (float) $sisaPiutang - (float) $data['jumlah']
+            );
         });
 
         return response()->json([
             'success' => true,
             'message' => 'Pembayaran piutang berhasil disimpan.',
+            'sisa_piutang' => $sisaPiutangSetelahBayar,
         ]);
     }
 }

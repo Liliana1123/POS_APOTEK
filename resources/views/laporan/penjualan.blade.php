@@ -131,7 +131,7 @@
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="w-28">Tanggal</th>
-                    <th scope="col" class="w-36">No. Faktur</th>
+                    <th scope="col" class="w-36">No. Invoice</th>
                     <th scope="col">Pelanggan</th>
                     <th scope="col" class="w-36">Member ID</th>
                     <th scope="col" class="text-right w-36">Total Kotor</th>

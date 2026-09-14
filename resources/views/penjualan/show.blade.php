@@ -20,7 +20,7 @@
     </div>
 
     <div class="text-[10px] text-gray-600 mb-3 space-y-1">
-        <div class="flex justify-between"><span>No. Faktur</span><span class="font-mono font-semibold text-gray-800">{{ $penjualan->no_faktur }}</span></div>
+        <div class="flex justify-between"><span>No. Invoice</span><span class="font-mono font-semibold text-gray-800">{{ $penjualan->no_faktur }}</span></div>
         <div class="flex justify-between"><span>Tanggal</span><span>{{ $penjualan->tanggal->format('d M Y H:i') }}</span></div>
         <div class="flex justify-between"><span>Kasir</span><span>{{ $penjualan->user->name }}</span></div>
         <div class="flex justify-between">
@@ -30,6 +30,12 @@
                 @if (isset($penjualan->pelanggan) && $penjualan->pelanggan->is_member)
                     <span class="font-mono text-blue-700 font-semibold">({{ $penjualan->pelanggan->member_id }})</span>
                 @endif
+            </span>
+        </div>
+        <div class="flex justify-between">
+            <span>Metode Pembayaran</span>
+            <span class="font-semibold uppercase">
+                {{ $penjualan->metode_pembayaran }}
             </span>
         </div>
     </div>
@@ -98,7 +104,7 @@
         <span>Rp {{ number_format($penjualan->total, 0, ',', '.') }}</span>
     </div>
 
-    <p class="text-center text-[10px] text-gray-400 mt-5 uppercase tracking-wider font-semibold">Terima kasih atas kunjungan Anda</p>
+    <p class="text-center text-[10px] text-gray-400 mt-5 uppercase tracking-wider font-semibold">SEMOGA LEKAS SEMBUH</p>
 </div>
 
 <style>
