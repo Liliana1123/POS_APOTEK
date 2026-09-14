@@ -233,7 +233,9 @@
         @endif
 
     </div>
-
+    
+    <h3>Rincian Pesanan Masuk</h3>
+    
     <table>
         <thead>
             <tr>
@@ -410,6 +412,7 @@
                     <tr>
                         <th>No</th>
                         <th>Tanggal</th>
+                        <th>Barang</th>
                         <th>Jumlah</th>
                         <th>Dicatat Oleh</th>
                         <th>Keterangan</th>
@@ -426,6 +429,10 @@
 
                             <td class="text-center">
                                 {{ $riwayat->tanggal?->format('d/m/Y') ?? '—' }}
+                            </td>
+
+                            <td>
+                                {{ $item->barang->nama ?? '—' }}
                             </td>
 
                             <td class="text-right">
