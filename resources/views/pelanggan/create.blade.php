@@ -2,75 +2,58 @@
 @section('title', 'Tambah Pelanggan')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Tambah Member Baru</h1>
-        <p class="text-caption mt-1">Tambahkan Member baru ke sistem POS Apotek.</p>
-    </div>
-    <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4 shrink-0">
-        &larr; Kembali
-    </a>
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <x-page-header title="Tambah Member Baru" subtitle="Tambahkan Member baru ke sistem POS Apotek.">
+        <a href="{{ route('pelanggan.index') }}" class="btn-secondary">
+            &larr; Kembali
+        </a>
+    </x-page-header>
+
+    <form action="{{ route('pelanggan.store') }}" method="POST" class="card-base p-6 space-y-4">
+        @csrf
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nama Pelanggan <span class="text-red-500 font-bold">*</span></label>
+            <input type="text" name="nama" value="{{ old('nama') }}" required placeholder="Ketik nama pelanggan..." class="form-input">
+            @error('nama') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nomor HP / Telepon <span class="text-red-500 font-bold">*</span></label>
+            <input type="text" name="telepon" value="{{ old('telepon') }}" required placeholder="Contoh: 08123456789" class="form-input">
+            @error('telepon') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Alamat <span class="text-red-500 font-bold">*</span></label>
+            <textarea name="alamat" required class="form-input" rows="3" placeholder="Alamat lengkap...">{{ old('alamat') }}</textarea>
+            @error('alamat') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Lahir</label>
+            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="form-input">
+            @error('tanggal_lahir') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="status_member" class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Status Member <span class="text-red-500 font-bold">*</span>
+            </label>
+            <select id="status_member" name="status_member" required class="form-input">
+                <option value="">Pilih status member</option>
+                <option value="Member Pelanggan Tetap" @selected(old('status_member') === 'Member Pelanggan Tetap')>Member Pelanggan Tetap</option>
+                <option value="Member Keluarga Nakes" @selected(old('status_member') === 'Member Keluarga Nakes')>Member Keluarga Nakes</option>
+                <option value="Member Only" @selected(old('status_member') === 'Member Only')>Member Only</option>
+            </select>
+            @error('status_member') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="flex justify-end gap-2 border-t border-gray-100 pt-4 mt-6">
+            <a href="{{ route('pelanggan.index') }}" class="btn-secondary">Batal</a>
+            <button type="submit" class="btn-primary">Simpan</button>
+        </div>
+    </form>
 </div>
-
-<form action="{{ route('pelanggan.store') }}" method="POST" class="card-base p-6 max-w-md space-y-4">
-    @csrf
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nama Pelanggan <span class="text-red-500 font-bold">*</span></label>
-        <input type="text" name="nama" value="{{ old('nama') }}" required placeholder="Ketik nama pelanggan..." class="form-input">
-        @error('nama') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nomor HP / Telepon <span class="text-red-500 font-bold">*</span></label>
-        <input type="text" name="telepon" value="{{ old('telepon') }}" required placeholder="Contoh: 08123456789" class="form-input">
-        @error('telepon') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Alamat <span class="text-red-500 font-bold">*</span></label>
-        <textarea name="alamat" required class="form-input" rows="3">{{ old('alamat') }}</textarea>
-        @error('alamat') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Lahir</label>
-        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="form-input">
-        @error('tanggal_lahir') <p class="text-red-600 text-[10px] mt-1 font-sans">{{ $message }}</p> @enderror
-    </div>
-
-    <div>
-    <label for="status_member" class="block text-sm font-medium text-gray-700 mb-1">
-        Status Member <span class="text-red-500">*</span>
-    </label>
-
-    <select
-        id="status_member"
-        name="status_member"
-        required
-        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-    >
-        <option value="">Pilih status member</option>
-        <option value="Member Pelanggan Tetap">
-            Member Pelanggan Tetap
-        </option>
-        <option value="Member Keluarga Nakes">
-            Member Keluarga Nakes
-        </option>
-        <option value="Member Only">
-            Member Only
-        </option>
-    </select>
-
-    @error('status_member')
-        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-    @enderror
-</div>
-
-    <div class="flex gap-2 border-t pt-4">
-        <button type="submit" class="btn-primary py-2 px-6">Simpan</button>
-        <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">Batal</a>
-    </div>
-</form>
 @endsection
