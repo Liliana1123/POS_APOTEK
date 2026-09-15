@@ -16,11 +16,37 @@ class PenjualanController extends Controller
     {
         $query = Penjualan::with(['user', 'pelanggan']);
 
+        // Pencarian nomor faktur
         if ($request->filled('cari')) {
-            $query->where('no_faktur', 'like', '%' . $request->cari . '%');
+            $query->where(
+                'no_faktur',
+                'like',
+                '%' . $request->cari . '%'
+            );
         }
 
-        $penjualans = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        // Filter tanggal awal
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate(
+                'tanggal',
+                '>=',
+                $request->tanggal_awal
+            );
+        }
+
+        // Filter tanggal akhir
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate(
+                'tanggal',
+                '<=',
+                $request->tanggal_akhir
+            );
+        }
+
+        $penjualans = $query
+            ->orderByDesc('tanggal')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('penjualan.index', compact('penjualans'));
     }
@@ -68,10 +94,24 @@ class PenjualanController extends Controller
             'tanggal' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penjualans,no_faktur',
             'metode_pembayaran' => 'required|in:cash,qris,debit,piutang',
+            'qris_lunas' => 'nullable|boolean',
+            'debit_lunas' => 'nullable|boolean',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.jumlah' => 'required|integer|min:1',
         ]);
+
+        if ($data['metode_pembayaran'] === 'qris' && !$request->boolean('qris_lunas')) {
+            throw ValidationException::withMessages([
+                'qris_lunas' => 'Konfirmasi pembayaran QRIS dengan mencentang Lunas.',
+            ]);
+        }
+
+        if ($data['metode_pembayaran'] === 'debit' && !$request->boolean('debit_lunas')) {
+            throw ValidationException::withMessages([
+                'debit_lunas' => 'Konfirmasi pembayaran Debit dengan mencentang Lunas.',
+            ]);
+        }
 
         try {
             $penjualan = DB::transaction(function () use ($data, $request) {
@@ -118,19 +158,33 @@ class PenjualanController extends Controller
 
                     } else {
 
-                        // Jika tidak ada nama, buat pelanggan Umum baru
-                        $pelanggan = Pelanggan::create([
-                            'nama' => 'Umum',
-                            'telepon' => null,
-                            'alamat' => null,
-                            'tanggal_lahir' => null,
-                            'keterangan' => 'Pelanggan Umum',
-                            'member_id' => Pelanggan::generateUmumId(),
-                            'is_member' => false,
-                            'member_aktif' => false,
-                            'member_since' => null,
-                            'saldo_piutang' => 0,
-                        ]);
+                        // Jika tidak ada nama, gunakan Pelanggan Umum.
+                        // Pelanggan Umum bukan member dan tidak memiliki member_id.
+                        $pelanggan = Pelanggan::where('is_member', false)
+                            ->where(function ($query) {
+                                $query->where('keterangan', 'Pelanggan Umum')
+                                    ->orWhere(function ($q) {
+                                        $q->where('nama', 'Umum')
+                                            ->whereNull('member_id');
+                                    });
+                            })
+                            ->first();
+
+                        if (!$pelanggan) {
+                            $pelanggan = Pelanggan::create([
+                                'nama' => 'Umum',
+                                'telepon' => null,
+                                'alamat' => null,
+                                'tanggal_lahir' => null,
+                                'keterangan' => 'Pelanggan Umum',
+                                'member_id' => null,
+                                'is_member' => false,
+                                'member_aktif' => false,
+                                'member_since' => null,
+                                'saldo_piutang' => 0,
+                                'status_member' => null,
+                            ]);
+                        }  
                     }
 
                     // Hubungkan transaksi dengan pelanggan tersebut
