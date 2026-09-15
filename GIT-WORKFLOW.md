@@ -84,6 +84,10 @@ git branch -vv
 
 ## 3. Alur Integrasi — Kamu (Integrator)
 
+> **Penting:** Kamu sebagai integrator bekerja langsung di `branch-dev`.  
+> `risang-fitur-data-master` adalah branch pribadi kamu (untuk menyimpan fiturmu sendiri).  
+> Jangan gabungkan branch teman ke `risang-fitur-data-master`, tapi gabungkan langsung ke `branch-dev`.
+
 ### Ambil Semua Perubahan dari Semua Branch
 
 ```bash
@@ -144,6 +148,17 @@ git merge origin/feriena --no-edit -m "Merge branch 'feriena' into branch-dev"
 
 # Jika konflik, resolve seperti langkah di atas
 
+git push origin branch-dev
+```
+
+### Merge Perubahan dari Branch Pribadi Sendiri (`risang-fitur-data-master`)
+Jika kamu punya perubahan di branch pribadimu yang ingin dimasukkan ke `branch-dev`:
+
+```bash
+# Pastikan tetap di branch-dev
+git merge origin/risang-fitur-data-master --no-edit -m "Merge fitur risang into branch-dev"
+
+# Jika konflik, selesaikan lalu push
 git push origin branch-dev
 ```
 
