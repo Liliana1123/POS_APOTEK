@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\InfoApotek;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class PengaturanController extends Controller
@@ -37,6 +38,7 @@ class PengaturanController extends Controller
         }
 
         $apotek->update($data);
+        Cache::forget('info_apotek');
 
         return back()->with('success', 'Pengaturan berhasil disimpan.');
     }

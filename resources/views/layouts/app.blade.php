@@ -11,206 +11,130 @@
 
 <body class="bg-gray-100 min-h-screen flex overflow-x-hidden">
     <!-- Mobile Sidebar Backdrop -->
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-60 bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-20 transition-all duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-60 bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-24 transition-all duration-200 ease-in-out print:hidden">
         <script>
             (function () {
                 var sidebar = document.getElementById('app-sidebar');
                 var timer;
-                sidebar.addEventListener('mouseenter', function () {
+                function expandSidebar() {
                     clearTimeout(timer);
                     sidebar.classList.add('sidebar-expanded');
-                });
-                sidebar.addEventListener('mouseleave', function () {
+                }
+                function collapseSidebar() {
                     clearTimeout(timer);
                     timer = setTimeout(function () {
                         sidebar.classList.remove('sidebar-expanded');
                     }, 150);
-                });
+                }
+                sidebar.addEventListener('mouseenter', expandSidebar);
+                sidebar.addEventListener('mouseleave', collapseSidebar);
+                sidebar.addEventListener('focusin', expandSidebar);
+                sidebar.addEventListener('focusout', collapseSidebar);
             })();
         </script>
         <div class="flex flex-col h-full overflow-y-auto">
             <!-- Sidebar Header -->
-            <div class="sidebar-header px-5 py-4 flex justify-between items-center">
+            <div class="sidebar-header px-4 py-5 flex justify-between items-center">
                 @php
-                    $apotek = \App\Models\InfoApotek::first();
-                    $abbr = $apotek->nama_apotek
+                    $apotek = \Illuminate\Support\Facades\Cache::remember(
+                        'info_apotek',
+                        now()->addHours(6),
+                        fn () => \App\Models\InfoApotek::first()
+                    );
+                    $abbr = ($apotek?->nama_apotek ?? '')
                         ? collect(explode(' ', $apotek->nama_apotek))
                             ->take(2)
                             ->map(fn($w) => strtoupper(substr($w, 0, 1)))
                             ->implode('')
                         : 'AK';
                 @endphp
-<div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden">
-                @if($apotek->logo)
-                    <img src="{{ asset('storage/' . $apotek->logo) }}"
-                         alt="{{ $apotek->nama_apotek }}"
-                         class="w-10 h-10 rounded-lg object-contain bg-white p-0.5 shrink-0">
-                @else
-                    <span class="hidden lg:inline lg:group-hover:hidden shrink-0">{{ $abbr }}</span>
-                @endif
-                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">
-                    {{ $apotek->nama_apotek ?? 'APOTEK KITA' }}
-                </span>
-            </div>
-                <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Close menu">
-                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                <div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden sidebar-header-logo-wrapper">
+                    @if($apotek?->logo)
+                        <div class="w-[3.5rem] h-[3.5rem] ml-1 rounded-lg bg-white p-2 shrink-0 flex items-center justify-center overflow-hidden shadow-md">
+                            <img src="{{ asset('storage/' . $apotek->logo) }}"
+                                 alt="{{ $apotek?->nama_apotek }}"
+                                 class="w-full h-full object-contain object-center"
+                                 aria-hidden="true">
+                        </div>
+                    @else
+                        <span class="hidden lg:inline lg:group-hover:hidden lg:group-focus-within:hidden shrink-0">{{ $abbr }}</span>
+                    @endif
+                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity duration-150 whitespace-nowrap">
+                        {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
+                    </span>
+                </div>
+                <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
+                    <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
                 </button>
             </div>
 
             <!-- Navigation Links -->
             <nav class="flex-1 px-4 py-4 space-y-1.5">
-                <a href="{{ route('dashboard') }}" title="Dashboard" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('dashboard') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                    <span class="flex items-center justify-center shrink-0">
-                        <x-heroicon-s-home class="w-5 h-5" />
-                    </span>
-                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap font-bold uppercase tracking-wider">Dashboard</span>
-                </a>
+                <x-nav-link
+                    route="dashboard"
+                    icon="home"
+                    icon-type="s"
+                    label="Dashboard"
+                    variant="top"
+                />
 
                 <!-- Group: Master Data -->
-                <div class="sidebar-group" data-group="master">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5 min-w-0">
-<span class="flex items-center justify-center shrink-0">
-                        <x-heroicon-s-cube class="w-5 h-5" />
-                            </span>
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Data Master</span>
-                        </span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
-                    </button>
-                    @if (auth()->user()->isAdmin())
-                        <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                            <a href="{{ route('barang.index') }}" title="Barang / Produk" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('barang.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-archive-box class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Barang / Produk</span>
-                            </a>
-<a href="{{ route('kategori.index') }}" title="Kategori" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('kategori.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-<x-heroicon-o-percent-badge class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Kategori</span>
-                            </a>
-<a href="{{ route('satuan.index') }}" title="Satuan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('satuan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-scale class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Satuan</span>
-                            </a>
-<a href="{{ route('pabrik.index') }}" title="Pabrik" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pabrik.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-building-storefront class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pabrik</span>
-                            </a>
-<a href="{{ route('supplier.index') }}" title="Supplier" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('supplier.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-building-office-2 class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Supplier</span>
-                            </a>
-                            <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pelanggan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-user class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pelanggan / Member</span>
-                            </a>
-                            <a href="{{ route('user.index') }}" title="Kelola User" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('user.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-users class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Kelola User</span>
-                            </a>
-                            <a href="{{ route('pengaturan.index') }}" title="Pengaturan Apotek" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('pengaturan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-cog-6-tooth class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Pengaturan Apotek</span>
-                            </a>
-                        </div>
-                    @endif
-                </div>
+                @php
+                    $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
+                        || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
+                        || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
+                @endphp
+                @if (auth()->user()->isAdmin())
+                    <x-sidebar-group name="master" icon="cube" icon-type="s" label="Data Master" :has-active="$masterActive">
+                        <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
+                        <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                        <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
+                        <x-nav-link route="pabrik.index" pattern="pabrik.*" icon="building-storefront" label="Pabrik" />
+                        <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
+                        <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
+                        <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
+                        <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                    </x-sidebar-group>
+                @endif
 
                 <!-- Group: Transaksi -->
-                <div class="sidebar-group" data-group="transaksi">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5 min-w-0">
-                            <span class="flex items-center justify-center shrink-0">
-                                <x-heroicon-s-banknotes class="w-5 h-5" />
-                            </span>
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Transaksi</span>
-                        </span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
-                    </button>
-                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('penjualan.index') }}" title="Penjualan (Kasir)" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penjualan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-shopping-cart class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Penjualan (Kasir)</span>
-                        </a>
-                        @if (auth()->user()->isAdmin())
-                            <a href="{{ route('penerimaan.index') }}" title="Penerimaan Barang" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('penerimaan.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                                <x-heroicon-o-truck class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Penerimaan barang</span>
-                            </a>
-                            <a href="{{ route('rusak.index') }}" title="Barang Rusak" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('rusak.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-<x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0" />
-                                <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Barang rusak</span>
-                            </a>
-                        @endif
-                    </div>
-                </div>
+                @php
+                    $transaksiActive = request()->routeIs('penjualan.*') || request()->routeIs('penerimaan.*')
+                        || request()->routeIs('rusak.*');
+                @endphp
+                <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
+                    <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
+                    @if (auth()->user()->isAdmin())
+                        <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
+                        <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
+                    @endif
+                </x-sidebar-group>
 
                 <!-- Group: Laporan (Admin Only) -->
                 @if (auth()->user()->isAdmin())
-                <div class="sidebar-group" data-group="laporan">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5 min-w-0">
-                            <span class="flex items-center justify-center shrink-0">
-                                <x-heroicon-s-chart-bar class="w-5 h-5" />
-                            </span>
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan</span>
-                        </span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
-                    </button>
-                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('laporan.stok') }}" title="Laporan Stok" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.stok') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-document-chart-bar class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan stok</span>
-                        </a>
-                        <a href="{{ route('laporan.penerimaan') }}" title="Laporan Penerimaan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penerimaan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-document-duplicate class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan penerimaan</span>
-                        </a>
-                        <a href="{{ route('laporan.penjualan') }}" title="Laporan Penjualan" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.penjualan') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-currency-dollar class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan penjualan</span>
-                        </a>
-                        <a href="{{ route('laporan.rusak') }}" title="Laporan Barang Rusak" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.rusak') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-no-symbol class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan barang rusak</span>
-                        </a>
-                        <a href="{{ route('laporan.laba-rugi') }}" title="Laporan Laba Rugi" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.laba-rugi') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-chart-pie class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan laba-rugi</span>
-                        </a>
-                        <a href="{{ route('laporan.diskon') }}" title="Laporan Diskon" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('laporan.diskon') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-ticket class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Laporan diskon</span>
-                        </a>
-                    </div>
-                </div>
+                    <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
+                        <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                        <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                        <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                        <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                        <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                        <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                    </x-sidebar-group>
                 @endif
 
                 <!-- Group: Promo & Log (Admin Only) -->
                 @if (auth()->user()->isAdmin())
-                <div class="sidebar-group" data-group="promo">
-                    <button type="button" class="sidebar-group-header flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider pt-3 pb-1 px-3 hover:text-white transition-colors">
-                        <span class="flex items-center gap-2.5 min-w-0">
-                            <span class="flex items-center justify-center shrink-0">
-                                <x-heroicon-s-gift class="w-5 h-5" />
-                            </span>
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Promo & Log</span>
-                        </span>
-                        <x-heroicon-o-chevron-right class="sidebar-group-arrow w-4 h-4 transition-transform duration-200 lg:opacity-0 lg:group-hover:opacity-100" />
-                    </button>
-                    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out">
-                        <a href="{{ route('custom-discount.index') }}" title="Custom Discount" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('custom-discount.*') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-tag class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Custom Discount</span>
-                        </a>
-                        <a href="{{ route('activity-log') }}" title="Log Aktivitas" class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs {{ request()->routeIs('activity-log') ? 'bg-white text-blue-800 font-semibold border-l-4 border-white pl-2' : 'text-gray-200 hover:bg-blue-600' }}">
-                            <x-heroicon-o-book-open class="w-4 h-4 shrink-0" />
-                            <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap">Log Aktivitas</span>
-                        </a>
-                    </div>
-                </div>
+                    @php
+                        $promoActive = request()->routeIs('custom-discount.*') || request()->routeIs('activity-log');
+                    @endphp
+                    <x-sidebar-group name="promo" icon="gift" icon-type="s" label="Promo & Log" :has-active="$promoActive">
+                        <x-nav-link route="custom-discount.index" pattern="custom-discount.*" icon="tag" label="Custom Discount" />
+                        <x-nav-link route="activity-log" icon="book-open" label="Log Aktivitas" />
+                    </x-sidebar-group>
                 @endif
 
             </nav>
@@ -218,19 +142,18 @@
 
         <!-- Restore sidebar group state synchronously (blocking) to prevent flicker -->
         <script>
-            // Runs during HTML parsing, before first paint. Uses inline style directly
-            // (no scrollHeight/CSS dependency), so expanded groups render open with no flicker.
             (function () {
                 document.querySelectorAll('.sidebar-group').forEach(function (group) {
                     var name = group.dataset.group;
                     var saved = localStorage.getItem('sidebar-group-' + name);
                     var items = group.querySelector('.sidebar-group-items');
                     if (!items) return;
-                    var active = items.querySelector('a[class*="border-white"]');
-                    var expand = saved === '1' || !!active;
+                    var expand = saved === '1' || items.dataset.hasActive === 'true';
                     if (expand) {
                         items.style.maxHeight = '999px';
                         items.setAttribute('data-expanded', '1');
+                        var btn = group.querySelector('.sidebar-group-header');
+                        if (btn) btn.setAttribute('aria-expanded', 'true');
                         var arrow = items.previousElementSibling ? items.previousElementSibling.querySelector('.sidebar-group-arrow') : null;
                         if (arrow) arrow.classList.add('rotate-90');
                     }
@@ -241,18 +164,18 @@
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
             <div class="flex items-center gap-2 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs" aria-hidden="true">
                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
-                <div class="min-w-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[200px] lg:group-hover:opacity-100 transition-all duration-200 ease-in-out">
+                <div class="min-w-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[200px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[200px] lg:group-focus-within:opacity-100 transition-all duration-200 ease-in-out">
                     <span class="block text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</span>
                     <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ auth()->user()->role }}</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="shrink-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[50px] lg:group-hover:opacity-100 transition-all duration-200 ease-in-out">
+            <form method="POST" action="{{ route('logout') }}" class="shrink-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[50px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[50px] lg:group-focus-within:opacity-100 transition-all duration-200 ease-in-out">
                 @csrf
-                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout">
-                    <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" />
+                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout" aria-label="Logout">
+                    <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
                 </button>
             </form>
         </div>
@@ -263,8 +186,8 @@
         <!-- Top Navbar -->
         <nav class="bg-white border-b px-5 py-3.5 flex justify-between items-center print:hidden">
             <div class="flex items-center gap-3">
-                <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Open menu">
-                    <x-heroicon-o-bars-3 class="w-5 h-5" />
+                <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
+                    <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
                 <span class="font-bold text-sm text-gray-800">@yield('title', 'Dashboard')</span>
             </div>
@@ -274,8 +197,8 @@
                 </span>
                 <form method="POST" action="{{ route('logout') }}" class="inline md:hidden">
                     @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1">
-                        <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" />
+                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1" aria-label="Logout">
+                        <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
                         Logout
                     </button>
                 </form>
@@ -290,10 +213,10 @@
 
     <!-- Session Flash Toast Notifications -->
     @if (session('success'))
-    <div id="toast-success" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800">
-        <x-heroicon-o-check-circle class="w-5 h-5 text-green-500 shrink-0" />
+    <div id="toast-success" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="status" aria-live="polite">
+        <x-heroicon-o-check-circle class="w-5 h-5 text-green-500 shrink-0" aria-hidden="true" />
         <span>{{ session('success') }}</span>
-        <button onclick="document.getElementById('toast-success').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm">&times;</button>
+        <button onclick="document.getElementById('toast-success').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
     </div>
     <script>
         setTimeout(() => {
@@ -307,10 +230,10 @@
     @endif
 
     @if (session('error'))
-    <div id="toast-error" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800">
-        <x-heroicon-o-x-circle class="w-5 h-5 text-red-500 shrink-0" />
+    <div id="toast-error" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="alert" aria-live="assertive">
+        <x-heroicon-o-x-circle class="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
         <span>{{ session('error') }}</span>
-        <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm">&times;</button>
+        <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
     </div>
     <script>
         setTimeout(() => {
@@ -353,23 +276,25 @@
                 }
             });
 
-            // Sidebar Group Accordion Toggle (smooth, class-only anti-flicker)
+            // Sidebar Group Accordion Toggle
             document.querySelectorAll('.sidebar-group-header').forEach(function(header) {
                 header.addEventListener('click', function() {
                     const group = this.closest('.sidebar-group');
                     const items = group.querySelector('.sidebar-group-items');
                     const arrow = this.querySelector('.sidebar-group-arrow');
                     const groupName = group.dataset.group;
-                    
+
                     const isExpanded = items.getAttribute('data-expanded') === '1';
-                    
+
                     if (isExpanded) {
                         items.style.maxHeight = '0px';
                         items.setAttribute('data-expanded', '0');
+                        this.setAttribute('aria-expanded', 'false');
                         localStorage.setItem('sidebar-group-' + groupName, '0');
                     } else {
                         items.style.maxHeight = '999px';
                         items.setAttribute('data-expanded', '1');
+                        this.setAttribute('aria-expanded', 'true');
                         localStorage.setItem('sidebar-group-' + groupName, '1');
                     }
                     arrow.classList.toggle('rotate-90');
@@ -403,7 +328,7 @@
                         </div>
                     `;
                     document.body.appendChild(modal);
-                    
+
                     const closeModal = () => modal.remove();
                     modal.querySelector('#confirm-cancel').onclick = closeModal;
                     modal.querySelector('#confirm-x').onclick = closeModal;
@@ -426,7 +351,7 @@
             if (btn) {
                 setTimeout(() => {
                     btn.disabled = true;
-                    btn.innerHTML = btn.innerHTML.includes('Simpan') ? 'Menyimpan...' : 'Memproses...';
+                    btn.innerHTML = btn.dataset.loadingText || 'Memproses...';
                 }, 10);
             }
         });
