@@ -141,7 +141,7 @@
 </div>
 
 <!-- Stats Grid (Top KPIs) -->
-<div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+<div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
     <!-- Card 1: Total Members -->
     <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
         <div>
