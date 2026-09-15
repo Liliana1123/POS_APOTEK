@@ -179,18 +179,22 @@
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-        <!-- Top Navbar -->
-        <nav class="bg-white border-b px-5 py-3.5 flex justify-between items-center print:hidden">
+        <!-- Top Navbar (Sticky) -->
+        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
             <div class="flex items-center gap-3">
                 <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
                     <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
                 <span class="font-bold text-sm text-gray-800">@yield('title', 'Dashboard')</span>
             </div>
-            <div class="flex items-center gap-4 text-xs">
-                <span class="text-gray-600 font-medium hidden md:inline">
-                    Login sebagai: <span class="text-[10px] font-bold text-blue-700 px-2.5 py-0.5 ml-1 uppercase tracking-wider">{{ auth()->user()->role }}</span>
-                </span>
+            
+            <div class="flex items-center gap-3 md:gap-4 text-xs">
+                <!-- Real-time Clock Widget -->
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-lg text-slate-700 shadow-2xs font-medium">
+                    <x-heroicon-o-clock class="w-4 h-4 text-blue-600 shrink-0" />
+                    <span id="realtime-clock" class="font-mono text-[11px] sm:text-xs tracking-tight">--:--:--</span>
+                </div>
+
                 <form method="POST" action="{{ route('logout') }}" class="inline md:hidden">
                     @csrf
                     <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1" aria-label="Logout">
@@ -353,6 +357,30 @@
                 }, 10);
             }
         });
+
+        // Real-time Clock Updater
+        (function () {
+            function updateClock() {
+                var el = document.getElementById('realtime-clock');
+                if (!el) return;
+                var now = new Date();
+                var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                
+                var dayName = days[now.getDay()];
+                var date = now.getDate();
+                var monthName = months[now.getMonth()];
+                var year = now.getFullYear();
+                
+                var hours = String(now.getHours()).padStart(2, '0');
+                var minutes = String(now.getMinutes()).padStart(2, '0');
+                var seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                el.textContent = dayName + ', ' + date + ' ' + monthName + ' ' + year + ' • ' + hours + ':' + minutes + ':' + seconds + ' WIB';
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        })();
     </script>
 </body>
 
