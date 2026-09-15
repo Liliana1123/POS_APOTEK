@@ -14,20 +14,15 @@
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-60 bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-24 transition-all duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-24 transition-all duration-200 ease-in-out print:hidden">
         <script>
             (function () {
                 var sidebar = document.getElementById('app-sidebar');
-                var timer;
                 function expandSidebar() {
-                    clearTimeout(timer);
                     sidebar.classList.add('sidebar-expanded');
                 }
                 function collapseSidebar() {
-                    clearTimeout(timer);
-                    timer = setTimeout(function () {
-                        sidebar.classList.remove('sidebar-expanded');
-                    }, 150);
+                    sidebar.classList.remove('sidebar-expanded');
                 }
                 sidebar.addEventListener('mouseenter', expandSidebar);
                 sidebar.addEventListener('mouseleave', collapseSidebar);
@@ -35,44 +30,45 @@
                 sidebar.addEventListener('focusout', collapseSidebar);
             })();
         </script>
-        <div class="flex flex-col h-full overflow-y-auto">
-            <!-- Sidebar Header -->
-            <div class="sidebar-header px-4 py-5 flex justify-between items-center">
-                @php
-                    $apotek = \Illuminate\Support\Facades\Cache::remember(
-                        'info_apotek',
-                        now()->addHours(6),
-                        fn () => \App\Models\InfoApotek::first()
-                    );
-                    $abbr = ($apotek?->nama_apotek ?? '')
-                        ? collect(explode(' ', $apotek->nama_apotek))
-                            ->take(2)
-                            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
-                            ->implode('')
-                        : 'AK';
-                @endphp
-                <div class="font-bold text-base text-white tracking-wider flex items-center gap-2 overflow-hidden sidebar-header-logo-wrapper">
+        <!-- Pinned Sidebar Header -->
+        <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
+            @php
+                $apotek = \Illuminate\Support\Facades\Cache::remember(
+                    'info_apotek',
+                    now()->addHours(6),
+                    fn () => \App\Models\InfoApotek::first()
+                );
+                $abbr = ($apotek?->nama_apotek ?? '')
+                    ? collect(explode(' ', $apotek->nama_apotek))
+                        ->take(2)
+                        ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+                        ->implode('')
+                    : 'AK';
+            @endphp
+            <div class="font-bold text-base text-white tracking-wider flex items-center gap-3 sidebar-header-logo-wrapper">
+                <div class="w-[3.5rem] h-[3.5rem] rounded-lg bg-white p-2 shrink-0 flex items-center justify-center shadow-md">
                     @if($apotek?->logo)
-                        <div class="w-[3.5rem] h-[3.5rem] ml-1 rounded-lg bg-white p-2 shrink-0 flex items-center justify-center overflow-hidden shadow-md">
-                            <img src="{{ asset('storage/' . $apotek->logo) }}"
-                                 alt="{{ $apotek?->nama_apotek }}"
-                                 class="w-full h-full object-contain object-center"
-                                 aria-hidden="true">
-                        </div>
+                        <img src="{{ asset('storage/' . $apotek->logo) }}"
+                             alt="{{ $apotek?->nama_apotek }}"
+                             class="w-full h-full object-contain object-center"
+                             aria-hidden="true">
                     @else
-                        <span class="hidden lg:inline lg:group-hover:hidden lg:group-focus-within:hidden shrink-0">{{ $abbr }}</span>
+                        <span class="text-blue-700 font-extrabold text-base">{{ $abbr }}</span>
                     @endif
-                    <span class="truncate lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity duration-150 whitespace-nowrap">
-                        {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
-                    </span>
                 </div>
-                <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
-                    <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
-                </button>
+                <span class="sidebar-nav-label truncate whitespace-nowrap font-bold text-base tracking-wide">
+                    {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
+                </span>
             </div>
+            <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
+                <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
+            </button>
+        </div>
 
+        <!-- Scrollable Navigation Area -->
+        <div class="flex-1 min-h-0 overflow-y-auto sidebar-scroll-area flex flex-col">
             <!-- Navigation Links -->
-            <nav class="flex-1 px-4 py-4 space-y-1.5">
+            <nav class="flex-1 px-4 py-2 space-y-1.5">
                 <x-nav-link
                     route="dashboard"
                     icon="home"
@@ -162,17 +158,17 @@
         </script>
 
         <!-- Sidebar Profile Card (Bottom) -->
-        <div class="sidebar-footer p-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
-            <div class="flex items-center gap-2 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs" aria-hidden="true">
+        <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
-                <div class="min-w-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[200px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[200px] lg:group-focus-within:opacity-100 transition-all duration-200 ease-in-out">
+                <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
                     <span class="block text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</span>
                     <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ auth()->user()->role }}</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="shrink-0 overflow-hidden whitespace-nowrap lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[50px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[50px] lg:group-focus-within:opacity-100 transition-all duration-200 ease-in-out">
+            <form method="POST" action="{{ route('logout') }}" class="sidebar-footer-logout shrink-0 overflow-hidden">
                 @csrf
                 <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout" aria-label="Logout">
                     <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
@@ -258,6 +254,8 @@
                 toggle.addEventListener('click', function () {
                     sidebar.classList.remove('-translate-x-full');
                     if (backdrop) backdrop.classList.remove('hidden');
+                    const scrollArea = sidebar.querySelector('.sidebar-scroll-area');
+                    if (scrollArea) scrollArea.scrollTop = 0;
                 });
             }
 
