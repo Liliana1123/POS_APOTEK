@@ -202,7 +202,7 @@
         </nav>
 
         <!-- Main Content Wrapper -->
-        <main class="flex-1 p-5 max-w-6xl w-full mx-auto pb-12">
+        <main class="flex-1 p-6 w-full pb-12">
             @yield('content')
         </main>
     </div>
