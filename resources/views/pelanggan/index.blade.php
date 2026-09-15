@@ -103,7 +103,7 @@
 <!-- Table List -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="customer-table table-custom min-w-[80rem] w-full table-fixed">
+        <table class="customer-table table-custom w-full table-fixed">
             <colgroup>
                 <col style="width: 210px;">
                 <col style="width: 120px;">
