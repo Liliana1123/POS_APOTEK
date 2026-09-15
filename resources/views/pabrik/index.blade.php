@@ -2,42 +2,22 @@
 @section('title', 'Pabrik')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Pabrik</h1>
-        <p class="text-caption mt-1">Kelola data pabrikan produsen obat.</p>
-    </div>
-    <div class="flex items-center gap-2 flex-wrap">
-        <button type="button" id="btn-tambah-pabrik" class="btn-primary flex items-center gap-2">
-            <x-heroicon-o-plus class="w-4 h-4" />
-            <span>Tambah Pabrik</span>
-        </button>
-    </div>
-</div>
+<x-page-header title="Daftar Pabrik" subtitle="Kelola data pabrikan produsen obat.">
+    <button type="button" id="btn-tambah-pabrik" class="btn-primary flex items-center gap-2">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Tambah Pabrik</span>
+    </button>
+</x-page-header>
 
-<!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('pabrik.index') }}" class="flex flex-wrap gap-2 items-center">
-        <div class="relative shrink-0 w-full sm:w-64">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-        <button type="submit" class="btn-primary py-1.5 px-4">
-            Cari
-        </button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('pabrik.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Reset
-            </a>
-        @endif
-    </form>
-</div>
+<x-card-filter :action="route('pabrik.index')" :reset-url="route('pabrik.index')">
+    <div class="relative shrink-0 w-full sm:w-64">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..." class="form-input pr-8">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
+</x-card-filter>
 
-<!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
@@ -54,28 +34,13 @@
                 @forelse ($pabriks as $index => $pabrik)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
-                            <div class="flex items-center justify-start gap-1">
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-pabrik"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    data-id="{{ $pabrik->id }}"
-                                    data-json="{{ json_encode(['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
-                                <form action="{{ route('pabrik.destroy', $pabrik) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="btn-secondary action-icon-button action-icon-delete !p-1.5"
-                                        style="color: #DC2626;"
-                                        title="Hapus"
-                                        aria-label="Hapus"
-                                        onclick="return confirm('Yakin ingin menghapus pabrik ini?')">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                            </div>
+                            <x-table-action
+                                edit-class="btn-edit-pabrik"
+                                :edit-id="$pabrik->id"
+                                :edit-data="['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat]"
+                                :delete-url="route('pabrik.destroy', $pabrik)"
+                                delete-confirm="Yakin ingin menghapus pabrik ini?"
+                            />
                         </td>
                         <td class="table-num">{{ $pabrik->id }}</td>
                         <td class="font-medium text-gray-800">{{ $pabrik->nama }}</td>
@@ -83,26 +48,7 @@
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $pabrik->alamat }}">{{ $pabrik->alamat ?? '—' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->filled('cari'))
-                                        Pabrik Tidak Ditemukan
-                                    @else
-                                        Pabrik Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->filled('cari'))
-                                        Tidak ada pabrik yang cocok dengan kata kunci "{{ request('cari') }}".
-                                    @else
-                                        Belum ada data pabrik terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="5" />
                 @endforelse
             </tbody>
         </table>

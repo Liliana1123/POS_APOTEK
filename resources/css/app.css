@@ -519,7 +519,7 @@ h3,
    Rail Child Icon = 16px (w-4) → Center is 16 + 24 + 8 = 48px in rail mode. */
 @media (min-width: 1024px) {
     #app-sidebar {
-        width: 6rem; /* w-24 / 96px */
+        width: 6rem !important; /* w-24 / 96px */
         will-change: width;
         transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-x: hidden;
@@ -528,7 +528,7 @@ h3,
     #app-sidebar:hover,
     #app-sidebar:focus-within,
     #app-sidebar.sidebar-expanded {
-        width: 16rem; /* 256px expanded */
+        width: 16rem !important; /* 256px expanded */
     }
 
     /* Fixed anchor padding on top-level links & group headers (never shifts) */
@@ -564,25 +564,34 @@ h3,
         padding-right: 1.5rem !important;
     }
 
-    /* Collapsed state: labels and controls collapse to 0 width */
+    /* Collapsed state: labels and controls cleanly hidden */
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout {
-        opacity: 0;
-        max-width: 0;
-        pointer-events: none;
-        overflow: hidden;
-        white-space: nowrap;
-        margin: 0;
-        padding: 0;
-        transition: max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        max-width: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Expanded state: labels and controls reveal smoothly to the right */
+    /* Expanded state: labels and controls reveal cleanly */
     #app-sidebar:hover .sidebar-nav-label,
     #app-sidebar:focus-within .sidebar-nav-label,
-    #app-sidebar.sidebar-expanded .sidebar-nav-label,
+    #app-sidebar.sidebar-expanded .sidebar-nav-label {
+        display: inline-block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        max-width: 180px !important;
+        pointer-events: auto !important;
+        transition: opacity 0.2s 0.05s ease-out;
+    }
+
     #app-sidebar:hover .sidebar-group-arrow,
     #app-sidebar:focus-within .sidebar-group-arrow,
     #app-sidebar.sidebar-expanded .sidebar-group-arrow,
@@ -592,10 +601,11 @@ h3,
     #app-sidebar:hover .sidebar-footer-logout,
     #app-sidebar:focus-within .sidebar-footer-logout,
     #app-sidebar.sidebar-expanded .sidebar-footer-logout {
-        opacity: 1;
-        max-width: 180px;
-        pointer-events: auto;
-        transition: max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s 0.05s ease-out;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transition: opacity 0.2s 0.05s ease-out;
     }
 
     /* Fixed anchor padding on header and footer (never changes, logo & avatar stay rock-solid) */

@@ -2,33 +2,25 @@
 @section('title', 'Manajemen User')
 
 @section('content')
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div>
-        <h1>Manajemen User</h1>
-        <p class="text-caption mt-1">Kelola akun pengguna sistem: admin, apoteker, kasir.</p>
-    </div>
+<!-- Page Header -->
+<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: admin, apoteker, kasir.">
     <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah User</span>
     </button>
-</div>
+</x-page-header>
 
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('user.index') }}" class="flex flex-wrap gap-2 items-center">
-        <div class="relative shrink-0 w-full sm:w-64">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-        <button type="submit" class="btn-primary py-1.5 px-4">Cari</button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('user.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">Clear</a>
-        @endif
-    </form>
-</div>
+<!-- Filter & Search Card -->
+<x-card-filter :action="route('user.index')" :reset-url="route('user.index')">
+    <div class="relative shrink-0 w-full sm:w-64">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
+</x-card-filter>
 
+<!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
@@ -39,81 +31,64 @@
                     <th scope="col">Nama</th>
                     <th scope="col">Email</th>
                     <th scope="col" class="w-40">Role</th>
-                    <th scope="col" class="w-36">Status</th>
+                    <th scope="col" class="w-36 text-center">Status</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($users as $index => $user)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
-                            <div class="flex items-center justify-start gap-1">
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-user"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    data-id="{{ $user->id }}"
-                                    data-json="{{ json_encode(['name' => $user->name, 'email' => $user->email, 'role' => $user->role], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
+                            <x-table-action
+                                edit-class="btn-edit-user"
+                                :edit-id="$user->id"
+                                :edit-data="['name' => $user->name, 'email' => $user->email, 'role' => $user->role]"
+                                :delete-url="($user->id !== auth()->id() && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
+                                delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
+                                
                                 @if($user->id !== auth()->id())
+                                    <!-- Toggle Aktif / Nonaktif -->
                                     <form action="{{ route('user.toggle', $user) }}" method="POST" class="inline">
-                                        @csrf @method('PATCH')
+                                        @csrf
+                                        @method('PATCH')
                                         <button type="submit"
-                                            class="btn-secondary !p-1.5"
+                                            class="btn-secondary !p-1.5 {{ $user->aktif ? 'hover:bg-red-50 hover:border-red-300' : 'hover:bg-green-50 hover:border-green-300' }} transition-colors"
                                             style="color: {{ $user->aktif ? '#DC2626' : '#16A34A' }};"
-                                            title="{{ $user->aktif ? 'Nonaktifkan' : 'Aktifkan' }}"
-                                            aria-label="{{ $user->aktif ? 'Nonaktifkan' : 'Aktifkan' }}"
+                                            title="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
+                                            aria-label="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
                                             onclick="return confirm('Yakin ingin {{ $user->aktif ? 'menonaktifkan' : 'mengaktifkan kembali' }} user ini?')">
-                                            <x-heroicon-o-{{ $user->aktif ? 'user-circle' : 'user-plus' }} class="w-4 h-4" />
+                                            @if($user->aktif)
+                                                <x-heroicon-o-user-minus class="w-4 h-4" />
+                                            @else
+                                                <x-heroicon-o-user-plus class="w-4 h-4" />
+                                            @endif
                                         </button>
                                     </form>
-                                    @if(! $user->penerimaan()->exists() && ! $user->penjualan()->exists())
-                                        <form action="{{ route('user.destroy', $user) }}" method="POST" class="inline">
-                                            @csrf @method('DELETE')
-                                            <button type="submit"
-                                                class="btn-secondary !p-1.5"
-                                                style="color: #DC2626;"
-                                                title="Hapus"
-                                                aria-label="Hapus"
-                                                onclick="return confirm('Yakin ingin menghapus user ini? Tindakan ini permanen.')">
-                                                <x-heroicon-o-trash class="w-4 h-4" />
-                                            </button>
-                                        </form>
-                                    @endif
                                 @endif
-                            </div>
+                            </x-table-action>
                         </td>
                         <td class="table-num">{{ $user->id }}</td>
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium
-                                @if($user->role === 'admin') bg-purple-100 text-purple-800
-                                @elseif($user->role === 'apoteker') bg-blue-100 text-blue-800
-                                @else bg-green-100 text-green-800 @endif">
+                            @php
+                                $roleVariant = match($user->role) {
+                                    'admin' => 'info',
+                                    'apoteker' => 'warning',
+                                    default => 'success',
+                                };
+                            @endphp
+                            <x-badge :variant="$roleVariant">
                                 {{ ucfirst($user->role) }}
-                            </span>
+                            </x-badge>
                         </td>
-                        <td>
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium
-                                {{ $user->aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        <td class="text-center">
+                            <x-badge :variant="$user->aktif ? 'success' : 'danger'">
                                 {{ $user->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </span>
+                            </x-badge>
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->filled('cari')) User Tidak Ditemukan @else User Kosong @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->filled('cari')) Tidak ada user yang cocok dengan kata kunci "{{ request('cari') }}". @else Belum ada user terdaftar. @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="6" />
                 @endforelse
             </tbody>
         </table>

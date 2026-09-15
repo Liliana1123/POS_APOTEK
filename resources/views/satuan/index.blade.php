@@ -2,40 +2,22 @@
 @section('title', 'Satuan')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Satuan</h1>
-        <p class="text-caption mt-1">Kelola tipe satuan kemasan barang/obat.</p>
-    </div>
+<x-page-header title="Daftar Satuan" subtitle="Kelola tipe satuan kemasan barang/obat.">
     <button type="button" id="btn-tambah-satuan" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Satuan</span>
     </button>
-</div>
+</x-page-header>
 
-<!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('satuan.index') }}" class="flex flex-wrap gap-2 items-center">
-        <div class="relative shrink-0 w-full sm:w-64">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari satuan..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-        <button type="submit" class="btn-primary py-1.5 px-4">
-            Cari
-        </button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('satuan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Clear
-            </a>
-        @endif
-    </form>
-</div>
+<x-card-filter :action="route('satuan.index')" :reset-url="route('satuan.index')">
+    <div class="relative shrink-0 w-full sm:w-64">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari satuan..." class="form-input pr-8">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
+</x-card-filter>
 
-<!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
@@ -50,55 +32,19 @@
                 @forelse ($satuans as $index => $satuan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
-                            <div class="flex items-center justify-start gap-1">
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-satuan"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    data-id="{{ $satuan->id }}"
-                                    data-json="{{ json_encode(['nama' => $satuan->nama], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
-                                <form action="{{ route('satuan.destroy', $satuan) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="submit"
-                                        class="btn-secondary !p-1.5"
-                                        style="color: #DC2626;"
-                                        title="Hapus"
-                                        aria-label="Hapus">
-
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                            </div>
+                            <x-table-action
+                                edit-class="btn-edit-satuan"
+                                :edit-id="$satuan->id"
+                                :edit-data="['nama' => $satuan->nama]"
+                                :delete-url="route('satuan.destroy', $satuan)"
+                                delete-confirm="Yakin ingin menghapus satuan ini?"
+                            />
                         </td>
                         <td class="table-num">{{ $satuan->id }}</td>
                         <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="3" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->filled('cari'))
-                                        Satuan Tidak Ditemukan
-                                    @else
-                                        Satuan Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->filled('cari'))
-                                        Tidak ada satuan yang cocok dengan kata kunci "{{ request('cari') }}".
-                                    @else
-                                        Belum ada data satuan terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="3" />
                 @endforelse
             </tbody>
         </table>
