@@ -156,7 +156,6 @@
                                     <input
                                         type="text"
                                         name="detail[{{ $detail->id }}][no_batch]"
-                                        required
                                         class="w-full rounded-md border border-gray-300 px-2 py-1"
                                         placeholder="Batch..."
                                     >
@@ -167,7 +166,6 @@
                                     <input
                                         type="date"
                                         name="detail[{{ $detail->id }}][expired_date]"
-                                        required
                                         class="w-full rounded-md border border-gray-300 px-2 py-1"
                                     >
                                 </td>
@@ -179,7 +177,7 @@
                                         name="detail[{{ $detail->id }}][harga_beli]"
                                         min="0"
                                         step="0.01"
-                                        required
+                                        
                                         class="w-full rounded-md border border-gray-300 px-2 py-1 text-right"
                                     >
                                 </td>
@@ -191,7 +189,7 @@
                                         name="detail[{{ $detail->id }}][harga_jual]"
                                         min="0"
                                         step="0.01"
-                                        required
+                                        
                                         class="w-full rounded-md border border-gray-300 px-2 py-1 text-right"
                                     >
                                 </td>
@@ -201,7 +199,7 @@
                                     <input
                                         type="text"
                                         name="detail[{{ $detail->id }}][no_rak]"
-                                        required
+                                        
                                         class="w-full rounded-md border border-gray-300 px-2 py-1"
                                         placeholder="A-01"
                                     >

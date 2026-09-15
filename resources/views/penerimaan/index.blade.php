@@ -154,14 +154,15 @@
                                 <x-heroicon-o-eye class="w-4 h-4" />
                             </button>
 
-                            <a
-                                href="{{ route('penerimaan.edit', $penerimaan) }}"
+                            <button
+                                type="button"
                                 class="btn-secondary !p-1.5 btn-edit-penerimaan"
                                 style="color: #F59E0B;"
                                 title="Edit"
+                                data-url="{{ route('penerimaan.edit', $penerimaan) }}"
                             >
                                 <x-heroicon-o-pencil-square class="w-4 h-4" />
-                            </a>
+                            </button>
 
                             @if (!$penerimaan->lunas)
                                 <button
@@ -341,7 +342,11 @@
             </button>
         </div>
 
-        <div id="detail-penerimaan-content" class="modal-body-custom">
+        <div
+    id="detail-penerimaan-content"
+    class="modal-body-custom overflow-y-auto"
+    style="max-height: calc(100vh - 180px);"
+>
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
             </div>
@@ -414,6 +419,46 @@
     </div>
 </div>
 
+<!-- Modal Edit Penerimaan -->
+<div id="modal-edit-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true"
+    style="align-items: flex-start; overflow-y: auto;"
+>
+    <div
+    class="modal-container-custom max-w-7xl flex flex-col"
+    style="max-height: 90vh; margin-top: 2rem; margin-bottom: 2rem;"
+>
+        <div class="modal-header-custom">
+            <div>
+                <h2>Edit Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Ubah informasi faktur dan detail penerimaan barang.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="btn-tutup-edit"
+                class="btn-secondary !p-1.5"
+                title="Tutup"
+            >
+                ✕
+            </button>
+        </div>
+
+        <div
+    id="edit-penerimaan-content"
+    class="modal-body-custom"
+    style="overflow-y: auto; min-height: 0; flex: 1;"
+>
+            <div class="text-center py-8 text-gray-500">
+                Memuat form edit...
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <script>
@@ -462,6 +507,84 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error(error);
                 });
         });
+    });
+
+    // Edit Penerimaan
+    document.addEventListener('click', async function (event) {
+        const button = event.target.closest('.btn-edit-penerimaan');
+
+        if (!button) {
+            return;
+        }
+
+        const modal = document.getElementById('modal-edit-penerimaan');
+        const content = document.getElementById('edit-penerimaan-content');
+        const url = button.dataset.url;
+
+        if (!modal || !content || !url) {
+            return;
+        }
+
+        content.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                Memuat form edit...
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat form edit.');
+            }
+
+           const html = await response.text();
+
+            content.innerHTML = html;
+
+            content.querySelectorAll('script').forEach(function (oldScript) {
+                const newScript = document.createElement('script');
+
+                newScript.textContent = oldScript.textContent;
+
+                document.body.appendChild(newScript);
+
+                oldScript.remove();
+            });
+
+            if (typeof initEditPenerimaanForm === 'function') {
+                initEditPenerimaanForm();
+            }
+
+        } catch (error) {
+            content.innerHTML = `
+                <div class="text-center py-8 text-red-600">
+                    Gagal memuat form edit.
+                </div>
+            `;
+
+            console.error(error);
+        }
+    });
+
+    // Tutup modal Edit
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('#btn-tutup-edit')) {
+            const modal = document.getElementById('modal-edit-penerimaan');
+
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        }
     });
 
     // =========================

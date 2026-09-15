@@ -1,21 +1,4 @@
-@extends('layouts.app')
 
-@section('title', 'Edit Faktur Penerimaan')
-
-@section('content')
-
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Edit Faktur Penerimaan Barang</h1>
-        <p class="text-caption mt-1">
-            Ubah informasi faktur dan detail barang penerimaan.
-        </p>
-    </div>
-
-    <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-2 px-4">
-        &larr; Kembali
-    </a>
-</div>
 
 @if ($errors->any())
     <div class="alert-danger p-4 mb-6">
@@ -627,7 +610,7 @@
 </template>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+function initEditPenerimaanForm() {
 
     let rowIndex = {{ $penerimaan->detail->count() }};
 
@@ -751,7 +734,5 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     updateTotal();
-});
+};
 </script>
-
-@endsection

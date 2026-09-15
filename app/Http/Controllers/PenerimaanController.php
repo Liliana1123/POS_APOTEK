@@ -624,12 +624,12 @@ class PenerimaanController extends Controller
             'jumlah_pembatalan' => ['required', 'array'],
             'jumlah_pembatalan.*' => ['required', 'integer', 'min:0'],
 
-            'detail' => ['required', 'array'],
-            'detail.*.no_batch' => ['required', 'string', 'max:100'],
-            'detail.*.expired_date' => ['required', 'date'],
-            'detail.*.harga_beli' => ['required', 'numeric', 'min:0'],
-            'detail.*.harga_jual' => ['required', 'numeric', 'min:0'],
-            'detail.*.no_rak' => ['required', 'string', 'max:50'],
+            'detail' => ['nullable', 'array'],
+            'detail.*.no_batch' => ['nullable', 'string', 'max:100'],
+            'detail.*.expired_date' => ['nullable', 'date'],
+            'detail.*.harga_beli' => ['nullable', 'numeric', 'min:0'],
+            'detail.*.harga_jual' => ['nullable', 'numeric', 'min:0'],
+            'detail.*.no_rak' => ['nullable', 'string', 'max:50'],
 
 
         ]);
@@ -683,6 +683,34 @@ class PenerimaanController extends Controller
                     422,
                     "Jumlah susulan untuk {$detail->barang->nama} melebihi kekurangan."
                 );
+            }
+        }
+
+        foreach ($data['jumlah_susulan'] as $detailPesananId => $jumlahSusulan) {
+            if ((int) $jumlahSusulan <= 0) {
+                continue;
+            }
+
+            $detailData = $data['detail'][$detailPesananId] ?? [];
+
+            if (
+                empty($detailData['no_batch']) ||
+                empty($detailData['expired_date']) ||
+                $detailData['harga_beli'] === null ||
+                $detailData['harga_jual'] === null ||
+                empty($detailData['no_rak'])
+            ) {
+                throw ValidationException::withMessages([
+                    'detail' => 'Data batch, expired date, harga beli, harga jual, dan no. rak wajib diisi untuk barang yang menerima susulan.',
+                ]);
+            }
+
+            if (
+                (float) $detailData['harga_jual'] < (float) $detailData['harga_beli']
+            ) {
+                throw ValidationException::withMessages([
+                    'detail' => 'Harga jual tidak boleh lebih kecil dari harga beli.',
+                ]);
             }
         }
 
