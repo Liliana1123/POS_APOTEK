@@ -2,40 +2,25 @@
 @section('title', 'Supplier')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Supplier</h1>
-        <p class="text-caption mt-1">Kelola data penyalur/distributor obat.</p>
-    </div>
+<x-page-header title="Daftar Supplier" subtitle="Kelola data penyalur/distributor obat.">
     <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Supplier</span>
     </button>
-</div>
+</x-page-header>
 
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('supplier.index') }}" class="flex flex-wrap gap-2 items-center">
-        <div class="relative shrink-0 w-full sm:w-64">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-        <button type="submit" class="btn-primary py-1.5 px-4">
-            Cari
-        </button>
-        @if(request()->filled('cari'))
-            <a href="{{ route('supplier.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Reset
-            </a>
-        @endif
-    </form>
-</div>
+<x-card-filter :action="route('supplier.index')" :reset-url="route('supplier.index')">
+    <div class="relative shrink-0 w-full sm:w-64">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..." class="form-input pr-8">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
+</x-card-filter>
 
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-            <table class="table-custom min-w-[50rem]">
+        <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
                     <th scope="col" class="text-center w-36">Aksi</th>
@@ -50,18 +35,13 @@
                 @forelse ($suppliers as $index => $supplier)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
-                            <div class="flex items-center justify-start gap-1">
-                                <button type="button" class="btn-secondary !p-1.5 btn-edit-supplier" style="color: #F59E0B;" title="Edit" data-id="{{ $supplier->id }}" data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
-                                <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-secondary !p-1.5" style="color: #DC2626;" title="Hapus" aria-label="Hapus" onclick="return confirm('Yakin ingin menghapus supplier ini?')">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                            </div>
+                            <x-table-action
+                                edit-class="btn-edit-supplier"
+                                :edit-id="$supplier->id"
+                                :edit-data="['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic]"
+                                :delete-url="route('supplier.destroy', $supplier)"
+                                delete-confirm="Yakin ingin menghapus supplier ini?"
+                            />
                         </td>
                         <td class="table-num">{{ $supplier->id }}</td>
                         <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
@@ -70,26 +50,7 @@
                         <td class="text-gray-600">{{ $supplier->pic ?? '—' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->filled('cari'))
-                                        Supplier Tidak Ditemukan
-                                    @else
-                                        Supplier Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->filled('cari'))
-                                        Tidak ada supplier yang cocok dengan kata kunci "{{ request('cari') }}".
-                                    @else
-                                        Belum ada data supplier terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="6" />
                 @endforelse
             </tbody>
         </table>
