@@ -2,17 +2,15 @@
 @section('title', 'Pengaturan Apotek')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h1>Pengaturan Apotek</h1>
-        <p class="text-caption mt-1">Identitas apotek yang dipakai di menu dan dokumen cetak.</p>
-    </div>
+<!-- Page Header -->
+<x-page-header title="Pengaturan Apotek" subtitle="Identitas apotek yang dipakai di menu dan dokumen cetak.">
     <a href="{{ route('dashboard') }}" class="btn-secondary">Kembali</a>
-</div>
+</x-page-header>
 
 <div class="card-base max-w-3xl">
     <form action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @csrf @method('PUT')
+        @csrf
+        @method('PUT')
 
         <div class="md:col-span-2">
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Nama Apotek <span class="text-red-500 font-bold">*</span></label>

@@ -2,93 +2,75 @@
 @section('title', 'Data Master Barang')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Barang & Obat</h1>
-        <p class="text-caption mt-1">Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.</p>
-    </div>
-    <div class="flex items-center gap-2 flex-wrap">
-        <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
-            <x-heroicon-o-plus class="w-4 h-4" />
-            <span>Tambah Barang</span>
-        </button>
+<!-- Page Header -->
+<x-page-header title="Daftar Barang & Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
+    <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Tambah Barang</span>
+    </button>
 
-        <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
-            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-            <span>Import Data</span>
-        </button>
+    <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
+        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+        <span>Import Data</span>
+    </button>
 
-        <a href="{{ route('barang.export', request()->query()) }}" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            <span>Export Data</span>
-        </a>
-    </div>
-</div>
+    <a href="{{ route('barang.export', request()->query()) }}" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
+        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+        <span>Export Data</span>
+    </a>
+</x-page-header>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('barang.index') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
-                <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode apotek, KFA, merk, barcode..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Kategori</label>
-                <select name="kategori_id" class="form-input">
-                    <option value="">Semua Kategori</option>
-                    @foreach ($kategoris as $k)
-                        <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
-                <select name="butuh_resep" class="form-input">
-                    <option value="">Semua</option>
-                    <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
-                    <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
-                <select name="aktif" class="form-input">
-                    <option value="">Semua</option>
-                    <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-                    <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
-                <select name="stok" class="form-input">
-                    <option value="">Semua</option>
-                    <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
-                    <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
-                    <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
-                </select>
-            </div>
+<x-card-filter
+    :action="route('barang.index')"
+    :reset-url="route('barang.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+    :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
+        <div class="relative">
+            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+            </span>
         </div>
-        
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
-                <a href="{{ route('barang.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
-                </a>
-            @endif
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    </div>
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Kategori</label>
+        <select name="kategori_id" class="form-input">
+            <option value="">Semua Kategori</option>
+            @foreach ($kategoris as $k)
+                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
+        <select name="butuh_resep" class="form-input">
+            <option value="">Semua</option>
+            <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
+            <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
+        <select name="aktif" class="form-input">
+            <option value="">Semua</option>
+            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
+        <select name="stok" class="form-input">
+            <option value="">Semua</option>
+            <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
+            <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
+            <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+        </select>
+    </div>
+</x-card-filter>
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
@@ -122,10 +104,27 @@
                     @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
-                            <div class="flex items-center justify-start gap-1">
-                                <!-- 1. Lihat Detail -->
+                            <x-table-action
+                                edit-class="btn-edit-barang"
+                                :edit-id="$barang->id"
+                                :edit-data="[
+                                    'kode_apotek' => $barang->kode_apotek,
+                                    'kode_kfa' => $barang->kode_kfa,
+                                    'nama' => $barang->nama,
+                                    'merk' => $barang->merk,
+                                    'kategori_id' => $barang->kategori_id,
+                                    'satuan_id' => $barang->satuan_id,
+                                    'pabrik_id' => $barang->pabrik_id,
+                                    'barcode' => $barang->barcode,
+                                    'stok_minimum' => $barang->stok_minimum,
+                                    'butuh_resep' => (int) $barang->butuh_resep,
+                                    'aktif' => (int) $barang->aktif
+                                ]"
+                                :delete-url="route('barang.destroy', $barang)"
+                                delete-confirm="Yakin ingin menghapus barang ini?">
+                                
                                 <button type="button"
-                                    class="btn-secondary !p-1.5 btn-detail-barang"
+                                    class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors btn-detail-barang"
                                     style="color: #2563EB;"
                                     title="Lihat Detail"
                                     aria-label="Lihat Detail"
@@ -150,43 +149,7 @@
                                     ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
                                     <x-heroicon-o-eye class="w-4 h-4" />
                                 </button>
-
-                                <!-- 2. Edit -->
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-barang"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    aria-label="Edit"
-                                    data-id="{{ $barang->id }}"
-                                    data-json="{{ json_encode([
-                                        'kode_apotek' => $barang->kode_apotek,
-                                        'kode_kfa' => $barang->kode_kfa,
-                                        'nama' => $barang->nama,
-                                        'merk' => $barang->merk,
-                                        'kategori_id' => $barang->kategori_id,
-                                        'satuan_id' => $barang->satuan_id,
-                                        'pabrik_id' => $barang->pabrik_id,
-                                        'barcode' => $barang->barcode,
-                                        'stok_minimum' => $barang->stok_minimum,
-                                        'butuh_resep' => (int) $barang->butuh_resep,
-                                        'aktif' => (int) $barang->aktif
-                                    ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
-
-                                <!-- 3. Hapus -->
-                                <form action="{{ route('barang.destroy', $barang) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="btn-secondary !p-1.5"
-                                        style="color: #DC2626;"
-                                        title="Hapus"
-                                        aria-label="Hapus">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                            </div>
+                            </x-table-action>
                         </td>
                         <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
                         <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
@@ -195,34 +158,13 @@
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
-                            @if ($barang->aktif)
-                                <span class="badge-success">Aktif</span>
-                            @else
-                                <span class="badge-neutral">Nonaktif</span>
-                            @endif
+                            <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
+                                {{ $barang->aktif ? 'Aktif' : 'Nonaktif' }}
+                            </x-badge>
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
-                                        Barang Tidak Ditemukan
-                                    @else
-                                        Barang Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok']))
-                                        Tidak ada produk obat yang cocok dengan filter kriteria pencarian Anda.
-                                    @else
-                                        Belum ada data barang/obat terdaftar di sistem POS.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
         </table>
@@ -230,122 +172,6 @@
 </div>
 
 <div class="mt-4">{{ $barangs->links() }}</div>
-
-<!-- Modal Detail Barang -->
-<div id="modal-detail-barang-backdrop" class="fixed inset-0 bg-slate-900/40 z-50 hidden transition-opacity"></div>
-<div id="modal-detail-barang" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-[4vh] sm:pt-[6vh] px-4">
-    <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0 bg-slate-50/70">
-            <div>
-                <h3 class="text-sm font-bold text-gray-900" id="detail-title-nama">Detail Barang</h3>
-                <p class="text-[11px] text-gray-500 font-sans">Informasi lengkap data barang & klasifikasi obat.</p>
-            </div>
-            <button type="button" id="btn-close-detail-modal" class="text-gray-400 hover:text-gray-600 transition-colors p-1" aria-label="Tutup">
-                <x-heroicon-o-x-mark class="w-5 h-5" />
-            </button>
-        </div>
-
-        <!-- Body -->
-        <div class="px-6 py-5 overflow-y-auto flex-1 space-y-6">
-            <!-- 1. IDENTITAS -->
-            <div>
-                <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1 border-b">1. Identitas Barang</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Kode Apotek</span>
-                        <span class="font-semibold text-gray-800 text-xs mt-0.5 block" id="detail-kode-apotek">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Kode KFA</span>
-                        <span class="font-mono font-semibold text-gray-800 mt-0.5 block" id="detail-kode-kfa">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Nama Barang</span>
-                        <span class="font-semibold text-gray-900 mt-0.5 block" id="detail-nama">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Merk</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block" id="detail-merk">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg sm:col-span-2">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Barcode</span>
-                        <span class="font-mono text-gray-800 mt-0.5 block" id="detail-barcode">—</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. DATA MASTER -->
-            <div>
-                <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1 border-b">2. Data Master</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Kategori</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block" id="detail-kategori">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Satuan</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block" id="detail-satuan">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Pabrik</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block" id="detail-pabrik">—</span>
-                    </div>
-                    <div class="p-2.5 bg-gray-50/80 rounded-lg">
-                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Supplier</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block" id="detail-supplier">—</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. STOK & 4. LAINNYA -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1 border-b">3. Inventori & Stok</h4>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center p-2.5 bg-gray-50/80 rounded-lg">
-                            <span class="text-gray-500 font-medium">Stok Saat Ini:</span>
-                            <span class="font-bold text-gray-900 text-sm" id="detail-stok">0</span>
-                        </div>
-                        <div class="flex justify-between items-center p-2.5 bg-gray-50/80 rounded-lg">
-                            <span class="text-gray-500 font-medium">Stok Minimum:</span>
-                            <span class="font-semibold text-gray-800" id="detail-stok-minimum">0</span>
-                        </div>
-                        <div class="flex justify-between items-center p-2.5 bg-gray-50/80 rounded-lg">
-                            <span class="text-gray-500 font-medium">Status Stok:</span>
-                            <span id="detail-status-stok-badge" class="badge-success">Aman</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2.5 pb-1 border-b">4. Ketentuan & Status</h4>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center p-2.5 bg-gray-50/80 rounded-lg">
-                            <span class="text-gray-500 font-medium">Butuh Resep:</span>
-                            <span class="font-semibold text-gray-800" id="detail-butuh-resep">Bebas</span>
-                        </div>
-                        <div class="flex justify-between items-center p-2.5 bg-gray-50/80 rounded-lg">
-                            <span class="text-gray-500 font-medium">Status Aktif:</span>
-                            <span class="font-semibold text-gray-800" id="detail-status-aktif">Aktif</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex items-center justify-between gap-2 px-6 py-3.5 border-t border-gray-100 shrink-0 bg-slate-50/70">
-            <button type="button" id="btn-edit-from-detail" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs">
-                <x-heroicon-o-pencil-square class="w-4 h-4" />
-                <span>Edit Barang</span>
-            </button>
-            <button type="button" id="btn-cancel-detail-modal" class="btn-secondary py-1.5 px-4 text-xs">
-                Tutup
-            </button>
-        </div>
-    </div>
-</div>
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form
@@ -453,64 +279,11 @@
     </div>
 </x-modal-form>
 
-<!-- Modal Import Barang -->
-<div id="modal-import-barang-backdrop" class="fixed inset-0 bg-slate-900/40 z-50 hidden transition-opacity"></div>
-<div id="modal-import-barang" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-[5vh] sm:pt-[10vh] px-4">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl relative max-h-[85vh] flex flex-col">
-        <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
-            <h3 class="text-sm font-bold text-gray-800">Import Data Master Barang</h3>
-            <button type="button" id="btn-close-import-modal" class="text-gray-400 hover:text-gray-600 transition-colors p-1" aria-label="Tutup">
-                <x-heroicon-o-x-mark class="w-5 h-5" />
-            </button>
-        </div>
-        
-        <form action="{{ route('barang.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden" id="form-import-barang">
-            @csrf
-            <div class="px-5 py-4 overflow-y-auto flex-1 space-y-4">
-                <!-- Info & Download Template Card -->
-                <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-lg text-xs space-y-2">
-                    <div class="flex items-start gap-2 text-blue-800 font-medium">
-                        <x-heroicon-o-information-circle class="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
-                        <span>Format file yang didukung adalah <strong>CSV (.csv)</strong>.</span>
-                    </div>
-                    <p class="text-blue-600 text-[11px] leading-relaxed">
-                        Pastikan kolom pada file CSV mencakup: <code class="bg-blue-100/80 px-1 py-0.5 rounded text-[10px] font-mono text-blue-900">nama, kode_kfa, merk, kategori, satuan, pabrik, barcode, stok_minimum, butuh_resep</code>.
-                    </p>
-                    <div class="pt-1">
-                        <a href="{{ route('barang.import-template') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 underline">
-                            <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
-                            <span>Unduh Template CSV</span>
-                        </a>
-                    </div>
-                </div>
+<!-- Modal Partials -->
+@include('barang.partials.modal-detail')
+@include('barang.partials.modal-import')
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Pilih File CSV <span class="text-red-500">*</span></label>
-                    <input type="file" name="file" accept=".csv,text/csv,text/plain" required class="block w-full text-xs text-gray-700 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-200 rounded-lg p-1.5 bg-gray-50/50">
-                </div>
-
-                <div class="pt-1">
-                    <label class="flex items-start text-xs font-medium text-gray-700 cursor-pointer">
-                        <input type="checkbox" name="auto_create_master" value="1" checked class="mr-2.5 mt-0.5 rounded border-gray-300 focus:ring-blue-500 w-4 h-4 text-blue-600">
-                        <div>
-                            <span class="font-semibold text-gray-800">Otomatis daftarkan master baru</span>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Jika nama kategori, satuan, atau pabrik belum ada di sistem, buat otomatis.</p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100 shrink-0 bg-gray-50/50">
-                <button type="button" id="btn-cancel-import-modal" class="btn-secondary py-1.5 px-4">Batal</button>
-                <button type="submit" id="btn-submit-import" class="btn-primary py-1.5 px-5 flex items-center gap-2">
-                    <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-                    <span>Upload & Import</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
+<!-- Page Specific Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // --- DETAIL MODAL LOGIC ---
