@@ -65,6 +65,117 @@
     </div>
 </div>
 
+<form method="GET" action="{{ route('laporan.stok') }}" class="card-base p-4 mb-6 print:hidden">
+    <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex-1">
+            <label for="nama" class="block text-sm font-medium mb-1">
+                Nama Barang
+            </label>
+
+            <input
+                type="text"
+                name="nama"
+                id="nama"
+                value="{{ request('nama') }}"
+                placeholder="Cari nama barang..."
+                class="input-base w-full"
+            >
+        </div>
+
+        <div class="flex-1">
+            <label for="kategori_id" class="block text-sm font-medium mb-1">
+                Kategori
+            </label>
+
+            <select
+                name="kategori_id"
+                id="kategori_id"
+                class="input-base w-full"
+            >
+                <option value="">Semua Kategori</option>
+
+                @foreach ($kategoris as $kategori)
+                    <option
+                        value="{{ $kategori->id }}"
+                        {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}
+                    >
+                        {{ $kategori->nama }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex-1">
+            <label for="status_expired" class="block text-sm font-medium mb-1">
+                Status Kadaluarsa
+            </label>
+
+            <select
+                name="status_expired"
+                id="status_expired"
+                class="input-base w-full"
+            >
+                <option value="">Semua Status</option>
+
+                <option value="kadaluarsa" {{ request('status_expired') === 'kadaluarsa' ? 'selected' : '' }}>
+                    Kadaluarsa
+                </option>
+
+                <option value="1_bulan" {{ request('status_expired') === '1_bulan' ? 'selected' : '' }}>
+                    ≤ 1 Bulan
+                </option>
+
+                <option value="3_bulan" {{ request('status_expired') === '3_bulan' ? 'selected' : '' }}>
+                    ≤ 3 Bulan
+                </option>
+
+                <option value="normal" {{ request('status_expired') === 'normal' ? 'selected' : '' }}>
+                    Normal
+                </option>
+
+                <option value="tidak_ada" {{ request('status_expired') === 'tidak_ada' ? 'selected' : '' }}>
+                    Tidak Ada Tanggal
+                </option>
+            </select>
+        </div>
+
+        <div class="flex-1">
+            <label for="status_stok" class="block text-sm font-medium mb-1">
+                Status Stok
+            </label>
+            <select
+                name="status_stok"
+                id="status_stok"
+                class="input-base w-full"
+            >
+                <option value="">Semua Status</option>
+                <option value="habis" {{ request('status_stok') === 'habis' ? 'selected' : '' }}>
+                    Habis
+                </option>
+                <option value="menipis" {{ request('status_stok') === 'menipis' ? 'selected' : '' }}>
+                    Menipis
+                </option>
+                <option value="aman" {{ request('status_stok') === 'aman' ? 'selected' : '' }}>
+                    Aman
+                </option>
+            </select>
+        </div>
+
+        <div class="flex items-end">
+            <button type="submit" class="btn-primary py-2 px-4">
+                Cari
+            </button>
+
+            <a
+                href="{{ route('laporan.stok') }}"
+                class="btn-secondary py-2 px-4"
+            >
+                Reset
+            </a>
+        </div>
+    </div>
+</form>
+
 <!-- Informasi khusus print -->
 <div class="hidden print:block mb-6 border-b pb-3">
     <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider">
@@ -223,18 +334,12 @@
                             <!-- Status Stok -->
                             <td class="text-center">
 
-                                @if ($item->stok <= $item->barang->stok_minimum)
-
-                                    <span class="badge-danger">
-                                        Menipis
-                                    </span>
-
+                                @if ($item->stok <= 0)
+                                    <span class="badge-danger">Habis</span>
+                                @elseif ($item->stok <= $item->barang->stok_minimum)
+                                    <span class="badge-warning">Menipis</span>
                                 @else
-
-                                    <span class="badge-success">
-                                        Aman
-                                    </span>
-
+                                    <span class="badge-success">Aman</span>
                                 @endif
 
                             </td>

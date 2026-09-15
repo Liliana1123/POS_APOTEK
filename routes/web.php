@@ -19,9 +19,6 @@ use App\Http\Controllers\PengaturanController;
 
 use Illuminate\Support\Facades\Route;
 
-// ==== TEMPEL BLOK INI KE routes/web.php ====
-// Boleh hapus/ganti route "welcome" bawaan Laravel kalau sudah tidak dipakai.
-
 Route::get('/login', [LoginController::class, 'create'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('guest');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
@@ -59,7 +56,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('penerimaan/{penerimaan}/print', [PenerimaanController::class, 'print'])->name('penerimaan.print');
     Route::get('penerimaan/{penerimaan}/payment-form', [PenerimaanController::class, 'paymentForm'])->name('penerimaan.payments.form');
     Route::post('penerimaan/{penerimaan}/payments', [PenerimaanController::class, 'paymentStore'])->name('penerimaan.payments.store');
-    Route::resource('rusak', RusakController::class)->only(['index', 'create', 'store']);
+    Route::get('penerimaan/{penerimaan}/susulan-form',[PenerimaanController::class, 'susulanForm'])->name('penerimaan.susulan.form');
+    Route::post('penerimaan/{penerimaan}/susulan',[PenerimaanController::class, 'susulanStore'])->name('penerimaan.susulan.store');
+    Route::resource('rusak', RusakController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('rusak/{rusak}/print', [RusakController::class, 'print']) ->name('rusak.print');
 });
 
 Route::middleware(['auth'])->group(function () {

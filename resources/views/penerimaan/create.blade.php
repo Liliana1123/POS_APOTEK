@@ -123,17 +123,8 @@
             <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
         </div>
         <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
-            <label for="ppn">PPN (Opsional)</label>
-            <input
-                type="number"
-                name="ppn"
-                id="ppn"
-                value="{{ old('ppn', 0) }}"
-                min="0"
-                step="0.01"
-                class="form-input w-full sm:w-40 text-right font-mono"
-                placeholder="0"
-            >
+            <label for="ppn">PPN (11%)</label>
+            <input type="text" id="ppn" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
         </div>
 
         <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
@@ -220,7 +211,8 @@ function updateTotal() {
         row.querySelector('.subtotal-field').textContent = formatRupiah(subtotal);
     });
     totalFaktur.textContent = formatRupiah(total);
-    const nilaiPpn = parseFloat(ppn.value) || 0;
+    const nilaiPpn = total * 0.11;
+    ppn.value = formatRupiah(nilaiPpn);
     totalTagihan.textContent = formatRupiah(total + nilaiPpn);
 }
 

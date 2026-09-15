@@ -17,121 +17,414 @@
     </div>
 @endif
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Kolom kiri: cari & pilih barang -->
-    <div class="lg:col-span-2 card-base flex flex-col justify-between">
-        <div>
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Pencarian Cepat Obat / Barang <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F2]</span></label>
-                <input type="text" id="cari-barang" placeholder="Cari nama barang..."
-                    class="form-input">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+    <!-- ===================================================== -->
+    <!-- KOLOM KIRI: PENCARIAN OBAT / BARANG -->
+    <!-- ===================================================== -->
+    <div class="lg:col-span-1 card-base p-4">
+
+        <div class="border-b pb-2.5 mb-3">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-bold text-gray-800">
+                    Pencarian Obat / Barang
+                </h2>
+
+                <span class="text-[10px] text-blue-600 font-bold font-mono">
+                    [F2]
+                </span>
             </div>
 
-            <div id="daftar-barang" class="space-y-1.5 max-h-[30rem] overflow-y-auto pr-1"></div>
+            <p class="text-[10px] text-gray-400 mt-0.5">
+                Cari dan pilih barang.
+            </p>
         </div>
+
+        <div class="mb-3">
+            <input
+                type="text"
+                id="cari-barang"
+                placeholder="Cari nama barang..."
+                class="form-input text-xs"
+            >
+        </div>
+
+        <!-- Hasil pencarian -->
+        <div
+            id="daftar-barang"
+            class="space-y-1.5 max-h-[calc(100vh-300px)] overflow-y-auto pr-1"
+        ></div>
+
     </div>
 
-    <!-- Kolom kanan: keranjang -->
-    <div class="card-base">
-        <div class="border-b pb-2 mb-4">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700">Keranjang Transaksi</h2>
+
+    <!-- ===================================================== -->
+    <!-- KOLOM KANAN: KERANJANG TRANSAKSI -->
+    <!-- ===================================================== -->
+    <div class="lg:col-span-2 card-base p-4">
+
+        <div class="border-b pb-2.5 mb-4">
+            <h2 class="text-sm font-bold text-gray-800">
+                Keranjang Transaksi
+            </h2>
+
+            <p class="text-[10px] text-gray-400 mt-0.5">
+                Ringkasan transaksi dan pembayaran.
+            </p>
         </div>
 
-        <form action="{{ route('penjualan.store') }}" method="POST" id="form-penjualan">
+        <form
+            action="{{ route('penjualan.store') }}"
+            method="POST"
+            id="form-penjualan"
+        >
             @csrf
 
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">No. Faktur</label>
-                <input type="text" name="no_faktur" value="{{ old('no_faktur', 'INV-' . now()->format('Ymd-His')) }}" required
-                    class="form-input font-mono font-semibold">
+            <!-- ================================================= -->
+            <!-- NO INVOICE + TANGGAL -->
+            <!-- ================================================= -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                        No. Invoice
+                    </label>
+
+                    <input
+                        type="text"
+                        name="no_faktur"
+                        value="{{ old('no_faktur', 'INV-' . now()->format('Ymd-His')) }}"
+                        required
+                        class="form-input font-mono font-semibold text-xs"
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                        Tanggal Transaksi
+                    </label>
+
+                    <input
+                        type="date"
+                        name="tanggal"
+                        value="{{ old('tanggal', now()->format('Y-m-d')) }}"
+                        required
+                        class="form-input text-xs"
+                    >
+                </div>
+
             </div>
 
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Tanggal Transaksi</label>
-                <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
-                    class="form-input">
-            </div>
 
-            <!-- Pencarian & Pemilihan Member -->
-            <div class="mb-4 relative">
-                <label class="block text-xs font-semibold text-gray-500 mb-1.5">Cari Pelanggan / Member <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F4]</span></label>
+            <!-- ================================================= -->
+            <!-- PELANGGAN / MEMBER -->
+            <!-- ================================================= -->
+            <div class="mb-3 relative">
+
+                <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                    Cari Pelanggan / Member
+                    <span class="text-[9px] text-blue-600 font-bold ml-1 font-mono">
+                        [F4]
+                    </span>
+                </label>
+
                 <div class="flex gap-2">
-                    <input type="text" id="pencarian-pelanggan" placeholder="Cari Nama, Member ID, atau HP..."
-                        class="form-input">
-                    <button type="button" id="btn-tambah-member" class="btn-secondary whitespace-nowrap">
+
+                    <input
+                        type="text"
+                        id="pencarian-pelanggan"
+                        placeholder="Cari nama, Member ID, atau HP..."
+                        class="form-input text-xs"
+                    >
+
+                    <button
+                        type="button"
+                        id="btn-tambah-member"
+                        class="btn-secondary whitespace-nowrap text-xs px-3"
+                    >
                         + Member
                     </button>
+
                 </div>
-                <!-- Dropdown hasil pencarian pelanggan -->
-                <div id="hasil-pencarian-pelanggan" class="absolute left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 hidden"></div>
-                <input type="hidden" name="pelanggan_id" id="selected-pelanggan-id" value="">
-                <input type="hidden" name="pelanggan_nama" id="pelanggan-nama">
-                <input type="hidden" name="pelanggan_telepon" id="pelanggan-telepon">
+
+                <!-- Dropdown hasil pencarian -->
+                <div
+                    id="hasil-pencarian-pelanggan"
+                    class="absolute left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10 hidden"
+                ></div>
+
+                <input
+                    type="hidden"
+                    name="pelanggan_id"
+                    id="selected-pelanggan-id"
+                    value=""
+                >
+
+                <input
+                    type="hidden"
+                    name="pelanggan_nama"
+                    id="pelanggan-nama"
+                >
+
+                <input
+                    type="hidden"
+                    name="pelanggan_telepon"
+                    id="pelanggan-telepon"
+                >
+
             </div>
 
-            <!-- Info Member Terpilih -->
-            <div id="info-pelanggan-terpilih" class="mb-4 bg-gray-50 border border-gray-150 rounded-lg p-3 text-xs">
+
+            <!-- ================================================= -->
+            <!-- INFO PELANGGAN -->
+            <!-- ================================================= -->
+            <div
+                id="info-pelanggan-terpilih"
+                class="mb-3 bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs"
+            >
+
                 <div class="flex justify-between items-center">
+
                     <div>
-                        <span class="text-gray-400">Pelanggan:</span>
-                        <strong id="selected-pelanggan-nama" class="text-gray-800 ml-1">Umum</strong>
-                        <span id="selected-pelanggan-member-id" class="font-mono text-blue-700 font-semibold ml-1"></span>
+                        <span class="text-gray-400">
+                            Pelanggan:
+                        </span>
+
+                        <strong
+                            id="selected-pelanggan-nama"
+                            class="text-gray-800 ml-1"
+                        >
+                            Umum
+                        </strong>
+
+                        <span
+                            id="selected-pelanggan-member-id"
+                            class="font-mono text-blue-700 font-semibold ml-1"
+                        ></span>
                     </div>
-                    <button type="button" id="btn-reset-pelanggan" class="text-red-500 hover:text-red-700 font-bold hidden">&times; Batal</button>
+
+                    <button
+                        type="button"
+                        id="btn-reset-pelanggan"
+                        class="text-red-500 hover:text-red-700 font-bold text-xs hidden"
+                    >
+                        &times; Batal
+                    </button>
+
                 </div>
-                <div id="badge-diskon-member" class="mt-2 badge-success inline-block hidden">
-                    Diskon Member Aktif: <span id="label-diskon-percent" class="font-bold">0</span>%
+
+                <div
+                    id="badge-diskon-member"
+                    class="mt-1.5 badge-success inline-block hidden"
+                >
+                    Diskon Member Aktif:
+                    <span
+                        id="label-diskon-percent"
+                        class="font-bold"
+                    >
+                        0
+                    </span>%
                 </div>
+
             </div>
 
-            <div id="keranjang-items" class="space-y-2.5 mb-4 max-h-64 overflow-y-auto pr-1"></div>
-            <p id="keranjang-kosong" class="text-xs text-gray-400 mb-4 text-center py-2">Keranjang masih kosong.</p>
 
-            <div class="border-t pt-3 flex justify-between text-xs font-semibold mb-3 text-gray-700">
-                <span>Total Tagihan:</span>
-                <span id="total-display" class="text-sm font-bold text-gray-800">Rp 0</span>
+            <!-- ================================================= -->
+            <!-- ISI KERANJANG -->
+            <!-- ================================================= -->
+            <div
+                id="keranjang-items"
+                class="space-y-2 mb-3 max-h-[280px] overflow-y-auto pr-1"
+            ></div>
+
+            <p
+                id="keranjang-kosong"
+                class="text-xs text-gray-400 mb-3 text-center py-2"
+            >
+                Keranjang masih kosong.
+            </p>
+
+
+            <!-- ================================================= -->
+            <!-- TOTAL -->
+            <!-- ================================================= -->
+            <div class="border-t pt-3 mb-3 flex justify-between items-center">
+
+                <span class="text-xs font-semibold text-gray-600">
+                    Total Tagihan
+                </span>
+
+                <span
+                    id="total-display"
+                    class="text-base font-bold text-gray-800"
+                >
+                    Rp 0
+                </span>
+
             </div>
 
-            <!-- Payment Section -->
-            <div class="border-t pt-3 space-y-3 mb-4">
+
+            <!-- ================================================= -->
+            <!-- PEMBAYARAN -->
+            <!-- ================================================= -->
+            <div class="border-t pt-3 space-y-2.5 mb-3">
+
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+
+                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">
                         Metode Pembayaran
                     </label>
-                    <select name="metode_pembayaran" id="metode-pembayaran" class="form-input" required>
+
+                    <select
+                        name="metode_pembayaran"
+                        id="metode-pembayaran"
+                        class="form-input text-xs"
+                        required
+                    >
                         <option value="cash">Cash</option>
                         <option value="qris">QRIS</option>
                         <option value="debit">Debit</option>
                         <option value="piutang">Piutang</option>
                     </select>
+
                 </div>
 
+
+                <!-- CASH -->
                 <div id="bagian-pembayaran-cash">
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+
+                    <label class="block text-[10px] font-semibold text-gray-500 mb-1">
                         Bayar (Uang Tunai)
-                        <span class="text-[10px] text-blue-600 font-bold ml-1 font-mono">[F8]</span>
+                        <span class="text-[9px] text-blue-600 font-bold ml-1 font-mono">
+                            [F8]
+                        </span>
                     </label>
-                    <input type="number" id="input-bayar" placeholder="Masukkan nominal pembayaran..."
-                        class="form-input font-mono font-semibold text-right" min="0">
+
+                    <input
+                        type="number"
+                        id="input-bayar"
+                        placeholder="Masukkan nominal pembayaran..."
+                        class="form-input font-mono font-semibold text-right text-xs"
+                        min="0"
+                    >
+
                 </div>
 
-                <div id="info-pembayaran-piutang"
-                    class="hidden bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-                    Transaksi akan dicatat sebagai <strong>Piutang</strong>.
+                <!-- QRIS -->
+                <div id="bagian-pembayaran-qris" class="hidden rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2">
+                    <label class="flex items-center justify-between gap-3 cursor-pointer">
+                        <span class="flex items-center gap-2 min-w-0">
+                            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-blue-600 border border-blue-100">
+                                <x-heroicon-o-qr-code class="w-3.5 h-3.5" />
+                            </span>
+
+                            <span>
+                                <span class="block text-[10px] font-semibold text-gray-700">
+                                    QRIS
+                                </span>
+                                <span class="block text-[9px] text-gray-400">
+                                    Konfirmasi pembayaran sudah sukses
+                                </span>
+                            </span>
+                        </span>
+
+                        <span class="inline-flex items-center gap-1.5 shrink-0">
+                            <input
+                                type="checkbox"
+                                name="qris_lunas"
+                                id="qris-lunas"
+                                value="1"
+                                class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            >
+                            <span class="text-[10px] font-semibold text-gray-600">
+                                Lunas
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Debit -->
+                <div id="bagian-pembayaran-debit" class="hidden rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2">
+                    <label class="flex items-center justify-between gap-3 cursor-pointer">
+                        <span class="flex items-center gap-2 min-w-0">
+                            <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white text-blue-600 border border-blue-100">
+                                <x-heroicon-o-credit-card class="w-3.5 h-3.5" />
+                            </span>
+
+                            <span>
+                                <span class="block text-[10px] font-semibold text-gray-700">
+                                    Debit
+                                </span>
+                                <span class="block text-[9px] text-gray-400">
+                                    Konfirmasi pembayaran sudah sukses
+                                </span>
+                            </span>
+                        </span>
+
+                        <span class="inline-flex items-center gap-1.5 shrink-0">
+                            <input
+                                type="checkbox"
+                                name="debit_lunas"
+                                id="debit-lunas"
+                                value="1"
+                                class="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            >
+                            <span class="text-[10px] font-semibold text-gray-600">
+                                Lunas
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+
+                <!-- PIUTANG -->
+                <div
+                    id="info-pembayaran-piutang"
+                    class="hidden bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-700"
+                >
+                    Transaksi akan dicatat sebagai
+                    <strong>Piutang</strong>.
                     Pembayaran dapat dilakukan kemudian melalui halaman Pelanggan/Member.
                 </div>
 
-                <div id="baris-kembalian" class="flex justify-between items-center text-xs">
-                    <span id="label-kembalian" class="font-semibold text-gray-500">Kembalian:</span>
-                    <strong id="display-kembalian" class="text-xs text-gray-400">Masukkan jumlah pembayaran</strong>
+
+                <!-- KEMBALIAN -->
+                <div
+                    id="baris-kembalian"
+                    class="flex justify-between items-center text-xs"
+                >
+                    <span
+                        id="label-kembalian"
+                        class="font-semibold text-gray-500"
+                    >
+                        Kembalian:
+                    </span>
+
+                    <strong
+                        id="display-kembalian"
+                        class="text-xs text-gray-400"
+                    >
+                        Masukkan jumlah pembayaran
+                    </strong>
                 </div>
+
             </div>
 
-            <button type="submit" class="btn-primary w-full py-2.5 text-center uppercase tracking-wider">
+
+            <!-- ================================================= -->
+            <!-- SIMPAN -->
+            <!-- ================================================= -->
+            <button
+                type="submit"
+                class="btn-primary w-full py-2.5 text-center text-xs uppercase tracking-wider"
+            >
                 Simpan Transaksi
             </button>
+
         </form>
+
     </div>
+
 </div>
 
 <!-- Modal Daftar Member Baru (Phase A Restructured) -->
@@ -152,6 +445,28 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5">Nomor HP</label>
                 <input type="text" id="member-telepon" class="form-input">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                    Jenis Member
+                </label>
+
+                <select
+                    id="member-status"
+                    required
+                    class="form-input"
+                >
+                    <option value="">Pilih jenis member...</option>
+                    <option value="Member Pelanggan Tetap">
+                        Member Pelanggan Tetap
+                    </option>
+                    <option value="Member Keluarga Nakes">
+                        Member Keluarga Nakes
+                    </option>
+                    <option value="Member Only">
+                        Member Only
+                    </option>
+                </select>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" id="btn-cancel-member" class="btn-secondary">Batal</button>
@@ -193,6 +508,7 @@ const btnCancelMember = document.getElementById('btn-cancel-member');
 const formDaftarMember = document.getElementById('form-daftar-member');
 const memberNamaInput = document.getElementById('member-nama');
 const memberTeleponInput = document.getElementById('member-telepon');
+const memberStatusInput = document.getElementById('member-status');
 const memberError = document.getElementById('member-error');
 
 let cart = {}; // { barang_id: { nama, harga, stok, jumlah } }
@@ -206,7 +522,7 @@ function renderDaftarBarang(filter = '') {
     const hasil = barangs.filter(b => b.nama.toLowerCase().includes(filter.toLowerCase()));
     daftarBarang.innerHTML = hasil.map(b => `
         <button type="button" data-id="${b.id}"
-            class="btn-pilih-barang w-full text-left border border-gray-150 rounded-lg px-3.5 py-2.5 text-xs hover:bg-blue-50 flex justify-between items-center transition-colors">
+            class="btn-pilih-barang w-full text-left border border-gray-150 rounded-lg px-2.5 py-2 text-[11px] hover:bg-blue-50 flex justify-between items-center transition-colors">
             <span>
                 ${b.nama}
                 ${b.butuh_resep ? '<span class="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-1">Resep</span>' : ''}
@@ -273,6 +589,10 @@ let currentTotal = 0;
 const metodePembayaran = document.getElementById('metode-pembayaran');
 const bagianPembayaranCash = document.getElementById('bagian-pembayaran-cash');
 const infoPembayaranPiutang = document.getElementById('info-pembayaran-piutang');
+const bagianPembayaranQris = document.getElementById('bagian-pembayaran-qris');
+const bagianPembayaranDebit = document.getElementById('bagian-pembayaran-debit');
+const qrisLunas = document.getElementById('qris-lunas');
+const debitLunas = document.getElementById('debit-lunas');
 const inputBayar = document.getElementById('input-bayar');
 const barisKembalian = document.getElementById('baris-kembalian');
 const displayKembalian = document.getElementById('display-kembalian');
@@ -300,8 +620,13 @@ function updateMetodePembayaran() {
     }
 
     bagianPembayaranCash.classList.toggle('hidden', metode !== 'cash');
+    bagianPembayaranQris.classList.toggle('hidden', metode !== 'qris');
+    bagianPembayaranDebit.classList.toggle('hidden', metode !== 'debit');
     infoPembayaranPiutang.classList.toggle('hidden', metode !== 'piutang');
     barisKembalian.classList.toggle('hidden', metode !== 'cash');
+
+    if (metode !== 'qris' && qrisLunas) qrisLunas.checked = false;
+    if (metode !== 'debit' && debitLunas) debitLunas.checked = false;
 
     if (metode === 'cash') {
         hitungKembalian();
@@ -501,10 +826,18 @@ formDaftarMember.addEventListener('submit', (e) => {
 
     const nama = memberNamaInput.value.trim();
     const telepon = memberTeleponInput.value.trim();
+    const statusMember = memberStatusInput.value;
+
+    if (!statusMember) {
+        memberError.classList.remove('hidden');
+        memberError.textContent = 'Silakan pilih jenis member.';
+        return;
+    }
 
     axios.post('{{ route("pelanggan.register-member") }}', {
         nama: nama,
-        telepon: telepon
+        telepon: telepon,
+        status_member: statusMember
     })
     .then(response => {
         if (response.data.success) {

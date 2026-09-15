@@ -105,9 +105,8 @@
     <div class="overflow-x-auto">
         <table class="customer-table table-custom min-w-[80rem] w-full table-fixed">
             <colgroup>
-                <col style="width: 180px;">
+                <col style="width: 210px;">
                 <col style="width: 120px;">
-                <col style="width: 150px;">
                 <col style="width: 130px;">
                 <col style="width: 190px;">
                 <col style="width: 130px;">
@@ -118,10 +117,9 @@
                 <tr>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Aksi</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">ID Pelanggan</th>
-                    <th scope="col" class="px-1 py-3 text-left align-middle">Nama</th>
-                    <th scope="col" class="px-1 py-3 text-left align-middle whitespace-nowrap">No HP</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Nama & No Telp</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle">Status Member</th>
-                    <th scope="col" class="px-1 py-3 text-center align-middle">Piutang</th>
+                    <th scope="col" class="px-1 py-3 text-center align-middle">Status Piutang</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Diskon</th>
                     <th scope="col" class="px-1 py-3 text-center align-middle whitespace-nowrap">Total Belanja</th>
                 </tr>
@@ -130,18 +128,47 @@
                 @forelse ($pelanggans as $pelanggan)
                     <tr class="customer-data-row">
                         <td class="px-1 py-3 align-middle text-center whitespace-nowrap">
-                            <div class="flex items-center justify-center gap-1" style="padding: 0; margin: 0;">
-                                <a href="{{ route('pelanggan.show', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500" style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Detail" aria-label="Detail">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
+                            <div class="flex items-center justify-center gap-1.5 flex-nowrap" style="padding: 0; margin: 0;">
+                                <button
+                                    type="button"
+                                    onclick="openDetailModal({{ $pelanggan->id }})"
+                                    class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-blue-500"
+                                    style="color: #2563EB; padding: 0; min-width: 28px; width: 28px; height: 28px;"
+                                    title="Detail"
+                                    aria-label="Detail"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-[10px] w-[10px]"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                        style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
                                         <circle cx="12" cy="12" r="2.5"/>
                                     </svg>
-                                </a>
-                                <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-yellow-500" style="color: #F59E0B; padding: 0; min-width: 28px; width: 28px; height: 28px;" title="Edit" aria-label="Edit">
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn-edit-pelanggan inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white transition hover:border-yellow-500"
+                                    style="color: #F59E0B; padding: 0; min-width: 28px; width: 28px; height: 28px;"
+                                    title="Edit"
+                                    aria-label="Edit"
+                                    data-id="{{ $pelanggan->id }}"
+                                    data-nama="{{ $pelanggan->nama }}"
+                                    data-telepon="{{ $pelanggan->telepon }}"
+                                    data-alamat="{{ $pelanggan->alamat }}"
+                                    data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
+                                    data-status_member="{{ $pelanggan->status_member }}"
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-[10px] w-[10px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="width: 10px; height: 10px; flex-shrink: 0; display: block;">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M18.5 2.5a2.121 2.121 0 1 1 3 3L7.5 18.5l-4 1 1-4L18.5 2.5Z"/>
                                     </svg>
-                                </a>
+                                </button>
 
                                 <button
                                     type="button"
@@ -184,8 +211,15 @@
                             </div>
                         </td>
                         <td class="px-1 py-3 align-middle font-mono text-center text-gray-600 whitespace-nowrap">{{ $pelanggan->member_id ?? '-' }}</td>
-                        <td class="px-1 py-3 align-middle font-medium text-left text-gray-800">{{ $pelanggan->nama }}</td>
-                        <td class="px-1 py-3 align-middle text-left text-gray-600 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</td>
+                        <td class="px-1 py-3 align-middle text-center">
+                            <div class="font-medium text-gray-800">
+                                {{ $pelanggan->nama }}
+                            </div>
+
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                {{ $pelanggan->telepon ?? '-' }}
+                            </div>
+                        </td>
                         <td class="px-1 py-3 align-middle text-center">
                            @php
                                 $statusMember = trim((string) $pelanggan->status_member);
@@ -246,7 +280,7 @@
                                 </span> 
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                       <td class="px-1 py-3 align-middle text-center">
                             @if(($pelanggan->saldo_piutang ?? 0) > 0)
                                 <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                                     Belum Lunas
@@ -273,7 +307,8 @@
                                         request()->filled('cari') ||
                                         request()->filled('tanggal_awal') ||
                                         request()->filled('tanggal_akhir') ||
-                                        $status !== 'semua'
+                                        $status !== 'semua' ||
+                                        $statusPiutang !== 'semua'
                                     )
                                         Pelanggan Tidak Ditemukan
                                     @else
@@ -298,7 +333,7 @@
 
 <div class="mt-4">{{ $pelanggans->links() }}</div>
 
-<!-- Modal Tambah / Edit Pelanggan -->
+<!-- Modal Tambah Pelanggan -->
 <x-modal-form
     id="modal-pelanggan"
     create-title="Tambah Pelanggan / Member"
@@ -306,7 +341,7 @@
     create-url="{{ route('pelanggan.store') }}"
     update-base="{{ url('pelanggan') }}"
     create-btn="#btn-tambah-pelanggan"
-    edit-btn=".btn-edit-pelanggan"
+    edit-btn=""
     width="max-w-md">
     <div>
         <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Pelanggan <span class="text-red-500">*</span></label>
@@ -328,30 +363,607 @@
         <input type="date" name="tanggal_lahir" class="form-input">
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="tanggal_lahir"></p>
     </div>
-
     <div id="status-member-field">
-    <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">
-        Status Member <span class="text-red-500">*</span>
-    </label>
-    <select name="status_member" required class="form-input">
-        <option value="">Pilih status member</option>
-        <option value="Member Pelanggan Tetap">
-            Member Pelanggan Tetap
-        </option>
-        <option value="Member Keluarga Nakes">
-            Member Keluarga Nakes
-        </option>
-        <option value="Member Only">
-            Member Only
-        </option>
-    </select>
-
-    <p
-        class="modal-field-error text-red-600 text-xs mt-1 hidden"
-        data-error-for="status_member">
-    </p>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Status Member <span class="text-red-500">*</span></label>
+        <select name="status_member" required class="form-input">
+            <option value="">Pilih status member</option>
+            <option value="Member Pelanggan Tetap">Member Pelanggan Tetap</option>
+            <option value="Member Keluarga Nakes">Member Keluarga Nakes</option>
+            <option value="Member Only">Member Only</option>
+        </select>
+        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="status_member"></p>
     </div>
 </x-modal-form>
+
+<!-- Modal Edit Pelanggan / Member -->
+<div id="modal-edit-pelanggan"
+    class="modal-backdrop-custom hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+
+    <div class="modal-container-custom w-full mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden" style="max-width: 560px;">
+
+        <!-- HEADER - mengikuti gaya Detail -->
+        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
+            <div class="flex items-start gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <x-heroicon-o-pencil-square class="w-5 h-5" />
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800">Edit Pelanggan / Member</h3>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                id="close-edit-pelanggan"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+                title="Tutup"
+                aria-label="Tutup"
+            >
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="overflow-y-auto max-h-[calc(92vh-132px)]">
+            <form id="form-edit-pelanggan" novalidate>
+                @csrf
+                <input type="hidden" name="_method" value="PUT">
+
+                <div class="px-5 py-5">
+                    <div id="edit-pelanggan-error" class="hidden mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700"></div>
+
+                    <!-- Informasi editable dibuat seperti format Detail: icon + label + value/input -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+
+                        <!-- Nama -->
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                                <x-heroicon-o-user class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label>
+                                <input type="text" name="nama" required class="form-input w-full" placeholder="Masukkan nama pelanggan">
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="nama"></p>
+                            </div>
+                        </div>
+
+                        <!-- No Telp -->
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                                <x-heroicon-o-phone class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">No. Telp <span class="text-red-500">*</span></label>
+                                <input type="text" name="telepon" required class="form-input w-full" placeholder="Contoh: 08123456789">
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="telepon"></p>
+                            </div>
+                        </div>
+
+                        <!-- Alamat -->
+                        <div class="flex items-start gap-3 min-w-0 md:col-span-2">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                                <x-heroicon-o-map-pin class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Alamat <span class="text-red-500">*</span></label>
+                                <textarea name="alamat" required class="form-input w-full" rows="2" placeholder="Masukkan alamat pelanggan"></textarea>
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="alamat"></p>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Lahir -->
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                                <x-heroicon-o-calendar-days class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Tanggal Lahir</label>
+                                <input type="date" name="tanggal_lahir" class="form-input w-full">
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="tanggal_lahir"></p>
+                            </div>
+                        </div>
+
+                        <!-- Status Member -->
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                <x-heroicon-o-identification class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Status Member <span class="text-red-500">*</span></label>
+                                <select name="status_member" required class="form-input w-full">
+                                    <option value="">Pilih status member</option>
+                                    <option value="Member Pelanggan Tetap">Member Pelanggan Tetap</option>
+                                    <option value="Member Keluarga Nakes">Member Keluarga Nakes</option>
+                                    <option value="Member Only">Member Only</option>
+                                </select>
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="status_member"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="flex justify-end items-center gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50">
+            <button
+                type="button"
+                id="cancel-edit-pelanggan"
+                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+            >
+                Batal
+            </button>
+            <button
+                type="button"
+                id="save-edit-pelanggan"
+                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+                Simpan Perubahan
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const modal = document.getElementById('modal-edit-pelanggan');
+    const form = document.getElementById('form-edit-pelanggan');
+    const errorBox = document.getElementById('edit-pelanggan-error');
+    const saveBtn = document.getElementById('save-edit-pelanggan');
+    const editButtons = document.querySelectorAll('.btn-edit-pelanggan');
+
+    if (!modal || !form) return;
+
+    function clearEditErrors() {
+        errorBox.classList.add('hidden');
+        errorBox.textContent = '';
+        form.querySelectorAll('.edit-field-error').forEach(function (el) {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        form.querySelectorAll('.form-input, select, textarea').forEach(function (el) {
+            el.classList.remove('border-red-500');
+        });
+    }
+
+    function showEditErrors(errors) {
+        Object.keys(errors || {}).forEach(function (field) {
+            const el = form.querySelector('[data-error-for="' + field + '"]');
+            const input = form.querySelector('[name="' + field + '"]');
+            if (el) {
+                el.textContent = (errors[field] || []).join(' ');
+                el.classList.remove('hidden');
+            }
+            if (input) input.classList.add('border-red-500');
+        });
+    }
+
+    function openEditModal(button) {
+        clearEditErrors();
+        form.reset();
+
+        form.elements.nama.value = button.dataset.nama || '';
+        form.elements.telepon.value = button.dataset.telepon || '';
+        form.elements.alamat.value = button.dataset.alamat || '';
+        form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
+        form.elements.status_member.value = button.dataset.status_member || '';
+        form.dataset.id = button.dataset.id || '';
+
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeEditModal() {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    editButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            openEditModal(this);
+        });
+    });
+
+    document.getElementById('close-edit-pelanggan')?.addEventListener('click', closeEditModal);
+    document.getElementById('cancel-edit-pelanggan')?.addEventListener('click', closeEditModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeEditModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeEditModal();
+        }
+    });
+
+    saveBtn.addEventListener('click', function () {
+        clearEditErrors();
+
+        const id = form.dataset.id;
+        if (!id) return;
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Menyimpan...';
+
+        const formData = new FormData(form);
+        const url = '{{ url('pelanggan') }}/' + id;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(function (response) {
+            return response.json().then(function (body) {
+                return { status: response.status, body: body };
+            });
+        })
+        .then(function (result) {
+            if (result.status === 422) {
+                showEditErrors(result.body.errors || {});
+                if (result.body.message) {
+                    errorBox.textContent = result.body.message;
+                    errorBox.classList.remove('hidden');
+                }
+                return;
+            }
+
+            if (result.status >= 200 && result.status < 300) {
+                closeEditModal();
+                window.location.reload();
+                return;
+            }
+
+            errorBox.textContent = result.body.message || 'Terjadi kesalahan saat menyimpan perubahan.';
+            errorBox.classList.remove('hidden');
+        })
+        .catch(function () {
+            errorBox.textContent = 'Gagal menghubungi server.';
+            errorBox.classList.remove('hidden');
+        })
+        .finally(function () {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Simpan Perubahan';
+        });
+    });
+})();
+</script>
+
+<!-- Modal Detail Pelanggan -->
+<div id="modal-detail-pelanggan"
+    class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
+
+    <div class="modal-container-custom w-full max-w-3xl mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden">
+
+        <!-- HEADER -->
+        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
+            <div class="flex items-start gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <x-heroicon-o-user class="w-5 h-5" />
+                </div>
+
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800">
+                        Detail Pelanggan / Member
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Informasi lengkap pelanggan dan riwayat transaksi.
+                    </p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                onclick="closeDetailModal()"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+                title="Tutup"
+                aria-label="Tutup"
+            >
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="overflow-y-auto max-h-[calc(92vh-128px)]">
+
+            <!-- INFORMASI PELANGGAN + RINGKASAN -->
+            <div class="grid grid-cols-1 gap-5 px-5 py-5 md:grid-cols-2">
+
+                <!-- KIRI -->
+                <div class="space-y-4">
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <x-heroicon-o-user class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">Nama</div>
+                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-gray-800 break-words">-</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <x-heroicon-o-identification class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">ID Pelanggan</div>
+                            <div id="detail-member-id" class="mt-0.5 text-sm font-mono font-semibold text-blue-600 break-words">-</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <x-heroicon-o-phone class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">No. Telp</div>
+                            <div id="detail-telepon" class="mt-0.5 text-sm font-semibold text-gray-800 break-words">-</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <x-heroicon-o-map-pin class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">Alamat</div>
+                            <div id="detail-alamat" class="mt-0.5 text-sm font-semibold text-gray-800 break-words whitespace-pre-line">Memuat...</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- KANAN -->
+                <div class="space-y-3">
+
+                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-shopping-cart class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-medium text-gray-500">Total Belanja</div>
+                                <div id="detail-total-belanja" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-medium text-gray-500">Total Piutang</div>
+                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-tag class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <div class="text-[10px] font-medium text-gray-500">Total Diskon</div>
+                                <div id="detail-total-diskon" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIWAYAT TRANSAKSI -->
+            <div class="border-t border-gray-100 px-5 py-4">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800">Riwayat Transaksi</h4>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            Daftar transaksi pelanggan.
+                        </p>
+                    </div>
+
+                    <span id="detail-jumlah-transaksi" class="text-[10px] text-blue-600 whitespace-nowrap">
+                        0 transaksi
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border-2 border-gray-300">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-blue-50">
+                            <tr class="border-b border-gray-200">
+                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+                                    Tanggal
+                                </th>
+                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+                                    No. Faktur
+                                </th>
+                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+                                    Metode
+                                </th>
+                                <th class="px-3 py-2 text-right font-semibold text-gray-800 whitespace-nowrap">
+                                    Total
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="detail-riwayat-body">
+                            <tr>
+                                <td colspan="4" class="px-3 py-6 text-center text-gray-400">
+                                    Memuat riwayat transaksi...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="flex justify-end items-center px-5 py-3 border-t border-gray-100 bg-gray-50">
+            <button
+                type="button"
+                onclick="closeDetailModal()"
+                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+            >
+                Tutup
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function formatDetailRupiah(angka) {
+    return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
+}
+
+function formatDetailTanggal(tanggal) {
+    if (!tanggal) return '-';
+
+    const parts = String(tanggal).split('-');
+
+    if (parts.length !== 3) {
+        return tanggal;
+    }
+
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
+
+function labelMetodePembayaran(metode) {
+    const labels = {
+        cash: 'Cash',
+        qris: 'QRIS',
+        debit: 'Debit',
+        piutang: 'Piutang'
+    };
+
+    return labels[String(metode || '').toLowerCase()] || (metode || '-');
+}
+
+function openDetailModal(pelangganId) {
+    const modal = document.getElementById('modal-detail-pelanggan');
+    const historyBody = document.getElementById('detail-riwayat-body');
+
+    document.getElementById('detail-nama').textContent = '-';
+    document.getElementById('detail-member-id').textContent = '-';
+    document.getElementById('detail-telepon').textContent = '-';
+    document.getElementById('detail-alamat').textContent = 'Memuat...';
+    document.getElementById('detail-total-belanja').textContent = 'Rp 0';
+    document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
+    document.getElementById('detail-total-diskon').textContent = 'Rp 0';
+    document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
+
+    historyBody.innerHTML = `
+        <tr>
+            <td colspan="4" class="px-3 py-6 text-center text-gray-400">
+                Memuat riwayat transaksi...
+            </td>
+        </tr>
+    `;
+
+    modal.classList.remove('hidden');
+
+    fetch(`{{ url('pelanggan') }}/${pelangganId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal memuat data pelanggan.');
+        }
+
+        return data;
+    })
+    .then(data => {
+        const pelanggan = data.pelanggan || {};
+        const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
+
+        document.getElementById('detail-nama').textContent = pelanggan.nama || '-';
+        document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
+        document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
+        document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
+        document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
+        document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
+        document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
+        document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
+
+        historyBody.innerHTML = '';
+
+        if (transaksi.length === 0) {
+            historyBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-3 py-6 text-center text-gray-400">
+                        Belum ada transaksi.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        transaksi.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 transition';
+
+            const tanggal = document.createElement('td');
+            tanggal.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
+            tanggal.textContent = formatDetailTanggal(item.tanggal);
+
+            const faktur = document.createElement('td');
+            faktur.className = 'px-3 py-2.5 whitespace-nowrap font-mono text-[10px] text-blue-600';
+            faktur.textContent = item.no_faktur || '-';
+
+            const metode = document.createElement('td');
+            metode.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
+            metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
+
+            const total = document.createElement('td');
+            total.className = 'px-3 py-2.5 whitespace-nowrap text-right font-semibold text-gray-800';
+            total.textContent = formatDetailRupiah(item.total);
+
+            row.appendChild(tanggal);
+            row.appendChild(faktur);
+            row.appendChild(metode);
+            row.appendChild(total);
+
+            historyBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error(error);
+
+        document.getElementById('detail-alamat').textContent = 'Gagal memuat data';
+
+        historyBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="px-3 py-6 text-center text-red-500">
+                    Riwayat transaksi gagal dimuat.
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('modal-detail-pelanggan');
+
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+</script>
 
 <!-- Modal Kartu Member -->
 <div id="modal-card" class="modal-backdrop-custom hidden">
@@ -982,11 +1594,16 @@ if (btnSimpanPembayaranPiutang) {
 
             return data;
         })
-        .then(data => {
+       .then(data => {
             alert(data.message || 'Pembayaran piutang berhasil disimpan.');
 
-            // Muat ulang detail invoice agar total dibayar,
-            // sisa piutang, dan riwayat langsung berubah.
+            if (Number(data.sisa_piutang || 0) <= 0) {
+                window.location.reload();
+                return;
+            }
+
+            // Jika masih ada sisa piutang,
+            // cukup muat ulang detail invoice.
             piutangInvoiceSelect.dispatchEvent(new Event('change'));
         })
         .catch(error => {
