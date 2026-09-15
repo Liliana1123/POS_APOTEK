@@ -142,17 +142,7 @@
 
 <!-- Stats Grid (Top KPIs) -->
 <div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
-    <!-- Card 1: Total Members -->
-    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
-        <div>
-            <span class="text-caption font-semibold uppercase tracking-wider block">Total Member</span>
-            <span class="dashboard-kpi-value font-bold text-gray-800 block mt-1.5">{{ number_format($totalMembers) }}</span>
-            <span class="text-caption block mt-1">+{{ $newMembersThisMonth }} baru bulan ini</span>
-        </div>
-        <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
-            <x-heroicon-o-user-group class="w-5 h-5" />
-        </div>
-    </div>
+    
 
     <!-- Card 4: Total Gross Sales -->
     <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
@@ -188,6 +178,18 @@
         </div>
         <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
             <x-heroicon-o-calculator class="w-5 h-5" />
+        </div>
+    </div>
+
+    <!-- Card 1: Total Members -->
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Total Member</span>
+            <span class="dashboard-kpi-value font-bold text-gray-800 block mt-1.5">{{ number_format($totalMembers) }}</span>
+            <span class="text-caption block mt-1">+{{ $newMembersThisMonth }} baru bulan ini</span>
+        </div>
+        <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
+            <x-heroicon-o-user-group class="w-5 h-5" />
         </div>
     </div>
 
