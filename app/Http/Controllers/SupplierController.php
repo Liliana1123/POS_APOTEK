@@ -11,13 +11,15 @@ class SupplierController extends Controller
     {
         $query = Supplier::query();
         if ($request->filled('cari')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->cari . '%')
-                  ->orWhere('telepon', 'like', '%' . $request->cari . '%')
-                  ->orWhere('alamat', 'like', '%' . $request->cari . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama', 'like', '%'.$request->cari.'%')
+                    ->orWhere('telepon', 'like', '%'.$request->cari.'%')
+                    ->orWhere('alamat', 'like', '%'.$request->cari.'%')
+                    ->orWhere('pic', 'like', '%'.$request->cari.'%');
             });
         }
         $suppliers = $query->orderBy('id')->paginate(15)->withQueryString();
+
         return view('supplier.index', compact('suppliers'));
     }
 
@@ -32,6 +34,7 @@ class SupplierController extends Controller
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
             'alamat' => 'nullable|string',
+            'pic' => 'nullable|string|max:255',
         ]);
 
         Supplier::create($data);
@@ -54,6 +57,7 @@ class SupplierController extends Controller
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
             'alamat' => 'nullable|string',
+            'pic' => 'nullable|string|max:255',
         ]);
 
         $supplier->update($data);

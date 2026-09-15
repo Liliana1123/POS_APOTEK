@@ -36,7 +36,6 @@ class PabrikTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Kimia Farma');
         $response->assertSee('021-3847722');
-        $response->assertSee('apt. Budi Santoso, S.Farm');
         $response->assertSee('Kalbe Farma');
     }
 
@@ -46,14 +45,12 @@ class PabrikTest extends TestCase
             'nama' => 'Pabrik Uji Coba',
             'telepon' => '021-99887766',
             'alamat' => 'Jl. Pengujian No. 123',
-            'pic' => 'apt. Tester, S.Farm',
         ]);
 
         $response->assertRedirect(route('pabrik.index'));
         $this->assertDatabaseHas('pabriks', [
             'nama' => 'Pabrik Uji Coba',
             'telepon' => '021-99887766',
-            'pic' => 'apt. Tester, S.Farm',
         ]);
     }
 }

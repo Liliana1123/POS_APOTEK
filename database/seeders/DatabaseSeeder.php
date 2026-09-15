@@ -42,5 +42,8 @@ class DatabaseSeeder extends Seeder
 
         // Data pabrik farmasi
         $this->call(PabrikSeeder::class);
+
+        // Data supplier / distributor farmasi
+        $this->call(SupplierSeeder::class);
     }
 }

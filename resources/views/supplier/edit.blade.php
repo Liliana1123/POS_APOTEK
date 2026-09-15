@@ -29,6 +29,12 @@
             @error('alamat') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">PIC (Person In Charge)</label>
+            <input type="text" name="pic" value="{{ old('pic', $supplier->pic) }}" class="form-input">
+            @error('pic') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+        </div>
+
         <div class="flex gap-2 pt-2 border-t border-gray-100">
             <button type="submit" class="btn-primary">Simpan Perubahan</button>
             <a href="{{ route('supplier.index') }}" class="btn-secondary">Batal</a>

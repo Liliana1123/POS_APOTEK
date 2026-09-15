@@ -48,7 +48,6 @@
                     <th scope="col">Nama Pabrik</th>
                     <th scope="col" class="w-40">Telepon</th>
                     <th scope="col">Alamat</th>
-                    <th scope="col" class="w-40">PIC</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
@@ -61,7 +60,7 @@
                                     style="color: #F59E0B;"
                                     title="Edit"
                                     data-id="{{ $pabrik->id }}"
-                                    data-json="{{ json_encode(['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat, 'pic' => $pabrik->pic], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                                    data-json="{{ json_encode(['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </button>
                                 <form action="{{ route('pabrik.destroy', $pabrik) }}" method="POST">
@@ -82,11 +81,10 @@
                         <td class="font-medium text-gray-800">{{ $pabrik->nama }}</td>
                         <td class="text-gray-600">{{ $pabrik->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $pabrik->alamat }}">{{ $pabrik->alamat ?? '—' }}</td>
-                        <td class="text-gray-600">{{ $pabrik->pic ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-0">
+                        <td colspan="5" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->filled('cari'))
@@ -135,11 +133,6 @@
         <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Alamat</label>
         <textarea name="alamat" rows="3" class="form-input" placeholder="Alamat lengkap pabrik..."></textarea>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="alamat"></p>
-    </div>
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">PIC (Person In Charge)</label>
-        <input type="text" name="pic" class="form-input" placeholder="Nama penanggung jawab pabrik...">
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="pic"></p>
     </div>
 </x-modal-form>
 @endsection

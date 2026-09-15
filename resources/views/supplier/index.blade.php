@@ -43,6 +43,7 @@
                     <th scope="col">Nama Supplier</th>
                     <th scope="col" class="w-44">Telepon</th>
                     <th scope="col">Alamat</th>
+                    <th scope="col" class="w-40">PIC</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
@@ -50,7 +51,7 @@
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
                             <div class="flex items-center justify-start gap-1">
-                                <button type="button" class="btn-secondary !p-1.5 btn-edit-supplier" style="color: #F59E0B;" title="Edit" data-id="{{ $supplier->id }}" data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                                <button type="button" class="btn-secondary !p-1.5 btn-edit-supplier" style="color: #F59E0B;" title="Edit" data-id="{{ $supplier->id }}" data-json="{{ json_encode(['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </button>
                                 <form action="{{ route('supplier.destroy', $supplier) }}" method="POST">
@@ -66,10 +67,11 @@
                         <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
                         <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '—' }}</td>
+                        <td class="text-gray-600">{{ $supplier->pic ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="p-0">
+                        <td colspan="6" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->filled('cari'))
@@ -118,6 +120,11 @@
         <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Alamat</label>
         <textarea name="alamat" rows="3" class="form-input" placeholder="Alamat lengkap supplier..."></textarea>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="alamat"></p>
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">PIC (Person In Charge)</label>
+        <input type="text" name="pic" class="form-input" placeholder="Nama penanggung jawab supplier...">
+        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="pic"></p>
     </div>
 </x-modal-form>
 @endsection
