@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\Kategori;
 use App\Models\DetailPenerimaan;
 use App\Models\DetailPenjualan;
 use App\Models\Rusak;
@@ -13,17 +14,124 @@ class LaporanController extends Controller
     // Laporan stok: total stok per barang + alert stok menipis & mendekati expired
     public function stok(Request $request)
     {
+        $kategoris = Kategori::orderBy('nama')->get();
         $barangs = Barang::with('kategori')
             ->withSum(['detailPenerimaan' => function ($query) {
                 $query->where('aktif', true);
             }], 'stok')
             ->where('aktif', true)
+            ->when($request->filled('nama'), function ($query) use ($request) {
+                $query->where('nama', 'like', '%' . $request->nama . '%');
+            })
+            ->when($request->filled('kategori_id'), function ($query) use ($request) {
+                $query->where('kategori_id', $request->kategori_id);
+            })
+
+            ->when($request->filled('status_stok'), function ($query) use ($request) {
+                if ($request->status_stok === 'habis') {
+                    $query->whereDoesntHave('detailPenerimaan', function ($q) {
+                        $q->where('aktif', true)
+                        ->where('stok', '>', 0);
+                    });
+                }
+
+                if ($request->status_stok === 'menipis') {
+                    $query->whereHas('detailPenerimaan', function ($q) {
+                        $q->where('aktif', true);
+                    })
+                    ->whereRaw(
+                        '(SELECT COALESCE(SUM(dp.stok), 0)
+                        FROM detail_penerimaans dp
+                        WHERE dp.barang_id = barangs.id
+                        AND dp.aktif = 1
+                        AND dp.deleted_at IS NULL) > 0'
+                    )
+                    ->whereRaw(
+                        '(SELECT COALESCE(SUM(dp.stok), 0)
+                        FROM detail_penerimaans dp
+                        WHERE dp.barang_id = barangs.id
+                        AND dp.aktif = 1
+                        AND dp.deleted_at IS NULL) <= stok_minimum'
+                    );
+                }
+
+                if ($request->status_stok === 'aman') {
+                    $query->whereRaw(
+                        '(SELECT COALESCE(SUM(dp.stok), 0)
+                        FROM detail_penerimaans dp
+                        WHERE dp.barang_id = barangs.id
+                        AND dp.aktif = 1
+                        AND dp.deleted_at IS NULL) > stok_minimum'
+                    );
+                }
+            })
+
             ->orderBy('nama')
             ->get();
 
         $stokPerBatch = DetailPenerimaan::with(['barang.kategori'])
-            ->where('aktif', true)
-            ->where('stok', '>', 0)
+            ->when($request->status_stok !== 'habis', function ($query) {
+                $query->where('aktif', true)
+                    ->where('stok', '>', 0);
+            })
+            ->when($request->filled('nama'), function ($query) use ($request) {
+                $query->whereHas('barang', function ($q) use ($request) {
+                    $q->where('nama', 'like', '%' . $request->nama . '%');
+                });
+            })
+
+            ->when($request->filled('kategori_id'), function ($query) use ($request) {
+                $query->whereHas('barang', function ($q) use ($request) {
+                    $q->where('kategori_id', $request->kategori_id);
+                });
+            })
+
+            ->when($request->filled('status_stok'), function ($query) use ($request) {
+
+                if ($request->status_stok === 'habis') {
+                    $query->where('stok', 0);
+                }
+
+                if ($request->status_stok === 'menipis') {
+                    $query->where('stok', '>', 0)
+                        ->whereHas('barang', function ($q) {
+                            $q->whereColumn('detail_penerimaans.stok', '<=', 'stok_minimum');
+                        });
+                }
+
+                if ($request->status_stok === 'aman') {
+                    $query->whereHas('barang', function ($q) {
+                        $q->whereColumn('detail_penerimaans.stok', '>', 'stok_minimum');
+                    });
+                }
+            })
+
+            ->when($request->filled('status_expired'), function ($query) use ($request) {
+                $today = now()->startOfDay();
+
+                if ($request->status_expired === 'kadaluarsa') {
+                    $query->whereDate('expired_date', '<=', $today);
+                }
+
+                if ($request->status_expired === '1_bulan') {
+                    $query->whereDate('expired_date', '>', $today)
+                        ->whereDate('expired_date', '<=', $today->copy()->addMonth());
+                }
+
+                if ($request->status_expired === '3_bulan') {
+                    $query->whereDate('expired_date', '>', $today->copy()->addMonth())
+                        ->whereDate('expired_date', '<=', $today->copy()->addMonths(3));
+                }
+
+                if ($request->status_expired === 'normal') {
+                    $query->whereDate('expired_date', '>', $today->copy()->addMonths(3));
+                }
+
+                if ($request->status_expired === 'tidak_ada') {
+                    $query->whereNull('expired_date');
+                }
+            })
+
             ->orderBy(
             Barang::select('nama')
                 ->whereColumn('barangs.id', 'detail_penerimaans.barang_id')
@@ -32,29 +140,37 @@ class LaporanController extends Controller
             ->get();    
 
         $mendekatiExpired = DetailPenerimaan::with('barang')
-            ->where('aktif', true)
-            ->where('stok', '>', 0)
+            ->when($request->filled('nama'), function ($query) use ($request) {
+                $query->whereHas('barang', function ($q) use ($request) {
+                    $q->where('nama', 'like', '%' . $request->nama . '%');
+                });
+            })
+            ->when($request->filled('kategori_id'), function ($query) use ($request) {
+                $query->whereHas('barang', function ($q) use ($request) {
+                    $q->where('kategori_id', $request->kategori_id);
+                });
+            })
             ->mendekatiExpired(90)
             ->orderBy('expired_date')
             ->get();
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status'];
-            $data = [];
-            foreach ($barangs as $b) {
-                $stok = $b->stokTotal();
-                $data[] = [
-                    $b->nama,
-                    $b->kategori->nama,
-                    $stok,
-                    $b->stok_minimum,
-                    $stok <= $b->stok_minimum ? 'Menipis' : 'Aman'
-                ];
-            }
-            return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
+            if ($request->query('export') === 'csv') {
+                $headers = ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status'];
+                $data = [];
+                foreach ($barangs as $b) {
+                    $stok = $b->stokTotal();
+                    $data[] = [
+                        $b->nama,
+                        $b->kategori->nama,
+                        $stok,
+                        $b->stok_minimum,
+                        $stok <= $b->stok_minimum ? 'Menipis' : 'Aman'
+                    ];
+                }
+                return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
         }
 
-        return view('laporan.stok', compact('barangs', 'stokPerBatch', 'mendekatiExpired'));
+        return view('laporan.stok', compact('barangs', 'stokPerBatch', 'mendekatiExpired', 'kategoris'));
     }
 
     // Laporan penerimaan barang dalam rentang tanggal

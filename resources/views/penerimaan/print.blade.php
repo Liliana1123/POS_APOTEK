@@ -239,7 +239,9 @@
         @endif
 
     </div>
-
+    
+    <h3>Rincian Pesanan Masuk</h3>
+    
     <table>
         <thead>
             <tr>
@@ -313,7 +315,7 @@
         </div>
 
         <div class="total-row">
-            <span>PPN</span>
+            <span>PPN (11%)</span>
             <span>
                 Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
             </span>
@@ -404,6 +406,61 @@
             <p>Belum ada pembayaran.</p>
 
         @endif
+
+        <div class="payment-section">
+
+            <h3>Riwayat Penerimaan</h3>
+
+            @if ($penerimaan->riwayatPenerimaan->count())
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Barang</th>
+                        <th>Jumlah</th>
+                        <th>Dicatat Oleh</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach ($penerimaan->riwayatPenerimaan as $index => $riwayat)
+
+                        <tr style="{{ $riwayat->jenis === 'pembatalan' ? 'color: #dc2626; font-weight: bold;' : '' }}">
+                            <td class="text-center">
+                                {{ $index + 1 }}
+                            </td>
+
+                            <td class="text-center">
+                                {{ $riwayat->tanggal?->format('d/m/Y') ?? '—' }}
+                            </td>
+
+                            <td>
+                                {{ $item->barang->nama ?? '—' }}
+                            </td>
+
+                            <td class="text-right">
+                                {{ number_format($riwayat->jumlah, 0, ',', '.') }}
+                            </td>
+
+                            <td>
+                                {{ $riwayat->user->name ?? '—' }}
+                            </td>
+
+                            <td>
+                                {{ $riwayat->keterangan ?? '—' }}
+                            </td>
+                        </tr>
+
+                    @endforeach
+                </tbody>
+            </table>
+
+            @endif
+
+        </div>
 
     </div>
 

@@ -115,77 +115,162 @@
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[72rem]">
+       <table class="table-custom min-w-[100rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
-                    <th scope="col">No. Faktur</th>
-                    <th scope="col">Tanggal Terima</th>
+                    <tr>
+                    <th scope="col" class="text-center">No</th>
+                    <th scope="col" class="text-center">Aksi</th>
+                    <th scope="col">No. Faktur & Tanggal Terima</th>
                     <th scope="col">Supplier</th>
-                    <th scope="col">Dicatat Oleh</th>
                     <th scope="col" class="text-center">Status Penerimaan</th>
+                    <th scope="col" class="text-right">Total Transaksi</th>
+                    <th scope="col" class="text-right">Piutang</th>
+                    <th scope="col" class="text-center">Tgl Jatuh Tempo</th>
                     <th scope="col" class="text-center">Status Pembayaran</th>
+                </tr>
                 </tr>
             </thead>
             <tbody class="table-custom-body ">
                 @forelse ($penerimaans as $index => $penerimaan)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left space-x-1.5">
-                            <div class="flex items-center justify-star gap-1">
-                                <button type="button"class="btn-secondary !p-1.5 btn-detail-penerimaan" style="color: #2563EB;" title="Lihat Detail" data-url="{{ route('penerimaan.show', $penerimaan) }}"><x-heroicon-o-eye class="w-4 h-4" /></button>
-                                <a href="{{ route('penerimaan.edit', $penerimaan) }}"
-                                    class="btn-secondary !p-1.5 btn-edit-penerimaan"
-                                    style="color: #F59E0B;"
-                                    title="Edit">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </a>
-                                @if (!$penerimaan->lunas)
-                                <button type="button"
-                                    class="btn-secondary !p-1.5 btn-payment-penerimaan" style="color: #16A34A;"
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+
+                    {{-- No --}}
+                    <td class="text-center">
+                        {{ $penerimaans->firstItem() + $index }}
+                    </td>
+
+                    {{-- Aksi --}}
+                    <td class="text-left space-x-1.5">
+                        <div class="flex items-center justify-start gap-1">
+
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-detail-penerimaan"
+                                style="color: #2563EB;"
+                                title="Lihat Detail"
+                                data-url="{{ route('penerimaan.show', $penerimaan) }}"
+                            >
+                                <x-heroicon-o-eye class="w-4 h-4" />
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-edit-penerimaan"
+                                style="color: #F59E0B;"
+                                title="Edit"
+                                data-url="{{ route('penerimaan.edit', $penerimaan) }}"
+                            >
+                                <x-heroicon-o-pencil-square class="w-4 h-4" />
+                            </button>
+
+                            @if (!$penerimaan->lunas)
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 btn-payment-penerimaan"
+                                    style="color: #16A34A;"
                                     title="Pembayaran"
-                                    data-id="{{ $penerimaan->id }}">
+                                    data-id="{{ $penerimaan->id }}"
+                                >
                                     <x-heroicon-o-banknotes class="w-4 h-4" />
-                                </button>@endif
-                                <a href="{{ route('penerimaan.print', $penerimaan) }}"
+                                </button>
+                            @endif
+
+                            @if ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 btn-susulan-penerimaan"
+                                    style="color: #7C3AED;"
+                                    title="Penerimaan Susulan"
+                                    data-id="{{ $penerimaan->id }}"
+                                >
+                                    <x-heroicon-o-arrow-path class="w-4 h-4" />
+                                </button>
+                            @endif
+
+                            <a
+                                href="{{ route('penerimaan.print', $penerimaan) }}"
+                                class="btn-secondary !p-1.5"
+                                title="Print"
+                                target="_blank"
+                            >
+                                <x-heroicon-o-printer class="w-4 h-4" />
+                            </a>
+
+                            <form
+                                action="{{ route('penerimaan.destroy', $penerimaan) }}"
+                                method="POST"
+                            >
+                                @csrf
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
                                     class="btn-secondary !p-1.5"
-                                    title="Print"
-                                    target="_blank">
-                                    <x-heroicon-o-printer class="w-4 h-4" />
-                                </a>
+                                    style="color: #DC2626;"
+                                    title="Hapus"
+                                >
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
+                            </form>
 
-                                <form action="{{ route('penerimaan.destroy', $penerimaan) }}" method="POST">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-secondary !p-1.5" style="color: #DC2626;" title="Hapus">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                        <td class="font-semibold text-gray-800 font-mono">{{ $penerimaan->no_faktur }}</td>
-                        <td class="text-gray-600">{{ $penerimaan->tanggal->format('d M Y') }}</td>
-                        <td class="font-medium text-gray-800">{{ $penerimaan->supplier->nama ?? '—' }}</td>
-                        <td class="text-gray-600">{{ $penerimaan->user->name ?? '—' }}</td>
-                        <td class="text-center">
-                            @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                                <span class="badge-success">Lengkap</span>
-                            @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
-                                <span class="badge-warning">Belum Lengkap</span>
-                            @else
-                                <span class="badge-secondary">Selesai</span>
-                            @endif
-                        </td>
+                        </div>
+                    </td>
 
-                        <td class="text-center">
-                            @if ($penerimaan->lunas)
-                                <span class="badge-success">Lunas</span>
-                            @else
-                                <span class="badge-warning">Belum Lunas</span>
-                            @endif
-                        </td>
-                    </tr>
+                    {{-- No Faktur & Tanggal Terima --}}
+                    <td>
+                        <div class="font-semibold text-gray-800 font-mono">
+                            {{ $penerimaan->no_faktur }}
+                        </div>
+                        <div class="text-sm text-gray-500 mt-0.5">
+                            {{ $penerimaan->tanggal?->format('d M Y') ?? '—' }}
+                        </div>
+                    </td>
+
+                    {{-- Supplier --}}
+                    <td class="font-medium text-gray-800">
+                        {{ $penerimaan->supplier->nama ?? '—' }}
+                    </td>
+
+                    {{-- Status Penerimaan --}}
+                    <td class="text-center">
+                        @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
+                            <span class="badge-success">Lengkap</span>
+                        @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                            <span class="badge-warning">Belum Lengkap</span>
+                        @else
+                            <span class="badge-secondary">Selesai</span>
+                        @endif
+                    </td>
+
+                    {{-- Total Transaksi --}}
+                    <td class="text-right font-medium">
+                        Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                    </td>
+
+                    {{-- Piutang --}}
+                    <td class="text-right font-medium">
+                        Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                    </td>
+
+                    {{-- Tanggal Jatuh Tempo --}}
+                    <td class="text-center text-gray-600">
+                        {{ $penerimaan->jatuh_tempo?->format('d M Y') ?? '—' }}
+                    </td>
+
+                    {{-- Status Pembayaran --}}
+                    <td class="text-center">
+                        @if ($penerimaan->lunas)
+                            <span class="badge-success">Lunas</span>
+                        @else
+                            <span class="badge-warning">Belum Lunas</span>
+                        @endif
+                    </td>
+
+                </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-0">
+                        <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
                                     @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
@@ -257,7 +342,11 @@
             </button>
         </div>
 
-        <div id="detail-penerimaan-content" class="modal-body-custom">
+        <div
+    id="detail-penerimaan-content"
+    class="modal-body-custom overflow-y-auto"
+    style="max-height: calc(100vh - 180px);"
+>
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
             </div>
@@ -296,6 +385,77 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+
+<!-- Modal Penerimaan Susulan -->
+<div
+    id="modal-susulan-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true"
+>
+    <div class="modal-container-custom max-w-6xl">
+        <div class="modal-header-custom">
+            <h3 class="text-lg font-semibold">
+                Penerimaan Susulan
+            </h3>
+
+            <button
+                type="button"
+                id="close-susulan-penerimaan"
+                class="..."
+            >
+                &times;
+            </button>
+        </div>
+
+        <div
+            id="susulan-penerimaan-content"
+            class="modal-body-custom"
+        >
+            Memuat...
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Penerimaan -->
+<div id="modal-edit-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true"
+    style="align-items: flex-start; overflow-y: auto;"
+>
+    <div
+    class="modal-container-custom max-w-7xl flex flex-col"
+    style="max-height: 90vh; margin-top: 2rem; margin-bottom: 2rem;"
+>
+        <div class="modal-header-custom">
+            <div>
+                <h2>Edit Penerimaan</h2>
+                <p class="text-caption mt-1">
+                    Ubah informasi faktur dan detail penerimaan barang.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="btn-tutup-edit"
+                class="btn-secondary !p-1.5"
+                title="Tutup"
+            >
+                ✕
+            </button>
+        </div>
+
+        <div
+    id="edit-penerimaan-content"
+    class="modal-body-custom"
+    style="overflow-y: auto; min-height: 0; flex: 1;"
+>
+            <div class="text-center py-8 text-gray-500">
+                Memuat form edit...
+            </div>
+        </div>
     </div>
 </div>
 
@@ -349,6 +509,84 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Edit Penerimaan
+    document.addEventListener('click', async function (event) {
+        const button = event.target.closest('.btn-edit-penerimaan');
+
+        if (!button) {
+            return;
+        }
+
+        const modal = document.getElementById('modal-edit-penerimaan');
+        const content = document.getElementById('edit-penerimaan-content');
+        const url = button.dataset.url;
+
+        if (!modal || !content || !url) {
+            return;
+        }
+
+        content.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                Memuat form edit...
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat form edit.');
+            }
+
+           const html = await response.text();
+
+            content.innerHTML = html;
+
+            content.querySelectorAll('script').forEach(function (oldScript) {
+                const newScript = document.createElement('script');
+
+                newScript.textContent = oldScript.textContent;
+
+                document.body.appendChild(newScript);
+
+                oldScript.remove();
+            });
+
+            if (typeof initEditPenerimaanForm === 'function') {
+                initEditPenerimaanForm();
+            }
+
+        } catch (error) {
+            content.innerHTML = `
+                <div class="text-center py-8 text-red-600">
+                    Gagal memuat form edit.
+                </div>
+            `;
+
+            console.error(error);
+        }
+    });
+
+    // Tutup modal Edit
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('#btn-tutup-edit')) {
+            const modal = document.getElementById('modal-edit-penerimaan');
+
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        }
+    });
+
     // =========================
     // MODAL PEMBAYARAN
     // =========================
@@ -385,6 +623,113 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error(error);
                 });
         });
+    });
+
+
+     // =========================
+    // MODAL SUSULAN
+    // =========================
+    const susulanModal = document.getElementById('modal-susulan-penerimaan');
+    const susulanContent = document.getElementById('susulan-penerimaan-content');
+    const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
+
+    // BUKA FORM SUSULAN
+    document.querySelectorAll('.btn-susulan-penerimaan').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const id = button.dataset.id;
+
+            susulanModal.classList.remove('hidden');
+
+            susulanContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat formulir penerimaan susulan...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/susulan-form`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal memuat formulir penerimaan susulan.');
+                    }
+
+                    return response.text();
+                })
+                .then(html => {
+                    susulanContent.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error(error);
+
+                    susulanContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            ${error.message}
+                        </div>
+                    `;
+                });
+        });
+    });
+
+    // TUTUP FORM SUSULAN
+    if (closeSusulanButton) {
+        closeSusulanButton.addEventListener('click', function () {
+            susulanModal.classList.add('hidden');
+            susulanContent.innerHTML = '';
+        });
+    }
+
+    // SIMPAN PENERIMAAN SUSULAN
+    document.addEventListener('submit', function (event) {
+        if (event.target.id !== 'form-susulan-penerimaan') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const form = event.target;
+        const button = form.querySelector('#btn-simpan-susulan');
+
+        if (!button || button.disabled) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Menyimpan...';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+            .then(async response => {
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                        data.errors?.jumlah_susulan?.[0] ||
+                        'Gagal menyimpan penerimaan susulan.'
+                    );
+                }
+
+                return data;
+            })
+            .then(data => {
+                susulanModal.classList.add('hidden');
+                susulanContent.innerHTML = '';
+
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Penerimaan susulan:', error);
+
+                alert(error.message || 'Gagal menyimpan penerimaan susulan.');
+
+                button.disabled = false;
+                button.textContent = 'Simpan Penerimaan Susulan';
+            });
     });
 
     // =========================
