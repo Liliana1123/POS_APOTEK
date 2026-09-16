@@ -2,7 +2,7 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1 class="text-xl font-bold text-gray-800">Daftar Pencatatan Barang Rusak</h1>
         <p class="text-xs text-gray-500 mt-0.5">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
@@ -14,22 +14,21 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-150 p-4 mb-6">
+<div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('rusak.index') }}" class="flex flex-col md:flex-row gap-3">
         <div class="flex-1">
             <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama barang..."
-                class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-blue-500">
+                class="form-input">
         </div>
         <div class="w-full md:w-48">
-            <input type="date" name="tanggal" value="{{ request('tanggal') }}"
-                class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-blue-500">
+            <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-input">
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-1.5 rounded-lg font-semibold shadow-sm transition-colors">
+            <button type="submit" class="btn-primary py-1.5 px-4">
                 Filter
             </button>
             @if(request()->anyFilled(['cari', 'tanggal']))
-                <a href="{{ route('rusak.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-1.5 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
             @endif
@@ -37,9 +36,10 @@
     </form>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-150 overflow-hidden">
-    <table class="w-full text-xs text-left">
-        <thead class="bg-gray-50 text-gray-600 uppercase font-semibold text-[10px] tracking-wider border-b">
+<div class="table-custom-container shadow-sm">
+    <div class="overflow-x-auto">
+    <table class="table-custom min-w-[55rem]">
+        <thead class="table-custom-header">
             <tr>
                 <th class="px-5 py-3 text-center">Aksi</th>
                 <th class="px-5 py-3">Tanggal</th>
