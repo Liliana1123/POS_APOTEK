@@ -34,13 +34,19 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['admin', 'apoteker', 'kasir'])],
         ]);
 
-        User::create([
+        $newUser = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
             'aktif' => true,
         ]);
+
+        \App\Models\ActivityLog::log(
+            'Tambah User',
+            "User: {$newUser->name} ({$newUser->email}), Role: " . ucfirst($newUser->role),
+            \App\Models\ActivityLog::CATEGORY_KEAMANAN
+        );
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'User berhasil ditambahkan.'], 201);
@@ -75,6 +81,12 @@ class UserController extends Controller
 
         $user->update($update);
 
+        \App\Models\ActivityLog::log(
+            'Update User',
+            "User: {$user->name} ({$user->email}), Role: " . ucfirst($user->role),
+            \App\Models\ActivityLog::CATEGORY_KEAMANAN
+        );
+
         if ($request->expectsJson()) {
             return response()->json(['message' => 'User berhasil diperbarui.']);
         }
@@ -91,6 +103,12 @@ class UserController extends Controller
         $user->update(['aktif' => ! $user->aktif]);
 
         $status = $user->aktif ? 'diaktifkan kembali' : 'dinonaktifkan';
+        \App\Models\ActivityLog::log(
+            'Toggle User',
+            "User: {$user->name} {$status}",
+            \App\Models\ActivityLog::CATEGORY_KEAMANAN
+        );
+
         return back()->with('success', "User {$user->name} berhasil {$status}.");
     }
 
@@ -103,6 +121,12 @@ class UserController extends Controller
         if ($user->penerimaan()->exists() || $user->penjualan()->exists()) {
             return back()->with('error', 'User punya riwayat transaksi, tidak bisa dihapus. Nonaktifkan saja.');
         }
+
+        \App\Models\ActivityLog::log(
+            'Hapus User',
+            "User: {$user->name} ({$user->email})",
+            \App\Models\ActivityLog::CATEGORY_KEAMANAN
+        );
 
         $user->delete();
 

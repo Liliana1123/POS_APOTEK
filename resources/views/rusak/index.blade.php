@@ -29,7 +29,7 @@
             </button>
             @if(request()->anyFilled(['cari', 'tanggal']))
                 <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
+                    Clear
                 </a>
             @endif
         </div>

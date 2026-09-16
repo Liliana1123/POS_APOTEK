@@ -181,7 +181,8 @@ class PelangganController extends Controller
 
                     \App\Models\ActivityLog::log(
                         'Register Member',
-                        "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}"
+                        "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}",
+                        \App\Models\ActivityLog::CATEGORY_MEMBER
                     );
 
                     $saved = true;
@@ -314,7 +315,8 @@ class PelangganController extends Controller
 
                         \App\Models\ActivityLog::log(
                             'Upgrade Member',
-                            "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}"
+                            "Member ID: {$pelanggan->member_id}, Nama: {$pelanggan->nama}",
+                            \App\Models\ActivityLog::CATEGORY_MEMBER
                         );
 
                         $saved = true;
@@ -376,7 +378,8 @@ class PelangganController extends Controller
 
                     \App\Models\ActivityLog::log(
                         'Register Member',
-                        "Member ID: {$newPelanggan->member_id}, Nama: {$newPelanggan->nama}"
+                        "Member ID: {$newPelanggan->member_id}, Nama: {$newPelanggan->nama}",
+                        \App\Models\ActivityLog::CATEGORY_MEMBER
                     );
 
                     $saved = true;

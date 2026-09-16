@@ -21,7 +21,7 @@
             <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
                 @if($isFiltered && $resetUrl)
                     <a href="{{ $resetUrl }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                        Reset
+                        Clear
                     </a>
                 @endif
                 <button type="submit" class="btn-primary flex items-center gap-2">
@@ -36,7 +36,7 @@
             </button>
             @if($resetUrl && request()->filled('cari'))
                 <a href="{{ $resetUrl }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
+                    Clear
                 </a>
             @endif
         @endif
