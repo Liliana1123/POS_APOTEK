@@ -2,7 +2,7 @@
 @section('title', 'Penjualan')
 
 @section('content')
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1 class="text-xl font-bold text-gray-800">Riwayat Penjualan</h1>
         <p class="text-xs text-gray-500 mt-0.5">Daftar rekaman seluruh transaksi kasir apotek.</p>
@@ -162,6 +162,7 @@
     @endforelse
 </tbody>
     </table>
+    </div>
 </div>
 
 <div class="mt-4">{{ $penjualans->links() }}</div>
