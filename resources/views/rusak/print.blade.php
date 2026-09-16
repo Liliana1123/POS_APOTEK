@@ -1,8 +1,15 @@
+@php
+    $apotek = \Illuminate\Support\Facades\Cache::remember(
+        'info_apotek',
+        now()->addHours(6),
+        fn () => \App\Models\InfoApotek::first()
+    );
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Bukti Barang Rusak</title>
+    <title>Bukti Barang Rusak - {{ $rusak->detailPenerimaan->barang->nama ?? '' }}</title>
 
     <style>
         body {
@@ -11,9 +18,30 @@
             margin: 30px;
         }
 
+        .header-apotek {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-apotek h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header-apotek p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: #555;
+        }
+
         h2 {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            font-size: 15px;
         }
 
         table {
@@ -45,6 +73,18 @@
 </head>
 
 <body>
+
+    <div class="header-apotek">
+        <h1>{{ $apotek?->nama_apotek ?? 'POS APOTEK' }}</h1>
+        @if($apotek?->alamat)<p>{{ $apotek->alamat }}</p>@endif
+        @if($apotek?->telepon || $apotek?->no_izin_sia)
+            <p>
+                @if($apotek?->telepon)Telp: {{ $apotek->telepon }}@endif
+                @if($apotek?->telepon && $apotek?->no_izin_sia) • @endif
+                @if($apotek?->no_izin_sia)SIA: {{ $apotek->no_izin_sia }}@endif
+            </p>
+        @endif
+    </div>
 
     <h2>BUKTI BARANG RUSAK</h2>
 

@@ -2,140 +2,167 @@
 <div id="piutangPaymentModal"
     class="modal-backdrop-custom hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
 
-    <div class="modal-container-custom w-full max-w-4xl rounded-xl bg-white shadow-xl">
+    {{-- Popup / modal yang dapat di-scroll --}}
+    <div class="modal-container-custom flex w-full max-w-5xl max-h-[92vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
 
         {{-- Header --}}
-        <div class="flex items-center justify-between border-b px-5 py-4">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800">
-                    Pembayaran Piutang
-                </h3>
-                <p class="text-sm text-gray-500">
-                    Kelola pembayaran piutang member
-                </p>
+        <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-5">
+            <div class="flex items-center gap-4">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+                    <x-heroicon-o-credit-card class="h-6 w-6" />
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">
+                        Pembayaran Piutang
+                    </h3>
+                    <p class="mt-0.5 text-sm text-gray-500">
+                        Kelola pembayaran piutang member
+                    </p>
+                </div>
             </div>
 
             <button type="button"
                 onclick="closePiutangPaymentModal()"
-                class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                class="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
                 title="Tutup">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                <x-heroicon-o-x-mark class="h-6 w-6" />
             </button>
         </div>
 
-        {{-- Informasi Member --}}
-        <div class="grid grid-cols-1 gap-4 border-b px-5 py-4 sm:grid-cols-3">
+        {{-- Isi popup yang di-scroll --}}
+        <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
 
-            <div>
-                <div class="text-xs text-gray-500">
-                    ID Member
-                </div>
-                <div id="piutangMemberId"
-                    class="mt-1 font-medium text-gray-800">
-                    -
-                </div>
-            </div>
+            {{-- Informasi Member --}}
+            <div class="grid grid-cols-1 gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:grid-cols-3">
 
-            <div>
-                <div class="text-xs text-gray-500">
-                    Nama Member
-                </div>
-                <div id="piutangMemberNama"
-                    class="mt-1 font-medium text-gray-800">
-                    -
-                </div>
-            </div>
-
-            <div>
-                <div class="text-xs text-gray-500">
-                    Total Piutang
-                </div>
-                <div id="piutangMemberTotal"
-                    class="mt-1 font-semibold text-red-600">
-                    Rp 0
-                </div>
-            </div>
-
-        </div>
-
-        {{-- Pilih Invoice --}}
-        <div class="px-5 py-4">
-
-            <label for="piutangPenjualanId"
-                class="block text-sm font-medium text-gray-700">
-                Invoice Piutang
-            </label>
-
-            <select id="piutangPenjualanId"
-                class="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">
-                    Pilih invoice piutang
-                </option>
-            </select>
-
-        </div>
-
-        {{-- Detail Invoice --}}
-        <div id="piutangInvoiceDetail"
-            class="hidden px-5 pb-4">
-
-            <div class="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-3">
-
-                <div>
-                    <div class="text-xs text-gray-500">
-                        No. Faktur
+                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        ID Member
                     </div>
-                    <div id="piutangNoFaktur"
-                        class="mt-1 font-medium text-gray-800">
+                    <div id="piutangMemberId"
+                        class="mt-2 break-words text-lg font-bold text-gray-800">
                         -
                     </div>
                 </div>
 
-                <div>
-                    <div class="text-xs text-gray-500">
-                        Total Belanja
+                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:px-5 sm:pb-0">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Nama Member
                     </div>
-                    <div id="piutangTotalBelanja"
-                        class="mt-1 font-medium text-gray-800">
-                        Rp 0
-                    </div>
-                </div>
-
-                <div>
-                    <div class="text-xs text-gray-500">
-                        Total Dibayar
-                    </div>
-                    <div id="piutangTotalDibayar"
-                        class="mt-1 font-medium text-green-600">
-                        Rp 0
+                    <div id="piutangMemberNama"
+                        class="mt-2 break-words text-lg font-bold text-gray-800">
+                        -
                     </div>
                 </div>
 
-                <div>
-                    <div class="text-xs text-gray-500">
-                        Sisa Piutang
+                <div class="sm:pl-5">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Total Piutang
                     </div>
-                    <div id="piutangSisa"
-                        class="mt-1 font-semibold text-red-600">
+                    <div id="piutangMemberTotal"
+                        class="mt-2 text-lg font-bold text-red-600">
                         Rp 0
                     </div>
                 </div>
 
             </div>
 
-        </div>
+            {{-- Pilih Invoice --}}
+            <div class="mt-5 rounded-xl border border-gray-200 p-4">
 
-        {{-- Form Pembayaran --}}
-        <div id="piutangPaymentForm"
-            class="hidden px-5 pb-5">
+                <div class="mb-3 flex items-center gap-2">
+                    <x-heroicon-o-document-text class="h-5 w-5 text-blue-600" />
+                    <h4 class="text-base font-bold text-gray-800">
+                        Invoice Piutang
+                    </h4>
+                </div>
 
-            <div class="rounded-lg border p-4">
+                <label for="piutangPenjualanId"
+                    class="mb-1.5 block text-sm font-medium text-gray-700">
+                    Invoice Piutang
+                </label>
 
-                <h4 class="mb-4 text-sm font-semibold text-gray-800">
-                    Tambah Pembayaran
-                </h4>
+                <select id="piutangPenjualanId"
+                    class="block w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">
+                        Pilih invoice piutang
+                    </option>
+                </select>
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            </div>
+
+            {{-- Detail Invoice --}}
+            <div id="piutangInvoiceDetail"
+                class="hidden mt-5 rounded-xl border border-gray-200 p-4">
+
+                <div class="mb-4 flex items-center gap-2">
+                    <x-heroicon-o-document-text class="h-5 w-5 text-blue-600" />
+                    <h4 class="text-base font-bold text-gray-800">
+                        Detail Invoice
+                    </h4>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-4">
+
+                    <div class="min-w-0 sm:border-r sm:border-gray-200 sm:pr-4">
+                        <div class="text-xs font-medium text-gray-500">
+                            No. Invoice
+                        </div>
+                        <div id="piutangNoFaktur"
+                            class="mt-2 break-words text-base font-semibold leading-6 text-gray-800">
+                            -
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 sm:border-r sm:border-gray-200 sm:pr-4">
+                        <div class="text-xs font-medium text-gray-500">
+                            Total Belanja
+                        </div>
+                        <div id="piutangTotalBelanja"
+                            class="mt-2 whitespace-nowrap text-base font-semibold text-gray-800">
+                            Rp 0
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 sm:border-r sm:border-gray-200 sm:pr-4">
+                        <div class="text-xs font-medium text-gray-500">
+                            Total Dibayar
+                        </div>
+                        <div id="piutangTotalDibayar"
+                            class="mt-2 whitespace-nowrap text-base font-semibold text-green-600">
+                            Rp 0
+                        </div>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs font-medium text-gray-500">
+                            Sisa Piutang
+                        </div>
+                        <div id="piutangSisa"
+                            class="mt-2 whitespace-nowrap text-base font-bold text-red-600">
+                            Rp 0
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- Form Pembayaran --}}
+            <div id="piutangPaymentForm"
+                class="hidden mt-5 rounded-xl border border-gray-200 p-4">
+
+                <div class="mb-5 flex items-center gap-2">
+                    <div class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white">
+                        <x-heroicon-o-plus class="h-4 w-4" />
+                    </div>
+                    <h4 class="text-base font-bold text-gray-800">
+                        Tambah Pembayaran
+                    </h4>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
 
                     <div>
                         <label for="piutangTanggalBayar"
@@ -145,7 +172,7 @@
 
                         <input type="date"
                             id="piutangTanggalBayar"
-                            class="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm">
+                            class="mt-1.5 block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
 
                     <div>
@@ -154,12 +181,18 @@
                             Jumlah Pembayaran
                         </label>
 
-                        <input type="number"
-                            id="piutangJumlah"
-                            min="0.01"
-                            step="0.01"
-                            class="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm"
-                            placeholder="0">
+                        <div class="mt-1.5 flex">
+                            <span class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 px-3 text-sm text-gray-500">
+                                Rp
+                            </span>
+
+                            <input type="number"
+                                id="piutangJumlah"
+                                min="0.01"
+                                step="0.01"
+                                class="block w-full min-w-0 rounded-r-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="0">
+                        </div>
                     </div>
 
                     <div>
@@ -168,71 +201,80 @@
                             Keterangan
                         </label>
 
-                        <input type="text"
+                        <textarea
                             id="piutangKeterangan"
-                            class="mt-1 block w-full rounded-lg border-gray-300 text-sm shadow-sm"
-                            placeholder="Keterangan pembayaran">
+                            rows="3"
+                            maxlength="255"
+                            class="mt-1.5 block w-full resize-none rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Masukkan keterangan pembayaran..."></textarea>
+
+                        <div class="mt-1 text-right text-xs text-gray-400">
+                            <span id="piutangKeteranganCount">0</span>/255
+                        </div>
                     </div>
 
                 </div>
 
-                <div class="mt-4 flex justify-end">
+                <div class="mt-2 flex justify-end">
                     <button type="button"
                         id="btnSimpanPembayaranPiutang"
-                        class="btn-primary">
+                        class="btn-primary inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold">
                         Simpan Pembayaran
                     </button>
                 </div>
 
             </div>
 
-        </div>
+            {{-- Riwayat Pembayaran --}}
+            <div id="piutangHistory"
+                class="hidden mt-5 rounded-xl border border-gray-200 p-4">
 
-        {{-- Riwayat Pembayaran --}}
-        <div id="piutangHistory"
-            class="hidden border-t px-5 py-4">
+                <div class="mb-4 flex items-center gap-2">
+                    <x-heroicon-o-clock class="h-5 w-5 text-blue-600" />
+                    <h4 class="text-base font-bold text-gray-800">
+                        Riwayat Pembayaran
+                    </h4>
+                </div>
 
-            <h4 class="mb-3 text-sm font-semibold text-gray-800">
-                Riwayat Pembayaran
-            </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-500">
+                                <th class="whitespace-nowrap px-4 py-3">
+                                    Tanggal
+                                </th>
+                                <th class="whitespace-nowrap px-4 py-3">
+                                    Jumlah
+                                </th>
+                                <th class="px-4 py-3">
+                                    Keterangan
+                                </th>
+                            </tr>
+                        </thead>
 
-                    <thead>
-                        <tr class="border-b text-left text-xs text-gray-500">
-                            <th class="px-3 py-2">
-                                Tanggal
-                            </th>
-                            <th class="px-3 py-2">
-                                Jumlah
-                            </th>
-                            <th class="px-3 py-2">
-                                Keterangan
-                            </th>
-                        </tr>
-                    </thead>
+                        <tbody id="piutangHistoryBody">
+                            <tr>
+                                <td colspan="3"
+                                    class="px-4 py-6 text-center text-gray-400">
+                                    Belum ada pembayaran.
+                                </td>
+                            </tr>
+                        </tbody>
 
-                    <tbody id="piutangHistoryBody">
-                        <tr>
-                            <td colspan="3"
-                                class="px-3 py-4 text-center text-gray-400">
-                                Belum ada pembayaran.
-                            </td>
-                        </tr>
-                    </tbody>
+                    </table>
+                </div>
 
-                </table>
             </div>
 
         </div>
 
         {{-- Footer --}}
-        <div class="modal-footer-custom flex justify-end border-t px-5 py-3">
+        <div class="modal-footer-custom flex shrink-0 justify-end border-t border-gray-200 bg-white px-6 py-4">
 
             <button type="button"
                 onclick="closePiutangPaymentModal()"
-                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
                 Tutup
             </button>
 
@@ -391,6 +433,13 @@ if (piutangInvoiceSelect) {
             document.getElementById('piutangJumlah').value = '';
             document.getElementById('piutangKeterangan').value = '';
 
+            const countElement =
+                document.getElementById('piutangKeteranganCount');
+
+            if (countElement) {
+                countElement.textContent = '0';
+            }
+
             document.getElementById('piutangPaymentForm')
                 .classList.remove('hidden');
 
@@ -406,16 +455,16 @@ if (piutangInvoiceSelect) {
             if (riwayat.length > 0) {
                 riwayat.forEach(item => {
                     const row = document.createElement('tr');
-                    row.className = 'border-b';
+                    row.className = 'border-b border-gray-100';
 
                     row.innerHTML = `
-                        <td class="px-3 py-2">
+                        <td class="whitespace-nowrap px-4 py-3">
                             ${item.tanggal_bayar || '-'}
                         </td>
-                        <td class="px-3 py-2 font-semibold text-green-600">
+                        <td class="whitespace-nowrap px-4 py-3 font-semibold text-green-600">
                             ${formatRupiah(item.jumlah)}
                         </td>
-                        <td class="px-3 py-2 text-gray-600">
+                        <td class="px-4 py-3 text-gray-600">
                             ${item.keterangan || '-'}
                         </td>
                     `;
@@ -426,7 +475,7 @@ if (piutangInvoiceSelect) {
                 historyBody.innerHTML = `
                     <tr>
                         <td colspan="3"
-                            class="px-3 py-4 text-center text-gray-400">
+                            class="px-4 py-6 text-center text-gray-400">
                             Belum ada pembayaran.
                         </td>
                     </tr>
@@ -517,7 +566,6 @@ if (btnSimpanPembayaranPiutang) {
                 return;
             }
 
-            // Jika masih ada sisa piutang, cukup muat ulang detail invoice.
             piutangInvoiceSelect.dispatchEvent(new Event('change'));
         })
         .catch(error => {
@@ -528,6 +576,21 @@ if (btnSimpanPembayaranPiutang) {
             button.disabled = false;
             button.textContent = 'Simpan Pembayaran';
         });
+    });
+}
+
+/* Counter keterangan */
+const piutangKeterangan =
+    document.getElementById('piutangKeterangan');
+
+if (piutangKeterangan) {
+    piutangKeterangan.addEventListener('input', function () {
+        const counter =
+            document.getElementById('piutangKeteranganCount');
+
+        if (counter) {
+            counter.textContent = this.value.length;
+        }
     });
 }
 </script>

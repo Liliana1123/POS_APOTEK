@@ -36,8 +36,10 @@ class CustomDiscountController extends Controller
             }
         }
 
-        $discounts = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
-        return view('custom_discount.index', compact('discounts'));
+        $discounts = $query->with(['kategoris', 'barangs'])->orderByDesc('created_at')->paginate(15)->withQueryString();
+        $kategoris = Kategori::orderBy('nama')->get();
+        $barangs = Barang::where('aktif', true)->orderBy('nama')->get();
+        return view('custom_discount.index', compact('discounts', 'kategoris', 'barangs'));
     }
 
     public function create()
