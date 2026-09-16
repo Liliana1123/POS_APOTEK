@@ -2,168 +2,160 @@
 @section('title', 'Penjualan')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1 class="text-xl font-bold text-gray-800">Riwayat Penjualan</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Daftar rekaman seluruh transaksi kasir apotek.</p>
-    </div>
+{{-- Page Header --}}
+<x-page-header
+    title="Riwayat Penjualan"
+    subtitle="Daftar rekaman seluruh transaksi kasir apotek."
+>
     <a href="{{ route('penjualan.create') }}" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Transaksi Baru</span>
     </a>
-</div>
+</x-page-header>
 
-<!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('penjualan.index') }}">
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            {{-- Cari No. Invoice --}}
-            <div>
-                <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
-                    Cari No. Invoice
-                </label>
-
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="cari"
-                        value="{{ request('cari') }}"
-                        placeholder="Cari no. invoice..."
-                        class="form-input w-full pr-8"
-                    >
-
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-
-            {{-- Tanggal Awal --}}
-            <div>
-                <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
-                    Tanggal Awal
-                </label>
-
-                <input
-                    type="date"
-                    name="tanggal_awal"
-                    value="{{ request('tanggal_awal') }}"
-                    class="form-input w-full"
-                >
-            </div>
-
-            {{-- Tanggal Akhir --}}
-            <div>
-                <label class="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1.5">
-                    Tanggal Akhir
-                </label>
-
-                <input
-                    type="date"
-                    name="tanggal_akhir"
-                    value="{{ request('tanggal_akhir') }}"
-                    class="form-input w-full"
-                >
-            </div>
-
-        </div>
-
-        {{-- Tombol --}}
-        <div class="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
-
-            <button
-                type="submit"
-                class="btn-primary py-1.5 px-4"
+{{-- Filter & Search --}}
+<x-card-filter
+    :action="route('penjualan.index')"
+    :reset-url="route('penjualan.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
+>
+    {{-- Cari No. Invoice --}}
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Cari No. Invoice
+        </label>
+        <div class="relative">
+            <input
+                type="text"
+                name="cari"
+                value="{{ request('cari') }}"
+                placeholder="Cari no. invoice..."
+                class="form-input pr-8"
             >
-                Cari
-            </button>
-
-            @if(request()->filled('cari') || request()->filled('tanggal_awal') || request()->filled('tanggal_akhir'))
-                <a
-                    href="{{ route('penjualan.index') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+            </span>
         </div>
+    </div>
 
-    </form>
-</div>
+    {{-- Tanggal Awal --}}
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Tanggal Awal
+        </label>
+        <input
+            type="date"
+            name="tanggal_awal"
+            value="{{ request('tanggal_awal') }}"
+            class="form-input"
+        >
+    </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-150 overflow-hidden">
-    <table class="w-full table-fixed text-xs text-left">
-        <thead class="bg-gray-50 text-gray-600 uppercase font-semibold text-[10px] tracking-wider border-b">
-            <tr>
-                <th class="px-5 py-3 text-center w-32">Aksi</th>
-                <th class="px-5 py-3 text-center">No. Invoice</th>
-                <th class="px-5 py-3 text-center">Tanggal</th>
-                <th class="px-5 py-3 text-center">Pelanggan</th>
-                <th class="px-5 py-3 text-center">Kasir</th>
-                <th class="px-5 py-3 text-center">Total Transaksi</th>
-            </tr>
-        </thead>
-<tbody class="divide-y divide-gray-150">
-    @forelse ($penjualans as $index => $penjualan)
-        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 transition-colors">
+    {{-- Tanggal Akhir --}}
+    <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Tanggal Akhir
+        </label>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            value="{{ request('tanggal_akhir') }}"
+            class="form-input"
+        >
+    </div>
+</x-card-filter>
 
-            {{-- Aksi --}}
-            <td class="px-5 py-3.5 text-center">
-                <a href="{{ route('penjualan.show', $penjualan) }}"
-                   class="btn-secondary !p-1.5 inline-flex items-center justify-center"
-                   title="Detail">
-                    <x-heroicon-o-eye class="w-4 h-4" />
-                </a>
-            </td>
+{{-- Table --}}
+<div class="table-custom-container">
+    <div class="overflow-x-auto">
+        <table class="table-custom min-w-[67rem]">
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="w-28 text-center whitespace-nowrap">Aksi</th>
+                    <th scope="col" class="w-52 text-center whitespace-nowrap">No. Invoice</th>
+                    <th scope="col" class="w-36 text-center whitespace-nowrap">Tanggal</th>
+                    <th scope="col" class="w-52 text-center whitespace-nowrap">Pelanggan</th>
+                    <th scope="col" class="w-36 text-center whitespace-nowrap">Kasir</th>
+                    <th class="px-5 py-3 text-center">Total Diskon</th>
+                    <th scope="col" class="w-44 text-center whitespace-nowrap">Total Transaksi</th>
+                </tr>
+            </thead>
+            <tbody class="table-custom-body divide-gray-150">
+                @forelse ($penjualans as $index => $penjualan)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        {{-- Aksi --}}
+                        <td class="text-center">
+                            <x-table-action
+                                :show-url="route('penjualan.show', $penjualan)"
+                                align="justify-center"
+                            />
+                        </td>
 
-            {{-- No. Invoice --}}
-            <td class="px-5 py-3.5 text-center font-semibold text-gray-800 font-mono">
-                {{ $penjualan->no_faktur }}
-            </td>
+                        {{-- No. Invoice --}}
+                        <td class="text-center font-mono font-semibold text-gray-800 whitespace-nowrap">
+                            {{ $penjualan->no_faktur }}
+                        </td>
 
-            {{-- Tanggal --}}
-            <td class="px-5 py-3.5 text-center text-gray-600">
-                {{ $penjualan->tanggal->format('d M Y') }}
-            </td>
+                        {{-- Tanggal --}}
+                        <td class="text-center whitespace-nowrap">
+                            {{ $penjualan->tanggal->format('d M Y') }}
+                        </td>
 
-            {{-- Pelanggan --}}
-            <td class="px-5 py-3.5 text-center text-gray-600 font-medium">
-                <div class="flex items-center justify-center gap-1.5">
-                    <span>{{ $penjualan->pelanggan->nama ?? 'Umum' }}</span>
+                       {{-- Pelanggan --}}
+                        <td class="px-5 py-3.5 text-center text-gray-600 font-medium">
+                            @if($penjualan->pelanggan && $penjualan->pelanggan->is_member)
+                                <div class="flex flex-col items-center">
+                                    <span class="text-gray-900 font-medium">
+                                        {{ $penjualan->pelanggan->nama }}
+                                    </span>
 
-                    @if(isset($penjualan->pelanggan) && $penjualan->pelanggan->is_member)
-                        <span class="text-[9px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-mono font-semibold">
-                            Member
-                        </span>
-                    @endif
-                </div>
-            </td>
+                                     @php
+                                        $statusMember = trim((string) $penjualan->pelanggan->status_member);
 
-            {{-- Kasir --}}
-            <td class="px-5 py-3.5 text-center text-gray-600">
-                {{ $penjualan->user->name }}
-            </td>
+                                        $memberVariant = match($statusMember) {
+                                            'Member Keluarga Nakes' => 'info',
+                                            'Member Only' => 'warning',
+                                            default => 'success',
+                                        };
+                                    @endphp
 
-            {{-- Total Transaksi --}}
-            <td class="px-5 py-3.5 text-center font-bold text-gray-800">
-                Rp {{ number_format($penjualan->total, 0, ',', '.') }}
-            </td>
+                                    <x-badge :variant="$memberVariant">
+                                        {{ $statusMember ?: 'Member Pelanggan Tetap' }}
+                                    </x-badge>
+                                </div>
+                            @else
+                                <span class="text-gray-600 font-medium">
+                                    Umum
+                                </span>
+                            @endif
+                        </td>
 
-        </tr>
-    @empty
-        <tr>
-            <td colspan="6" class="px-5 py-8 text-center text-gray-400">
-                Belum ada transaksi.
-            </td>
-        </tr>
-    @endforelse
-</tbody>
-    </table>
+                        {{-- Kasir --}}
+                        <td class="text-center whitespace-nowrap">
+                            {{ $penjualan->user->name }}
+                        </td>
+
+                        {{-- Total Diskon --}}
+                        <td class="px-5 py-3.5 text-center font-semibold text-red-600">
+                            Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                        </td>
+
+                        {{-- Total Transaksi --}}
+                        <td class="text-center font-semibold whitespace-nowrap">
+                            Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @empty
+                    <x-empty-state colspan="7" />
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
-<div class="mt-4">{{ $penjualans->links() }}</div>
+<div class="mt-4">
+    {{ $penjualans->links() }}
+</div>
 @endsection
