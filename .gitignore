@@ -22,3 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+*.md
+!README.md
+!SRS.md
+.opencode/
