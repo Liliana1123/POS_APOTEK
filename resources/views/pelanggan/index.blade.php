@@ -8,6 +8,7 @@
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Pelanggan</span>
     </button>
+    
 </x-page-header>
 
 <!-- Filter & Search Card -->
@@ -58,21 +59,42 @@
     </div>
 </x-card-filter>
 
-<!-- Table Custom Wrapper -->
-<div class="table-custom-container">
-    <div class="overflow-x-auto">
-        <table class="table-custom min-w-[75rem]">
-            <thead class="table-custom-header">
-                <tr>
-                    <th scope="col" class="text-center w-48">Aksi</th>
-                    <th scope="col" class="w-32">ID Pelanggan</th>
-                    <th scope="col">Nama & No Telp</th>
-                    <th scope="col" class="w-44 text-center">Status Member</th>
-                    <th scope="col" class="w-32 text-center">Status Piutang</th>
-                    <th scope="col" class="w-36 text-right">Total Diskon</th>
-                    <th scope="col" class="w-36 text-right">Total Belanja</th>
-                </tr>
-            </thead>
+<!-- Table Custom Wrapper --> 
+<div class="table-custom-container"> 
+    <div class="overflow-x-auto"> 
+        <table class="table-custom w-[75rem] min-w-[75rem] table-fixed">
+           <thead class="table-custom-header">
+            <tr>
+                <th scope="col" class="text-center" style="width: 15%;">
+                    Aksi
+                </th>
+
+                <th scope="col" class="text-center" style="width: 13%;">
+                    ID Pelanggan
+                </th>
+
+                <th scope="col" class="text-center" style="width: 20%;">
+                    Nama & No Telp
+                </th>
+
+                <th scope="col" class="text-center" style="width: 16%;">
+                    Status Member
+                </th>
+
+                <th scope="col" class="text-center" style="width: 12%;">
+                    Status Piutang
+                </th>
+
+                <th scope="col" class="text-center" style="width: 12%;">
+                    Total Diskon
+                </th>
+
+                <th scope="col" class="text-center" style="width: 12%;">
+                    Total Belanja
+                </th>
+            </tr>
+        </thead>
+                    
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($pelanggans as $index => $pelanggan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
@@ -133,8 +155,10 @@
                                 @endif
                             </x-table-action>
                         </td>
-                        <td class="font-mono text-gray-700 font-semibold">{{ $pelanggan->member_id ?? '-' }}</td>
-                        <td>
+                        <td class="text-center">
+                            <div class="font-mono text-gray-700 font-semibold">{{ $pelanggan->member_id ?? '-' }}</div>
+                        </td>
+                        <td class="text-center">
                             <div class="font-medium text-gray-800">{{ $pelanggan->nama }}</div>
                             <div class="text-xs text-gray-500 font-mono mt-0.5">{{ $pelanggan->telepon ?? '-' }}</div>
                         </td>
@@ -158,10 +182,10 @@
                                 <x-badge variant="success">Lunas</x-badge>
                             @endif
                         </td>
-                        <td class="text-right font-semibold text-green-600">
+                        <td class="text-center font-semibold text-green-600">
                             Rp {{ number_format($pelanggan->total_diskon ?? 0, 0, ',', '.') }}
                         </td>
-                        <td class="text-right font-semibold text-gray-800">
+                        <td class="text-center font-semibold text-gray-800">
                             Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}
                         </td>
                     </tr>
