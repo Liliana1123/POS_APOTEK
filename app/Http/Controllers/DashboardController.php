@@ -131,36 +131,51 @@ class DashboardController extends Controller
 
     public function activityLog(Request $request)
     {
-        $query = ActivityLog::with('user');
+        $baseQuery = ActivityLog::query();
+
+        $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+        $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
 
         if ($request->filled('dari') && $request->filled('sampai')) {
-            $query->whereBetween('created_at', [$request->dari . ' 00:00:00', $request->sampai . ' 23:59:59']);
+            $baseQuery->whereBetween('created_at', [$request->dari . ' 00:00:00', $request->sampai . ' 23:59:59']);
         }
 
         if ($request->filled('cari')) {
             $cari = $request->cari;
-            $query->where(function($q) use ($cari) {
+            $baseQuery->where(function($q) use ($cari) {
                 $q->where('action', 'like', '%' . $cari . '%')
+                  ->orWhere('target', 'like', '%' . $cari . '%')
+                  ->orWhere('user_name', 'like', '%' . $cari . '%')
                   ->orWhereHas('user', function($qu) use ($cari) {
                       $qu->where('name', 'like', '%' . $cari . '%');
                   });
             });
         }
 
-        $logs = $query->orderByDesc('created_at')->paginate(30)->withQueryString();
+        if ($request->filled('user_id')) {
+            $baseQuery->where('user_id', $request->user_id);
+        }
+
+        if ($request->filled('kategori')) {
+            $baseQuery->where('kategori', $request->kategori);
+        }
+
+        $query = $baseQuery->with('user');
 
         if ($request->query('export') === 'csv') {
             $allLogs = $query->orderByDesc('created_at')->get();
-            $headers = ['Tanggal', 'User', 'Role', 'Aksi / Aktivitas'];
+            $headers = ['Tanggal & Waktu', 'Kategori', 'User', 'Role', 'Tindakan / Aksi', 'Rincian Target'];
             $callback = function() use ($headers, $allLogs) {
                 $file = fopen('php://output', 'w');
                 fputcsv($file, $headers);
                 foreach ($allLogs as $log) {
                     fputcsv($file, [
-                        $log->created_at->format('d M Y H:i'),
-                        $log->user->name ?? 'System',
-                        $log->user->role ?? '',
-                        $log->action
+                        $log->created_at->format('d M Y H:i:s'),
+                        strtoupper($log->kategori ?? 'SISTEM'),
+                        $log->user->name ?? $log->user_name,
+                        $log->user->role ?? '-',
+                        $log->action,
+                        $log->target ?? '-'
                     ]);
                 }
                 fclose($file);
@@ -168,16 +183,32 @@ class DashboardController extends Controller
 
             return response()->stream($callback, 200, [
                 "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=laporan-activity-log-" . now()->format('Ymd') . ".csv",
+                "Content-Disposition" => "attachment; filename=laporan-activity-log-" . now()->format('Ymd-His') . ".csv",
                 "Pragma"              => "no-cache",
                 "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
                 "Expires"             => "0"
             ]);
         }
 
-        $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+        $logs = $query->orderByDesc('created_at')->paginate(25)->withQueryString();
+        $users = \App\Models\User::orderBy('name')->get();
 
-        return view('activity_log.index', compact('logs', 'dari', 'sampai'));
+        $categories = [
+            'penjualan'   => ['label' => 'Penjualan', 'icon' => 'shopping-cart', 'color' => 'blue'],
+            'inventaris'  => ['label' => 'Inventaris & Stok', 'icon' => 'archive-box', 'color' => 'indigo'],
+            'member'      => ['label' => 'Member & Pelanggan', 'icon' => 'users', 'color' => 'emerald'],
+            'promo'       => ['label' => 'Promo & Diskon', 'icon' => 'tag', 'color' => 'amber'],
+            'keuangan'    => ['label' => 'Keuangan & Piutang', 'icon' => 'banknotes', 'color' => 'purple'],
+            'keamanan'    => ['label' => 'Keamanan & User', 'icon' => 'shield-check', 'color' => 'slate'],
+            'sistem'      => ['label' => 'Sistem & Pengaturan', 'icon' => 'cog-6-tooth', 'color' => 'gray'],
+        ];
+
+        return view('activity_log.index', compact(
+            'logs',
+            'dari',
+            'sampai',
+            'users',
+            'categories'
+        ));
     }
 }

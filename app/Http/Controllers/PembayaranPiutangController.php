@@ -132,6 +132,12 @@ class PembayaranPiutangController extends Controller
                 $data['jumlah']
             );
 
+            \App\Models\ActivityLog::log(
+                'Pembayaran Piutang',
+                "Pelanggan: {$penjualan->pelanggan->nama}, Faktur: {$penjualan->no_faktur}, Bayar: Rp " . number_format($data['jumlah'], 2),
+                \App\Models\ActivityLog::CATEGORY_KEUANGAN
+            );
+
             return max(
                 0,
                 (float) $sisaPiutang - (float) $data['jumlah']

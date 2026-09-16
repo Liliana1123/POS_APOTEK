@@ -92,6 +92,7 @@ class RusakController extends Controller
     public function destroy(Rusak $rusak)
     {
         DB::transaction(function () use ($rusak) {
+            $rusak->load('detailPenerimaan.barang');
             $batch = DetailPenerimaan::lockForUpdate()->findOrFail(
                 $rusak->detail_penerimaan_id
             );
@@ -99,6 +100,12 @@ class RusakController extends Controller
             $batch->stok += $rusak->jumlah;
             $batch->aktif = true;
             $batch->save();
+
+            \App\Models\ActivityLog::log(
+                'Hapus Barang Rusak',
+                "Obat: {$rusak->detailPenerimaan->barang->nama}, Batch: {$batch->no_batch}, Jumlah: {$rusak->jumlah} (Stok dikembalikan)",
+                \App\Models\ActivityLog::CATEGORY_INVENTARIS
+            );
 
             $rusak->delete();
         });
@@ -125,7 +132,7 @@ class RusakController extends Controller
         ]);
 
         DB::transaction(function () use ($data) {
-            $batch = DetailPenerimaan::lockForUpdate()->findOrFail($data['detail_penerimaan_id']);
+            $batch = DetailPenerimaan::with('barang')->lockForUpdate()->findOrFail($data['detail_penerimaan_id']);
 
             if ($data['jumlah'] > $batch->stok) {
                 throw ValidationException::withMessages([
@@ -140,6 +147,12 @@ class RusakController extends Controller
             if ($batch->stok <= 0) {
                 $batch->update(['aktif' => false]);
             }
+
+            \App\Models\ActivityLog::log(
+                'Catat Barang Rusak',
+                "Obat: {$batch->barang->nama}, Batch: {$batch->no_batch}, Jumlah: {$data['jumlah']}, Alasan: " . ($data['keterangan'] ?? '-'),
+                \App\Models\ActivityLog::CATEGORY_INVENTARIS
+            );
         });
 
         return redirect()->route('rusak.index')->with('success', 'Barang rusak berhasil dicatat, stok otomatis dikurangi.');

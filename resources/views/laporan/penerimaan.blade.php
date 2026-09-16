@@ -56,7 +56,7 @@
         </div>
         <div class="flex gap-2">
             <button type="submit" class="btn-primary py-2 px-4">Filter</button>
-            <a href="{{ route('laporan.penerimaan') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">Reset</a>
+            <a href="{{ route('laporan.penerimaan') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">Clear</a>
         </div>
     </form>
 </div>

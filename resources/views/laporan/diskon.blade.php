@@ -84,7 +84,7 @@
         
         <div class="md:col-span-5 flex justify-end gap-2 border-t pt-3 mt-1">
             <a href="{{ route('laporan.diskon') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-                Reset
+                Clear
             </a>
             <button type="submit" class="btn-primary py-2 px-5">
                 Terapkan Filter

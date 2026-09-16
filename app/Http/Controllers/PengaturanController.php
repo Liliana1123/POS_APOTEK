@@ -41,6 +41,12 @@ class PengaturanController extends Controller
         $apotek->update($data);
         Cache::forget('info_apotek');
 
+        \App\Models\ActivityLog::log(
+            'Update Pengaturan Apotek',
+            "Nama: {$apotek->nama_apotek}",
+            \App\Models\ActivityLog::CATEGORY_SISTEM
+        );
+
         return back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

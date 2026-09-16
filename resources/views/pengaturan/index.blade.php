@@ -267,7 +267,7 @@
                         id="btn-reset"
                         class="btn-secondary"
                         onclick="resetFormToInitial()">
-                    Reset
+                    Clear
                 </button>
                 <button type="submit" class="btn-primary flex items-center gap-1.5">
                     <x-heroicon-o-check class="w-4 h-4" />

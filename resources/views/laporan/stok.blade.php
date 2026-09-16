@@ -170,7 +170,7 @@
                 href="{{ route('laporan.stok') }}"
                 class="btn-secondary py-2 px-4"
             >
-                Reset
+                Clear
             </a>
         </div>
     </div>
