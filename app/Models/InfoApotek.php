@@ -8,6 +8,7 @@ class InfoApotek extends Model
 {
     protected $fillable = [
         'nama_apotek',
+        'nama_pemilik',
         'alamat',
         'telepon',
         'email',
