@@ -223,32 +223,74 @@
                     </thead>
 
                     <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150">
+                        @php
+                            $batchCountPerBarang = [];
+                            $batchIndexPerBarang = [];
+                            foreach ($penerimaan->detail as $d) {
+                                $batchCountPerBarang[$d->barang_id] = ($batchCountPerBarang[$d->barang_id] ?? 0) + 1;
+                            }
+                        @endphp
 
                         @foreach ($penerimaan->detail as $index => $item)
+                            @php
+                                $bId = $item->barang_id;
+                                $batchIndexPerBarang[$bId] = ($batchIndexPerBarang[$bId] ?? 0) + 1;
+                                $isPrimaryBatch = ($batchIndexPerBarang[$bId] === 1);
+                                $dp = $penerimaan->detailPesanan->firstWhere('barang_id', $bId);
+                                
+                                // Cek apakah baris ini terkunci karena ada transaksi penjualan kasir, rusak, atau riwayat susulan
+                                $isSold = $item->detailPenjualan->isNotEmpty();
+                                $isDamaged = $item->rusak->isNotEmpty();
+                                $hasRiwayat = $penerimaan->riwayatPenerimaan->where('detail_penerimaan_id', $item->id)->isNotEmpty();
+                                $isLocked = $isSold || $isDamaged || $hasRiwayat;
 
-                            <tr class="item-row hover:bg-gray-50 transition-colors">
-                                <input type="hidden"name="items[{{ $index }}][detail_id]"value="{{ $item->id }}">
+                                $lockReason = '';
+                                if ($isSold) {
+                                    $lockReason = 'Terkunci: Obat ini sudah tercatat di transaksi kasir';
+                                } elseif ($isDamaged) {
+                                    $lockReason = 'Terkunci: Obat ini tercatat ada barang rusak';
+                                } elseif ($hasRiwayat) {
+                                    $lockReason = 'Terkunci: Batch ini sudah memiliki riwayat penerimaan';
+                                }
+                            @endphp
+
+                            <tr class="item-row hover:bg-gray-50 transition-colors {{ $isLocked ? 'bg-gray-50/50' : '' }}">
+                                <input type="hidden" name="items[{{ $index }}][detail_id]" value="{{ $item->id }}">
 
                                 <td class="px-3 py-2">
-                                    <select
-                                        name="items[{{ $index }}][barang_id]"
-                                        required
-                                        class="form-input py-1 px-2 barang-select"
-                                    >
-                                        <option value="">Pilih barang</option>
-
-                                        @foreach ($barangs as $barang)
-                                            <option
-                                                value="{{ $barang->id }}"
-                                                data-satuan="{{ $barang->satuan->nama ?? '' }}"
-                                                data-barcode="{{ $barang->barcode }}"
-                                                @selected($item->barang_id == $barang->id)
+                                    @if ($isLocked)
+                                        <input type="hidden" name="items[{{ $index }}][barang_id]" value="{{ $item->barang_id }}">
+                                        <div class="flex items-center gap-1.5">
+                                            <input
+                                                type="text"
+                                                class="form-input py-1 px-2 bg-gray-100 text-gray-700 cursor-not-allowed text-xs"
+                                                value="{{ $item->barang->nama ?? '' }}"
+                                                readonly
+                                                title="{{ $lockReason }}"
                                             >
-                                                {{ $barang->nama }}
-                                                {{ $barang->barcode ? ' — ' . $barang->barcode : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                            <span class="text-amber-500 flex-shrink-0 text-xs" title="{{ $lockReason }}">🔒</span>
+                                        </div>
+                                    @else
+                                        <select
+                                            name="items[{{ $index }}][barang_id]"
+                                            required
+                                            class="form-input py-1 px-2 barang-select"
+                                        >
+                                            <option value="">Pilih barang</option>
+
+                                            @foreach ($barangs as $barang)
+                                                <option
+                                                    value="{{ $barang->id }}"
+                                                    data-satuan="{{ $barang->satuan->nama ?? '' }}"
+                                                    data-barcode="{{ $barang->barcode }}"
+                                                    @selected($item->barang_id == $barang->id)
+                                                >
+                                                    {{ $barang->nama }}
+                                                    {{ $barang->barcode ? ' — ' . $barang->barcode : '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
 
                                 <td class="px-3 py-2">
@@ -266,8 +308,10 @@
                                         name="items[{{ $index }}][no_batch]"
                                         value="{{ $item->no_batch }}"
                                         required
-                                        class="form-input py-1 px-2 font-mono"
+                                        class="form-input py-1 px-2 font-mono {{ $isLocked ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : '' }}"
                                         placeholder="Batch..."
+                                        @readonly($isLocked)
+                                        @if($isLocked) title="{{ $lockReason }}" @endif
                                     >
                                 </td>
 
@@ -319,15 +363,26 @@
                                 </td>
 
                                 <td class="px-3 py-2">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        name="items[{{ $index }}][jumlah_dipesan]"
-                                        value="{{ old("items.$index.jumlah_dipesan", $penerimaan->detailPesanan->firstWhere('barang_id', $item->barang_id)?->jumlah_dipesan) }}"
-                                        required
-                                        class="form-input py-1 px-2 text-right font-mono"
-                                        placeholder="1"
-                                    >
+                                    @if ($isPrimaryBatch)
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            name="items[{{ $index }}][jumlah_dipesan]"
+                                            value="{{ old("items.$index.jumlah_dipesan", $dp ? $dp->jumlah_dipesan : $item->jumlah) }}"
+                                            required
+                                            class="form-input py-1 px-2 text-right font-mono"
+                                            placeholder="1"
+                                        >
+                                    @else
+                                        <input
+                                            type="hidden"
+                                            name="items[{{ $index }}][jumlah_dipesan]"
+                                            value="0"
+                                        >
+                                        <span class="text-[11px] text-gray-400 italic block text-right pt-1" title="Mengikuti jumlah dipesan baris utama">
+                                            (Ikut induk)
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <td class="px-3 py-2">
@@ -337,8 +392,10 @@
                                         name="items[{{ $index }}][jumlah_diterima]"
                                         value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
                                         required
-                                        class="form-input py-1 px-2 text-right font-mono jumlah-field"
+                                        class="form-input py-1 px-2 text-right font-mono jumlah-field {{ $isLocked ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : '' }}"
                                         placeholder="0"
+                                        @readonly($isLocked)
+                                        @if($isLocked) title="{{ $lockReason }}" @endif
                                     >
                                 </td>
 
@@ -356,14 +413,25 @@
                                 </td>
 
                                 <td class="px-3 py-2 text-center">
-                                    <button
-                                        type="button"
-                                        class="text-red-500 hover:text-red-700 p-1 btn-hapus-row"
-                                        aria-label="Hapus baris"
-                                        title="Hapus baris"
-                                    >
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
+                                    @if ($isLocked)
+                                        <button
+                                            type="button"
+                                            class="text-gray-300 p-1 cursor-not-allowed"
+                                            disabled
+                                            title="{{ $lockReason }}"
+                                        >
+                                            <x-heroicon-o-trash class="w-4 h-4 opacity-30" />
+                                        </button>
+                                    @else
+                                        <button
+                                            type="button"
+                                            class="text-red-500 hover:text-red-700 p-1 btn-hapus-row"
+                                            aria-label="Hapus baris"
+                                            title="Hapus baris"
+                                        >
+                                            <x-heroicon-o-trash class="w-4 h-4" />
+                                        </button>
+                                    @endif
                                 </td>
 
                             </tr>
@@ -393,7 +461,7 @@
             </span>
         </div>
 
-        <<div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+        <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
             <span>PPN (11%):</span>
             <span id="ppn" class="text-blue-700 font-mono">
                 Rp 0

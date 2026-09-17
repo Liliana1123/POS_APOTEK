@@ -76,10 +76,6 @@
                     <option value="belum_lengkap" @selected(request('status_penerimaan') === 'belum_lengkap')>
                         Belum Lengkap
                     </option>
-
-                    <option value="selesai" @selected(request('status_penerimaan') === 'selesai')>
-                        Selesai
-                    </option>
                 </select>
             </div>
             <div>
@@ -236,10 +232,8 @@
                     <td class="text-center">
                         @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
                             <span class="badge-success">Lengkap</span>
-                        @elseif ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
-                            <span class="badge-warning">Belum Lengkap</span>
                         @else
-                            <span class="badge-secondary">Selesai</span>
+                            <span class="badge-warning">Belum Lengkap</span>
                         @endif
                     </td>
 
@@ -324,7 +318,8 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-5xl">
+    <div class="modal-container-custom max-w-15xl"
+         style="width: 95vw; max-width: 1100px;">
 
         <div class="modal-header-custom">
             <div>
@@ -343,10 +338,10 @@
         </div>
 
         <div
-    id="detail-penerimaan-content"
-    class="modal-body-custom overflow-y-auto"
-    style="max-height: calc(100vh - 180px);"
->
+            id="detail-penerimaan-content"
+            class="modal-body-custom overflow-y-auto"
+            style="max-height: calc(100vh - 180px);"
+        >
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
             </div>
@@ -395,26 +390,34 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-6xl">
+    <div class="modal-container-custom max-w-15xl"
+         style="width: 95vw; max-width: 1100px;">
         <div class="modal-header-custom">
-            <h3 class="text-lg font-semibold">
-                Penerimaan Susulan
-            </h3>
+            <div>
+                <h2>Penerimaan Susulan</h2>
+                <p class="text-caption mt-1">
+                    Catat penerimaan barang susulan atau pembatalan kekurangan faktur.
+                </p>
+            </div>
 
             <button
                 type="button"
                 id="close-susulan-penerimaan"
-                class="..."
+                class="btn-secondary !p-1.5"
+                title="Tutup"
             >
-                &times;
+                ✕
             </button>
         </div>
 
         <div
             id="susulan-penerimaan-content"
-            class="modal-body-custom"
+            class="modal-body-custom overflow-y-auto"
+            style="max-height: calc(100vh - 180px);"
         >
-            Memuat...
+            <div class="text-center py-8 text-gray-500">
+                Memuat formulir penerimaan susulan...
+            </div>
         </div>
     </div>
 </div>
