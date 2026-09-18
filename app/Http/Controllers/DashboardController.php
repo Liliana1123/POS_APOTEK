@@ -289,6 +289,7 @@ class DashboardController extends Controller
             ->where('aktif', true)
             ->get();
 
+        $totalSku = $barangsStok->count();
         $stokHabisCount = 0;
         $stokMenipisCount = 0;
         $stokAmanCount = 0;
@@ -328,29 +329,20 @@ class DashboardController extends Controller
         ])->take(10)->values();
 
         // 7. EXPIRY HEALTH (Sesuai klasifikasi Laporan Stok)
-        $activeBatches = DetailPenerimaan::where('aktif', true)->where('stok', '>', 0)->get();
-        $expiryKadaluarsa = 0;
-        $expiryCritical = 0; // < 60 hari
-        $expiryWarning = 0;  // 60 - 90 hari
-        $expiryAman = 0;     // > 90 hari
+        $today = now()->startOfDay();
+        $oneMonth = $today->copy()->addMonth();
+        $threeMonths = $today->copy()->addMonths(3);
 
-        foreach ($activeBatches as $batch) {
-            if (!$batch->expired_date) {
-                $expiryAman++;
-                continue;
-            }
-            $diff = $today->diffInDays($batch->expired_date, false);
-            if ($diff <= 0) {
-                $expiryKadaluarsa++;
-            } elseif ($diff < 60) {
-                $expiryCritical++;
-            } elseif ($diff <= 90) {
-                $expiryWarning++;
-            } else {
-                $expiryAman++;
-            }
-        }
-        $totalBatchesCount = $activeBatches->count();
+        $baseBatchQuery = DetailPenerimaan::where('aktif', true)->where('stok', '>', 0);
+        $totalBatchesCount = (clone $baseBatchQuery)->count();
+
+        $expiryKadaluarsa = (clone $baseBatchQuery)->whereDate('expired_date', '<=', $today)->count();
+        $expiryCritical = (clone $baseBatchQuery)->whereDate('expired_date', '>', $today)->whereDate('expired_date', '<=', $oneMonth)->count();
+        $expiryWarning = (clone $baseBatchQuery)->whereDate('expired_date', '>', $oneMonth)->whereDate('expired_date', '<=', $threeMonths)->count();
+        $expiryAman = (clone $baseBatchQuery)->where(function ($q) use ($threeMonths) {
+            $q->whereDate('expired_date', '>', $threeMonths)
+              ->orWhereNull('expired_date');
+        })->count();
 
         // 8. ACTION CENTER (Alerts Dinamis dengan Link Cepat)
         $actionCenter = [
@@ -369,7 +361,7 @@ class DashboardController extends Controller
             'monitoring' => [
                 'count' => $expiryCritical,
                 'title' => 'MONITORING',
-                'label' => 'Mendekati expired (< 60 hari)',
+                'label' => 'Mendekati expired (< 30 hari)',
                 'route' => route('laporan.stok', ['status_expired' => '1_bulan']),
             ],
             'overdue' => [
@@ -467,6 +459,7 @@ class DashboardController extends Controller
             'chartGross',
             'chartNet',
             'chartProfit',
+            'totalSku',
             'totalStok',
             'nilaiPersediaan',
             'stokHabisCount',

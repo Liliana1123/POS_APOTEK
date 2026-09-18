@@ -795,15 +795,18 @@ class PenerimaanController extends Controller
                     'user_id' => $request->user()->id,
                 ]);
             }
+
+            // Hitung ulang total faktur (DPP) fisik setelah barang susulan masuk
+            $totalFakturBaru = (float) $penerimaan->detail()->sum(DB::raw('harga_beli * jumlah'));
+            $ppnBaru = $totalFakturBaru * 0.11;
+            $totalTagihanBaru = $totalFakturBaru + $ppnBaru;
+            $totalDibayar = $penerimaan->totalDibayar();
+
+            $penerimaan->update([
+                'ppn' => $ppnBaru,
+                'lunas' => $totalDibayar >= $totalTagihanBaru,
+            ]);
         });
-
-         $totalTagihan = $penerimaan->totalTagihan();
-        $totalDibayar = $penerimaan->totalDibayar();
-
-        $penerimaan->update([
-            'lunas' => $totalDibayar >= $totalTagihan,
-        ]);
-
 
         return response()->json([
             'success' => true,
@@ -813,7 +816,19 @@ class PenerimaanController extends Controller
 
     public function print(Penerimaan $penerimaan)
     {
-        $penerimaan->load(['user', 'supplier', 'detail.barang', 'pembayaran.user']);
+        $penerimaan->load([
+            'user',
+            'supplier',
+            'detail.barang.satuan',
+            'detail.barang.pabrik',
+            'detailPesanan.barang.satuan',
+            'detailPesanan.barang.pabrik',
+            'detailPesanan.riwayatPenerimaan',
+            'riwayatPenerimaan.detailPesanan.barang',
+            'riwayatPenerimaan.detailPenerimaan.barang',
+            'riwayatPenerimaan.user',
+            'pembayaran.user',
+        ]);
 
         return view('penerimaan.print', compact('penerimaan'));
     }

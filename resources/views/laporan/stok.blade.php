@@ -194,20 +194,28 @@
 
 <div class="card-base p-0 overflow-hidden mb-6">
 
-    <div class="px-5 py-4 bg-gray-50/50">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">
-            Stok Per Batch
-        </h3>
+    <div class="px-5 py-4 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-150">
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">
+                Stok Per Batch
+            </h3>
+            <p class="text-xs text-gray-500 mt-0.5">
+                Rincian mutasi stok per batch: Stok Awal − Stok Terjual − Stok Rusak = Sisa Stok.
+            </p>
+        </div>
+        <div class="text-xs font-medium text-gray-500">
+            Menampilkan {{ $stokPerBatch->count() }} batch
+        </div>
     </div>
 
     <div class="table-custom-container">
         <div class="overflow-x-auto">
 
-            <table class="table-custom min-w-[60rem]">
+            <table class="table-custom min-w-[72rem]">
 
                 <thead class="table-custom-header">
                     <tr>
-                        <th scope="col" class="w-16">
+                        <th scope="col" class="w-12 text-center">
                             No
                         </th>
 
@@ -227,19 +235,31 @@
                             No. Rak
                         </th>
 
-                        <th scope="col" class="text-center w-36">
+                        <th scope="col" class="text-center w-28">
                             Expired
                         </th>
 
-                        <th scope="col" class="text-center w-36">
+                        <th scope="col" class="text-center w-28">
                             Status Expired
                         </th>
 
-                        <th scope="col" class="text-right w-28">
-                            Stok
+                        <th scope="col" class="text-right w-24">
+                            Stok Awal
                         </th>
 
-                        <th scope="col" class="text-center w-28">
+                        <th scope="col" class="text-right w-24">
+                            Stok Terjual
+                        </th>
+
+                        <th scope="col" class="text-right w-24">
+                            Stok Rusak
+                        </th>
+
+                        <th scope="col" class="text-right w-28">
+                            Sisa Stok Saat Ini
+                        </th>
+
+                        <th scope="col" class="text-center w-24">
                             Status Stok
                         </th>
                     </tr>
@@ -255,12 +275,18 @@
                             $expiredDate = $item->expired_date
                                 ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
                                 : null;
+
+                            $stokAwal = (int) $item->jumlah;
+                            $stokTerjual = (int) ($item->stok_terjual ?? 0);
+                            $stokRusak = (int) ($item->stok_rusak ?? 0);
+                            $sisaStok = $stokAwal - $stokTerjual - $stokRusak;
+                            $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
                         @endphp
 
                         <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
 
                             <!-- No -->
-                            <td class="table-num">
+                            <td class="table-num text-center">
                                 {{ $index + 1 }}
                             </td>
 
@@ -326,17 +352,32 @@
 
                             </td>
 
-                            <!-- Stok -->
-                            <td class="table-num font-bold text-gray-800">
-                                {{ $item->stok }}
+                            <!-- Stok Awal -->
+                            <td class="table-num font-medium text-gray-700">
+                                {{ number_format($stokAwal, 0, ',', '.') }}
+                            </td>
+
+                            <!-- Stok Terjual -->
+                            <td class="table-num font-semibold text-indigo-600">
+                                {{ number_format($stokTerjual, 0, ',', '.') }}
+                            </td>
+
+                            <!-- Stok Rusak -->
+                            <td class="table-num font-semibold text-rose-600">
+                                {{ number_format($stokRusak, 0, ',', '.') }}
+                            </td>
+
+                            <!-- Sisa Stok Saat Ini -->
+                            <td class="table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }}">
+                                {{ number_format($sisaStok, 0, ',', '.') }}
                             </td>
 
                             <!-- Status Stok -->
                             <td class="text-center">
 
-                                @if ($item->stok <= 0)
+                                @if ($sisaStok <= 0)
                                     <span class="badge-danger">Habis</span>
-                                @elseif ($item->stok <= $item->barang->stok_minimum)
+                                @elseif ($sisaStok <= $stokMinimum)
                                     <span class="badge-warning">Menipis</span>
                                 @else
                                     <span class="badge-success">Aman</span>
@@ -349,7 +390,7 @@
                     @empty
 
                         <tr>
-                            <td colspan="9" class="p-0">
+                            <td colspan="12" class="p-0">
 
                                 <div class="empty-state-container">
 
@@ -369,6 +410,29 @@
                     @endforelse
 
                 </tbody>
+
+                @if ($stokPerBatch->isNotEmpty())
+                    <tfoot class="bg-gray-100 font-bold border-t-2 border-gray-300 text-gray-800">
+                        <tr>
+                            <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider text-xs text-gray-600">
+                                Total (Ringkasan Data Tampil):
+                            </td>
+                            <td class="table-num px-4 py-3 text-right text-gray-800 font-bold">
+                                {{ number_format($totalStokAwal, 0, ',', '.') }}
+                            </td>
+                            <td class="table-num px-4 py-3 text-right text-indigo-700 font-bold">
+                                {{ number_format($totalStokTerjual, 0, ',', '.') }}
+                            </td>
+                            <td class="table-num px-4 py-3 text-right text-rose-700 font-bold">
+                                {{ number_format($totalStokRusak, 0, ',', '.') }}
+                            </td>
+                            <td class="table-num px-4 py-3 text-right {{ $totalSisaStok <= 0 ? 'text-red-600' : 'text-emerald-700' }} font-bold">
+                                {{ number_format($totalSisaStok, 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3"></td>
+                        </tr>
+                    </tfoot>
+                @endif
 
             </table>
 
@@ -423,7 +487,7 @@
                         </th>
 
                         <th scope="col" class="text-right">
-                            Stok
+                            Sisa Stok
                         </th>
 
                     </tr>
@@ -438,6 +502,7 @@
                             $expiredDate = $item->expired_date
                                 ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
                                 : null;
+                            $sisaStokExp = (int) $item->jumlah - (int) ($item->stok_terjual ?? 0) - (int) ($item->stok_rusak ?? 0);
                         @endphp
 
                         <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
@@ -463,7 +528,7 @@
                             </td>
 
                             <td class="table-num font-bold text-gray-800">
-                                {{ $item->stok }}
+                                {{ number_format($sisaStokExp, 0, ',', '.') }}
                             </td>
 
                         </tr>

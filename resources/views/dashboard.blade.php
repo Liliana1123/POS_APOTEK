@@ -282,124 +282,210 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 5. INVENTORY CONTROL CENTER                                  --}}
     {{-- ============================================================ --}}
-    <div class="space-y-3">
-        <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Inventory Control Center
-            </h2>
-            <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                Laporan Stok Lengkap &rarr;
-            </a>
-        </div>
+    {{-- 5. INVENTORY CONTROL CENTER & EXPIRY HEALTH                  --}}
+    {{-- ============================================================ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {{-- Panel Kondisi Stok (TANPA TOTAL SKU) --}}
-            <div class="dashboard-card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-start justify-between pb-3 border-b border-gray-150">
-                        <div>
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Total Stok Unit Aktif</span>
-                            <div class="text-2xl font-black text-gray-900 mt-1">
-                                {{ number_format($totalStok) }} <span class="text-sm font-semibold text-gray-500">Unit</span>
-                            </div>
+        {{-- KARTU KIRI: INVENTORY CONTROL CENTER --}}
+        <div class="dashboard-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-150">
+                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                        <x-heroicon-o-archive-box class="w-4 h-4" />
+                    </span>
+                    Inventory Control Center
+                </h3>
+                <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+                    Lihat Stok &rarr;
+                </a>
+            </div>
+
+            <div class="flex flex-col gap-3 mt-3.5 flex-1 justify-between">
+                {{-- Baris Atas: 2 Kartu Metrik (Total Stok & Nilai Persediaan) --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {{-- Total Stok --}}
+                    <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-150 flex items-center justify-center text-emerald-600 shrink-0">
+                            <x-heroicon-o-cube class="w-6 h-6" />
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Nilai Persediaan</span>
-                            <div class="text-lg font-bold text-blue-700 mt-1">
-                                Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                        <div class="min-w-0">
+                            <span class="text-xs font-semibold text-gray-500 block">Total Stok</span>
+                            <div class="text-xl font-black text-gray-900 leading-tight mt-0.5">
+                                {{ number_format($totalStok) }} <span class="text-xs font-medium text-gray-400">Unit</span>
                             </div>
+                            <span class="text-[11px] text-gray-400 font-medium">Fisik persediaan</span>
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <span class="text-xs font-bold text-gray-700 uppercase tracking-wide block mb-2">Kondisi Stok Barang</span>
-                        <div class="grid grid-cols-3 gap-2.5">
+                    {{-- Nilai Persediaan --}}
+                    <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-150 flex items-center justify-center text-amber-600 shrink-0">
+                            <x-heroicon-o-circle-stack class="w-6 h-6" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <span class="text-xs font-semibold text-gray-500 block">Nilai Persediaan</span>
+                            <div class="text-lg sm:text-xl font-black text-gray-900 leading-tight mt-0.5 truncate" title="Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}">
+                                Rp{{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                            </div>
+                            <span class="text-[11px] text-gray-400 font-medium">Estimasi valuasi</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Baris Bawah: Kondisi Stok dengan Doughnut Chart & Legend --}}
+                @php
+                    $totalKondisiStok = $stokHabisCount + $stokMenipisCount + $stokAmanCount;
+                    $totalK = max(1, $totalKondisiStok);
+                    $pctHabis = ($totalKondisiStok > 0) ? number_format(($stokHabisCount / $totalK) * 100, 1, ',', '.') : '0';
+                    $pctMenipis = ($totalKondisiStok > 0) ? number_format(($stokMenipisCount / $totalK) * 100, 1, ',', '.') : '0';
+                    $pctAmanStok = ($totalKondisiStok > 0) ? number_format(($stokAmanCount / $totalK) * 100, 1, ',', '.') : '0';
+                @endphp
+                <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                            Kondisi Stok
+                        </span>
+                        <span class="text-[11px] text-gray-400 font-medium">{{ number_format($totalKondisiStok) }} Total Item</span>
+                    </div>
+
+                    <div class="flex items-center gap-5">
+                        {{-- Doughnut Chart Kondisi Stok with Center Text --}}
+                        <div class="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                            <canvas id="kondisiStokChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                <span class="text-[8px] text-gray-400 font-medium uppercase tracking-wider">Total</span>
+                                <span class="text-xs font-black text-gray-900 leading-tight">{{ number_format($totalKondisiStok) }}</span>
+                                <span class="text-[8px] text-gray-400 font-medium">Item</span>
+                            </div>
+                        </div>
+
+                        {{-- Legend List --}}
+                        <div class="flex-1 space-y-1.5 w-full">
                             <a href="{{ route('laporan.stok', ['status_stok' => 'habis']) }}"
-                               class="p-3 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100/60 transition-colors flex items-center justify-between group">
-                                <div>
-                                    <span class="text-[11px] font-bold text-rose-700 uppercase tracking-wider block">Habis</span>
-                                    <span class="text-xl font-black text-rose-900 block mt-0.5">{{ $stokHabisCount }}</span>
+                               class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-rose-700">Habis</span>
                                 </div>
-                                <span class="text-xs text-rose-400 group-hover:text-rose-600">&rarr;</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($stokHabisCount) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctHabis }}%</span>
+                                </div>
                             </a>
 
                             <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}"
-                               class="p-3 rounded-lg border border-amber-200 bg-amber-50/50 hover:bg-amber-100/60 transition-colors flex items-center justify-between group">
-                                <div>
-                                    <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider block">Menipis</span>
-                                    <span class="text-xl font-black text-amber-900 block mt-0.5">{{ $stokMenipisCount }}</span>
+                               class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-amber-700">Menipis</span>
                                 </div>
-                                <span class="text-xs text-amber-400 group-hover:text-amber-600">&rarr;</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($stokMenipisCount) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctMenipis }}%</span>
+                                </div>
                             </a>
 
                             <a href="{{ route('laporan.stok', ['status_stok' => 'aman']) }}"
-                               class="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/60 transition-colors flex items-center justify-between group">
-                                <div>
-                                    <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">Aman</span>
-                                    <span class="text-xl font-black text-emerald-900 block mt-0.5">{{ $stokAmanCount }}</span>
+                               class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman</span>
                                 </div>
-                                <span class="text-xs text-emerald-400 group-hover:text-emerald-600">&rarr;</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($stokAmanCount) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAmanStok }}%</span>
+                                </div>
                             </a>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-500 flex items-center justify-between">
-                    <span>*Threshold konsisten dengan Laporan Stok Apotek</span>
-                    <span class="font-medium text-gray-700">Total Produk: {{ $stokHabisCount + $stokMenipisCount + $stokAmanCount }}</span>
-                </div>
+        {{-- KARTU KANAN: EXPIRY HEALTH --}}
+        <div class="dashboard-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-150">
+                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                    <span class="p-1.5 rounded-lg bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center">
+                        <x-heroicon-o-clock class="w-4 h-4" />
+                    </span>
+                    Expiry Health
+                </h3>
+                <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+                    Lihat Semua &rarr;
+                </a>
             </div>
 
-            {{-- Panel Expiry Health --}}
-            <div class="dashboard-card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-start justify-between pb-3 border-b border-gray-150">
-                        <div>
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Expiry Health</span>
-                            <div class="text-lg font-bold text-gray-900 mt-0.5">
-                                Status Kedaluwarsa Batch
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500 block">Total Batch Aktif</span>
-                            <span class="text-base font-bold text-gray-800">{{ $totalBatchesCount }} Batch</span>
-                        </div>
-                    </div>
+            @php
+                $totalB = max(1, $totalBatchesCount);
+                $pctAman = ($totalBatchesCount > 0) ? number_format(($expiryAman / $totalB) * 100, 1, ',', '.') : '0';
+                $pctWarning = ($totalBatchesCount > 0) ? number_format(($expiryWarning / $totalB) * 100, 1, ',', '.') : '0';
+                $pctCritical = ($totalBatchesCount > 0) ? number_format(($expiryCritical / $totalB) * 100, 1, ',', '.') : '0';
+                $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
+            @endphp
 
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
-                        <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
-                           class="p-2.5 rounded-lg border border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 transition-colors text-center block">
-                            <span class="text-[10px] font-bold text-emerald-700 block uppercase">Aman (>90 hr)</span>
-                            <span class="text-lg font-black text-emerald-800 block mt-1">{{ $expiryAman }}</span>
-                        </a>
-
-                        <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
-                           class="p-2.5 rounded-lg border border-amber-200 bg-amber-50/40 hover:bg-amber-50 transition-colors text-center block">
-                            <span class="text-[10px] font-bold text-amber-700 block uppercase">Warning (60-90)</span>
-                            <span class="text-lg font-black text-amber-800 block mt-1">{{ $expiryWarning }}</span>
-                        </a>
-
-                        <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
-                           class="p-2.5 rounded-lg border border-orange-200 bg-orange-50/40 hover:bg-orange-50 transition-colors text-center block">
-                            <span class="text-[10px] font-bold text-orange-700 block uppercase">Critical (<60)</span>
-                            <span class="text-lg font-black text-orange-800 block mt-1">{{ $expiryCritical }}</span>
-                        </a>
-
-                        <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
-                           class="p-2.5 rounded-lg border border-rose-200 bg-rose-50/40 hover:bg-rose-50 transition-colors text-center block">
-                            <span class="text-[10px] font-bold text-rose-700 block uppercase">Kadaluarsa</span>
-                            <span class="text-lg font-black text-rose-800 block mt-1">{{ $expiryKadaluarsa }}</span>
-                        </a>
+            <div class="flex flex-col sm:flex-row items-center gap-6 mt-4 my-auto py-2">
+                {{-- Donut Chart Expiry Health with Center Text --}}
+                <div class="relative w-36 h-36 shrink-0 flex items-center justify-center">
+                    <canvas id="expiryHealthChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                        <span class="text-[10px] text-gray-400 font-medium leading-none">Total</span>
+                        <span class="text-xl font-black text-gray-900 leading-tight my-0.5">{{ number_format($totalBatchesCount) }}</span>
+                        <span class="text-[10px] text-gray-400 font-medium leading-none">Batch</span>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-500 flex items-center justify-between">
-                    <span>*Klik kategori untuk memfilter langsung di Laporan Stok</span>
-                    <span class="font-semibold text-rose-600">
-                        {{ $expiryKadaluarsa + $expiryCritical }} Batch perlu tindakan
-                    </span>
+                {{-- Legend List dengan Angka dan Persentase --}}
+                <div class="flex-1 w-full space-y-2.5">
+                    <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
+                       class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-gray-900">{{ number_format($expiryAman) }}</span>
+                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAman }}%</span>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
+                       class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                            <span class="font-medium text-gray-700 group-hover:text-amber-700">Warning (30–90 hari)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
+                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctWarning }}%</span>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
+                       class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                            <span class="font-medium text-gray-700 group-hover:text-orange-700">Critical (&lt;30 hari)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
+                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctCritical }}%</span>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
+                       class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                            <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluarsa</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
+                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctKadaluarsa }}%</span>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -809,6 +895,107 @@
                 }
             }
         });
+
+        // ==========================================
+        // DOUGHNUT CHART: KONDISI STOK
+        // ==========================================
+        const ctxKondisi = document.getElementById('kondisiStokChart');
+        if (ctxKondisi) {
+            const stokHabis = {{ (int) $stokHabisCount }};
+            const stokMenipis = {{ (int) $stokMenipisCount }};
+            const stokAman = {{ (int) $stokAmanCount }};
+            const totalKondisi = stokHabis + stokMenipis + stokAman;
+
+            new Chart(ctxKondisi, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Habis', 'Menipis', 'Aman'],
+                    datasets: [{
+                        data: totalKondisi > 0 ? [stokHabis, stokMenipis, stokAman] : [0, 0, 1],
+                        backgroundColor: totalKondisi > 0 ? ['#ef4444', '#f59e0b', '#10b981'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: totalKondisi > 0,
+                            backgroundColor: '#0f172a',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e2e8f0',
+                            padding: 8,
+                            cornerRadius: 6,
+                            titleFont: { size: 11, weight: 'bold' },
+                            bodyFont: { size: 10 },
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.parsed;
+                                    const pct = totalKondisi > 0 ? ((val / totalKondisi) * 100).toFixed(1) : 0;
+                                    return context.label + ': ' + val + ' item (' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // DOUGHNUT CHART: EXPIRY HEALTH
+        // ==========================================
+        const ctxExpiry = document.getElementById('expiryHealthChart');
+        if (ctxExpiry) {
+            const expAman = {{ (int) $expiryAman }};
+            const expWarning = {{ (int) $expiryWarning }};
+            const expCritical = {{ (int) $expiryCritical }};
+            const expKadaluarsa = {{ (int) $expiryKadaluarsa }};
+            const totalExpiry = expAman + expWarning + expCritical + expKadaluarsa;
+
+            new Chart(ctxExpiry, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aman (>90 hari)', 'Warning (30–90 hari)', 'Critical (<30 hari)', 'Kadaluarsa'],
+                    datasets: [{
+                        data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
+                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: totalExpiry > 0,
+                            backgroundColor: '#0f172a',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e2e8f0',
+                            padding: 10,
+                            cornerRadius: 8,
+                            titleFont: { size: 12, weight: 'bold' },
+                            bodyFont: { size: 11 },
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.parsed;
+                                    const pct = totalExpiry > 0 ? ((val / totalExpiry) * 100).toFixed(1) : 0;
+                                    return context.label + ': ' + val + ' batch (' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     });
 </script>
 @endsection

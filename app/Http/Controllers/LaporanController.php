@@ -70,6 +70,8 @@ class LaporanController extends Controller
             ->get();
 
         $stokPerBatch = DetailPenerimaan::with(['barang.kategori'])
+            ->withSum('detailPenjualan as stok_terjual', 'jumlah')
+            ->withSum('rusak as stok_rusak', 'jumlah')
             ->when($request->status_stok !== 'habis', function ($query) {
                 $query->where('aktif', true)
                     ->where('stok', '>', 0);
@@ -137,9 +139,17 @@ class LaporanController extends Controller
                 ->whereColumn('barangs.id', 'detail_penerimaans.barang_id')
             )
             ->orderBy('expired_date')
-            ->get();    
+            ->get();
+
+        // Ringkasan metrik stok sinkron dari data transaksi riil
+        $totalStokAwal = $stokPerBatch->sum('jumlah');
+        $totalStokTerjual = $stokPerBatch->sum(fn ($i) => (int) ($i->stok_terjual ?? 0));
+        $totalStokRusak = $stokPerBatch->sum(fn ($i) => (int) ($i->stok_rusak ?? 0));
+        $totalSisaStok = $totalStokAwal - $totalStokTerjual - $totalStokRusak;
 
         $mendekatiExpired = DetailPenerimaan::with('barang')
+            ->withSum('detailPenjualan as stok_terjual', 'jumlah')
+            ->withSum('rusak as stok_rusak', 'jumlah')
             ->when($request->filled('nama'), function ($query) use ($request) {
                 $query->whereHas('barang', function ($q) use ($request) {
                     $q->where('nama', 'like', '%' . $request->nama . '%');
@@ -154,23 +164,32 @@ class LaporanController extends Controller
             ->orderBy('expired_date')
             ->get();
 
-            if ($request->query('export') === 'csv') {
-                $headers = ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status'];
-                $data = [];
-                foreach ($barangs as $b) {
-                    $stok = $b->stokTotal();
-                    $data[] = [
-                        $b->nama,
-                        $b->kategori->nama,
-                        $stok,
-                        $b->stok_minimum,
-                        $stok <= $b->stok_minimum ? 'Menipis' : 'Aman'
-                    ];
-                }
-                return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
+        if ($request->query('export') === 'csv') {
+            $headers = ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status'];
+            $data = [];
+            foreach ($barangs as $b) {
+                $stok = $b->stokTotal();
+                $data[] = [
+                    $b->nama,
+                    $b->kategori->nama,
+                    $stok,
+                    $b->stok_minimum,
+                    $stok <= $b->stok_minimum ? 'Menipis' : 'Aman'
+                ];
+            }
+            return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
         }
 
-        return view('laporan.stok', compact('barangs', 'stokPerBatch', 'mendekatiExpired', 'kategoris'));
+        return view('laporan.stok', compact(
+            'barangs',
+            'stokPerBatch',
+            'mendekatiExpired',
+            'kategoris',
+            'totalStokAwal',
+            'totalStokTerjual',
+            'totalStokRusak',
+            'totalSisaStok'
+        ));
     }
 
     // Laporan penerimaan barang dalam rentang tanggal

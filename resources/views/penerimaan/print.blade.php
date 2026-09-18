@@ -438,7 +438,7 @@
                             </td>
 
                             <td>
-                                {{ $item->barang->nama ?? '—' }}
+                                {{ $riwayat->detailPesanan->barang->nama ?? $riwayat->detailPenerimaan->barang->nama ?? '—' }}
                             </td>
 
                             <td class="text-right">
