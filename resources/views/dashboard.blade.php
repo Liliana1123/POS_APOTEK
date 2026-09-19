@@ -2,7 +2,9 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="dashboard-container space-y-7">
+
+
+<div class="dashboard-container dashboard-reference space-y-5">
 
     {{-- ============================================================ --}}
     {{-- 1. HEADER EXECUTIVE DENGAN FILTER PERIODE                    --}}
@@ -10,7 +12,6 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
             <div class="flex items-center gap-2">
-                <span class="text-2xl">👋</span>
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
             </div>
             <p class="text-sm text-gray-500 mt-1">
@@ -65,200 +66,45 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 2. KPI KEUANGAN UTAMA (4 KARTU)                              --}}
+        {{-- ============================================================ --}}
+    {{-- 2. KPI UTAMA (6 KARTU)                                       --}}
     {{-- ============================================================ --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {{-- Card 1: Omzet Kotor --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div class="kpi-card kpi-kotor flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Kotor</span>
-                <div class="text-xl sm:text-2xl font-black text-gray-900 mt-1 tracking-tight">
-                    Rp {{ number_format($omzetKotor, 0, ',', '.') }}
-                </div>
-                <div class="flex items-center gap-1.5 mt-1">
-                    <span class="text-[11px] text-gray-500">Sebelum diskon</span>
-                    @if(!is_null($deltaOmzetKotor))
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $deltaOmzetKotor >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }}">
-                            {{ $deltaOmzetKotor >= 0 ? '+' : '' }}{{ $deltaOmzetKotor }}%
-                        </span>
-                    @endif
-                </div>
-            </div>
-            <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs">
-                <x-heroicon-o-arrow-trending-up class="w-6 h-6" />
-            </div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Kotor</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetKotor, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Sebelum diskon</span></div>
+            <div class="kpi-icon bg-blue-50 text-blue-600 shadow-2xs"><x-heroicon-o-chart-bar class="w-6 h-6" /></div>
         </div>
-
-        {{-- Card 2: Total Diskon --}}
         <div class="kpi-card kpi-diskon flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Diskon</span>
-                <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1 tracking-tight">
-                    Rp {{ number_format($totalDiskon, 0, ',', '.') }}
-                </div>
-                <div class="flex items-center gap-1.5 mt-1">
-                    <span class="text-[11px] text-gray-500">Total diskon transaksi</span>
-                    @if(!is_null($deltaTotalDiskon))
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $deltaTotalDiskon <= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
-                            {{ $deltaTotalDiskon >= 0 ? '+' : '' }}{{ $deltaTotalDiskon }}%
-                        </span>
-                    @endif
-                </div>
-            </div>
-            <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs">
-                <x-heroicon-o-tag class="w-6 h-6" />
-            </div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Diskon</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total diskon transaksi</span></div>
+            <div class="kpi-icon bg-purple-50 text-purple-600 shadow-2xs"><x-heroicon-o-tag class="w-6 h-6" /></div>
         </div>
-
-        {{-- Card 3: Omzet Bersih --}}
         <div class="kpi-card kpi-bersih flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Bersih</span>
-                <div class="text-xl sm:text-2xl font-black text-blue-600 mt-1 tracking-tight">
-                    Rp {{ number_format($omzetBersih, 0, ',', '.') }}
-                </div>
-                <div class="flex items-center gap-1.5 mt-1">
-                    <span class="text-[11px] text-gray-500">Omzet kotor - total diskon</span>
-                    @if(!is_null($deltaOmzetBersih))
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $deltaOmzetBersih >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }}">
-                            {{ $deltaOmzetBersih >= 0 ? '+' : '' }}{{ $deltaOmzetBersih }}%
-                        </span>
-                    @endif
-                </div>
-            </div>
-            <div class="kpi-icon bg-blue-50 text-blue-600 shadow-2xs">
-                <x-heroicon-o-banknotes class="w-6 h-6" />
-            </div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Bersih</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetBersih, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Setelah diskon</span></div>
+            <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs"><x-heroicon-o-banknotes class="w-6 h-6" /></div>
         </div>
-
-        {{-- Card 4: Total Member --}}
         <div class="kpi-card kpi-member flex items-center justify-between">
-            <div>
-                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Member</span>
-                <div class="text-xl sm:text-2xl font-black text-purple-700 mt-1 tracking-tight">
-                    {{ number_format($totalMember) }}
-                </div>
-                <div class="flex items-center gap-1.5 mt-1">
-                    <span class="text-[11px] text-gray-500">Member terdaftar</span>
-                    @if($newMembersInPeriod > 0)
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-700">
-                            +{{ $newMembersInPeriod }} baru periode ini
-                        </span>
-                    @endif
-                </div>
-            </div>
-            <div class="kpi-icon bg-purple-50 text-purple-600 shadow-2xs">
-                <x-heroicon-o-user-group class="w-6 h-6" />
-            </div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Member</span><div class="text-xl font-black text-gray-900 mt-1">{{ number_format($totalMember) }}</div><span class="text-[11px] text-gray-500 block mt-1">Member terdaftar</span></div>
+            <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs"><x-heroicon-o-user-group class="w-6 h-6" /></div>
+        </div>
+        <div class="kpi-card flex items-center justify-between">
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Hutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
+            <div class="kpi-icon bg-sky-50 text-sky-600 shadow-2xs"><x-heroicon-o-building-office-2 class="w-6 h-6" /></div>
+        </div>
+        <div class="kpi-card flex items-center justify-between">
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Member</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total piutang member</span></div>
+            <div class="kpi-icon bg-rose-50 text-rose-600 shadow-2xs"><x-heroicon-o-credit-card class="w-6 h-6" /></div>
         </div>
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 3. FINANCIAL CONTROL (HUTANG SUPPLIER & PIUTANG MEMBER)       --}}
+    {{-- 3. GRAFIK + BUSINESS HEALTH + ACTION CENTER                  --}}
     {{-- ============================================================ --}}
-    <div class="space-y-3">
-        <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-blue-600"></span> Financial Control
-            </h2>
-            <span class="text-xs text-gray-500">Kondisi liabilitas & piutang berjalan</span>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {{-- Panel Hutang Supplier --}}
-            <div class="dashboard-card p-5">
-                <div class="flex items-start justify-between pb-3 border-b border-gray-150">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-building-office-2 class="w-5 h-5" />
-                        </div>
-                        <div>
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Hutang Supplier</span>
-                            <div class="text-xl font-bold text-gray-900 mt-0.5">
-                                Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}
-                            </div>
-                        </div>
-                    </div>
-                    <a href="{{ route('penerimaan.index', ['status_pembayaran' => 'belum_lunas']) }}"
-                       class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
-                        Buka Penerimaan &rarr;
-                    </a>
-                </div>
-
-                {{-- Breakdown Hutang --}}
-                <div class="grid grid-cols-3 gap-3 mt-4 pt-1">
-                    <div class="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100">
-                        <span class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide block">Belum Tempo</span>
-                        <span class="text-sm font-bold text-emerald-800 block mt-1">Rp {{ number_format($hutangNotDue, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-emerald-600 block mt-0.5">{{ $countHutangNotDue }} faktur</span>
-                    </div>
-
-                    <div class="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
-                        <span class="text-[10px] font-semibold text-amber-700 uppercase tracking-wide block">Segera Tempo (H-7)</span>
-                        <span class="text-sm font-bold text-amber-800 block mt-1">Rp {{ number_format($hutangDueSoon, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-amber-600 block mt-0.5">{{ $countHutangDueSoon }} faktur</span>
-                    </div>
-
-                    <div class="p-2.5 rounded-lg bg-rose-50/60 border border-rose-100">
-                        <span class="text-[10px] font-semibold text-rose-700 uppercase tracking-wide block">Jatuh Tempo</span>
-                        <span class="text-sm font-bold text-rose-800 block mt-1">Rp {{ number_format($hutangOverdue, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-rose-600 block mt-0.5">{{ $countHutangOverdue }} faktur</span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Panel Piutang Member --}}
-            <div class="dashboard-card p-5">
-                <div class="flex items-start justify-between pb-3 border-b border-gray-150">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-credit-card class="w-5 h-5" />
-                        </div>
-                        <div>
-                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Piutang Member</span>
-                            <div class="text-xl font-bold text-gray-900 mt-0.5">
-                                Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}
-                            </div>
-                        </div>
-                    </div>
-                    <a href="{{ route('pelanggan.index', ['status_piutang' => 'belum_lunas']) }}"
-                       class="text-xs font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors">
-                        Buka Pelanggan &rarr;
-                    </a>
-                </div>
-
-                {{-- Breakdown Piutang --}}
-                <div class="grid grid-cols-3 gap-3 mt-4 pt-1">
-                    <div class="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100">
-                        <span class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wide block">Belum Tempo</span>
-                        <span class="text-sm font-bold text-emerald-800 block mt-1">Rp {{ number_format($piutangNotDue, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-emerald-600 block mt-0.5">{{ $countPiutangNotDue }} piutang</span>
-                    </div>
-
-                    <div class="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
-                        <span class="text-[10px] font-semibold text-amber-700 uppercase tracking-wide block">Segera Tempo</span>
-                        <span class="text-sm font-bold text-amber-800 block mt-1">Rp {{ number_format($piutangDueSoon, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-amber-600 block mt-0.5">{{ $countPiutangDueSoon }} piutang</span>
-                    </div>
-
-                    <div class="p-2.5 rounded-lg bg-rose-50/60 border border-rose-100">
-                        <span class="text-[10px] font-semibold text-rose-700 uppercase tracking-wide block">Overdue</span>
-                        <span class="text-sm font-bold text-rose-800 block mt-1">Rp {{ number_format($piutangOverdue, 0, ',', '.') }}</span>
-                        <span class="text-[10px] text-rose-600 block mt-0.5">{{ $countPiutangOverdue }} piutang</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- 4. GRAFIK PENJUALAN (SALES & PROFIT PERFORMANCE)              --}}
-    {{-- ============================================================ --}}
-    <div class="dashboard-card p-5">
+    <div class="main-dashboard-grid grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
+        <div class="main-graph-card xl:col-span-5"><div class="dashboard-card p-4 h-full">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
             <div>
-                <h3 class="text-base font-bold text-gray-900 tracking-tight">Sales & Profit Performance</h3>
-                <p class="text-xs text-gray-500 mt-0.5">Grafik tren transaksi penjualan dan omzet apotek aktual.</p>
+                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan & Omzet</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
             </div>
             <div class="flex items-center gap-4 text-xs font-medium">
                 <span class="inline-flex items-center gap-1.5">
@@ -279,17 +125,285 @@
         <div class="relative w-full" style="min-height: 280px; max-height: 340px;">
             <canvas id="salesPerformanceChart"></canvas>
         </div>
+
+
+
     </div>
 
     {{-- ============================================================ --}}
-    {{-- ============================================================ --}}
-    {{-- 5. INVENTORY CONTROL CENTER & EXPIRY HEALTH                  --}}
-    {{-- ============================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+    {{-- ============================================================ --}}</div>
+    <div class="main-health-card xl:col-span-4">
+        @php
+            // =========================
+            // BUSINESS HEALTH
+            // =========================
 
-        {{-- KARTU KIRI: INVENTORY CONTROL CENTER --}}
-        <div class="dashboard-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-150">
+            // Total kondisi stok
+            $totalStokHealth = max(
+                1,
+                (int) ($totalKondisiStok ?? (
+                    $stokAmanCount + $stokMenipisCount + $stokHabisCount
+                ))
+            );
+
+            // Persentase stok aman
+            $stokSehatPersen = min(
+                100,
+                max(0, round(($stokAmanCount / $totalStokHealth) * 100))
+            );
+
+            // Status kesehatan stok
+            $healthStatus = $stokSehatPersen >= 80
+                ? 'Sehat'
+                : ($stokSehatPersen >= 60 ? 'Perlu Dipantau' : 'Perlu Perhatian');
+
+            // Gross Profit dari data grafik yang sudah dihitung Controller
+            $grossProfitHealth = array_sum($chartProfit ?? []);
+
+            // Margin
+            $marginHealth = $omzetBersih > 0
+                ? ($grossProfitHealth / $omzetBersih) * 100
+                : 0;
+        @endphp
+
+        <div class="dashboard-card h-full overflow-hidden relative p-4 bg-white">
+
+            {{-- Header --}}
+            <div class="relative flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <x-heroicon-o-heart class="w-5 h-5" />
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-extrabold text-gray-900">
+                            Business Health
+                        </h3>
+                        <p class="text-[9px] text-gray-400 mt-0.5">
+                            Kondisi operasional saat ini
+                        </p>
+                    </div>
+                </div>
+
+                {{-- LIVE --}}
+                <div class="flex items-center gap-1.5 text-[8px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Live
+                </div>
+            </div>
+
+            {{-- =========================================================
+                ISI BUSINESS HEALTH
+            ========================================================== --}}
+            <div class="grid grid-cols-1 md:grid-cols-[125px_1fr] gap-4">
+
+                {{-- LEFT : HEALTH SCORE --}}
+                <div class="flex flex-col items-center justify-center border-r border-gray-100 pr-4">
+
+                    {{-- Circle Percentage --}}
+                    <div class="relative w-[105px] h-[105px]">
+                        <div
+                            class="absolute inset-0 rounded-full"
+                            style="
+                                background: conic-gradient(
+                                    #10b981 {{ $stokSehatPersen }}%,
+                                    #e5e7eb 0
+                                );
+                                transform: rotate(-90deg);
+                            "
+                        ></div>
+
+                        <div class="absolute inset-[7px] rounded-full bg-white flex flex-col items-center justify-center">
+                            <span class="text-[27px] font-black text-gray-900 leading-none">
+                                {{ $stokSehatPersen }}%
+                            </span>
+
+                            <span class="text-[8px] font-bold text-gray-400 mt-1">
+                                STOK AMAN
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Status --}}
+                    <div class="mt-3 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-extrabold">
+                        ♥ {{ $healthStatus }}
+                    </div>
+                </div>
+
+
+                {{-- RIGHT : BUSINESS METRICS --}}
+                <div class="space-y-1.5">
+
+                    {{-- Penjualan --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <x-heroicon-o-banknotes class="w-4 h-4" />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Penjualan
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format($omzetBersih, 0, ',', '.') }}
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold
+                            {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                            {{ ($deltaOmzetBersih ?? 0) >= 0 ? '↑' : '↓' }}
+                            {{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '-' }}
+                        </div>
+                    </div>
+
+
+                    {{-- Gross Profit --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <x-heroicon-o-chart-bar class="w-4 h-4" />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Gross Profit
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format($grossProfitHealth, 0, ',', '.') }}
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold
+                            {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                            {{ ($deltaGrossProfit ?? 0) >= 0 ? '↑' : '↓' }}
+                            {{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '-' }}
+                        </div>
+                    </div>
+
+
+                    {{-- Margin --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                            <span class="text-sm font-black">%</span>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Margin
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            {{ number_format($marginHealth, 1, ',', '.') }}%
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                            —
+                        </div>
+                    </div>
+
+
+                    {{-- Hutang Supplier --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <x-heroicon-o-building-office-2 class="w-4 h-4" />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Hutang Supplier
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                            —
+                        </div>
+                    </div>
+
+
+                    {{-- Piutang Member --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                            <x-heroicon-o-users class="w-4 h-4" />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Piutang Member
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold text-rose-500">
+                            —
+                        </div>
+                    </div>
+
+
+                    {{-- Nilai Persediaan --}}
+                    <div class="flex items-center gap-2.5 py-1.5">
+                        <div class="w-7 h-7 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                            <x-heroicon-o-cube class="w-4 h-4" />
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[10px] font-bold text-gray-600">
+                                Nilai Persediaan
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                        </div>
+
+                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                            —
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="main-action-column xl:col-span-3 space-y-3">
+            <div class="dashboard-card p-4">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-gray-900">Action Center</h3>
+    </div>
+    <div class="space-y-2">
+        <a href="{{ $actionCenter['critical']['route'] }}" class="action-alert-card critical block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Critical</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['critical']['count'] }} · {{ $actionCenter['critical']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
+        <a href="{{ $actionCenter['attention']['route'] }}" class="action-alert-card attention block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-amber-100 text-amber-700">Attention</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['attention']['count'] }} · {{ $actionCenter['attention']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-amber-400" /></div></a>
+        <a href="{{ $actionCenter['monitoring']['route'] }}" class="action-alert-card monitoring block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-sky-100 text-sky-700">Monitoring</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['monitoring']['count'] }} · {{ $actionCenter['monitoring']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-sky-400" /></div></a>
+        <a href="{{ $actionCenter['overdue']['route'] }}" class="action-alert-card overdue block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Overdue</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['overdue']['count'] }} · {{ $actionCenter['overdue']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
+        <a href="{{ $actionCenter['piutang']['route'] }}" class="action-alert-card piutang block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-purple-100 text-purple-700">Piutang</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['piutang']['count'] }} · {{ $actionCenter['piutang']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-purple-400" /></div></a>
+    </div>
+</div>
+<div class="cashier-card dashboard-card p-3 bg-blue-700 text-white">
+    <a href="{{ route('penjualan.create') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors">
+        <x-heroicon-o-calculator class="w-4 h-4" />
+        Buka Kasir
+        <x-heroicon-o-chevron-right class="w-4 h-4 ml-auto" />
+    </a>
+</div></div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
+    {{-- ============================================================ --}}
+    <div class="inventory-row grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
+        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                 <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                     <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                         <x-heroicon-o-archive-box class="w-4 h-4" />
@@ -303,10 +417,10 @@
 
             <div class="flex flex-col gap-3 mt-3.5 flex-1 justify-between">
                 {{-- Baris Atas: 2 Kartu Metrik (Total Stok & Nilai Persediaan) --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {{-- Total Stok --}}
-                    <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs flex items-center gap-3.5">
-                        <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-150 flex items-center justify-center text-emerald-600 shrink-0">
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
                             <x-heroicon-o-cube class="w-6 h-6" />
                         </div>
                         <div class="min-w-0">
@@ -319,15 +433,17 @@
                     </div>
 
                     {{-- Nilai Persediaan --}}
-                    <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs flex items-center gap-3.5">
-                        <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-150 flex items-center justify-center text-amber-600 shrink-0">
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
                             <x-heroicon-o-circle-stack class="w-6 h-6" />
                         </div>
-                        <div class="min-w-0 flex-1">
+                       <div class="min-w-0 flex-1">
                             <span class="text-xs font-semibold text-gray-500 block">Nilai Persediaan</span>
-                            <div class="text-lg sm:text-xl font-black text-gray-900 leading-tight mt-0.5 truncate" title="Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}">
+
+                            <div class="text-lg font-black text-gray-900 leading-tight mt-0.5 whitespace-nowrap">
                                 Rp{{ number_format($nilaiPersediaan, 0, ',', '.') }}
                             </div>
+
                             <span class="text-[11px] text-gray-400 font-medium">Estimasi valuasi</span>
                         </div>
                     </div>
@@ -341,8 +457,8 @@
                     $pctMenipis = ($totalKondisiStok > 0) ? number_format(($stokMenipisCount / $totalK) * 100, 1, ',', '.') : '0';
                     $pctAmanStok = ($totalKondisiStok > 0) ? number_format(($stokAmanCount / $totalK) * 100, 1, ',', '.') : '0';
                 @endphp
-                <div class="p-3.5 rounded-xl border border-gray-150 bg-white shadow-2xs">
-                    <div class="flex items-center justify-between mb-2">
+                <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs">
+                    <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                             Kondisi Stok
@@ -350,9 +466,9 @@
                         <span class="text-[11px] text-gray-400 font-medium">{{ number_format($totalKondisiStok) }} Total Item</span>
                     </div>
 
-                    <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-4">
                         {{-- Doughnut Chart Kondisi Stok with Center Text --}}
-                        <div class="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                        <div class="relative w-[88px] h-[88px] shrink-0 flex items-center justify-center">
                             <canvas id="kondisiStokChart"></canvas>
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                                 <span class="text-[8px] text-gray-400 font-medium uppercase tracking-wider">Total</span>
@@ -362,7 +478,7 @@
                         </div>
 
                         {{-- Legend List --}}
-                        <div class="flex-1 space-y-1.5 w-full">
+                        <div class="flex-1 space-y-1 w-full min-w-0">
                             <a href="{{ route('laporan.stok', ['status_stok' => 'habis']) }}"
                                class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
@@ -388,7 +504,7 @@
                             </a>
 
                             <a href="{{ route('laporan.stok', ['status_stok' => 'aman']) }}"
-                               class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                               class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 py-1.5 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                                     <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman</span>
@@ -402,11 +518,9 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- KARTU KANAN: EXPIRY HEALTH --}}
-        <div class="dashboard-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-150">
+        </div></div>
+        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                 <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                     <span class="p-1.5 rounded-lg bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center">
                         <x-heroicon-o-clock class="w-4 h-4" />
@@ -426,9 +540,9 @@
                 $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
             @endphp
 
-            <div class="flex flex-col sm:flex-row items-center gap-6 mt-4 my-auto py-2">
+            <div class="flex flex-col sm:flex-row items-center gap-4 mt-3 my-auto py-2">
                 {{-- Donut Chart Expiry Health with Center Text --}}
-                <div class="relative w-36 h-36 shrink-0 flex items-center justify-center">
+                <div class="relative w-[132px] h-[132px] shrink-0 flex items-center justify-center">
                     <canvas id="expiryHealthChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                         <span class="text-[10px] text-gray-400 font-medium leading-none">Total</span>
@@ -438,9 +552,9 @@
                 </div>
 
                 {{-- Legend List dengan Angka dan Persentase --}}
-                <div class="flex-1 w-full space-y-2.5">
+                <div class="flex-1 w-full min-w-0 space-y-1.5">
                     <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                       class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 py-1.5 rounded transition-colors group">
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
                             <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
@@ -492,89 +606,17 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 6. ACTION CENTER (ALERT OPERASIONAL REAL-TIME)               --}}
+        <div class="xl:col-span-4">{{-- 7. BARANG YANG HARUS DIBELI                                   --}}
     {{-- ============================================================ --}}
-    <div class="space-y-3">
-        <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold uppercase tracking-wider text-gray-700 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-rose-600"></span> Action Center
-            </h2>
-            <span class="text-xs text-gray-500">Pusat monitoring kondisi yang membutuhkan perhatian operasional</span>
-        </div>
+    <div class="dashboard-card inventory-card p-5 flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                    <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
+                </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {{-- Alert 1: Stok Habis --}}
-            <a href="{{ $actionCenter['critical']['route'] }}" class="action-alert-card critical">
-                <div class="flex items-center justify-between">
-                    <span class="badge-chip bg-rose-100 text-rose-700">Critical</span>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" />
-                </div>
-                <div class="mt-2.5">
-                    <div class="text-2xl font-black text-rose-800">{{ $actionCenter['critical']['count'] }}</div>
-                    <div class="text-xs font-semibold text-gray-700 mt-0.5">{{ $actionCenter['critical']['label'] }}</div>
-                </div>
-            </a>
-
-            {{-- Alert 2: Stok Menipis --}}
-            <a href="{{ $actionCenter['attention']['route'] }}" class="action-alert-card attention">
-                <div class="flex items-center justify-between">
-                    <span class="badge-chip bg-amber-100 text-amber-700">Attention</span>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-amber-400" />
-                </div>
-                <div class="mt-2.5">
-                    <div class="text-2xl font-black text-amber-800">{{ $actionCenter['attention']['count'] }}</div>
-                    <div class="text-xs font-semibold text-gray-700 mt-0.5">{{ $actionCenter['attention']['label'] }}</div>
-                </div>
-            </a>
-
-            {{-- Alert 3: Mendekati Expired --}}
-            <a href="{{ $actionCenter['monitoring']['route'] }}" class="action-alert-card monitoring">
-                <div class="flex items-center justify-between">
-                    <span class="badge-chip bg-sky-100 text-sky-700">Monitoring</span>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-sky-400" />
-                </div>
-                <div class="mt-2.5">
-                    <div class="text-2xl font-black text-sky-800">{{ $actionCenter['monitoring']['count'] }}</div>
-                    <div class="text-xs font-semibold text-gray-700 mt-0.5">{{ $actionCenter['monitoring']['label'] }}</div>
-                </div>
-            </a>
-
-            {{-- Alert 4: Hutang Jatuh Tempo --}}
-            <a href="{{ $actionCenter['overdue']['route'] }}" class="action-alert-card overdue">
-                <div class="flex items-center justify-between">
-                    <span class="badge-chip bg-rose-100 text-rose-700">Overdue</span>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" />
-                </div>
-                <div class="mt-2.5">
-                    <div class="text-2xl font-black text-rose-800">{{ $actionCenter['overdue']['count'] }}</div>
-                    <div class="text-xs font-semibold text-gray-700 mt-0.5">{{ $actionCenter['overdue']['label'] }}</div>
-                </div>
-            </a>
-
-            {{-- Alert 5: Piutang Member --}}
-            <a href="{{ $actionCenter['piutang']['route'] }}" class="action-alert-card piutang">
-                <div class="flex items-center justify-between">
-                    <span class="badge-chip bg-purple-100 text-purple-700">Piutang</span>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-purple-400" />
-                </div>
-                <div class="mt-2.5">
-                    <div class="text-2xl font-black text-purple-800">{{ $actionCenter['piutang']['count'] }}</div>
-                    <div class="text-xs font-semibold text-gray-700 mt-0.5">{{ $actionCenter['piutang']['label'] }}</div>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- 7. BARANG YANG HARUS DIBELI                                   --}}
-    {{-- ============================================================ --}}
-    <div class="dashboard-card p-5">
-        <div class="flex items-center justify-between pb-3 border-b border-gray-150 mb-3">
-            <div class="flex items-center gap-2">
-                <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 tracking-tight">Barang yang Harus Dibeli</h3>
-                    <p class="text-xs text-gray-500">Daftar obat aktif yang stoknya habis atau di bawah batas minimum.</p>
+                    <h3 class="text-base font-bold text-gray-900">Barang yang Harus Dibeli</h3>
                 </div>
             </div>
             <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
@@ -582,28 +624,28 @@
             </a>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="table-compact w-full text-left">
+       <div class="w-full">
+            <table class="table-compact w-full text-left table-fixed">
                 <thead>
                     <tr>
-                        <th class="w-12 text-center">No</th>
-                        <th>Nama Barang</th>
-                        <th>Kategori</th>
-                        <th class="text-center">Stok Saat Ini</th>
-                        <th class="text-center">Stok Minimum</th>
-                        <th class="text-center">Kekurangan</th>
-                        <th class="text-center">Status</th>
+                        <th class="w-[8%] text-center whitespace-normal">No</th>
+                        <th class="w-[32%] whitespace-normal">Nama Barang</th>
+                        <th class="w-[22%] whitespace-normal">Kategori</th>
+                        <th class="w-[20%] text-center whitespace-normal leading-tight">
+                            Stok<br>Saat Ini
+                        </th>
+                        <th class="w-[18%] text-center whitespace-normal leading-tight">
+                            Status
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($barangHarusDibeli as $index => $item)
                         <tr>
                             <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                            <td class="font-bold text-gray-900">{{ $item['barang']->nama }}</td>
-                            <td class="text-gray-600">{{ $item['barang']->kategori->nama ?? '-' }}</td>
+                            <td class="font-bold text-gray-900 whitespace-normal break-words">{{ $item['barang']->nama }}</td>
+                            <td class="text-gray-600 whitespace-normal break-words">{{ $item['barang']->kategori->nama ?? '-' }}</td>
                             <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
-                            <td class="text-center font-medium text-gray-500">{{ $item['stok_minimum'] }}</td>
-                            <td class="text-center font-bold text-rose-600">{{ $item['kekurangan'] }}</td>
                             <td class="text-center">
                                 @if($item['status'] === 'HABIS')
                                     <span class="badge-chip bg-rose-100 text-rose-700">Habis</span>
@@ -614,7 +656,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-xs text-gray-400">
+                            <td colspan="5" class="py-8 text-center text-xs text-gray-400">
                                 Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
                             </td>
                         </tr>
@@ -624,15 +666,23 @@
         </div>
     </div>
 
+    {{-- ============================================================ --}}</div>
+    </div>
+
     {{-- ============================================================ --}}
-    {{-- 8. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
+    {{-- 5. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
+    {{-- ============================================================ --}}
+{{-- 8. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
     {{-- ============================================================ --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {{-- 10 Obat Terlaris --}}
         <div class="dashboard-card p-5">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-150 mb-3">
-                <div class="flex items-center gap-2">
-                    <x-heroicon-o-trophy class="w-5 h-5 text-amber-500" />
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                        <x-heroicon-o-trophy class="w-5 h-5 text-amber-500" />
+                    </div>
+
                     <div>
                         <h3 class="text-base font-bold text-gray-900">10 Obat Terlaris</h3>
                         <p class="text-xs text-gray-500">Kuantitas unit terjual pada periode {{ $periodeLabel }}.</p>
@@ -677,9 +727,12 @@
 
         {{-- 10 Obat Paling Sedikit Terjual --}}
         <div class="dashboard-card p-5">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-150 mb-3">
-                <div class="flex items-center gap-2">
-                    <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-rose-500" />
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
+                        <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-rose-500" />
+                    </div>
+
                     <div>
                         <h3 class="text-base font-bold text-gray-900">10 Obat Paling Sedikit Terjual</h3>
                         <p class="text-xs text-gray-500">Termasuk obat aktif yang belum terjual (0 unit).</p>
@@ -728,28 +781,7 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 9. AKSES CEPAT KASIR (SATU TOMBOL SAJA)                      --}}
-    {{-- ============================================================ --}}
-    <div class="dashboard-card p-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20">
-                <x-heroicon-o-shopping-cart class="w-7 h-7 text-white" />
-            </div>
-            <div>
-                <h3 class="text-lg font-bold text-white tracking-tight">Akses Cepat Kasir POS</h3>
-                <p class="text-xs text-blue-100 mt-0.5">
-                    Lakukan transaksi penjualan obat, audit FEFO batch otomatis, dan diskon member dalam satu layar.
-                </p>
-            </div>
-        </div>
-
-        <a href="{{ route('penjualan.create') }}"
-           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white text-blue-700 font-bold text-sm shadow-md hover:bg-blue-50 transition-all transform hover:scale-[1.02] shrink-0">
-            <x-heroicon-o-bolt class="w-5 h-5 text-amber-500" />
-            BUKA KASIR
-        </a>
-    </div>
-
+    
 </div>
 
 {{-- Script Chart.js CDN & Interaktivitas --}}

@@ -21,6 +21,14 @@
         font-size: 0.75rem !important;
         border-bottom: 1px solid #f1f5f9 !important;
     }
+
+    /* Kolom jumlah pada baris induk dan seluruh baris detail */
+    .table-detail-penerimaan tbody td:nth-child(6),
+    .table-detail-penerimaan tbody td:nth-child(7),
+    .table-detail-penerimaan tbody td:nth-child(8),
+    .table-detail-penerimaan tbody td:nth-child(9) {
+        text-align: center !important;
+    }
 </style>
 
 <!-- Info Cards Grid -->
@@ -94,7 +102,7 @@
             <thead>
                 <tr>
                     <th scope="col" class="w-10 text-center">No</th>
-                    <th scope="col" class="min-w-[14rem]">Barang</th>
+                    <th scope="col" class="min-w-[14rem] text-left">Barang</th>
                     <th scope="col" class="text-center w-24">No. Batch</th>
                     <th scope="col" class="text-center w-24">Expired</th>
                     <th scope="col" class="text-center w-16">Rak</th>
@@ -175,12 +183,12 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td class="text-right text-slate-900 font-semibold">{{ number_format($jumlahDipesan) }}</td>
-                            <td class="text-right text-blue-700 font-semibold">{{ number_format($totalDiterima) }}</td>
-                            <td class="text-right {{ $totalDibatalkan > 0 ? 'text-red-600 font-semibold' : 'text-slate-400' }}">
+                            <td class="text-center text-slate-900 font-semibold">{{ number_format($jumlahDipesan) }}</td>
+                            <td class="text-center text-blue-700 font-semibold">{{ number_format($totalDiterima) }}</td>
+                            <td class="text-center {{ $totalDibatalkan > 0 ? 'text-red-600 font-semibold' : 'text-slate-400' }}">
                                 {{ $totalDibatalkan > 0 ? number_format($totalDibatalkan) : '' }}
                             </td>
-                            <td class="text-right {{ $kekurangan > 0 ? 'text-amber-600 font-semibold' : 'text-emerald-600 font-semibold' }}">
+                            <td class="text-center {{ $kekurangan > 0 ? 'text-amber-600 font-semibold' : 'text-emerald-600 font-semibold' }}">
                                 {{ $kekurangan > 0 ? number_format($kekurangan) : '' }}
                             </td>
                             <td></td>
@@ -238,7 +246,7 @@
                                     <td class="text-right font-medium text-slate-900">
                                         Rp {{ number_format($subtotalBatch, 0, ',', '.') }}
                                     </td>
-                                    <td class="text-slate-600 text-xs">
+                                    <td class="text-center text-slate-600 text-xs">
                                         {{ $ev['keterangan'] ?: ($isSusulan ? 'Penerimaan susulan' : 'Penerimaan') }}
                                         @if ($b && $b->stok < $b->jumlah)
                                             <span class="text-slate-400 text-[11px] block sm:inline">(Sisa rak: {{ $b->stok }})</span>

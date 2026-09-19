@@ -1,27 +1,56 @@
 <style>
     .table-susulan-penerimaan {
-        width: 100%;
+        width: max-content;
+        min-width: 1350px;
+        table-layout: auto;
         border-collapse: collapse;
         font-size: 0.75rem;
         text-align: left;
     }
+
     .table-susulan-penerimaan th {
-        padding: 0.5rem 0.65rem !important;
-        font-size: 0.6875rem !important;
+        padding: 0.6rem 0.55rem !important;
+        font-size: 0.65rem !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
+        letter-spacing: 0.03em !important;
         background-color: #2563eb !important;
         color: #ffffff !important;
         border-bottom: 1px solid #1d4ed8 !important;
         white-space: nowrap !important;
+        line-height: 1.2 !important;
     }
+
     .table-susulan-penerimaan td {
-        padding: 0.45rem 0.65rem !important;
+        padding: 0.5rem 0.55rem !important;
         font-size: 0.75rem !important;
         border-bottom: 1px solid #f1f5f9 !important;
         vertical-align: middle;
+        white-space: nowrap;
     }
+
+    .table-susulan-penerimaan input {
+        box-sizing: border-box !important;
+        max-width: none !important;
+    }
+
+    .table-susulan-penerimaan input[type="number"] {
+        min-width: 135px !important;
+    }
+
+    .table-susulan-penerimaan input[type="text"] {
+        min-width: 110px !important;
+    }
+
+    .table-susulan-penerimaan input[type="date"] {
+        min-width: 50px !important;
+    }
+
+    .table-susulan-penerimaan td:nth-child(12) input {
+        min-width: 65px !important;
+        width: 65px !important;
+    }
+    
 </style>
 
 <div class="space-y-4">
@@ -123,9 +152,11 @@
             </div>
 
             <!-- Tabel Daftar Barang Kekurangan -->
-            <div class="card-base p-0 mb-4 overflow-hidden border border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="table-susulan-penerimaan w-full">
+            <div class="card-base p-0 mb-4 border border-slate-200">
+
+                <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
+
+                    <table class="table-susulan-penerimaan">
                         <thead>
                             <tr>
                                 <th scope="col" class="w-10 text-center">NO</th>
@@ -137,8 +168,8 @@
                                 <th scope="col" class="text-center w-24">BATAL</th>
                                 <th scope="col" class="w-28 text-center">NO. BATCH</th>
                                 <th scope="col" class="w-32 text-center">EXPIRED</th>
-                                <th scope="col" class="w-28 text-right">HARGA BELI</th>
-                                <th scope="col" class="w-28 text-right">HARGA JUAL</th>
+                                <th scope="col" class="w-28 text-center">HARGA BELI</th>
+                                <th scope="col" class="w-28 text-center">HARGA JUAL</th>
                                 <th scope="col" class="w-16 text-center">RAK</th>
                             </tr>
                         </thead>
@@ -157,25 +188,29 @@
                                     <td class="text-center text-slate-600 font-semibold">{{ $index + 1 }}</td>
 
                                     {{-- BARANG --}}
-                                    <td>
-                                        <div class="text-slate-900 font-semibold">{{ $barang->nama ?? '-' }}</div>
-                                        <div class="text-[11px] text-slate-500 font-normal">
-                                            Satuan: {{ $barang->satuan->nama ?? '-' }} | Pabrik: {{ $barang->pabrik->nama ?? '-' }}
+                                    <td class="break-words">
+                                        <div class="text-slate-900 font-semibold break-words">
+                                            {{ $barang->nama ?? '-' }}
+                                        </div>
+
+                                        <div class="text-[10px] text-slate-500 font-normal leading-tight break-words">
+                                            Satuan: {{ $barang->satuan->nama ?? '-' }} |
+                                            Pabrik: {{ $barang->pabrik->nama ?? '-' }}
                                         </div>
                                     </td>
 
                                     {{-- DIPESAN --}}
-                                    <td class="text-right text-slate-900 font-semibold">
+                                    <td class="text-center text-slate-900 font-semibold">
                                         {{ number_format($detail->jumlah_dipesan) }}
                                     </td>
 
                                     {{-- DITERIMA --}}
-                                    <td class="text-right text-blue-700 font-semibold">
+                                    <td class="text-center text-blue-700 font-semibold">
                                         {{ number_format($detail->totalDiterima()) }}
                                     </td>
 
                                     {{-- KURANG --}}
-                                    <td class="text-right text-amber-600 font-semibold">
+                                    <td class="text-center text-amber-600 font-semibold">
                                         {{ number_format($kekurangan) }}
                                     </td>
 
@@ -187,7 +222,7 @@
                                             min="0"
                                             max="{{ $kekurangan }}"
                                             value="0"
-                                            class="form-input !py-1 text-center font-semibold text-emerald-700 border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500 w-20 mx-auto"
+                                            class="form-input !py-1 text-center font-semibold text-emerald-700 border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500 w-full mx-auto"
                                         >
                                     </td>
 
@@ -199,8 +234,7 @@
                                             min="0"
                                             max="{{ $kekurangan }}"
                                             value="0"
-                                            class="form-input !py-1 text-center font-semibold text-red-600 border-red-300 focus:border-red-500 focus:ring-red-500 w-20 mx-auto"
-                                        >
+                                            class="form-input !py-1 text-center font-semibold text-red-600 border-red-300 focus:border-red-500 focus:ring-red-500 w-full mx-auto">
                                     </td>
 
                                     {{-- NO. BATCH --}}

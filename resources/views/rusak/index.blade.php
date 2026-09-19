@@ -7,10 +7,10 @@
         <h1 class="text-xl font-bold text-gray-800">Daftar Pencatatan Barang Rusak</h1>
         <p class="text-xs text-gray-500 mt-0.5">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
     </div>
-    <a href="{{ route('rusak.create') }}" class="btn-primary flex items-center gap-2">
+    <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>
-    </a>
+    </button>
 </div>
 
 <!-- Filter & Search Card -->
@@ -110,6 +110,108 @@
             @endforelse
         </tbody>
     </table>
+
+    @php
+        $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
+            ->orderBy('expired_date')
+            ->get();
+    @endphp
+
+    <!-- Modal Tambah Barang Rusak -->
+    <div id="modal-tambah-rusak"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+            <div class="flex justify-between items-center px-6 py-4 border-b">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">
+                        Catat Barang Rusak Baru
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Laporkan obat yang rusak, pecah, atau kadaluarsa untuk dikurangi dari stok batch.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="closeTambahRusak()"
+                    class="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                    &times;
+                </button>
+            </div>
+
+            <form action="{{ route('rusak.store') }}" method="POST" class="p-6 space-y-4 overflow-y-auto">
+                @csrf
+
+                @if ($errors->any())
+                    <div class="p-3 mb-2 text-xs text-red-700 bg-red-100 rounded-lg">
+                        <strong class="block font-bold mb-1">Perbaiki kesalahan berikut:</strong>
+                        <ul class="list-disc pl-4 space-y-0.5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang / Obat <span class="text-red-500">*</span></label>
+                    <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
+                        <option value="">Pilih Batch</option>
+                        @foreach ($batches as $batch)
+                            <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
+                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->format('d M Y') : '-' }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('detail_penerimaan_id') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Lapor <span class="text-red-500">*</span></label>
+                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
+                        @error('tanggal') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jumlah Rusak <span class="text-red-500">*</span></label>
+                        <input type="number" name="jumlah" min="1" value="{{ old('jumlah') }}" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Masukkan jumlah...">
+                        @error('jumlah') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Keterangan (Opsional)</label>
+                    <textarea name="keterangan" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Keterangan kerusakan...">{{ old('keterangan') }}</textarea>
+                    @error('keterangan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button
+                        type="button"
+                        onclick="closeTambahRusak()"
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold transition-colors"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors"
+                    >
+                        Simpan
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
 
     <!-- Modal Detail Barang Rusak -->
     <div id="modal-detail-rusak"
@@ -486,6 +588,32 @@
         alert('Gagal menyimpan perubahan.');
     });
 });
+
+function openTambahRusak() {
+    const modal = document.getElementById('modal-tambah-rusak');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closeTambahRusak() {
+    const modal = document.getElementById('modal-tambah-rusak');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+document.getElementById('modal-tambah-rusak')?.addEventListener('click', function (e) {
+    if (e.target === this) {
+        closeTambahRusak();
+    }
+});
+
+@if ($errors->any())
+    openTambahRusak();
+@endif
 
 </script>
 

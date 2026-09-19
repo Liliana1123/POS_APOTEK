@@ -91,6 +91,36 @@ class DashboardController extends Controller
         $omzetBersih = max(0, $omzetKotor - $totalDiskon);
         $prevOmzetBersih = max(0, $prevOmzetKotor - $prevTotalDiskon);
 
+        // Gross Profit periode saat ini
+        $grossProfit = (float) DB::table('detail_penjualans as dp')
+            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$dari, $sampai])
+            ->selectRaw('
+                COALESCE(
+                    SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah),
+                    0
+                ) as total
+            ')
+            ->value('total');
+
+        // Gross Profit periode sebelumnya
+        $prevGrossProfit = (float) DB::table('detail_penjualans as dp')
+            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
+            ->selectRaw('
+                COALESCE(
+                    SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah),
+                    0
+                ) as total
+            ')
+            ->value('total');
+
+$deltaGrossProfit = $prevGrossProfit > 0
+    ? round((($grossProfit - $prevGrossProfit) / $prevGrossProfit) * 100, 1)
+    : null;
+
         $totalMember = Pelanggan::where('is_member', true)->count();
         $newMembersInPeriod = Pelanggan::where('is_member', true)
             ->whereBetween('member_since', [$dari, $sampai])
@@ -434,6 +464,8 @@ class DashboardController extends Controller
             'omzetKotor',
             'totalDiskon',
             'omzetBersih',
+            'grossProfit',
+            'deltaGrossProfit',
             'totalMember',
             'newMembersInPeriod',
             'deltaOmzetKotor',

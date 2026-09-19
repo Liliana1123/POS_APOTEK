@@ -8,10 +8,10 @@
         <h1>Daftar Penerimaan Barang</h1>
         <p class="text-caption mt-1">Kelola data faktur obat masuk, supplier, dan status pembayaran.</p>
     </div>
-    <a href="{{ route('penerimaan.create') }}" class="btn-primary flex items-center gap-2">
+    <button type="button" id="btn-tambah-penerimaan" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Faktur Penerimaan Baru</span>
-    </a>
+    </button>
 </div>
 
 <!-- Filter & Search Card -->
@@ -462,7 +462,211 @@
     </div>
 </div>
 
+<!-- Modal Tambah Faktur Penerimaan Baru -->
+<div id="modal-tambah-penerimaan"
+    class="modal-backdrop-custom hidden"
+    aria-hidden="true"
+    style="align-items: flex-start; overflow-y: auto;"
+>
+    <div
+        class="modal-container-custom max-w-7xl flex flex-col"
+        style="max-height: 90vh; margin-top: 2rem; margin-bottom: 2rem;"
+    >
+        <div class="modal-header-custom">
+            <div>
+                <h2>Faktur Penerimaan Barang Baru</h2>
+                <p class="text-caption mt-1">
+                    Catat faktur masuk obat dari supplier beserta detail expired date batch.
+                </p>
+            </div>
 
+            <button
+                type="button"
+                id="btn-tutup-tambah"
+                class="btn-secondary !p-1.5"
+                title="Tutup"
+            >
+                ✕
+            </button>
+        </div>
+
+        <div class="modal-body-custom" style="overflow-y: auto; min-height: 0; flex: 1;">
+            @if ($errors->any())
+                <div class="alert-danger p-4 mb-6">
+                    <strong class="block text-xs font-bold mb-1.5">Perbaiki kesalahan berikut sebelum menyimpan faktur:</strong>
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form action="{{ route('penerimaan.store') }}" method="POST" id="form-penerimaan" class="space-y-6">
+                @csrf
+
+                <!-- Form Header Card -->
+                <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Faktur <span class="text-red-500 font-bold">*</span></label>
+                        <input type="text" name="no_faktur" value="{{ old('no_faktur') }}" required
+                            class="form-input font-mono font-semibold" placeholder="Nomor faktur masuk...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                            Tanggal Faktur <span class="text-red-500 font-bold">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            name="tanggal_faktur"
+                            value="{{ old('tanggal_faktur') }}"
+                            required
+                            class="form-input"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Terima <span class="text-red-500 font-bold">*</span></label>
+                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
+                            class="form-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Supplier <span class="text-red-500 font-bold">*</span></label>
+                        <select name="supplier_id" id="supplier_id" required class="form-input">
+                            <option value="">Pilih Supplier</option>
+                            @foreach ($suppliers as $supplier)
+                                <option value="{{ $supplier->id }}" data-telepon="{{ $supplier->telepon }}" @selected(old('supplier_id') == $supplier->id)>{{ $supplier->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Telepon Supplier</label>
+                        <input type="text" id="telepon_supplier" class="form-input bg-gray-50" readonly placeholder="Otomatis dari master supplier">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
+                        <input type="text" name="keterangan" value="{{ old('keterangan') }}" class="form-input" placeholder="Keterangan penerimaan (opsional)">
+                    </div>
+                </div>
+
+                <!-- Details Card -->
+                <div class="card-base p-6">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
+                        <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
+                            + Tambah Item Barang
+                        </button>
+                    </div>
+
+                    <div class="table-custom-container">
+                        <div class="overflow-x-auto">
+                            <table class="table-custom min-w-[1150px] mb-2 table-fixed">
+                                <colgroup>
+                                    <col class="w-[210px]">
+                                    <col class="w-[100px]">
+                                    <col class="w-[110px]">
+                                    <col class="w-[125px]">
+                                    <col class="w-[105px]">
+                                    <col class="w-[105px]">
+                                    <col class="w-[90px]">
+                                    <col class="w-[90px]">
+                                    <col class="w-[85px]">
+                                    <col class="w-[110px]">
+                                    <col class="w-[50px]">
+                                </colgroup>
+
+                                <thead class="table-custom-header">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2">Barang <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-32">Barcode</th>
+                                        <th scope="col" class="px-3 py-2 w-32">No. Batch <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-36">Expired Date <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-28 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-28 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-24">No. Rak <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 w-24">Satuan</th>
+                                        <th scope="col" class="px-3 py-2 w-32 text-right">Subtotal</th>
+                                        <th scope="col" class="px-3 py-2 w-12"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-400 text-center py-4" id="empty-hint">Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.</p>
+                    <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+                        <span>Total Belanja:</span>
+                        <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
+                    </div>
+                    <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
+                        <label for="ppn">PPN (11%)</label>
+                        <input type="text" id="ppn" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
+                    </div>
+
+                    <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
+                        <span>Total Tagihan:</span>
+                        <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Pembayaran Saat Penerimaan</label>
+                        <input type="number" name="pembayaran_pertama" id="pembayaran_pertama" value="{{ old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jatuh Tempo</label>
+                        <input type="date" name="jatuh_tempo" value="{{ old('jatuh_tempo') }}" class="form-input">
+                    </div>
+                    <div class="text-xs text-gray-500">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="btn-primary">Simpan Faktur</button>
+                    <button type="button" id="btn-batal-tambah" class="btn-secondary">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<template id="row-template">
+    <tr class="item-row hover:bg-gray-50 transition-colors">
+        <td class="px-3 py-2">
+            <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
+                <option value="">Pilih barang</option>
+                @foreach ($barangs as $barang)
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
+                @endforeach
+            </select>
+        </td>
+        <td class="px-3 py-2">
+            <input type="text" class="form-input py-1 px-2 barcode-field bg-gray-50" readonly>
+        </td>
+        <td class="px-3 py-2">
+            <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch...">
+        </td>
+        <td class="px-3 py-2">
+            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2">
+        </td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
+        <td class="px-3 py-2">
+            <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
+        </td>
+        <td class="px-3 py-2">
+            <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
+        </td>
+        <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
+        <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
+        <td class="px-3 py-2 text-center">
+            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
+        </td>
+    </tr>
+</template>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -750,6 +954,174 @@ document.addEventListener('DOMContentLoaded', function () {
         paymentModal.classList.add('hidden');
         paymentContent.innerHTML = '';
     });
+
+    // ==========================================
+    // MODAL TAMBAH FAKTUR PENERIMAAN BARU
+    // ==========================================
+    const modalTambah = document.getElementById('modal-tambah-penerimaan');
+    const btnBukaTambah = document.getElementById('btn-tambah-penerimaan');
+    const btnTutupTambah = document.getElementById('btn-tutup-tambah');
+    const btnBatalTambah = document.getElementById('btn-batal-tambah');
+
+    let rowIndex = 0;
+    const tbodyTambah = document.getElementById('item-rows');
+    const templateTambah = document.getElementById('row-template');
+    const emptyHintTambah = document.getElementById('empty-hint');
+    const totalFakturTambah = document.getElementById('total-faktur');
+    const ppnTambah = document.getElementById('ppn');
+    const totalTagihanTambah = document.getElementById('total-tagihan');
+    const oldItemsTambah = @json(old('items', []));
+
+    function formatRupiah(value) {
+        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
+    }
+
+    function updateTotalTambah() {
+        if (!tbodyTambah) return;
+        let total = 0;
+        tbodyTambah.querySelectorAll('tr').forEach(row => {
+            const harga = parseFloat(row.querySelector('.harga-beli')?.value) || 0;
+            const jumlah = parseInt(row.querySelector('.jumlah-diterima-field')?.value, 10) || 0;
+            const subtotal = harga * jumlah;
+            total += subtotal;
+            const subtotalEl = row.querySelector('.subtotal-field');
+            if (subtotalEl) subtotalEl.textContent = formatRupiah(subtotal);
+        });
+        if (totalFakturTambah) totalFakturTambah.textContent = formatRupiah(total);
+        const nilaiPpn = total * 0.11;
+        if (ppnTambah) ppnTambah.value = formatRupiah(nilaiPpn);
+        if (totalTagihanTambah) totalTagihanTambah.textContent = formatRupiah(total + nilaiPpn);
+    }
+
+    function tambahBarisPenerimaan() {
+        if (!templateTambah || !tbodyTambah) return;
+        const html = templateTambah.innerHTML.replaceAll('__i__', rowIndex);
+        const tempTr = document.createElement('tbody');
+        tempTr.innerHTML = html;
+        tbodyTambah.appendChild(tempTr.firstElementChild);
+
+        if (oldItemsTambah[rowIndex]) {
+            const item = oldItemsTambah[rowIndex];
+            const row = tbodyTambah.lastElementChild;
+
+            const bId = row.querySelector('[name$="[barang_id]"]');
+            if (bId) {
+                bId.value = item.barang_id || '';
+                const opt = bId.selectedOptions[0];
+                const bcField = row.querySelector('.barcode-field');
+                const satField = row.querySelector('.satuan-field');
+                if (bcField) bcField.value = opt?.dataset.barcode || '';
+                if (satField) satField.value = opt?.dataset.satuan || '';
+            }
+            const nb = row.querySelector('[name$="[no_batch]"]');
+            if (nb) nb.value = item.no_batch || '';
+            const ed = row.querySelector('[name$="[expired_date]"]');
+            if (ed) ed.value = item.expired_date || '';
+            const hb = row.querySelector('[name$="[harga_beli]"]');
+            if (hb) hb.value = item.harga_beli || '';
+            const hj = row.querySelector('[name$="[harga_jual]"]');
+            if (hj) hj.value = item.harga_jual || '';
+            const nr = row.querySelector('[name$="[no_rak]"]');
+            if (nr) nr.value = item.no_rak || '';
+            const jd = row.querySelector('[name$="[jumlah_dipesan]"]');
+            if (jd) jd.value = item.jumlah_dipesan || '';
+            const jt = row.querySelector('[name$="[jumlah_diterima]"]');
+            if (jt) jt.value = item.jumlah_diterima || '';
+        }
+        rowIndex++;
+        if (emptyHintTambah) emptyHintTambah.style.display = 'none';
+        updateTotalTambah();
+    }
+
+    if (modalTambah) {
+        if (btnBukaTambah) {
+            btnBukaTambah.addEventListener('click', function () {
+                modalTambah.classList.remove('hidden');
+                modalTambah.setAttribute('aria-hidden', 'false');
+            });
+        }
+
+        function tutupModalTambah() {
+            modalTambah.classList.add('hidden');
+            modalTambah.setAttribute('aria-hidden', 'true');
+        }
+
+        if (btnTutupTambah) btnTutupTambah.addEventListener('click', tutupModalTambah);
+        if (btnBatalTambah) btnBatalTambah.addEventListener('click', tutupModalTambah);
+
+        modalTambah.addEventListener('click', function (e) {
+            if (e.target === modalTambah) {
+                tutupModalTambah();
+            }
+        });
+
+        const btnTambahItem = document.getElementById('btn-tambah-item');
+        if (btnTambahItem) {
+            btnTambahItem.addEventListener('click', tambahBarisPenerimaan);
+        }
+
+        if (tbodyTambah) {
+            tbodyTambah.addEventListener('click', function (e) {
+                if (e.target.closest('.btn-hapus-row')) {
+                    e.target.closest('tr').remove();
+                    if (tbodyTambah.children.length === 0 && emptyHintTambah) {
+                        emptyHintTambah.style.display = 'block';
+                    }
+                    updateTotalTambah();
+                }
+            });
+
+            tbodyTambah.addEventListener('change', function (e) {
+                if (e.target.classList.contains('barang-select')) {
+                    const option = e.target.selectedOptions[0];
+                    const row = e.target.closest('tr');
+                    const bcField = row.querySelector('.barcode-field');
+                    const satField = row.querySelector('.satuan-field');
+                    if (bcField) bcField.value = option?.dataset.barcode || '';
+                    if (satField) satField.value = option?.dataset.satuan || '';
+                }
+            });
+
+            tbodyTambah.addEventListener('input', updateTotalTambah);
+        }
+
+        const supplierSelectTambah = document.getElementById('supplier_id');
+        if (supplierSelectTambah) {
+            supplierSelectTambah.addEventListener('change', function () {
+                const telEl = document.getElementById('telepon_supplier');
+                if (telEl) telEl.value = this.selectedOptions[0]?.dataset.telepon || '';
+            });
+            if (supplierSelectTambah.value) {
+                const telEl = document.getElementById('telepon_supplier');
+                if (telEl) telEl.value = supplierSelectTambah.selectedOptions[0]?.dataset.telepon || '';
+            }
+        }
+
+        const formTambah = document.getElementById('form-penerimaan');
+        if (formTambah) {
+            formTambah.addEventListener('submit', function (e) {
+                if (tbodyTambah && tbodyTambah.children.length === 0) {
+                    e.preventDefault();
+                    alert('Tambahkan minimal 1 baris barang.');
+                }
+            });
+        }
+
+        // Inisialisasi baris item
+        if (oldItemsTambah && oldItemsTambah.length > 0) {
+            oldItemsTambah.forEach(() => {
+                tambahBarisPenerimaan();
+            });
+        } else {
+            tambahBarisPenerimaan();
+        }
+
+        // Buka otomatis jika ada error validasi saat submit form
+        @if ($errors->any())
+            modalTambah.classList.remove('hidden');
+            modalTambah.setAttribute('aria-hidden', 'false');
+        @endif
+    }
 });
 </script>
 

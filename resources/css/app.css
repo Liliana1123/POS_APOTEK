@@ -486,16 +486,20 @@ h3,
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
+
 .sidebar-scroll-area::-webkit-scrollbar {
     width: 4px;
 }
+
 .sidebar-scroll-area::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .sidebar-scroll-area::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.25);
     border-radius: 9999px;
 }
+
 .sidebar-scroll-area::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.45);
 }
@@ -506,6 +510,7 @@ h3,
     color: #1e40af !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .sidebar-nav-link.sidebar-nav-active svg,
 .sidebar-nav-link.sidebar-nav-active span {
     color: #1e40af !important;
@@ -519,7 +524,8 @@ h3,
    Rail Child Icon = 16px (w-4) → Center is 16 + 24 + 8 = 48px in rail mode. */
 @media (min-width: 1024px) {
     #app-sidebar {
-        width: 6rem !important; /* w-24 / 96px */
+        width: 6rem !important;
+        /* w-24 / 96px */
         will-change: width;
         transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-x: hidden;
@@ -528,7 +534,8 @@ h3,
     #app-sidebar:hover,
     #app-sidebar:focus-within,
     #app-sidebar.sidebar-expanded {
-        width: 16rem !important; /* 256px expanded */
+        width: 16rem !important;
+        /* 256px expanded */
     }
 
     /* Fixed anchor padding on top-level links & group headers (never shifts) */
@@ -613,6 +620,7 @@ h3,
         padding-left: 1.25rem !important;
         padding-right: 1.25rem !important;
     }
+
     #app-sidebar .sidebar-footer {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -960,4 +968,218 @@ h3,
 
 .table-compact tr:hover td {
     background-color: #f8fafc;
+}
+
+
+/* Dashboard body only — tidak menyentuh header/sidebar dari layouts.app */
+.dashboard-reference {
+    --dash-gap: 12px;
+}
+
+.dashboard-reference .dashboard-card,
+.dashboard-reference .kpi-card {
+    border-radius: 10px;
+    border: 1px solid #e5edf7;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+}
+
+.dashboard-reference .kpi-card {
+    min-height: 92px;
+    padding: 14px;
+}
+
+.dashboard-reference .kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+}
+
+.dashboard-reference .main-dashboard-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dashboard-reference .main-dashboard-grid>.main-graph-card,
+.dashboard-reference .main-dashboard-grid>.main-health-card,
+.dashboard-reference .main-dashboard-grid>.main-action-column {
+    min-width: 0;
+}
+
+.dashboard-reference .main-graph-card {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-health-card {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-action-column {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-action-column>.dashboard-card:first-child {
+    min-height: 270px;
+}
+
+.dashboard-reference .cashier-card {
+    min-height: 68px;
+}
+
+@media (max-width: 1279px) {
+    .dashboard-reference .main-dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dashboard-reference .main-graph-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .dashboard-reference .main-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-reference .main-graph-card {
+        grid-column: auto;
+    }
+}
+
+/* ============================================================
+   INVENTORY - RAPIN & SAMAKAN CARD
+   ============================================================ */
+
+.dashboard-reference .inventory-card {
+    height: 100%;
+    border-color: #e5e7eb !important;
+}
+
+.dashboard-reference .inventory-card-inner {
+    border-color: #e5e7eb !important;
+}
+
+/* Semua garis pemisah dibuat abu-abu */
+.dashboard-reference .inventory-card hr,
+.dashboard-reference .inventory-divider {
+    border-color: #e5e7eb !important;
+}
+
+/* ============================================================
+   BARANG YANG HARUS DIBELI
+   ============================================================ */
+
+.dashboard-reference .purchase-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.dashboard-reference .purchase-table {
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.dashboard-reference .purchase-table th,
+.dashboard-reference .purchase-table td {
+    padding: 7px 6px !important;
+    font-size: 11px;
+    line-height: 1.35;
+    border-bottom: 1px solid #e5e7eb !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+/* No */
+.dashboard-reference .purchase-table th:nth-child(1),
+.dashboard-reference .purchase-table td:nth-child(1) {
+    width: 8%;
+    text-align: center;
+}
+
+/* Nama Barang */
+.dashboard-reference .purchase-table th:nth-child(2),
+.dashboard-reference .purchase-table td:nth-child(2) {
+    width: 27%;
+}
+
+/* Kategori */
+.dashboard-reference .purchase-table th:nth-child(3),
+.dashboard-reference .purchase-table td:nth-child(3) {
+    width: 22%;
+}
+
+/* Stok Saat Ini */
+.dashboard-reference .purchase-table th:nth-child(4),
+.dashboard-reference .purchase-table td:nth-child(4) {
+    width: 17%;
+    text-align: center;
+}
+
+/* Status */
+.dashboard-reference .purchase-table th:nth-child(5),
+.dashboard-reference .purchase-table td:nth-child(5) {
+    width: 26%;
+    text-align: center;
+}
+
+.dashboard-reference .purchase-table th:nth-child(6),
+.dashboard-reference .purchase-table td:nth-child(6) {
+    width: 12%;
+    text-align: center;
+}
+
+.dashboard-reference .purchase-table th:nth-child(7),
+.dashboard-reference .purchase-table td:nth-child(7) {
+    width: 12%;
+    text-align: center;
+}
+
+/* ============================================================
+   INVENTORY ROW - SEMUA CARD TINGGI SAMA
+   ============================================================ */
+
+.dashboard-reference .inventory-row {
+    align-items: stretch;
+}
+
+.dashboard-reference .inventory-row>[class*="xl:col-span-4"] {
+    display: flex;
+    min-width: 0;
+}
+
+.dashboard-reference .inventory-row .inventory-card {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+}
+
+/* Garis pemisah abu-abu */
+.dashboard-reference .inventory-row hr {
+    border-color: #e5e7eb !important;
+}
+
+/* ============================================================
+   KPI - SAMAKAN ACCENT HUTANG & PIUTANG
+   ============================================================ */
+
+/* Hutang Supplier */
+.dashboard-reference .kpi-card:nth-child(5) {
+    border-top: 3px solid #0ea5e9;
+}
+
+.dashboard-reference .kpi-card:nth-child(5) .kpi-icon {
+    background: #eff6ff;
+    color: #0284c7;
+}
+
+/* Piutang Member */
+.dashboard-reference .kpi-card:nth-child(6) {
+    border-top: 3px solid #fb7185;
+}
+
+.dashboard-reference .kpi-card:nth-child(6) .kpi-icon {
+    background: #fff1f2;
+    color: #e11d48;
 }
