@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\Supplier;
 use App\Models\DetailPenerimaan;
 use App\Models\DetailPenjualan;
 use App\Models\Rusak;
@@ -147,7 +148,7 @@ class LaporanController extends Controller
         $totalStokRusak = $stokPerBatch->sum(fn ($i) => (int) ($i->stok_rusak ?? 0));
         $totalSisaStok = $totalStokAwal - $totalStokTerjual - $totalStokRusak;
 
-        $mendekatiExpired = DetailPenerimaan::with('barang')
+        $mendekatiExpired = DetailPenerimaan::with(['barang.kategori'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah')
             ->when($request->filled('nama'), function ($query) use ($request) {
@@ -197,12 +198,30 @@ class LaporanController extends Controller
     {
         [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $items = DetailPenerimaan::with(['barang', 'penerimaan.supplier'])
+        $query = DetailPenerimaan::with(['barang', 'penerimaan.supplier'])
             ->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
                 $q->whereBetween('tanggal', [$dari, $sampai]);
-            })
-            ->orderByDesc('created_at')
-            ->get();
+            });
+
+        if ($request->filled('no_faktur')) {
+            $query->whereHas('penerimaan', function ($q) use ($request) {
+                $q->where('no_faktur', 'like', '%' . $request->no_faktur . '%');
+            });
+        }
+
+        if ($request->filled('supplier_id')) {
+            $query->whereHas('penerimaan', function ($q) use ($request) {
+                $q->where('supplier_id', $request->supplier_id);
+            });
+        }
+
+        if ($request->filled('nama_barang')) {
+            $query->whereHas('barang', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->nama_barang . '%');
+            });
+        }
+
+        $items = $query->orderByDesc('created_at')->get();
 
         $totalNilai = $items->sum(fn ($i) => $i->harga_beli * $i->jumlah);
 
@@ -213,8 +232,8 @@ class LaporanController extends Controller
                 $data[] = [
                     $item->penerimaan->tanggal->format('d M Y'),
                     $item->penerimaan->no_faktur,
-                    $item->penerimaan->supplier->nama,
-                    $item->barang->nama,
+                    $item->penerimaan->supplier->nama ?? '—',
+                    $item->barang->nama ?? '—',
                     $item->jumlah,
                     $item->harga_beli,
                     $item->harga_beli * $item->jumlah
@@ -223,7 +242,9 @@ class LaporanController extends Controller
             return $this->exportCsv('laporan-penerimaan-' . $dari . '-' . $sampai . '.csv', $headers, $data);
         }
 
-        return view('laporan.penerimaan', compact('items', 'totalNilai', 'dari', 'sampai'));
+        $suppliers = Supplier::orderBy('nama')->get();
+
+        return view('laporan.penerimaan', compact('items', 'totalNilai', 'dari', 'sampai', 'suppliers'));
     }
 
     // Laporan penjualan barang dalam rentang tanggal
@@ -305,10 +326,22 @@ class LaporanController extends Controller
     {
         [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $items = Rusak::with('detailPenerimaan.barang')
-            ->whereBetween('tanggal', [$dari, $sampai])
-            ->orderByDesc('tanggal')
-            ->get();
+        $query = Rusak::with('detailPenerimaan.barang')
+            ->whereBetween('tanggal', [$dari, $sampai]);
+
+        if ($request->filled('nama_barang')) {
+            $query->whereHas('detailPenerimaan.barang', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->nama_barang . '%');
+            });
+        }
+
+        if ($request->filled('no_batch')) {
+            $query->whereHas('detailPenerimaan', function ($q) use ($request) {
+                $q->where('no_batch', 'like', '%' . $request->no_batch . '%');
+            });
+        }
+
+        $items = $query->orderByDesc('tanggal')->get();
 
         $totalKerugian = $items->sum(fn ($r) => $r->jumlah * ($r->detailPenerimaan->harga_beli ?? 0));
 
@@ -318,8 +351,8 @@ class LaporanController extends Controller
             foreach ($items as $item) {
                 $data[] = [
                     $item->tanggal->format('d M Y'),
-                    $item->detailPenerimaan->barang->nama,
-                    $item->detailPenerimaan->no_batch,
+                    $item->detailPenerimaan->barang->nama ?? '—',
+                    $item->detailPenerimaan->no_batch ?? '—',
                     $item->jumlah,
                     $item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0),
                     $item->keterangan ?? '-'

@@ -82,21 +82,6 @@
        <div class="table-custom-container">
     <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
         <table class="penerimaan-detail-table mb-2">
-                    <colgroup>
-                        <col style="width:220px;">
-                        <col style="width:140px;">
-                        <col style="width:150px;">
-                        <col style="width:140px;">
-                        <col style="width:170px;">
-                        <col style="width:170px;">
-                        <col style="width:100px;">
-                        <col style="width:150px;">
-                        <col style="width:150px;">
-                        <col style="width:110px;">
-                        <col style="width:160px;">
-                        <col style="width:60px;">
-                    </colgroup>
-
                     <thead class="table-custom-header">
                         <tr>
                             <th scope="col" class="px-3 py-2 text-left">

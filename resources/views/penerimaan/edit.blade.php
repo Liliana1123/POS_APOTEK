@@ -1,9 +1,7 @@
-
-
 @if ($errors->any())
     <div class="alert-danger p-4 mb-6">
         <strong class="block text-xs font-bold mb-1.5">
-            Perbaiki kesalahan berikut sebelum menyimpan:
+            Perbaiki kesalahan berikut sebelum menyimpan faktur:
         </strong>
 
         <ul class="list-disc pl-5 space-y-1">
@@ -23,11 +21,11 @@
     @csrf
     @method('PUT')
 
-    {{-- HEADER FAKTUR --}}
+    <!-- Form Header Card -->
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 No. Faktur <span class="text-red-500 font-bold">*</span>
             </label>
 
@@ -42,7 +40,7 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 Tanggal Faktur <span class="text-red-500 font-bold">*</span>
             </label>
 
@@ -56,8 +54,8 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                Tanggal Penerimaan <span class="text-red-500 font-bold">*</span>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Tanggal Terima <span class="text-red-500 font-bold">*</span>
             </label>
 
             <input
@@ -70,7 +68,7 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 Supplier <span class="text-red-500 font-bold">*</span>
             </label>
 
@@ -95,7 +93,7 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 No. Telepon Supplier
             </label>
 
@@ -109,8 +107,8 @@
             >
         </div>
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+        <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 Keterangan
             </label>
 
@@ -122,8 +120,9 @@
                 placeholder="Keterangan penerimaan (opsional)"
             >
         </div>
+
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 Jatuh Tempo
             </label>
 
@@ -137,7 +136,7 @@
 
     </div>
 
-    {{-- DETAIL BARANG --}}
+    <!-- Details Card -->
     <div class="card-base p-6">
 
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
@@ -150,75 +149,61 @@
                 id="btn-tambah-item"
                 class="btn-secondary py-1 px-3 text-xs font-semibold"
             >
-                + Tambah Baris
+                + Tambah Item Barang
             </button>
         </div>
 
         <div class="table-custom-container">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
 
-                <table class="table-custom w-full table-fixed mb-2">
-                    <colgroup>
-                        <col class="w-[210px]">
-                        <col class="w-[100px]">
-                        <col class="w-[110px]">
-                        <col class="w-[125px]">
-                        <col class="w-[105px]">
-                        <col class="w-[105px]">
-                        <col class="w-[90px]">
-                        <col class="w-[90px]">
-                        <col class="w-[85px]">
-                        <col class="w-[110px]">
-                        <col class="w-[50px]">
-                    </colgroup>
-
+                <table class="penerimaan-detail-table mb-2">
                     <thead class="table-custom-header">
                         <tr>
-                            <th scope="col" class="px-3 py-2">
+                            <th scope="col" class="px-3 py-2 text-left">
                                 Barang <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-32">
+                            <th scope="col" class="px-3 py-2 text-center">
                                 Barcode
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-32">
+                            <th scope="col" class="px-3 py-2 text-center">
                                 No. Batch <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-36">
+                            <th scope="col" class="px-3 py-2 text-center">
                                 Expired Date <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-28 text-right">
+                            <th scope="col" class="px-3 py-2 text-right">
                                 Harga Beli <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-28 text-right">
+                            <th scope="col" class="px-3 py-2 text-right">
                                 Harga Jual <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-24">
+                            <th scope="col" class="px-3 py-2 text-center">
                                 No. Rak <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-24 text-right">
+                            <th scope="col" class="px-3 py-2 text-right">
                                 Jumlah Dipesan <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-24 text-right">
+                            <th scope="col" class="px-3 py-2 text-right">
                                 Jumlah Diterima <span class="text-red-500 font-bold">*</span>
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-24">
+                            <th scope="col" class="px-3 py-2 text-center">
                                 Satuan
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-32 text-right">
+                            <th scope="col" class="px-3 py-2 text-right">
                                 Subtotal
                             </th>
 
-                            <th scope="col" class="px-3 py-2 w-12"></th>
+                            <th scope="col" class="px-3 py-2 text-center"></th>
                         </tr>
                     </thead>
 
@@ -237,8 +222,7 @@
                                 $batchIndexPerBarang[$bId] = ($batchIndexPerBarang[$bId] ?? 0) + 1;
                                 $isPrimaryBatch = ($batchIndexPerBarang[$bId] === 1);
                                 $dp = $penerimaan->detailPesanan->firstWhere('barang_id', $bId);
-                                
-                                // Cek apakah baris ini terkunci karena ada transaksi penjualan kasir, rusak, atau riwayat susulan
+
                                 $isSold = $item->detailPenjualan->isNotEmpty();
                                 $isDamaged = $item->rusak->isNotEmpty();
                                 $hasRiwayat = $penerimaan->riwayatPenerimaan->where('detail_penerimaan_id', $item->id)->isNotEmpty();
@@ -248,48 +232,40 @@
                                 if ($isSold) {
                                     $lockReason = 'Terkunci: Obat ini sudah tercatat di transaksi kasir';
                                 } elseif ($isDamaged) {
-                                    $lockReason = 'Terkunci: Obat ini tercatat ada barang rusak';
+                                    $lockReason = 'Terkunci: Obat ini sudah tercatat di data barang rusak';
                                 } elseif ($hasRiwayat) {
-                                    $lockReason = 'Terkunci: Batch ini sudah memiliki riwayat penerimaan';
+                                    $lockReason = 'Terkunci: Baris ini memiliki riwayat susulan';
                                 }
                             @endphp
 
-                            <tr class="item-row hover:bg-gray-50 transition-colors {{ $isLocked ? 'bg-gray-50/50' : '' }}">
-                                <input type="hidden" name="items[{{ $index }}][detail_id]" value="{{ $item->id }}">
-
+                            <tr class="item-row hover:bg-gray-50 transition-colors">
                                 <td class="px-3 py-2">
-                                    @if ($isLocked)
-                                        <input type="hidden" name="items[{{ $index }}][barang_id]" value="{{ $item->barang_id }}">
-                                        <div class="flex items-center gap-1.5">
-                                            <input
-                                                type="text"
-                                                class="form-input py-1 px-2 bg-gray-100 text-gray-700 cursor-not-allowed text-xs"
-                                                value="{{ $item->barang->nama ?? '' }}"
-                                                readonly
-                                                title="{{ $lockReason }}"
-                                            >
-                                            <span class="text-amber-500 flex-shrink-0 text-xs" title="{{ $lockReason }}">🔒</span>
-                                        </div>
-                                    @else
-                                        <select
-                                            name="items[{{ $index }}][barang_id]"
-                                            required
-                                            class="form-input py-1 px-2 barang-select"
-                                        >
-                                            <option value="">Pilih barang</option>
+                                    <select
+                                        name="items[{{ $index }}][barang_id]"
+                                        required
+                                        class="form-input py-1 px-2 barang-select {{ $isLocked ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : '' }}"
+                                        @if($isLocked) disabled title="{{ $lockReason }}" @endif
+                                    >
+                                        <option value="">Pilih barang</option>
 
-                                            @foreach ($barangs as $barang)
-                                                <option
-                                                    value="{{ $barang->id }}"
-                                                    data-satuan="{{ $barang->satuan->nama ?? '' }}"
-                                                    data-barcode="{{ $barang->barcode }}"
-                                                    @selected($item->barang_id == $barang->id)
-                                                >
-                                                    {{ $barang->nama }}
-                                                    {{ $barang->barcode ? ' — ' . $barang->barcode : '' }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                        @foreach ($barangs as $barang)
+                                            <option
+                                                value="{{ $barang->id }}"
+                                                data-satuan="{{ $barang->satuan->nama ?? '' }}"
+                                                data-barcode="{{ $barang->barcode }}"
+                                                @selected($item->barang_id == $barang->id)
+                                            >
+                                                {{ $barang->nama }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @if ($isLocked)
+                                        <input
+                                            type="hidden"
+                                            name="items[{{ $index }}][barang_id]"
+                                            value="{{ $item->barang_id }}"
+                                        >
                                     @endif
                                 </td>
 
@@ -297,7 +273,7 @@
                                     <input
                                         type="text"
                                         class="form-input py-1 px-2 barcode-field bg-gray-50"
-                                        value="{{ $item->barang->barcode ?? '' }}"
+                                        value="{{ $item->barang->barcode }}"
                                         readonly
                                     >
                                 </td>
@@ -370,7 +346,7 @@
                                             name="items[{{ $index }}][jumlah_dipesan]"
                                             value="{{ old("items.$index.jumlah_dipesan", $dp ? $dp->jumlah_dipesan : $item->jumlah) }}"
                                             required
-                                            class="form-input py-1 px-2 text-right font-mono"
+                                            class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field"
                                             placeholder="1"
                                         >
                                     @else
@@ -392,7 +368,7 @@
                                         name="items[{{ $index }}][jumlah_diterima]"
                                         value="{{ old("items.$index.jumlah_diterima", $item->jumlah) }}"
                                         required
-                                        class="form-input py-1 px-2 text-right font-mono jumlah-field {{ $isLocked ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : '' }}"
+                                        class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field jumlah-field {{ $isLocked ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : '' }}"
                                         placeholder="0"
                                         @readonly($isLocked)
                                         @if($isLocked) title="{{ $lockReason }}" @endif
@@ -450,22 +426,25 @@
             id="empty-hint"
             style="{{ $penerimaan->detail->count() > 0 ? 'display:none;' : '' }}"
         >
-            Belum ada baris. Klik "+ Tambah Baris" untuk mulai input.
+            Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.
         </p>
 
         <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
             <span>Total Belanja:</span>
-
             <span id="total-faktur" class="text-blue-700 font-mono">
                 Rp 0
             </span>
         </div>
 
         <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
-            <span>PPN (11%):</span>
-            <span id="ppn" class="text-blue-700 font-mono">
-                Rp 0
-            </span>
+            <label for="ppn">PPN (11%)</label>
+            <input
+                type="text"
+                id="ppn"
+                value="Rp 0"
+                readonly
+                class="form-input w-full sm:w-40 text-right font-mono bg-gray-50"
+            >
         </div>
 
         <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
@@ -477,66 +456,23 @@
 
     </div>
 
-    {{-- PEMBAYARAN --}}
-    <div class="card-base p-6">
-
-        <div class="mb-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">
-                Informasi Pembayaran
-            </h3>
-
-            <p class="text-caption mt-1">
-                Pembayaran yang sudah tercatat tidak diubah melalui Edit Penerimaan.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-            <div>
-                <span class="block text-xs font-semibold text-gray-500 mb-1">
-                    Total Sudah Dibayar
-                </span>
-
-                <div class="form-input bg-gray-50 font-mono">
-                    Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}
-                </div>
-            </div>
-
-            <div>
-                <span class="block text-xs font-semibold text-gray-500 mb-1">
-                    Sisa Tagihan
-                </span>
-
-                <div class="form-input bg-gray-50 font-mono">
-                    Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
-                </div>
-            </div>
-
-            <div>
-                <span class="block text-xs font-semibold text-gray-500 mb-1">
-                    Status
-                </span>
-
-                <div class="form-input bg-gray-50 font-semibold">
-                    {{ $penerimaan->lunas ? 'Lunas' : 'Belum Lunas' }}
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    {{-- ACTION --}}
+    {{-- ACTION (Mirip dengan Create) --}}
     <div class="flex gap-2 pt-2">
-
-        <button type="submit" class="btn-primary">
+        <button
+            type="submit"
+            class="btn-primary"
+        >
             Simpan Perubahan
         </button>
 
-        <a href="{{ route('penerimaan.index') }}" class="btn-secondary">
+        <button
+            type="button"
+            id="btn-batal-edit"
+            class="btn-secondary"
+            onclick="document.getElementById('modal-edit-penerimaan').classList.add('hidden')"
+        >
             Batal
-        </a>
-
+        </button>
     </div>
 
 </form>
@@ -634,7 +570,7 @@
                 min="1"
                 name="items[__i__][jumlah_dipesan]"
                 required
-                class="form-input py-1 px-2 text-right font-mono"
+                class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field"
                 placeholder="1"
             >
         </td>
@@ -645,7 +581,7 @@
                 min="0"
                 name="items[__i__][jumlah_diterima]"
                 required
-                class="form-input py-1 px-2 text-right font-mono jumlah-field"
+                class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field jumlah-field"
                 placeholder="0"
             >
         </td>
@@ -720,9 +656,21 @@ function initEditPenerimaanForm() {
 
         const nilaiPpn = total * 0.11;
 
-        totalFaktur.textContent = formatRupiah(total);
-        ppnInput.textContent = formatRupiah(nilaiPpn);
-        totalTagihan.textContent = formatRupiah(total + nilaiPpn);
+        if (totalFaktur) {
+            totalFaktur.textContent = formatRupiah(total);
+        }
+
+        if (ppnInput) {
+            if (ppnInput.tagName === 'INPUT') {
+                ppnInput.value = formatRupiah(nilaiPpn);
+            } else {
+                ppnInput.textContent = formatRupiah(nilaiPpn);
+            }
+        }
+
+        if (totalTagihan) {
+            totalTagihan.textContent = formatRupiah(total + nilaiPpn);
+        }
     }
 
     function tambahBaris() {
@@ -746,7 +694,7 @@ function initEditPenerimaanForm() {
     }
 
     document.getElementById('btn-tambah-item')
-        .addEventListener('click', tambahBaris);
+        ?.addEventListener('click', tambahBaris);
 
     tbody.addEventListener('click', function (e) {
 
@@ -782,17 +730,16 @@ function initEditPenerimaanForm() {
     });
 
     tbody.addEventListener('input', updateTotal);
-    ppnInput.addEventListener('input', updateTotal);
 
     document.getElementById('supplier_id')
-        .addEventListener('change', function () {
+        ?.addEventListener('change', function () {
 
             document.getElementById('telepon_supplier').value =
                 this.selectedOptions[0]?.dataset.telepon || '';
         });
 
     document.getElementById('form-penerimaan')
-        .addEventListener('submit', function (e) {
+        ?.addEventListener('submit', function (e) {
 
             if (tbody.children.length === 0) {
                 e.preventDefault();

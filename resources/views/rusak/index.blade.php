@@ -4,8 +4,8 @@
 @section('content')
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
-        <h1 class="text-xl font-bold text-gray-800">Daftar Pencatatan Barang Rusak</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
+        <h1>Daftar Pencatatan Barang Rusak</h1>
+        <p class="text-caption mt-1">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
     </div>
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
@@ -15,47 +15,118 @@
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('rusak.index') }}" class="flex flex-col md:flex-row gap-3">
-        <div class="flex-1">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama barang..."
-                class="form-input">
+    <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Nama Barang
+                </label>
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="cari"
+                        value="{{ request('cari') }}"
+                        placeholder="Cari nama barang..."
+                        class="form-input pr-8"
+                    >
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    No. Batch
+                </label>
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="no_batch"
+                        value="{{ request('no_batch') }}"
+                        placeholder="Cari no. batch..."
+                        class="form-input pr-8 font-mono"
+                    >
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Tanggal Pencatatan
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <input
+                        type="date"
+                        name="tanggal_mulai"
+                        value="{{ request('tanggal_mulai') }}"
+                        class="form-input min-w-0"
+                    >
+
+                    <span class="text-sm text-gray-400">-</span>
+
+                    <input
+                        type="date"
+                        name="tanggal_akhir"
+                        value="{{ request('tanggal_akhir') }}"
+                        class="form-input min-w-0"
+                    >
+                </div>
+            </div>
         </div>
-        <div class="w-full md:w-48">
-            <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="form-input">
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
-            </button>
-            @if(request()->anyFilled(['cari', 'tanggal']))
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
                 <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Reset
                 </a>
             @endif
+
+            <button type="submit" class="btn-primary py-1.5 px-4">
+                Filter
+            </button>
         </div>
     </form>
 </div>
 
-<div class="table-custom-container shadow-sm">
+<!-- Table Custom Wrapper -->
+<div class="table-custom-container">
     <div class="overflow-x-auto">
-    <table class="table-custom min-w-[55rem]">
-        <thead class="table-custom-header">
-            <tr>
-                <th class="px-5 py-3 text-center">Aksi</th>
-                <th class="px-5 py-3">Tanggal</th>
-                <th class="px-5 py-3">Barang / Obat</th>
-                <th class="px-5 py-3">No. Batch</th>
-                <th class="px-5 py-3 text-right">Jumlah</th>
-                <th class="px-5 py-3">Keterangan</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-150">
-            @forelse ($rusaks as $index => $rusak)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }} hover:bg-gray-100 transition-colors">
+        <table class="table-custom min-w-[55rem]">
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="text-center">No</th>
+                    <th scope="col" class="text-center">Aksi</th>
+                    <th scope="col">Tanggal Lapor</th>
+                    <th scope="col">Barang / Obat</th>
+                    <th scope="col">No. Batch</th>
+                    <th scope="col" class="text-right">Jumlah</th>
+                    <th scope="col">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody class="table-custom-body">
+                @forelse ($rusaks as $index => $rusak)
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+
+                    {{-- No --}}
+                    <td class="text-center">
+                        {{ $rusaks->firstItem() + $index }}
+                    </td>
+
+                    {{-- Aksi --}}
                     <td class="text-left space-x-1.5">
                         <div class="flex items-center justify-start gap-1">
 
-                            <button type="button" class="btn-secondary !p-1.5" style="color: #2563EB;" title="Lihat Detail" onclick="openDetailRusak({{ $rusak->id }})" >
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5"
+                                style="color: #2563EB;"
+                                title="Lihat Detail"
+                                onclick="openDetailRusak({{ $rusak->id }})"
+                            >
                                 <x-heroicon-o-eye class="w-4 h-4" />
                             </button>
 
@@ -81,6 +152,8 @@
                             <form
                                 action="{{ route('rusak.destroy', $rusak) }}"
                                 method="POST"
+                                class="inline"
+                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')"
                             >
                                 @csrf
                                 @method('DELETE')
@@ -97,19 +170,83 @@
 
                         </div>
                     </td>
-                    <td class="px-5 py-3.5 text-gray-600">{{ $rusak->tanggal->format('d M Y') }}</td>
-                    <td class="px-5 py-3.5 font-medium text-gray-800">{{ $rusak->detailPenerimaan->barang->nama }}</td>
-                    <td class="px-5 py-3.5 font-mono text-gray-600">{{ $rusak->detailPenerimaan->no_batch }}</td>
-                    <td class="px-5 py-3.5 text-right font-bold text-red-600">{{ $rusak->jumlah }}</td>
-                    <td class="px-5 py-3.5 text-gray-600">{{ $rusak->keterangan ?? '-' }}</td>
+
+                    {{-- Tanggal Lapor --}}
+                    <td class="text-gray-600">
+                        {{ $rusak->tanggal->format('d M Y') }}
+                    </td>
+
+                    {{-- Barang / Obat --}}
+                    <td class="font-medium text-gray-800">
+                        {{ $rusak->detailPenerimaan->barang->nama ?? '—' }}
+                    </td>
+
+                    {{-- No. Batch --}}
+                    <td class="font-mono text-gray-600">
+                        {{ $rusak->detailPenerimaan->no_batch ?? '—' }}
+                    </td>
+
+                    {{-- Jumlah --}}
+                    <td class="text-right font-bold text-red-600">
+                        {{ $rusak->jumlah }}
+                    </td>
+
+                    {{-- Keterangan --}}
+                    <td class="text-gray-600">
+                        {{ $rusak->keterangan ?? '-' }}
+                    </td>
                 </tr>
-            @empty
+                @empty
                 <tr>
-                    <td colspan="6" class="px-5 py-8 text-center text-gray-400">Belum ada data barang rusak.</td>
+                    <td colspan="7" class="p-0">
+                        <div class="empty-state-container">
+                            <div class="empty-state-title">
+                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
+                                    Barang Rusak Tidak Ditemukan
+                                @else
+                                    Barang Rusak Kosong
+                                @endif
+                            </div>
+                            <div class="empty-state-desc">
+                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
+                                    Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
+                                @else
+                                    Belum ada data pelaporan obat atau barang rusak.
+                                @endif
+                            </div>
+                        </div>
+                    </td>
                 </tr>
-            @endforelse
-        </tbody>
-    </table>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <div class="flex items-center gap-2 text-sm text-gray-600">
+        <span>Tampilkan</span>
+
+        <select
+            name="per_page"
+            class="form-input py-1.5 w-20"
+            form="filter-form"
+            onchange="this.form.submit()"
+        >
+            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
+            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
+            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
+            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
+            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
+        </select>
+
+        <span>data</span>
+    </div>
+
+    <div>
+        {{ $rusaks->links() }}
+    </div>
+</div>
 
     @php
         $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
@@ -389,11 +526,6 @@
         </div>
     </div>
 
-
-
-</div>
-
-<div class="mt-4">{{ $rusaks->links() }}</div>
 
 <script>
     const dataRusak = @json($rusaks->items());

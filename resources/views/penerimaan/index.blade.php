@@ -429,12 +429,9 @@
 <div id="modal-edit-penerimaan"
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
-    style="align-items: flex-start; overflow-y: auto;"
 >
-    <div
-    class="modal-container-custom max-w-7xl flex flex-col"
-    style="max-height: 90vh; margin-top: 2rem; margin-bottom: 2rem;"
->
+    <div class="modal-container-custom max-w-15xl"
+         style="width: 95vw; max-width: 1100px;">
         <div class="modal-header-custom">
             <div>
                 <h2>Edit Penerimaan</h2>
@@ -454,10 +451,10 @@
         </div>
 
         <div
-    id="edit-penerimaan-content"
-    class="modal-body-custom"
-    style="overflow-y: auto; min-height: 0; flex: 1;"
->
+            id="edit-penerimaan-content"
+            class="modal-body-custom overflow-y-auto"
+            style="max-height: calc(100vh - 180px);"
+        >
             <div class="text-center py-8 text-gray-500">
                 Memuat form edit...
             </div>
@@ -549,36 +546,22 @@
                     </div>
 
                     <div class="table-custom-container">
-                        <div class="overflow-x-auto">
-                            <table class="table-custom min-w-[1150px] mb-2 table-fixed">
-                                <colgroup>
-                                    <col class="w-[210px]">
-                                    <col class="w-[100px]">
-                                    <col class="w-[110px]">
-                                    <col class="w-[125px]">
-                                    <col class="w-[105px]">
-                                    <col class="w-[105px]">
-                                    <col class="w-[90px]">
-                                    <col class="w-[90px]">
-                                    <col class="w-[85px]">
-                                    <col class="w-[110px]">
-                                    <col class="w-[50px]">
-                                </colgroup>
-
+                        <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
+                            <table class="penerimaan-detail-table mb-2">
                                 <thead class="table-custom-header">
                                     <tr>
-                                        <th scope="col" class="px-3 py-2">Barang <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-32">Barcode</th>
-                                        <th scope="col" class="px-3 py-2 w-32">No. Batch <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-36">Expired Date <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-28 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-28 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-24">No. Rak <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
-                                        <th scope="col" class="px-3 py-2 w-24">Satuan</th>
-                                        <th scope="col" class="px-3 py-2 w-32 text-right">Subtotal</th>
-                                        <th scope="col" class="px-3 py-2 w-12"></th>
+                                        <th scope="col" class="px-3 py-2 text-left">Barang <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-center">Barcode</th>
+                                        <th scope="col" class="px-3 py-2 text-center">No. Batch <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-center">Expired Date <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-center">No. Rak <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
+                                        <th scope="col" class="px-3 py-2 text-center">Satuan</th>
+                                        <th scope="col" class="px-3 py-2 text-right">Subtotal</th>
+                                        <th scope="col" class="px-3 py-2 text-center"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150"></tbody>
@@ -775,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Tutup modal Edit
     document.addEventListener('click', function (event) {
-        if (event.target.closest('#btn-tutup-edit')) {
+        if (event.target.closest('#btn-tutup-edit') || event.target.closest('#btn-batal-edit')) {
             const modal = document.getElementById('modal-edit-penerimaan');
 
             if (modal) {
