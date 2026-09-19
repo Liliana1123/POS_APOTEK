@@ -356,7 +356,8 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-lg">
+    <div class="modal-container-custom max-w-15xl"
+         style="width: 95vw; max-width: 1100px;">
 
         <div class="modal-header-custom">
             <div>
@@ -374,7 +375,9 @@
             </button>
         </div>
 
-        <div id="payment-penerimaan-content" class="modal-body-custom">
+        <div id="payment-penerimaan-content"
+             class="modal-body-custom overflow-y-auto"
+             style="max-height: calc(100vh - 180px);">
             <div class="text-center py-8 text-gray-500">
                 Memuat pembayaran...
             </div>
@@ -463,15 +466,8 @@
 </div>
 
 <!-- Modal Tambah Faktur Penerimaan Baru -->
-<div id="modal-tambah-penerimaan"
-    class="modal-backdrop-custom hidden"
-    aria-hidden="true"
-    style="align-items: flex-start; overflow-y: auto;"
->
-    <div
-        class="modal-container-custom max-w-7xl flex flex-col"
-        style="max-height: 90vh; margin-top: 2rem; margin-bottom: 2rem;"
-    >
+<div id="modal-tambah-penerimaan" class="modal-backdrop-custom hidden" aria-hidden="true">
+    <div class="modal-container-custom max-w-15xl flex flex-col" style="width: 95vw; max-width: 1100px; max-height: calc(100vh - 60px);">
         <div class="modal-header-custom">
             <div>
                 <h2>Faktur Penerimaan Barang Baru</h2>
@@ -480,17 +476,12 @@
                 </p>
             </div>
 
-            <button
-                type="button"
-                id="btn-tutup-tambah"
-                class="btn-secondary !p-1.5"
-                title="Tutup"
-            >
+            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup">
                 ✕
             </button>
         </div>
 
-        <div class="modal-body-custom" style="overflow-y: auto; min-height: 0; flex: 1;">
+        <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
             @if ($errors->any())
                 <div class="alert-danger p-4 mb-6">
                     <strong class="block text-xs font-bold mb-1.5">Perbaiki kesalahan berikut sebelum menyimpan faktur:</strong>

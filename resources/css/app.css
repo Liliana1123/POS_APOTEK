@@ -1183,3 +1183,109 @@ h3,
     background: #fff1f2;
     color: #e11d48;
 }
+
+/* ============================================================
+   TABEL INPUT PENERIMAAN BARANG
+   Lebar mengikuti isi, tidak dipaksa mengecil
+   ============================================================ */
+
+.penerimaan-detail-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.penerimaan-detail-table {
+    width: max-content !important;
+    min-width: 1650px !important;
+    table-layout: auto !important;
+    border-collapse: collapse;
+}
+
+/* Header */
+.penerimaan-detail-table th {
+    padding: 0.6rem 0.65rem !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+
+/* Isi tabel */
+.penerimaan-detail-table td {
+    padding: 0.5rem 0.65rem !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+/* Semua input/select jangan dipaksa mengecil */
+.penerimaan-detail-table input,
+.penerimaan-detail-table select {
+    box-sizing: border-box !important;
+    max-width: none !important;
+}
+
+/* Barang */
+.penerimaan-detail-table .barang-select {
+    width: 220px !important;
+    min-width: 220px !important;
+}
+
+/* Barcode */
+.penerimaan-detail-table .barcode-field {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Batch */
+.penerimaan-detail-table input[name*="[no_batch]"] {
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+/* Expired */
+.penerimaan-detail-table input[type="date"] {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Harga */
+.penerimaan-detail-table .harga-beli,
+.penerimaan-detail-table input[name*="[harga_jual]"] {
+    width: 160px !important;
+    min-width: 160px !important;
+}
+
+/* Rak */
+.penerimaan-detail-table input[name*="[no_rak]"] {
+    width: 90px !important;
+    min-width: 90px !important;
+}
+
+/* Jumlah */
+.penerimaan-detail-table .jumlah-dipesan-field,
+.penerimaan-detail-table .jumlah-diterima-field {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Satuan */
+.penerimaan-detail-table .satuan-field {
+    width: 100px !important;
+    min-width: 100px !important;
+}
+
+/* Subtotal */
+.penerimaan-detail-table .subtotal-field {
+    min-width: 160px !important;
+    width: 160px !important;
+    white-space: nowrap !important;
+}
+
+/* Kolom tombol */
+.penerimaan-detail-table td:last-child,
+.penerimaan-detail-table th:last-child {
+    width: 60px !important;
+    min-width: 60px !important;
+}

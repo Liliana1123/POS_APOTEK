@@ -79,37 +79,71 @@
             </button>
         </div>
 
-        <div class="table-custom-container">
-            <div class="overflow-x-auto">
-                <table class="table-custom min-w-[1150px] mb-2 table-fixed">
+       <div class="table-custom-container">
+    <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
+        <table class="penerimaan-detail-table mb-2">
                     <colgroup>
-                        <col class="w-[210px]">
-                        <col class="w-[100px]">
-                        <col class="w-[110px]">
-                        <col class="w-[125px]">
-                        <col class="w-[105px]">
-                        <col class="w-[105px]">
-                        <col class="w-[90px]">
-                        <col class="w-[90px]">
-                        <col class="w-[85px]">
-                        <col class="w-[110px]">
-                        <col class="w-[50px]">
+                        <col style="width:220px;">
+                        <col style="width:140px;">
+                        <col style="width:150px;">
+                        <col style="width:140px;">
+                        <col style="width:170px;">
+                        <col style="width:170px;">
+                        <col style="width:100px;">
+                        <col style="width:150px;">
+                        <col style="width:150px;">
+                        <col style="width:110px;">
+                        <col style="width:160px;">
+                        <col style="width:60px;">
                     </colgroup>
 
                     <thead class="table-custom-header">
                         <tr>
-                            <th scope="col" class="px-3 py-2">Barang <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-32">Barcode</th>
-                            <th scope="col" class="px-3 py-2 w-32">No. Batch <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-36">Expired Date <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-28 text-right">Harga Beli <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-28 text-right">Harga Jual <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24">No. Rak <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Dipesan <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24 text-right">Jumlah Diterima <span class="text-red-500 font-bold">*</span></th>
-                            <th scope="col" class="px-3 py-2 w-24">Satuan</th>
-                            <th scope="col" class="px-3 py-2 w-32 text-right">Subtotal</th>
-                            <th scope="col" class="px-3 py-2 w-12"></th>
+                            <th scope="col" class="px-3 py-2 text-left">
+                                Barang <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Barcode
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                No. Batch <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Expired Date <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Harga Beli <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Harga Jual <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                No. Rak <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Jumlah Dipesan <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Jumlah Diterima <span class="text-red-500 font-bold">*</span>
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Satuan
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center">
+                                Subtotal
+                            </th>
+
+                            <th scope="col" class="px-3 py-2 text-center"></th>
                         </tr>
                     </thead>
                     <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150"></tbody>
@@ -157,7 +191,7 @@
 <template id="row-template">
     <tr class="item-row hover:bg-gray-50 transition-colors">
         <td class="px-3 py-2">
-            <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
+            <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select" style="width: 100% !important; max-width: none !important;">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
                     <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
@@ -165,16 +199,27 @@
             </select>
         </td>
         <td class="px-3 py-2">
-            <input type="text" class="form-input py-1 px-2 barcode-field bg-gray-50" readonly>
+            <input type="text" class="form-input py-1 px-2 barcode-field bg-gray-50" readonly style="width: 100% !important; max-width: none !important;">
         </td>
         <td class="px-3 py-2">
-            <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch...">
+            <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch..." style="min-width: 130px;">
         </td>
         <td class="px-3 py-2">
-            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2">
+            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2" style="min-width: 125px;">
         </td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0"></td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0" style="min-width: 145px;"></td>
+        <td class="px-3 py-2">
+    <input
+        type="number"
+        step="0.01"
+        min="0"
+        name="items[__i__][harga_jual]"
+        required
+        class="form-input py-1 px-2 text-right font-mono"
+        placeholder="0"
+        style="width: 100% !important; max-width: none !important;"
+    >
+</td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
             <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
@@ -182,7 +227,7 @@
         <td class="px-3 py-2">
             <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
         </td>
-        <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
+        <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly style="min-width: 90px;"></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
         <td class="px-3 py-2 text-center">
             <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
