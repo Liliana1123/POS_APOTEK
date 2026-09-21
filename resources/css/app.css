@@ -47,6 +47,10 @@
 /* ==========================================================================
    Global Sleek Scrollbar System (All Pages, Modals & Containers)
    ========================================================================== */
+html {
+    scrollbar-gutter: stable;
+}
+
 html,
 body,
 * {
@@ -513,23 +517,15 @@ h3,
    Sidebar & Navigation System (Fixed Anchor Geometry & Smooth Transitions)
    ========================================================================== */
 
-/* Custom sleek sidebar scrollbar */
+/* Custom sleek sidebar scrollbar (hidden from layout to prevent width eating while keeping full scrolling) */
 .sidebar-scroll-area {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Old Edge */
 }
 .sidebar-scroll-area::-webkit-scrollbar {
-    width: 4px;
-}
-.sidebar-scroll-area::-webkit-scrollbar-track {
-    background: transparent;
-}
-.sidebar-scroll-area::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 9999px;
-}
-.sidebar-scroll-area::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.45);
+    display: none;
+    width: 0px;
+    height: 0px;
 }
 
 /* Active Nav State */

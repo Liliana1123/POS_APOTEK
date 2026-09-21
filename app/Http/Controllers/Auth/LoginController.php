@@ -11,7 +11,13 @@ class LoginController extends Controller
 {
     public function create()
     {
-        return view('auth.login');
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => \App\Models\InfoApotek::first()
+        );
+
+        return view('auth.login', compact('apotek'));
     }
 
     public function store(Request $request)
@@ -38,11 +44,26 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        \App\Models\ActivityLog::log(
+            'Login User',
+            "User: {$user->name} ({$user->role}) berhasil login ke sistem",
+            \App\Models\ActivityLog::CATEGORY_KEAMANAN
+        );
+
         return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request)
     {
+        $user = Auth::user();
+        if ($user) {
+            \App\Models\ActivityLog::log(
+                'Logout User',
+                "User: {$user->name} ({$user->role}) keluar dari sistem",
+                \App\Models\ActivityLog::CATEGORY_KEAMANAN
+            );
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

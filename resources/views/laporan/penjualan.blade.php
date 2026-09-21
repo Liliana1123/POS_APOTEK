@@ -67,7 +67,7 @@
                 Filter
             </button>
             <a href="{{ route('laporan.penjualan') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-                Reset
+                Clear
             </a>
         </div>
     </form>
