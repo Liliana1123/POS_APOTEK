@@ -22,6 +22,12 @@ class PengaturanController extends Controller
         $data = $request->validate([
             'nama_apotek' => 'required|string|max:255',
             'nama_pemilik' => 'nullable|string|max:255',
+            'alamat_jalan' => 'nullable|string|max:255',
+            'kelurahan' => 'nullable|string|max:100',
+            'kecamatan' => 'nullable|string|max:100',
+            'kota' => 'nullable|string|max:100',
+            'provinsi' => 'nullable|string|max:100',
+            'kode_pos' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
