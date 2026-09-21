@@ -56,7 +56,7 @@
                         <span class="text-blue-700 font-extrabold text-base">{{ $abbr }}</span>
                     @endif
                 </div>
-                <span class="sidebar-nav-label truncate whitespace-nowrap font-bold text-base tracking-wide">
+                <span class="sidebar-nav-label truncate whitespace-nowrap font-bold text-base tracking-wide uppercase">
                     {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
                 </span>
             </div>
@@ -185,7 +185,7 @@
                 <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
                     <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span class="font-bold text-sm text-gray-800">@yield('title', 'Dashboard')</span>
+                <span class="font-bold text-sm text-gray-800 uppercase tracking-wide">@yield('title', 'Dashboard')</span>
             </div>
             
             <div class="flex items-center gap-3 md:gap-4 text-xs">
