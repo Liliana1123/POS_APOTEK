@@ -84,10 +84,6 @@ class Penerimaan extends Model
     {
         $detailPesanan = $this->detailPesanan;
 
-        if ($detailPesanan->isEmpty()) {
-            return 'SELESAI';
-        }
-
         $masihKurang = $detailPesanan->contains(function ($detail) {
             return $detail->kekurangan() > 0;
         });
@@ -96,10 +92,6 @@ class Penerimaan extends Model
             return 'BELUM LENGKAP';
         }
 
-        $adaPembatalan = $detailPesanan->contains(function ($detail) {
-            return $detail->totalDibatalkan() > 0;
-        });
-
-        return $adaPembatalan ? 'SELESAI' : 'LENGKAP';
+        return 'LENGKAP';
     }
 }

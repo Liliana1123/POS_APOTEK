@@ -36,4 +36,9 @@ class RiwayatPenerimaan extends Model
     {
         return $this->belongsTo(DetailPenerimaan::class);
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }
