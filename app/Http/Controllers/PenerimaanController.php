@@ -239,6 +239,12 @@ class PenerimaanController extends Controller
                     'keterangan' => 'Pembayaran pertama',
                 ]);
             }
+
+            \App\Models\ActivityLog::log(
+                'Penerimaan Barang',
+                "Faktur: {$penerimaan->no_faktur}, Supplier: {$supplier->nama}, Total: Rp " . number_format($totalTagihan, 2),
+                \App\Models\ActivityLog::CATEGORY_INVENTARIS
+            );
         });
 
         return redirect()->route('penerimaan.index')->with('success', 'Penerimaan barang berhasil disimpan.');

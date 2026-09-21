@@ -101,7 +101,13 @@ class BarangController extends Controller
         // Generate Kode Apotek otomatis dari sistem (contoh: P-0001)
         $data['kode_apotek'] = Barang::generateKodeApotek($data['nama']);
 
-        Barang::create($data);
+        $barang = Barang::create($data);
+
+        \App\Models\ActivityLog::log(
+            'Tambah Obat',
+            "Kode: {$barang->kode_apotek}, Nama: {$barang->nama}",
+            \App\Models\ActivityLog::CATEGORY_INVENTARIS
+        );
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Barang berhasil ditambahkan.'], 201);
@@ -137,6 +143,12 @@ class BarangController extends Controller
         unset($data['kode_apotek']);
 
         $barang->update($data);
+
+        \App\Models\ActivityLog::log(
+            'Update Obat',
+            "Kode: {$barang->kode_apotek}, Nama: {$barang->nama}",
+            \App\Models\ActivityLog::CATEGORY_INVENTARIS
+        );
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Barang berhasil diperbarui.']);
@@ -192,6 +204,12 @@ class BarangController extends Controller
         if ($barang->detailPenerimaan()->exists()) {
             return back()->with('error', 'Barang tidak bisa dihapus karena punya riwayat penerimaan. Nonaktifkan saja lewat form edit.');
         }
+
+        \App\Models\ActivityLog::log(
+            'Hapus Obat',
+            "Kode: {$barang->kode_apotek}, Nama: {$barang->nama}",
+            \App\Models\ActivityLog::CATEGORY_INVENTARIS
+        );
 
         $barang->delete();
 
@@ -443,6 +461,12 @@ class BarangController extends Controller
 
             DB::commit();
             fclose($handle);
+
+            \App\Models\ActivityLog::log(
+                'Import Data Obat',
+                "Total: {$importedCount} baru, {$updatedCount} diperbarui" . ($skippedCount > 0 ? " ({$skippedCount} dilewati)" : ""),
+                \App\Models\ActivityLog::CATEGORY_INVENTARIS
+            );
         } catch (\Exception $e) {
             DB::rollBack();
             fclose($handle);

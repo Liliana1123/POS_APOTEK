@@ -81,7 +81,7 @@
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
                 <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
+                    Clear
                 </a>
             @endif
 

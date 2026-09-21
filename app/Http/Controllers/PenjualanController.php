@@ -362,7 +362,8 @@ class PenjualanController extends Controller
                 }
                 \App\Models\ActivityLog::log(
                     'Transaksi Penjualan',
-                    "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2)
+                    "Invoice: {$penjualan->no_faktur}, Total: Rp " . number_format($totalFaktur, 2),
+                    \App\Models\ActivityLog::CATEGORY_PENJUALAN
                 );
 
                 return $penjualan;
