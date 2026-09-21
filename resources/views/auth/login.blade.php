@@ -1,9 +1,22 @@
+@php
+    $apotek = $apotek ?? \Illuminate\Support\Facades\Cache::remember(
+        'info_apotek',
+        now()->addHours(6),
+        fn () => \App\Models\InfoApotek::first()
+    );
+    $abbr = ($apotek?->nama_apotek ?? '')
+        ? collect(explode(' ', $apotek->nama_apotek))
+            ->take(2)
+            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+            ->implode('')
+        : 'P';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <title>Login - POS Apotek</title>
+    <title>Login - {{ $apotek?->nama_apotek ?? 'POS Apotek' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -12,10 +25,18 @@
     <div class="w-full max-w-md">
         <div class="rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-sky-100 backdrop-blur-sm">
             <div class="mb-6 text-center">
-                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-200">
-                    P
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900">POS Apotek</h1>
+                @if($apotek?->logo)
+                    <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 border border-slate-100 shadow-md shadow-blue-100 overflow-hidden">
+                        <img src="{{ asset('storage/' . $apotek->logo) }}"
+                             alt="{{ $apotek->nama_apotek }}"
+                             class="w-full h-full object-contain object-center">
+                    </div>
+                @else
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-200">
+                        {{ $abbr }}
+                    </div>
+                @endif
+                <h1 class="text-2xl font-bold text-slate-900">{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
                 <p class="mt-2 text-sm text-slate-500">Silakan login untuk melanjutkan</p>
             </div>
 
@@ -50,6 +71,10 @@
                     Masuk
                 </button>
             </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+                <span class="text-xs font-medium text-slate-400 tracking-wider">v{{ config('app.version', '26.7.A') }}</span>
+            </div>
         </div>
     </div>
 </body>

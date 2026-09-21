@@ -11,7 +11,13 @@ class LoginController extends Controller
 {
     public function create()
     {
-        return view('auth.login');
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => \App\Models\InfoApotek::first()
+        );
+
+        return view('auth.login', compact('apotek'));
     }
 
     public function store(Request $request)
