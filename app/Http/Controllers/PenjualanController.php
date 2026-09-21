@@ -14,7 +14,7 @@ class PenjualanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Penjualan::with(['user', 'pelanggan']);
+        $query = Penjualan::with(['user', 'pelanggan', 'detail']);
 
         // Pencarian nomor faktur
         if ($request->filled('cari')) {
