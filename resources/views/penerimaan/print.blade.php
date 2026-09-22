@@ -32,23 +32,43 @@
             margin-bottom: 25px;
         }
 
-        /* KOP SURAT */
         .kop-surat {
-            display: flex;
-            align-items: center;
-            gap: 18px;
+            position: relative;
+            min-height: 90px;
             padding-bottom: 12px;
             border-bottom: 2px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .kop-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
             width: 75px;
             height: 75px;
             object-fit: contain;
+            object-position: center;
         }
 
         .kop-info {
-            flex: 1;
+            width: 100%;
+            text-align: center;
+        }
+
+        .kop-info h2 {
+            margin: 0 0 5px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .kop-info p {
+            margin: 3px 0;
+            font-size: 12px;
+            color: #555;
         }
 
         .kop-info h2 {
@@ -237,6 +257,22 @@
 
                         @if($apotek?->email)
                             Email: {{ $apotek->email }}
+                        @endif
+                    </p>
+                @endif
+
+                @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                    <p>
+                        @if($apotek?->no_izin_sia)
+                            SIA: {{ $apotek->no_izin_sia }}
+                        @endif
+
+                        @if($apotek?->no_izin_sia && $apotek?->no_sipa)
+                            &nbsp;&nbsp;•&nbsp;&nbsp;
+                        @endif
+
+                        @if($apotek?->no_sipa)
+                            SIPA: {{ $apotek->no_sipa }}
                         @endif
                     </p>
                 @endif
