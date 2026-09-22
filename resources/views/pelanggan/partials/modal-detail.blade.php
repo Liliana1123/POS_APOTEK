@@ -251,7 +251,7 @@ function openDetailModal(pelangganId) {
     })
     .then(data => {
         const pelanggan = data.pelanggan || {};
-        const transaksi = Array.isArray(data.transaksi_terbaru) ? data.transaksi_terbaru : [];
+        const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
 
         document.getElementById('detail-nama').textContent = pelanggan.nama || '-';
         document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';

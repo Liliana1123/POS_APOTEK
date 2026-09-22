@@ -43,12 +43,47 @@ class PenjualanController extends Controller
             );
         }
 
+        // Sorting No. Invoice Fitur Penjualan
+        $sort = $request->input('sort', 'no_faktur');
+        $direction = $request->input('direction', 'desc');
+
+        $allowedSorts = [
+            'no_faktur',
+            'tanggal',
+        ];
+
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'no_faktur';
+        }
+
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+
+        // Data lengkap untuk laporan cetak, mengikuti filter yang sama
+        $laporanPenjualans = (clone $query)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('no_faktur', 'desc')
+            ->get();
+
+        // Data tabel riwayat tetap memakai pagination
         $penjualans = $query
-            ->orderByDesc('tanggal')
+            ->orderBy($sort, $direction)
             ->paginate(15)
             ->withQueryString();
 
-        return view('penjualan.index', compact('penjualans'));
+        $totalDiskonLaporan = $laporanPenjualans->sum(function ($penjualan) {
+            return $penjualan->detail->sum('diskon');
+        });
+
+        $totalTransaksiLaporan = $laporanPenjualans->sum('total');
+
+        return view('penjualan.index', compact(
+            'penjualans',
+            'laporanPenjualans',
+            'totalDiskonLaporan',
+            'totalTransaksiLaporan'
+        ));
     }
 
     public function create()
@@ -380,5 +415,74 @@ class PenjualanController extends Controller
         $penjualan->load(['user', 'pelanggan', 'detail.detailPenerimaan.barang']);
 
         return view('penjualan.show', compact('penjualan'));
+    }
+
+    public function detail(Penjualan $penjualan)
+    {
+        $penjualan->load([
+            'user',
+            'pelanggan',
+            'detail.detailPenerimaan.barang',
+        ]);
+
+        return response()->json([
+            'penjualan' => $penjualan,
+        ]);
+    }
+
+    public function cetakLaporan(Request $request)
+    {
+        $query = Penjualan::with([
+            'user',
+            'pelanggan',
+            'detail',
+        ]);
+
+        // Filter tanggal awal
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate(
+                'tanggal',
+                '>=',
+                $request->tanggal_awal
+            );
+        }
+
+        // Filter tanggal akhir
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate(
+                'tanggal',
+                '<=',
+                $request->tanggal_akhir
+            );
+        }
+
+        // Filter nomor invoice jika diisi
+        if ($request->filled('cari')) {
+            $query->where(
+                'no_faktur',
+                'like',
+                '%' . $request->cari . '%'
+            );
+        }
+
+        // Ambil semua data sesuai filter, tanpa pagination
+        $penjualans = $query
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('no_faktur', 'desc')
+            ->get();
+
+        // Hitung total diskon seluruh transaksi
+        $totalDiskon = $penjualans->sum(function ($penjualan) {
+            return $penjualan->detail->sum('diskon');
+        });
+
+        // Hitung total transaksi
+        $totalTransaksi = $penjualans->sum('total');
+
+        return view('penjualan.cetak', compact(
+            'penjualans',
+            'totalDiskon',
+            'totalTransaksi'
+        ));
     }
 }
