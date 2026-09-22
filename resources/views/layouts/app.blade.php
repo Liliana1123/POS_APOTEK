@@ -382,6 +382,141 @@
             setInterval(updateClock, 1000);
         })();
     </script>
+
+    <!-- Auto Logout Saat Idle (30 menit, sinkron antar tab) -->
+    <script>
+        (function () {
+            var IDLE = 30 * 60 * 1000;      // 30 menit tanpa aktivitas
+            var WARN = 30 * 1000;           // peringatan 30 detik sebelum logout
+            var TICK = 5000;                // interval pengecekan tiap 5 detik
+            var KEY_LAST = 'pos_apotek_last_activity';
+            var KEY_LOGOUT = 'pos_apotek_logout_request';
+            var lastTouch = 0;
+            var modal = null;
+            var countdownTimer = null;
+            var loggingOut = false;
+
+            function now() { return Date.now(); }
+
+            function touch() {
+                localStorage.setItem(KEY_LAST, String(now()));
+            }
+
+            function doLogout() {
+                if (loggingOut) return;
+                loggingOut = true;
+                var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                var token = csrfMeta ? csrfMeta.content : '';
+                fetch('{{ route('logout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({ auto_logout: '1', _token: token }),
+                    credentials: 'same-origin'
+                }).then(function (res) {
+                    if (res.redirected || res.ok) {
+                        window.location.href = res.redirected ? res.url : '/login';
+                    } else {
+                        window.location.href = '/login';
+                    }
+                }).catch(function () {
+                    window.location.href = '/login';
+                });
+            }
+
+            function requestLogout() {
+                localStorage.setItem(KEY_LOGOUT, String(now()));
+                doLogout();
+            }
+
+            function hideWarning() {
+                if (modal) {
+                    modal.remove();
+                    modal = null;
+                }
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+            }
+
+            function showWarning(remaining) {
+                if (!modal || !modal.isConnected) {
+                    modal = document.createElement('div');
+                    modal.className = 'modal-backdrop-custom';
+                    modal.innerHTML = '' +
+                        '<div class="modal-container-custom mx-4">' +
+                            '<div class="modal-header-custom">' +
+                                '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
+                            '</div>' +
+                            '<div class="modal-body-custom leading-relaxed">' +
+                                'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
+                            '</div>' +
+                            '<div class="modal-footer-custom">' +
+                                '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
+                            '</div>' +
+                        '</div>';
+                    document.body.appendChild(modal);
+                    var resumeBtn = modal.querySelector('#idle-resume');
+                    if (resumeBtn) resumeBtn.addEventListener('click', touch);
+
+                    var last = parseInt(localStorage.getItem(KEY_LAST) || '0', 10);
+                    var shown = remaining;
+                    if (countdownTimer) clearInterval(countdownTimer);
+                    countdownTimer = setInterval(function () {
+                        var el = modal ? modal.querySelector('#idle-countdown') : null;
+                        if (!el) return;
+                        var secs = Math.ceil((IDLE - (now() - last)) / 1000);
+                        el.textContent = Math.max(secs, 0);
+                    }, 1000);
+                } else {
+                    var el = modal.querySelector('#idle-countdown');
+                    if (el) el.textContent = Math.max(remaining, 0);
+                }
+            }
+
+            function check() {
+                var last = parseInt(localStorage.getItem(KEY_LAST) || '0', 10);
+                if (!last) { touch(); return; }
+                var elapsed = now() - last;
+                if (elapsed >= IDLE) {
+                    requestLogout();
+                } else if (elapsed >= IDLE - WARN) {
+                    showWarning(Math.ceil((IDLE - elapsed) / 1000));
+                } else {
+                    hideWarning();
+                }
+            }
+
+            function activityHandler() {
+                var t = now();
+                if (t - lastTouch >= 2000) {
+                    lastTouch = t;
+                    touch();
+                }
+                hideWarning();
+            }
+
+            touch();
+
+            var EVENTS = ['mousemove', 'mousedown', 'click', 'keydown', 'touchstart', 'scroll'];
+            EVENTS.forEach(function (ev) {
+                document.addEventListener(ev, activityHandler, { passive: true });
+            });
+
+            window.addEventListener('storage', function (e) {
+                if (e.key === KEY_LOGOUT && e.newValue) {
+                    hideWarning();
+                    window.location.href = "/login";
+                }
+            });
+
+            setInterval(check, TICK);
+        })();
+    </script>
 </body>
 
 </html>

@@ -47,6 +47,12 @@
                 </div>
             @endif
 
+            @if (session('notice'))
+                <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                    {{ session('notice') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
                 @csrf
 
