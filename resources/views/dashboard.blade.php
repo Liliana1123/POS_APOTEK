@@ -185,15 +185,9 @@
                     </div>
                 </div>
 
-                {{-- LIVE --}}
-                <div class="flex items-center gap-1.5 text-[8px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wide">
-                    <span class="relative flex h-1.5 w-1.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                    </span>
-                    Live
-                </div>
-            </div>
+<!-- Stats Grid (Top KPIs) -->
+<div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
+    
 
             {{-- =========================================================
                 ISI BUSINESS HEALTH
@@ -221,11 +215,29 @@
                                 {{ $stokSehatPersen }}%
                             </span>
 
-                            <span class="text-[8px] font-bold text-gray-400 mt-1">
-                                STOK AMAN
-                            </span>
-                        </div>
-                    </div>
+    <!-- Card 1: Total Members -->
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Total Member</span>
+            <span class="dashboard-kpi-value font-bold text-gray-800 block mt-1.5">{{ number_format($totalMembers) }}</span>
+            <span class="text-caption block mt-1">+{{ $newMembersThisMonth }} baru bulan ini</span>
+        </div>
+        <div class="dashboard-kpi-icon bg-blue-50 text-blue-600 shrink-0">
+            <x-heroicon-o-user-group class="w-5 h-5" />
+        </div>
+    </div>
+
+    <!-- Card: Monthly Discount Summary -->
+    <div class="dashboard-kpi card-base hoverable flex items-center justify-between">
+        <div>
+            <span class="text-caption font-semibold uppercase tracking-wider block">Total Hemat (Bulan Ini)</span>
+            <span class="dashboard-kpi-value font-bold text-green-600 block mt-1.5">Rp {{ number_format($totalDiscountThisMonth, 0, ',', '.') }}</span>
+            <span class="text-caption block mt-1">Diskon aktual transaksi member</span>
+        </div>
+        <div class="dashboard-kpi-icon bg-green-50 text-green-600 shrink-0">
+            <x-heroicon-o-currency-dollar class="w-5 h-5" />
+        </div>
+    </div>
 
                     {{-- Status --}}
                     <div class="mt-3 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-extrabold">
