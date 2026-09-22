@@ -19,6 +19,7 @@
     <title>Login - {{ $apotek?->nama_apotek ?? 'POS Apotek' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -61,6 +62,13 @@
                         class="form-input h-11 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
                 </div>
 
+                <div class="space-y-1">
+                    @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
+                    @error('captcha')
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <label class="flex items-center gap-2 text-sm text-slate-600">
                     <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                     Ingat saya
@@ -77,6 +85,7 @@
             </div>
         </div>
     </div>
+    @stack('scripts')
 </body>
 
 </html>
