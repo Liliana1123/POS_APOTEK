@@ -30,7 +30,8 @@
     /* sky-600 */
     --color-info-hover: #0369a1;
     /* sky-700 */
-    --color-background: #f8fafc;
+    --color-background: #cccccc;
+    /*#f8fafc */
     /* slate-50 */
     --color-surface: #ffffff;
     --color-border-custom: #e2e8f0;
