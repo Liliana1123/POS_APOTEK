@@ -58,8 +58,16 @@
 
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password">Password</label>
-                    <input type="password" name="password" id="password" required
-                        class="form-input h-11 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                    <div class="relative">
+                        <input type="password" name="password" id="password" required
+                            class="form-input h-11 w-full border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 pr-11">
+                        <button type="button" id="password-toggle" tabindex="-1"
+                            class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600"
+                            aria-label="Tampilkan password">
+                            <x-heroicon-o-eye class="h-5 w-5 show-icon" />
+                            <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden" />
+                        </button>
+                    </div>
                 </div>
 
                 <div class="space-y-1">
@@ -85,6 +93,30 @@
             </div>
         </div>
     </div>
+
+    <script>
+        (() => {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('password-toggle');
+            if (!input || !btn) return;
+            let timer = null;
+            btn.addEventListener('click', () => {
+                const isText = input.type === 'text';
+                input.type = isText ? 'password' : 'text';
+                btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
+                btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+                clearTimeout(timer);
+                if (!isText) {
+                    timer = setTimeout(() => {
+                        input.type = 'password';
+                        btn.querySelector('.show-icon').classList.remove('hidden');
+                        btn.querySelector('.hide-icon').classList.add('hidden');
+                    }, 3000);
+                }
+            });
+        })();
+    </script>
+
     @stack('scripts')
 </body>
 
