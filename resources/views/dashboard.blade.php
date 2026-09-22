@@ -185,9 +185,15 @@
                     </div>
                 </div>
 
-<!-- Stats Grid (Top KPIs) -->
-<div class="dashboard-kpi-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
-    
+                {{-- LIVE --}}
+                <div class="flex items-center gap-1.5 text-[8px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    Live
+                </div>
+            </div>
 
             {{-- =========================================================
                 ISI BUSINESS HEALTH
@@ -214,6 +220,12 @@
                             <span class="text-[27px] font-black text-gray-900 leading-none">
                                 {{ $stokSehatPersen }}%
                             </span>
+
+                            <span class="text-[8px] font-bold text-gray-400 mt-1">
+                                STOK AMAN
+                            </span>
+                        </div>
+                    </div>
 
                     {{-- Status --}}
                     <div class="mt-3 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-extrabold">
