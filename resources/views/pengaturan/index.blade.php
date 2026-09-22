@@ -67,6 +67,10 @@
 
             <div class="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3.5 font-mono text-xs text-gray-700">
                 <div class="text-center pb-2.5 border-b border-dashed border-gray-300 space-y-0.5">
+                    <img id="receipt-logo"
+                         src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
+                         alt="Logo"
+                         class="w-10 h-10 object-contain mx-auto mb-1 {{ $apotek->logo ? '' : 'hidden' }}">
                     <p id="receipt-nama" class="font-bold text-gray-900 uppercase">
                         {{ $apotek->nama_apotek ?: 'NAMA APOTEK' }}
                     </p>
@@ -395,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptKontak = document.getElementById('receipt-kontak');
     const receiptSia = document.getElementById('receipt-sia');
     const receiptSipa = document.getElementById('receipt-sipa');
+    const receiptLogo = document.getElementById('receipt-logo');
 
     function compileAddress() {
         const jalan = inputAlamatJalan ? inputAlamatJalan.value.trim() : '';
@@ -488,6 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         formLogoPreview.classList.remove('hidden');
                     }
                     if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
+                    if (receiptLogo) {
+                        receiptLogo.src = e.target.result;
+                        receiptLogo.classList.remove('hidden');
+                    }
                 };
                 reader.readAsDataURL(file);
             }

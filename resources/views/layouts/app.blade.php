@@ -6,6 +6,14 @@
     <title>@yield('title', 'POS Apotek')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => \App\Models\InfoApotek::first()
+        );
+    @endphp
+    <link rel="icon" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -33,11 +41,6 @@
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php
-                $apotek = \Illuminate\Support\Facades\Cache::remember(
-                    'info_apotek',
-                    now()->addHours(6),
-                    fn () => \App\Models\InfoApotek::first()
-                );
                 $abbr = ($apotek?->nama_apotek ?? '')
                     ? collect(explode(' ', $apotek->nama_apotek))
                         ->take(2)
