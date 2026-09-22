@@ -134,16 +134,16 @@
 <!-- Table Card -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[70rem]">
+        <table class="table-custom w-full table-fixed min-w-0">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-12 text-center">No</th>
-                    <th scope="col" class="w-28 text-center">Tanggal Lapor</th>
-                    <th scope="col">Nama Barang</th>
-                    <th scope="col" class="w-32">No. Batch</th>
-                    <th scope="col" class="text-right w-24">Jumlah</th>
-                    <th scope="col" class="text-right w-36">Total Kerugian</th>
-                    <th scope="col">Keterangan</th>
+                    <th scope="col" class="w-[5%] text-center">No</th>
+                    <th scope="col" class="w-[14%] text-center">Tanggal Lapor</th>
+                    <th scope="col" class="w-[20%]">Nama Barang</th>
+                    <th scope="col" class="w-[17%] text-center">No. Batch</th>
+                    <th scope="col" class="w-[7%] text-center">Jumlah</th>
+                    <th scope="col" class="w-[15%] text-right">Total Kerugian</th>
+                    <th scope="col" class="w-[23%]">Keterangan</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
@@ -152,8 +152,8 @@
                         <td class="table-num text-center">{{ $index + 1 }}</td>
                         <td class="text-center font-mono text-gray-600">{{ $item->tanggal->format('d M Y') }}</td>
                         <td class="font-medium text-gray-800">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
-                        <td class="font-mono text-gray-600">{{ $item->detailPenerimaan->no_batch ?? '—' }}</td>
-                        <td class="table-num font-bold text-gray-800 text-right">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                        <td class="font-mono text-gray-600 text-center">{{ $item->detailPenerimaan->no_batch ?? '—' }} </td>
+                        <td class="table-num font-bold text-gray-800 text-center"> {{ number_format($item->jumlah, 0, ',', '.') }} </td>
                         <td class="table-num font-bold text-red-600 font-mono text-right">Rp {{ number_format($item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0), 0, ',', '.') }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $item->keterangan }}">{{ $item->keterangan ?? '-' }}</td>
                     </tr>

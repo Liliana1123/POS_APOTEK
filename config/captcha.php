@@ -1,0 +1,208 @@
+<?php
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | Default Captcha Type
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default captcha type that will be used.
+    | Available types: 'image', 'math', 'text', 'slider', 'puzzle'
+    |
+    */
+    'default' => env('CAPTCHA_TYPE', 'image'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Difficulty Level
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default difficulty level.
+    | Available levels: 'easy', 'medium', 'hard'
+    |
+    */
+    'difficulty' => env('CAPTCHA_DIFFICULTY', 'medium'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Key
+    |--------------------------------------------------------------------------
+    |
+    | The session key used to store the captcha value.
+    |
+    */
+    'session_key' => 'laravel_captcha',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expiration Time
+    |--------------------------------------------------------------------------
+    |
+    | The time in minutes before the captcha expires.
+    |
+    */
+    'expire' => 5,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto Clear Session
+    |--------------------------------------------------------------------------
+    |
+    | Automatically clear captcha from session after successful verification.
+    | Set to false to prevent issues with double validation (e.g., in Fortify).
+    | The captcha will expire naturally based on the 'expire' setting.
+    |
+    */
+    'auto_clear' => env('CAPTCHA_AUTO_CLEAR', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Image Captcha Settings
+    |--------------------------------------------------------------------------
+    */
+    'image' => [
+        /*
+        | Use SVG format instead of PNG (no GD library required)
+        | Set to true to use SVG, false to use PNG with GD library
+        */
+        'use_svg' => env('CAPTCHA_USE_SVG', true),
+
+        'width' => 200,
+        'height' => 60,
+        'length' => [
+            'easy' => 4,
+            'medium' => 5,
+            'hard' => 6,
+        ],
+        'characters' => [
+            'easy' => '23456789ABCDEFGHJKLMNPQRSTUVWXYZ',
+            'medium' => '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz',
+            'hard' => '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz!@#$%^&*',
+        ],
+        'fonts' => [
+            'OpenSans-Bold.ttf',
+            'Roboto-Bold.ttf',
+            'Montserrat-Bold.ttf',
+        ],
+        'colors' => [
+            'background' => [255, 255, 255],
+            'text' => [0, 0, 0],
+            'noise' => [200, 200, 200],
+        ],
+        'noise' => [
+            'easy' => 5,
+            'medium' => 10,
+            'hard' => 20,
+        ],
+        'lines' => [
+            'easy' => 2,
+            'medium' => 4,
+            'hard' => 6,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Math Captcha Settings
+    |--------------------------------------------------------------------------
+    */
+    'math' => [
+        'operators' => [
+            'easy' => ['+', '-'],
+            'medium' => ['+', '-', '*'],
+            'hard' => ['+', '-', '*', '/'],
+        ],
+        'range' => [
+            'easy' => [1, 10],
+            'medium' => [1, 50],
+            'hard' => [1, 100],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Text Captcha Settings
+    |--------------------------------------------------------------------------
+    */
+    'text' => [
+        'questions' => [
+            'easy' => [
+                'Berapa hasil 2 + 2?' => '4',
+                'Berapa jumlah hari dalam seminggu?' => '7',
+                'Apa warna langit?' => 'biru',
+                'Berapa kaki yang dimiliki kucing?' => '4',
+                'Apa hasil 5 - 2?' => '3',
+            ],
+            'medium' => [
+                'Apa ibu kota Indonesia?' => 'jakarta',
+                'Berapa jumlah benua di dunia?' => '7',
+                'Apa lawan dari panas?' => 'dingin',
+                'Berapa hasil 5 * 5?' => '25',
+                'Apa planet tempat kita tinggal?' => 'bumi',
+            ],
+            'hard' => [
+                'Berapa akar kuadrat dari 144?' => '12',
+                'Berapa detik dalam satu menit?' => '60',
+                'Apa simbol kimia untuk air?' => 'h2o',
+                'Berapa sisi yang dimiliki segi enam?' => '6',
+                'Berapa hasil 15 * 8?' => '120',
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Slider Captcha Settings
+    |--------------------------------------------------------------------------
+    */
+    'slider' => [
+        'width' => 300,
+        'height' => 150,
+        'puzzle_size' => [
+            'easy' => 40,
+            'medium' => 50,
+            'hard' => 60,
+        ],
+        'tolerance' => [
+            'easy' => 10,
+            'medium' => 5,
+            'hard' => 3,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Styles
+    |--------------------------------------------------------------------------
+    |
+    | Different visual styles for captcha display
+    | Available: 'default', 'modern', 'minimal', 'colorful'
+    |
+    */
+    'style' => env('CAPTCHA_STYLE', 'default'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Case Sensitive
+    |--------------------------------------------------------------------------
+    |
+    | Whether the captcha validation should be case sensitive.
+    |
+    */
+    'case_sensitive' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routes
+    |--------------------------------------------------------------------------
+    |
+    | Enable or disable automatic route registration.
+    |
+    */
+    'routes' => [
+        'enabled' => true,
+        'prefix' => 'captcha',
+        'middleware' => ['web'],
+    ],
+];
+
