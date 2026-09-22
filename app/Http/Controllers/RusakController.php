@@ -14,17 +14,33 @@ class RusakController extends Controller
     {
         $query = Rusak::with('detailPenerimaan.barang');
 
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal', $request->tanggal);
-        }
-
         if ($request->filled('cari')) {
             $query->whereHas('detailPenerimaan.barang', function($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->cari . '%');
             });
         }
 
-        $rusaks = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
+        if ($request->filled('no_batch')) {
+            $query->whereHas('detailPenerimaan', function($q) use ($request) {
+                $q->where('no_batch', 'like', '%' . $request->no_batch . '%');
+            });
+        }
+
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
+        }
+
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+
+        $perPage = $request->input('per_page', 15);
+
+        $rusaks = $query->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
 
         return view('rusak.index', compact('rusaks'));
     }

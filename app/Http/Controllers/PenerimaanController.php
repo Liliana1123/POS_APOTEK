@@ -82,37 +82,7 @@ class PenerimaanController extends Controller
                         )
                     ");
                 })
-                ->whereDoesntHave('detailPesanan.riwayatPenerimaan', function ($q) {
-                    $q->where('jenis', 'pembatalan');
-                })
                 ->whereHas('detailPesanan');
-        }
-
-        // SELESAI
-        if ($request->status_penerimaan === 'selesai') {
-            $query
-                ->whereDoesntHave('detailPesanan', function ($q) {
-                    $q->whereRaw("
-                        jumlah_dipesan >
-                        (
-                            SELECT COALESCE(SUM(
-                                CASE
-                                    WHEN jenis = 'penerimaan' THEN jumlah
-                                    WHEN jenis = 'pembatalan' THEN jumlah
-                                    ELSE 0
-                                END
-                            ), 0)
-                            FROM riwayat_penerimaans
-                            WHERE detail_pesanan_penerimaan_id = detail_pesanan_penerimaans.id
-                        )
-                    ");
-                })
-                ->where(function ($q) {
-                    $q->doesntHave('detailPesanan')
-                        ->orWhereHas('detailPesanan.riwayatPenerimaan', function ($q) {
-                            $q->where('jenis', 'pembatalan');
-                        });
-                });
         }
     }
 
@@ -213,6 +183,22 @@ class PenerimaanController extends Controller
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
             ]);
 
+            // Akumulasi target pesanan per barang agar mendukung barang sama beda batch dalam 1 faktur
+            $pesananPerBarang = [];
+            foreach ($data['items'] as $item) {
+                $bId = (int) $item['barang_id'];
+                $pesananPerBarang[$bId] = ($pesananPerBarang[$bId] ?? 0) + (int) $item['jumlah_dipesan'];
+            }
+
+            $detailPesananMap = [];
+            foreach ($pesananPerBarang as $bId => $totalDipesan) {
+                $detailPesananMap[$bId] = DetailPesananPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'barang_id' => $bId,
+                    'jumlah_dipesan' => $totalDipesan,
+                ]);
+            }
+
             foreach ($data['items'] as $item) {
                 $detailPenerimaan = DetailPenerimaan::create([
                     'penerimaan_id' => $penerimaan->id,
@@ -225,15 +211,9 @@ class PenerimaanController extends Controller
                     'jumlah' => $item['jumlah_diterima'],
                     'stok' => $item['jumlah_diterima'],
                     'aktif' => true,
-
-                    
                 ]);
 
-                $detailPesanan = DetailPesananPenerimaan::create([
-                    'penerimaan_id' => $penerimaan->id,
-                    'barang_id' => $item['barang_id'],
-                    'jumlah_dipesan' => $item['jumlah_dipesan'],
-                ]);
+                $detailPesanan = $detailPesananMap[(int) $item['barang_id']];
 
                 if ((int) $item['jumlah_diterima'] > 0) {
                     RiwayatPenerimaan::create([
@@ -247,7 +227,6 @@ class PenerimaanController extends Controller
                         'user_id' => $request->user()->id,
                     ]);
                 }
-              
             }
 
             if ($pembayaranPertama > 0) {
@@ -278,6 +257,12 @@ class PenerimaanController extends Controller
             'supplier',
             'detail.barang.pabrik',
             'detail.barang.satuan',
+            'detailPesanan.barang.satuan',
+            'detailPesanan.barang.pabrik',
+            'detailPesanan.riwayatPenerimaan.detailPenerimaan',
+            'detailPesanan.riwayatPenerimaan.user',
+            'riwayatPenerimaan.detailPenerimaan',
+            'riwayatPenerimaan.user',
             'pembayaran.user'
         ]);
 
@@ -290,7 +275,10 @@ class PenerimaanController extends Controller
             'supplier',
             'detail.barang.pabrik',
             'detail.barang.satuan',
+            'detail.detailPenjualan',
+            'detail.rusak',
             'detailPesanan',
+            'riwayatPenerimaan',
         ]);
 
         $suppliers = Supplier::orderBy('nama')->get();
@@ -370,6 +358,24 @@ class PenerimaanController extends Controller
                 ->filter()
                 ->map(fn ($id) => (int) $id);
 
+            // Akumulasi target pesanan per barang untuk edit (mendukung multi-batch barang yang sama)
+            $pesananPerBarang = [];
+            foreach ($data['items'] as $item) {
+                $bId = (int) $item['barang_id'];
+                $pesananPerBarang[$bId] = ($pesananPerBarang[$bId] ?? 0) + (int) $item['jumlah_dipesan'];
+            }
+
+            $detailPesananMap = [];
+            foreach ($pesananPerBarang as $bId => $totalDipesan) {
+                $dp = DetailPesananPenerimaan::firstOrNew([
+                    'penerimaan_id' => $penerimaan->id,
+                    'barang_id' => $bId,
+                ]);
+                $dp->jumlah_dipesan = $totalDipesan;
+                $dp->save();
+                $detailPesananMap[$bId] = $dp;
+            }
+
             foreach ($data['items'] as $item) {
                 $detailId = isset($item['detail_id'])
                     ? (int) $item['detail_id']
@@ -382,9 +388,15 @@ class PenerimaanController extends Controller
                         || $detail->rusak()->exists();
 
                     if ($sudahDipakai) {
-                        throw ValidationException::withMessages([
-                            'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh diedit.',
-                        ]);
+                        $isBarangChanged = (int) $item['barang_id'] !== (int) $detail->barang_id;
+                        $isBatchChanged = (string) $item['no_batch'] !== (string) $detail->no_batch;
+                        $isJumlahChanged = (int) $item['jumlah_diterima'] !== (int) $detail->jumlah;
+
+                        if ($isBarangChanged || $isBatchChanged || $isJumlahChanged) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Barang [' . ($detail->barang->nama ?? 'Obat') . '] sudah digunakan untuk penjualan atau tercatat rusak sehingga data pokoknya (barang, batch, jumlah) tidak boleh diubah.',
+                            ]);
+                        }
                     }
                 }
 
@@ -397,20 +409,15 @@ class PenerimaanController extends Controller
                 if ($detailId) {
                     $detail = $existingDetails->get($detailId);
 
-                    $detailPesanan = DetailPesananPenerimaan::where(
-                        'penerimaan_id',
-                        $penerimaan->id
-                    )
-                        ->where('barang_id', $detail->barang_id)
-                        ->first();
+                    $detailPesanan = $detailPesananMap[(int) $item['barang_id']] ?? null;
 
                     if ($detailPesanan) {
                         $totalRiwayat = $detailPesanan->totalDiterima()
                             + $detailPesanan->totalDibatalkan();
 
-                        if ((int) $item['jumlah_dipesan'] < $totalRiwayat) {
+                        if ((int) $detailPesanan->jumlah_dipesan < $totalRiwayat) {
                             throw ValidationException::withMessages([
-                                'items' => 'Jumlah dipesan tidak boleh lebih kecil dari jumlah penerimaan atau pembatalan yang sudah tercatat.',
+                                'items' => 'Total jumlah dipesan untuk barang [' . ($detailPesanan->barang->nama ?? 'Obat') . '] tidak boleh lebih kecil dari jumlah yang sudah diterima (' . $totalRiwayat . ').',
                             ]);
                         }
                     }
@@ -460,13 +467,7 @@ class PenerimaanController extends Controller
                         'aktif' => true,
                     ]);
 
-                    $detailPesanan = DetailPesananPenerimaan::firstOrNew([
-                        'penerimaan_id' => $penerimaan->id,
-                        'barang_id' => $item['barang_id'],
-                    ]);
-
-                    $detailPesanan->jumlah_dipesan = $item['jumlah_dipesan'];
-                    $detailPesanan->save();
+                    $detailPesanan = $detailPesananMap[(int) $item['barang_id']];
                 } else {
                     $detailPenerimaan = $penerimaan->detail()->create([
                         'barang_id' => $item['barang_id'],
@@ -480,13 +481,7 @@ class PenerimaanController extends Controller
                         'aktif' => true,
                     ]);
 
-                    $detailPesanan = DetailPesananPenerimaan::firstOrNew([
-                        'penerimaan_id' => $penerimaan->id,
-                        'barang_id' => $item['barang_id'],
-                    ]);
-
-                    $detailPesanan->jumlah_dipesan = $item['jumlah_dipesan'];
-                    $detailPesanan->save();
+                    $detailPesanan = $detailPesananMap[(int) $item['barang_id']];
 
                     if ((int) $item['jumlah_diterima'] > 0) {
                         RiwayatPenerimaan::create([
@@ -601,7 +596,11 @@ class PenerimaanController extends Controller
 
         $penerimaan->load([
             'supplier',
+            'user',
+            'detailPesanan.barang.satuan',
+            'detailPesanan.barang.pabrik',
             'detailPesanan.riwayatPenerimaan',
+            'detail.barang',
         ]);
 
         $detailPesanan = $penerimaan->detailPesanan
@@ -802,15 +801,18 @@ class PenerimaanController extends Controller
                     'user_id' => $request->user()->id,
                 ]);
             }
+
+            // Hitung ulang total faktur (DPP) fisik setelah barang susulan masuk
+            $totalFakturBaru = (float) $penerimaan->detail()->sum(DB::raw('harga_beli * jumlah'));
+            $ppnBaru = $totalFakturBaru * 0.11;
+            $totalTagihanBaru = $totalFakturBaru + $ppnBaru;
+            $totalDibayar = $penerimaan->totalDibayar();
+
+            $penerimaan->update([
+                'ppn' => $ppnBaru,
+                'lunas' => $totalDibayar >= $totalTagihanBaru,
+            ]);
         });
-
-         $totalTagihan = $penerimaan->totalTagihan();
-        $totalDibayar = $penerimaan->totalDibayar();
-
-        $penerimaan->update([
-            'lunas' => $totalDibayar >= $totalTagihan,
-        ]);
-
 
         return response()->json([
             'success' => true,
@@ -820,7 +822,19 @@ class PenerimaanController extends Controller
 
     public function print(Penerimaan $penerimaan)
     {
-        $penerimaan->load(['user', 'supplier', 'detail.barang', 'pembayaran.user']);
+        $penerimaan->load([
+            'user',
+            'supplier',
+            'detail.barang.satuan',
+            'detail.barang.pabrik',
+            'detailPesanan.barang.satuan',
+            'detailPesanan.barang.pabrik',
+            'detailPesanan.riwayatPenerimaan',
+            'riwayatPenerimaan.detailPesanan.barang',
+            'riwayatPenerimaan.detailPenerimaan.barang',
+            'riwayatPenerimaan.user',
+            'pembayaran.user',
+        ]);
 
         return view('penerimaan.print', compact('penerimaan'));
     }

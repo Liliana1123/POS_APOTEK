@@ -519,9 +519,12 @@ h3,
 
 /* Custom sleek sidebar scrollbar (hidden from layout to prevent width eating while keeping full scrolling) */
 .sidebar-scroll-area {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Old Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Old Edge */
 }
+
 .sidebar-scroll-area::-webkit-scrollbar {
     display: none;
     width: 0px;
@@ -534,6 +537,7 @@ h3,
     color: #1e40af !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .sidebar-nav-link.sidebar-nav-active svg,
 .sidebar-nav-link.sidebar-nav-active span {
     color: #1e40af !important;
@@ -547,7 +551,8 @@ h3,
    Rail Child Icon = 16px (w-4) → Center is 16 + 24 + 8 = 48px in rail mode. */
 @media (min-width: 1024px) {
     #app-sidebar {
-        width: 6rem !important; /* w-24 / 96px */
+        width: 6rem !important;
+        /* w-24 / 96px */
         will-change: width;
         transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         overflow-x: hidden;
@@ -556,7 +561,8 @@ h3,
     #app-sidebar:hover,
     #app-sidebar:focus-within,
     #app-sidebar.sidebar-expanded {
-        width: 16rem !important; /* 256px expanded */
+        width: 16rem !important;
+        /* 256px expanded */
     }
 
     /* Fixed anchor padding on top-level links & group headers (never shifts) */
@@ -641,6 +647,7 @@ h3,
         padding-left: 1.25rem !important;
         padding-right: 1.25rem !important;
     }
+
     #app-sidebar .sidebar-footer {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
@@ -824,4 +831,488 @@ h3,
    ========================================================================== */
 .modal-backdrop-custom.hidden {
     display: none !important;
+}
+
+/* ==========================================================================
+   DASHBOARD EXECUTIVE APOTEK STYLING
+   Single Source of Truth untuk styling Dashboard Executive
+   ========================================================================== */
+
+/* =========================================
+   1. DASHBOARD BASE CONTAINER
+   ========================================= */
+.dashboard-container {
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+/* =========================================
+   2. KPI CARDS (FINANCIAL OVERVIEW)
+   ========================================= */
+.kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    padding: 1.25rem 1.35rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.07);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.kpi-kotor::before {
+    background: #f59e0b;
+}
+
+.kpi-diskon::before {
+    background: #10b981;
+}
+
+.kpi-bersih::before {
+    background: #2563eb;
+}
+
+.kpi-member::before {
+    background: #8b5cf6;
+}
+
+.kpi-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* =========================================
+   3. DASHBOARD GENERAL CARDS / PANELS
+   ========================================= */
+.dashboard-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* =========================================
+   4. ACTION CENTER ALERTS
+   ========================================= */
+.action-alert-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem 1.15rem;
+    transition: all 0.15s ease;
+    display: block;
+    text-decoration: none;
+}
+
+.action-alert-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.action-alert-card.critical {
+    border-left: 4px solid #ef4444;
+    background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.action-alert-card.attention {
+    border-left: 4px solid #f59e0b;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.action-alert-card.monitoring {
+    border-left: 4px solid #0284c7;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+.action-alert-card.overdue {
+    border-left: 4px solid #dc2626;
+    background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+}
+
+.action-alert-card.piutang {
+    border-left: 4px solid #8b5cf6;
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.badge-chip {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* =========================================
+   5. COMPACT TABLES (PURCHASE & PRODUCTS)
+   ========================================= */
+.table-compact th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.table-compact td {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.8rem;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+}
+
+.table-compact tr:last-child td {
+    border-bottom: none;
+}
+
+.table-compact tr:hover td {
+    background-color: #f8fafc;
+}
+
+
+/* Dashboard body only — tidak menyentuh header/sidebar dari layouts.app */
+.dashboard-reference {
+    --dash-gap: 12px;
+}
+
+.dashboard-reference .dashboard-card,
+.dashboard-reference .kpi-card {
+    border-radius: 10px;
+    border: 1px solid #e5edf7;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+}
+
+.dashboard-reference .kpi-card {
+    min-height: 92px;
+    padding: 14px;
+}
+
+.dashboard-reference .kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+}
+
+.dashboard-reference .main-dashboard-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.dashboard-reference .main-dashboard-grid>.main-graph-card,
+.dashboard-reference .main-dashboard-grid>.main-health-card,
+.dashboard-reference .main-dashboard-grid>.main-action-column {
+    min-width: 0;
+}
+
+.dashboard-reference .main-graph-card {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-health-card {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-action-column {
+    min-height: 350px;
+}
+
+.dashboard-reference .main-action-column>.dashboard-card:first-child {
+    min-height: 270px;
+}
+
+.dashboard-reference .cashier-card {
+    min-height: 68px;
+}
+
+@media (max-width: 1279px) {
+    .dashboard-reference .main-dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dashboard-reference .main-graph-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .dashboard-reference .main-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-reference .main-graph-card {
+        grid-column: auto;
+    }
+}
+
+/* ============================================================
+   INVENTORY - RAPIN & SAMAKAN CARD
+   ============================================================ */
+
+.dashboard-reference .inventory-card {
+    height: 100%;
+    border-color: #e5e7eb !important;
+}
+
+.dashboard-reference .inventory-card-inner {
+    border-color: #e5e7eb !important;
+}
+
+/* Semua garis pemisah dibuat abu-abu */
+.dashboard-reference .inventory-card hr,
+.dashboard-reference .inventory-divider {
+    border-color: #e5e7eb !important;
+}
+
+/* ============================================================
+   BARANG YANG HARUS DIBELI
+   ============================================================ */
+
+.dashboard-reference .purchase-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.dashboard-reference .purchase-table {
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.dashboard-reference .purchase-table th,
+.dashboard-reference .purchase-table td {
+    padding: 7px 6px !important;
+    font-size: 11px;
+    line-height: 1.35;
+    border-bottom: 1px solid #e5e7eb !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+/* No */
+.dashboard-reference .purchase-table th:nth-child(1),
+.dashboard-reference .purchase-table td:nth-child(1) {
+    width: 8%;
+    text-align: center;
+}
+
+/* Nama Barang */
+.dashboard-reference .purchase-table th:nth-child(2),
+.dashboard-reference .purchase-table td:nth-child(2) {
+    width: 27%;
+}
+
+/* Kategori */
+.dashboard-reference .purchase-table th:nth-child(3),
+.dashboard-reference .purchase-table td:nth-child(3) {
+    width: 22%;
+}
+
+/* Stok Saat Ini */
+.dashboard-reference .purchase-table th:nth-child(4),
+.dashboard-reference .purchase-table td:nth-child(4) {
+    width: 17%;
+    text-align: center;
+}
+
+/* Status */
+.dashboard-reference .purchase-table th:nth-child(5),
+.dashboard-reference .purchase-table td:nth-child(5) {
+    width: 26%;
+    text-align: center;
+}
+
+.dashboard-reference .purchase-table th:nth-child(6),
+.dashboard-reference .purchase-table td:nth-child(6) {
+    width: 12%;
+    text-align: center;
+}
+
+.dashboard-reference .purchase-table th:nth-child(7),
+.dashboard-reference .purchase-table td:nth-child(7) {
+    width: 12%;
+    text-align: center;
+}
+
+/* ============================================================
+   INVENTORY ROW - SEMUA CARD TINGGI SAMA
+   ============================================================ */
+
+.dashboard-reference .inventory-row {
+    align-items: stretch;
+}
+
+.dashboard-reference .inventory-row>[class*="xl:col-span-4"] {
+    display: flex;
+    min-width: 0;
+}
+
+.dashboard-reference .inventory-row .inventory-card {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .05);
+}
+
+/* Garis pemisah abu-abu */
+.dashboard-reference .inventory-row hr {
+    border-color: #e5e7eb !important;
+}
+
+/* ============================================================
+   KPI - SAMAKAN ACCENT HUTANG & PIUTANG
+   ============================================================ */
+
+/* Hutang Supplier */
+.dashboard-reference .kpi-card:nth-child(5) {
+    border-top: 3px solid #0ea5e9;
+}
+
+.dashboard-reference .kpi-card:nth-child(5) .kpi-icon {
+    background: #eff6ff;
+    color: #0284c7;
+}
+
+/* Piutang Member */
+.dashboard-reference .kpi-card:nth-child(6) {
+    border-top: 3px solid #fb7185;
+}
+
+.dashboard-reference .kpi-card:nth-child(6) .kpi-icon {
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+/* ============================================================
+   TABEL INPUT PENERIMAAN BARANG
+   Lebar mengikuti isi, tidak dipaksa mengecil
+   ============================================================ */
+
+.penerimaan-detail-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.penerimaan-detail-table {
+    width: max-content !important;
+    min-width: 1650px !important;
+    table-layout: auto !important;
+    border-collapse: collapse;
+}
+
+/* Header */
+.penerimaan-detail-table th {
+    padding: 0.6rem 0.65rem !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+
+/* Isi tabel */
+.penerimaan-detail-table td {
+    padding: 0.5rem 0.65rem !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+/* Semua input/select jangan dipaksa mengecil */
+.penerimaan-detail-table input,
+.penerimaan-detail-table select {
+    box-sizing: border-box !important;
+    max-width: none !important;
+}
+
+/* Barang */
+.penerimaan-detail-table .barang-select {
+    width: 220px !important;
+    min-width: 220px !important;
+}
+
+/* Barcode */
+.penerimaan-detail-table .barcode-field {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Batch */
+.penerimaan-detail-table input[name*="[no_batch]"] {
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+/* Expired */
+.penerimaan-detail-table input[type="date"] {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Harga */
+.penerimaan-detail-table .harga-beli,
+.penerimaan-detail-table input[name*="[harga_jual]"] {
+    width: 160px !important;
+    min-width: 160px !important;
+}
+
+/* Rak */
+.penerimaan-detail-table input[name*="[no_rak]"] {
+    width: 90px !important;
+    min-width: 90px !important;
+}
+
+/* Jumlah */
+.penerimaan-detail-table .jumlah-dipesan-field,
+.penerimaan-detail-table .jumlah-diterima-field {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+/* Satuan */
+.penerimaan-detail-table .satuan-field {
+    width: 100px !important;
+    min-width: 100px !important;
+}
+
+/* Subtotal */
+.penerimaan-detail-table .subtotal-field {
+    min-width: 160px !important;
+    width: 160px !important;
+    white-space: nowrap !important;
+}
+
+/* Kolom tombol */
+.penerimaan-detail-table td:last-child,
+.penerimaan-detail-table th:last-child {
+    width: 60px !important;
+    min-width: 60px !important;
 }

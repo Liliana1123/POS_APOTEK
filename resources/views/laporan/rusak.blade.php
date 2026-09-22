@@ -43,20 +43,84 @@
     </div>
 </div>
 
-<!-- Filter Card -->
+<!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.rusak') }}" class="flex flex-wrap gap-4 items-end">
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Dari Tanggal</label>
-            <input type="date" name="dari" value="{{ $dari }}" class="form-input w-40">
+    <form method="GET" action="{{ route('laporan.rusak') }}" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Nama Barang
+                </label>
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="nama_barang"
+                        value="{{ request('nama_barang') }}"
+                        placeholder="Cari nama barang..."
+                        class="form-input pr-8"
+                    >
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    No. Batch
+                </label>
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="no_batch"
+                        value="{{ request('no_batch') }}"
+                        placeholder="Cari no. batch..."
+                        class="form-input pr-8 font-mono"
+                    >
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Tanggal Lapor
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <input
+                        type="date"
+                        name="dari"
+                        value="{{ $dari }}"
+                        class="form-input min-w-0"
+                    >
+
+                    <span class="text-sm text-gray-400">-</span>
+
+                    <input
+                        type="date"
+                        name="sampai"
+                        value="{{ $sampai }}"
+                        class="form-input min-w-0"
+                    >
+                </div>
+            </div>
         </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Sampai Tanggal</label>
-            <input type="date" name="sampai" value="{{ $sampai }}" class="form-input w-40">
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn-primary py-2 px-4">Filter</button>
-            <a href="{{ route('laporan.rusak') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">Clear</a>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+                <a
+                    href="{{ route('laporan.rusak') }}"
+                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
+                >
+                    Reset
+                </a>
+            @endif
+
+            <button type="submit" class="btn-primary py-1.5 px-4">
+                Filter
+            </button>
         </div>
     </form>
 </div>
@@ -70,10 +134,11 @@
 <!-- Table Card -->
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[55rem]">
+        <table class="table-custom min-w-[70rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-28">Tanggal Lapor</th>
+                    <th scope="col" class="w-12 text-center">No</th>
+                    <th scope="col" class="w-28 text-center">Tanggal Lapor</th>
                     <th scope="col">Nama Barang</th>
                     <th scope="col" class="w-32">No. Batch</th>
                     <th scope="col" class="text-right w-24">Jumlah</th>
@@ -81,22 +146,35 @@
                     <th scope="col">Keterangan</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
+            <tbody class="table-custom-body">
                 @forelse ($items as $index => $item)
-                    <tr>
-                        <td class="text-gray-600">{{ $item->tanggal->format('d M Y') }}</td>
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="table-num text-center">{{ $index + 1 }}</td>
+                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal->format('d M Y') }}</td>
                         <td class="font-medium text-gray-800">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
                         <td class="font-mono text-gray-600">{{ $item->detailPenerimaan->no_batch ?? '—' }}</td>
-                        <td class="table-num font-bold text-gray-800">{{ $item->jumlah }}</td>
-                        <td class="table-num font-bold text-red-600 font-mono">Rp {{ number_format($item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0), 0, ',', '.') }}</td>
+                        <td class="table-num font-bold text-gray-800 text-right">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                        <td class="table-num font-bold text-red-600 font-mono text-right">Rp {{ number_format($item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0), 0, ',', '.') }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $item->keterangan }}">{{ $item->keterangan ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-0">
+                        <td colspan="7" class="p-0">
                             <div class="empty-state-container">
-                                <div class="empty-state-title">Barang Rusak Kosong</div>
-                                <div class="empty-state-desc font-sans">Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa pada rentang tanggal ini.</div>
+                                <div class="empty-state-title">
+                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+                                        Barang Rusak Tidak Ditemukan
+                                    @else
+                                        Barang Rusak Kosong
+                                    @endif
+                                </div>
+                                <div class="empty-state-desc">
+                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+                                        Tidak ditemukan data pelaporan obat rusak atau kadaluarsa yang cocok dengan filter kriteria Anda.
+                                    @else
+                                        Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa pada rentang tanggal ini.
+                                    @endif
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -104,8 +182,8 @@
             </tbody>
             <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
                 <tr>
-                    <td colspan="4" class="px-5 py-4 text-right text-gray-600">Total Kerugian Finansial:</td>
-                    <td class="px-5 py-4 text-right text-red-650 font-mono text-sm">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>
+                    <td colspan="5" class="px-5 py-4 text-right uppercase tracking-wider text-gray-600">Total Kerugian Finansial:</td>
+                    <td class="table-num px-5 py-4 text-right text-red-650 font-mono text-sm font-bold">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>
                     <td></td>
                 </tr>
             </tfoot>
