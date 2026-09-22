@@ -13,10 +13,40 @@
     </div>
 </div>
 
+@php
+    $apotek = \Illuminate\Support\Facades\Cache::remember(
+        'info_apotek',
+        now()->addHours(6),
+        fn () => \App\Models\InfoApotek::first()
+    );
+@endphp
+
 <div class="card-base max-w-sm mx-auto text-xs font-mono bg-white border border-gray-200" id="struk">
-    <div class="text-center mb-4">
-        <p class="font-bold text-sm uppercase tracking-wider text-gray-800">POS APOTEK</p>
-        <p class="text-[9px] text-gray-500 mt-0.5 uppercase tracking-widest font-semibold">Struk Pembelian Obat</p>
+    <div class="text-center mb-3 pb-2.5 border-b border-dashed border-gray-300">
+        @if($apotek?->logo)
+            <div class="flex justify-center mb-1">
+                <img src="{{ asset('storage/' . $apotek->logo) }}" alt="Logo" class="w-10 h-10 object-contain">
+            </div>
+        @endif
+        <p class="font-bold text-sm uppercase tracking-wider text-gray-900">
+            {{ $apotek?->nama_apotek ?? 'POS APOTEK' }}
+        </p>
+        @if($apotek?->alamat)
+            <p class="text-[10px] text-gray-500 mt-0.5 leading-tight">{{ $apotek->alamat }}</p>
+        @endif
+        @if($apotek?->telepon)
+            <p class="text-[10px] text-gray-500">Telp: {{ $apotek->telepon }}</p>
+        @endif
+        @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+            <div class="text-[9px] text-gray-400 pt-0.5 leading-tight">
+                @if($apotek?->no_izin_sia)<span>SIA: {{ $apotek->no_izin_sia }}</span>@endif
+                @if($apotek?->no_izin_sia && $apotek?->no_sipa)<span class="mx-1">•</span>@endif
+                @if($apotek?->no_sipa)<span>SIPA: {{ $apotek->no_sipa }}</span>@endif
+            </div>
+        @endif
+        @if($apotek?->nama_apoteker_pj)
+            <p class="text-[9px] text-gray-400">PJ: {{ $apotek->nama_apoteker_pj }}</p>
+        @endif
     </div>
 
     <div class="text-[10px] text-gray-600 mb-3 space-y-1">

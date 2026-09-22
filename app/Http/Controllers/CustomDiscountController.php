@@ -36,8 +36,10 @@ class CustomDiscountController extends Controller
             }
         }
 
-        $discounts = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
-        return view('custom_discount.index', compact('discounts'));
+        $discounts = $query->with(['kategoris', 'barangs'])->orderByDesc('created_at')->paginate(15)->withQueryString();
+        $kategoris = Kategori::orderBy('nama')->get();
+        $barangs = Barang::where('aktif', true)->orderBy('nama')->get();
+        return view('custom_discount.index', compact('discounts', 'kategoris', 'barangs'));
     }
 
     public function create()
@@ -92,7 +94,7 @@ class CustomDiscountController extends Controller
                 $discount->barangs()->sync($barangIds);
             }
 
-            \App\Models\ActivityLog::log('Create Promo', "Promo: {$discount->nama}, Persentase: {$discount->persentase}%");
+            \App\Models\ActivityLog::log('Create Promo', "Promo: {$discount->nama}, Persentase: {$discount->persentase}%", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
 
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil ditambahkan.');
@@ -159,7 +161,7 @@ class CustomDiscountController extends Controller
                 $customDiscount->barangs()->detach();
             }
 
-            \App\Models\ActivityLog::log('Update Promo', "Promo: {$customDiscount->nama}, Persentase: {$customDiscount->persentase}%");
+            \App\Models\ActivityLog::log('Update Promo', "Promo: {$customDiscount->nama}, Persentase: {$customDiscount->persentase}%", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
 
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil diperbarui.');
@@ -171,7 +173,7 @@ class CustomDiscountController extends Controller
             $customDiscount->kategoris()->detach();
             $customDiscount->barangs()->detach();
             $customDiscount->delete();
-            \App\Models\ActivityLog::log('Delete Promo', "Promo: {$customDiscount->nama}");
+            \App\Models\ActivityLog::log('Delete Promo', "Promo: {$customDiscount->nama}", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
 
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil dihapus.');
@@ -201,7 +203,7 @@ class CustomDiscountController extends Controller
         ]);
 
         $actionText = $newStatus ? 'Activate Promo' : 'Deactivate Promo';
-        \App\Models\ActivityLog::log('Toggle Promo', "Action: {$actionText}, Promo: {$customDiscount->nama}");
+        \App\Models\ActivityLog::log('Toggle Promo', "Action: {$actionText}, Promo: {$customDiscount->nama}", \App\Models\ActivityLog::CATEGORY_PROMO);
 
         return back()->with('success', 'Status promo berhasil diubah.');
     }

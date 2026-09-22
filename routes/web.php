@@ -63,6 +63,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    // Route Cetak Laporan Riwayat Penjualan
     Route::resource('penjualan', PenjualanController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('pelanggan/register-member', [PelangganController::class, 'registerMember'])->name('pelanggan.register-member');
 });
@@ -82,6 +83,11 @@ Route::get(
 )->name('pelanggan.piutang');
 
 Route::get(
+    'penjualan/{penjualan}/detail',
+    [PenjualanController::class, 'detail']
+)->name('penjualan.detail');
+
+Route::get(
     'penjualan/{penjualan}/piutang/payment-form',
     [PembayaranPiutangController::class, 'form']
 )->name('penjualan.piutang.payments.form');
@@ -90,6 +96,8 @@ Route::post(
     'penjualan/{penjualan}/piutang/payments',
     [PembayaranPiutangController::class, 'store']
 )->name('penjualan.piutang.payments.store');
+
+
 
 
 

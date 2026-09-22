@@ -98,7 +98,7 @@
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
                 <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Reset
+                    Clear
                 </a>
             @endif
             <button type="submit" class="btn-primary py-1.5 px-4">

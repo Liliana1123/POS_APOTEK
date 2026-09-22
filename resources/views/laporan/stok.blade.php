@@ -173,6 +173,13 @@
             <button type="submit" class="btn-primary py-1.5 px-4">
                 Filter
             </button>
+
+            <a
+                href="{{ route('laporan.stok') }}"
+                class="btn-secondary py-2 px-4"
+            >
+                Clear
+            </a>
         </div>
     </form>
 </div>
