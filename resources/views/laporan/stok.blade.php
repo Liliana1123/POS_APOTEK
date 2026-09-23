@@ -368,10 +368,11 @@
 
     <div class="flex gap-2 shrink-0">
         <a
-            href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'csv'])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center"
+            href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'excel'])) }}"
+            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
         >
-            Export CSV
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            Ekspor Excel
         </a>
 
         <button
@@ -479,7 +480,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['nama', 'kategori_id', 'status_expired', 'status_stok']))
+            @if(request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai']))
                 <a
                     href="{{ route('laporan.stok') }}"
                     class="btn-secondary py-1.5 px-4 flex items-center justify-center"

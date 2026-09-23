@@ -34,8 +34,9 @@
         <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
     </div>
     <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.rusak', array_merge(request()->query(), ['export' => 'csv'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-            Export CSV
+        <a href="{{ route('laporan.rusak', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            Ekspor Excel
         </a>
         <button onclick="window.print()" class="btn-primary py-2 px-4">
             Cetak Laporan
@@ -109,7 +110,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+            @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
                 <a
                     href="{{ route('laporan.rusak') }}"
                     class="btn-secondary py-1.5 px-4 flex items-center justify-center"
@@ -128,7 +129,7 @@
 <!-- Laporan Info (Khusus Print) -->
 <div class="hidden print:block mb-6 border-b pb-3">
     <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider">Laporan Kerugian Barang Rusak & Kadaluarsa</h2>
-    <p class="text-xs text-gray-500 mt-1">Periode: {{ date('d M Y', strtotime($dari)) }} s/d {{ date('d M Y', strtotime($sampai)) }}</p>
+    <p class="text-xs text-gray-500 mt-1">Periode: {{ $dari ? date('d M Y', strtotime($dari)) : 'Semua Periode' }} {{ $sampai ? 's/d ' . date('d M Y', strtotime($sampai)) : '' }}</p>
 </div>
 
 <!-- Table Card -->
@@ -150,7 +151,7 @@
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="table-num text-center">{{ $index + 1 }}</td>
-                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal->format('d M Y') }}</td>
+                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal ? $item->tanggal->format('d M Y') : '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
                         <td class="font-mono text-gray-600 text-center">{{ $item->detailPenerimaan->no_batch ?? '—' }} </td>
                         <td class="table-num font-bold text-gray-800 text-center"> {{ number_format($item->jumlah, 0, ',', '.') }} </td>
@@ -162,17 +163,17 @@
                         <td colspan="7" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
                                         Barang Rusak Tidak Ditemukan
                                     @else
                                         Barang Rusak Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
+                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
                                         Tidak ditemukan data pelaporan obat rusak atau kadaluarsa yang cocok dengan filter kriteria Anda.
                                     @else
-                                        Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa pada rentang tanggal ini.
+                                        Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa yang terdaftar di sistem.
                                     @endif
                                 </div>
                             </div>
