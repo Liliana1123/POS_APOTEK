@@ -12,6 +12,7 @@ use App\Models\DetailPenerimaan;
 use App\Models\Penerimaan;
 use App\Models\PembayaranPenerimaan;
 use App\Models\ActivityLog;
+use App\Services\DashboardCacheService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,312 +68,398 @@ class DashboardController extends Controller
 
         $lastUpdated = now()->locale('id')->isoFormat('D MMMM Y HH:mm');
 
-        // 2. KPI KEUANGAN UTAMA (Berdasarkan Periode)
-        $omzetKotor = (float) DB::table('detail_penjualans as dp')
-            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
-            ->whereBetween('p.tanggal', [$dari, $sampai])
-            ->selectRaw('COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as total')
-            ->value('total');
+        // 2 & 4. PENJUALAN, OMZET, LABA & GRAFIK (Data Time-Series & KPI Terpadu - Cached)
+        $salesAndKpi = DashboardCacheService::remember('sales_and_kpi', [$dari, $sampai, $prevDari, $prevSampai], function () use ($dari, $sampai, $prevDari, $prevSampai) {
+            $carbonDari = Carbon::parse($dari);
+            $carbonSampai = Carbon::parse($sampai);
+            $diffDays = $carbonDari->diffInDays($carbonSampai);
 
-        $prevOmzetKotor = (float) DB::table('detail_penjualans as dp')
-            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
-            ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
-            ->selectRaw('COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as total')
-            ->value('total');
+            $chartLabels = [];
+            $chartGross = [];
+            $chartNet = [];
+            $chartProfit = [];
 
-        $totalDiskon = (float) DiscountUsage::whereHas('penjualan', function ($q) use ($dari, $sampai) {
-            $q->whereBetween('tanggal', [$dari, $sampai]);
-        })->sum('nominal');
+            if ($diffDays <= 31) {
+                $dailySales = DB::table('penjualans as p')
+                    ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
+                    ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                    ->whereBetween('p.tanggal', [$dari, $sampai])
+                    ->selectRaw('
+                        DATE(p.tanggal) as date_val,
+                        SUM(dp.harga_jual * dp.jumlah) as gross_sales,
+                        SUM(dp.diskon) as line_discount,
+                        SUM(dp.subtotal) as net_sales,
+                        SUM(dr.harga_beli * dp.jumlah) as total_hpp
+                    ')
+                    ->groupBy(DB::raw('DATE(p.tanggal)'))
+                    ->get()
+                    ->keyBy('date_val');
 
-        $prevTotalDiskon = (float) DiscountUsage::whereHas('penjualan', function ($q) use ($prevDari, $prevSampai) {
-            $q->whereBetween('tanggal', [$prevDari, $prevSampai]);
-        })->sum('nominal');
+                $dailyDiscounts = DB::table('discount_usages as du')
+                    ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
+                    ->whereBetween('p.tanggal', [$dari, $sampai])
+                    ->selectRaw('DATE(p.tanggal) as date_val, SUM(du.nominal) as total_discount')
+                    ->groupBy(DB::raw('DATE(p.tanggal)'))
+                    ->get()
+                    ->keyBy('date_val');
 
-        $omzetBersih = max(0, $omzetKotor - $totalDiskon);
-        $prevOmzetBersih = max(0, $prevOmzetKotor - $prevTotalDiskon);
+                for ($d = $carbonDari->copy(); $d->lte($carbonSampai); $d->addDay()) {
+                    $dateKey = $d->format('Y-m-d');
+                    $chartLabels[] = $d->format('d M');
+                    $row = $dailySales->get($dateKey);
+                    $gross = $row ? (float) $row->gross_sales : 0;
+                    $disc = isset($dailyDiscounts[$dateKey]) ? (float) $dailyDiscounts[$dateKey]->total_discount : ($row ? (float) $row->line_discount : 0);
+                    $net = max(0, $gross - $disc);
+                    $hpp = $row ? (float) $row->total_hpp : 0;
+                    $profit = max(0, $net - $hpp);
 
-        // Gross Profit periode saat ini
-        $grossProfit = (float) DB::table('detail_penjualans as dp')
-            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
-            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
-            ->whereBetween('p.tanggal', [$dari, $sampai])
-            ->selectRaw('
-                COALESCE(
-                    SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah),
-                    0
-                ) as total
-            ')
-            ->value('total');
+                    $chartGross[] = $gross;
+                    $chartNet[] = $net;
+                    $chartProfit[] = $profit;
+                }
+            } else {
+                $monthlySales = DB::table('penjualans as p')
+                    ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
+                    ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                    ->whereBetween('p.tanggal', [$dari, $sampai])
+                    ->selectRaw('
+                        DATE_FORMAT(p.tanggal, "%Y-%m") as month_val,
+                        SUM(dp.harga_jual * dp.jumlah) as gross_sales,
+                        SUM(dp.diskon) as line_discount,
+                        SUM(dp.subtotal) as net_sales,
+                        SUM(dr.harga_beli * dp.jumlah) as total_hpp
+                    ')
+                    ->groupBy(DB::raw('DATE_FORMAT(p.tanggal, "%Y-%m")'))
+                    ->get()
+                    ->keyBy('month_val');
 
-        // Gross Profit periode sebelumnya
-        $prevGrossProfit = (float) DB::table('detail_penjualans as dp')
-            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
-            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
-            ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
-            ->selectRaw('
-                COALESCE(
-                    SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah),
-                    0
-                ) as total
-            ')
-            ->value('total');
+                $monthlyDiscounts = DB::table('discount_usages as du')
+                    ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
+                    ->whereBetween('p.tanggal', [$dari, $sampai])
+                    ->selectRaw('DATE_FORMAT(p.tanggal, "%Y-%m") as month_val, SUM(du.nominal) as total_discount')
+                    ->groupBy(DB::raw('DATE_FORMAT(p.tanggal, "%Y-%m")'))
+                    ->get()
+                    ->keyBy('month_val');
 
-$deltaGrossProfit = $prevGrossProfit > 0
-    ? round((($grossProfit - $prevGrossProfit) / $prevGrossProfit) * 100, 1)
-    : null;
+                for ($d = $carbonDari->copy()->startOfMonth(); $d->lte($carbonSampai); $d->addMonth()) {
+                    $monthKey = $d->format('Y-m');
+                    $chartLabels[] = $d->format('M Y');
+                    $row = $monthlySales->get($monthKey);
+                    $gross = $row ? (float) $row->gross_sales : 0;
+                    $disc = isset($monthlyDiscounts[$monthKey]) ? (float) $monthlyDiscounts[$monthKey]->total_discount : ($row ? (float) $row->line_discount : 0);
+                    $net = max(0, $gross - $disc);
+                    $hpp = $row ? (float) $row->total_hpp : 0;
+                    $profit = max(0, $net - $hpp);
 
-        $totalMember = Pelanggan::where('is_member', true)->count();
-        $newMembersInPeriod = Pelanggan::where('is_member', true)
-            ->whereBetween('member_since', [$dari, $sampai])
-            ->count();
-        $prevNewMembers = Pelanggan::where('is_member', true)
-            ->whereBetween('member_since', [$prevDari, $prevSampai])
-            ->count();
-
-        $deltaOmzetKotor = $prevOmzetKotor > 0 ? round((($omzetKotor - $prevOmzetKotor) / $prevOmzetKotor) * 100, 1) : null;
-        $deltaTotalDiskon = $prevTotalDiskon > 0 ? round((($totalDiskon - $prevTotalDiskon) / $prevTotalDiskon) * 100, 1) : null;
-        $deltaOmzetBersih = $prevOmzetBersih > 0 ? round((($omzetBersih - $prevOmzetBersih) / $prevOmzetBersih) * 100, 1) : null;
-        $deltaMember = $prevNewMembers > 0 ? round((($newMembersInPeriod - $prevNewMembers) / $prevNewMembers) * 100, 1) : null;
-
-        // 3. FINANCIAL CONTROL (Posisi Outstanding Terkini)
-        // A. Hutang Supplier (Penerimaan belum lunas)
-        $unpaidPenerimaans = Penerimaan::with(['detail', 'pembayaran'])
-            ->where('lunas', false)
-            ->get();
-
-        $totalHutangSupplier = 0;
-        $hutangOverdue = 0;
-        $hutangDueSoon = 0;
-        $hutangNotDue = 0;
-        $countHutangOverdue = 0;
-        $countHutangDueSoon = 0;
-        $countHutangNotDue = 0;
-
-        foreach ($unpaidPenerimaans as $p) {
-            $sisa = $p->sisaTagihan();
-            if ($sisa <= 0) {
-                continue;
+                    $chartGross[] = $gross;
+                    $chartNet[] = $net;
+                    $chartProfit[] = $profit;
+                }
             }
-            $totalHutangSupplier += $sisa;
 
-            if ($p->jatuh_tempo) {
-                if ($p->jatuh_tempo->lt($today)) {
-                    $hutangOverdue += $sisa;
-                    $countHutangOverdue++;
-                } elseif ($p->jatuh_tempo->lte($today->copy()->addDays(7))) {
-                    $hutangDueSoon += $sisa;
-                    $countHutangDueSoon++;
+            // Gunakan hasil kalkulasi time-series untuk omzet & laba periode saat ini (tanpa query ulang)
+            $omzetKotor = (float) array_sum($chartGross);
+            $totalDiskon = (float) DB::table('discount_usages as du')
+                ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
+                ->whereBetween('p.tanggal', [$dari, $sampai])
+                ->sum('du.nominal');
+            $omzetBersih = max(0, $omzetKotor - $totalDiskon);
+
+            $grossProfit = (float) DB::table('detail_penjualans as dp')
+                ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+                ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                ->whereBetween('p.tanggal', [$dari, $sampai])
+                ->selectRaw('COALESCE(SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah), 0) as total')
+                ->value('total');
+
+            // Periode sebelumnya: gabungkan query omzet kotor & gross profit menjadi 1 query
+            $prevSales = DB::table('detail_penjualans as dp')
+                ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+                ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
+                ->selectRaw('
+                    COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as omzet,
+                    COALESCE(SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah), 0) as gross
+                ')
+                ->first();
+
+            $prevOmzetKotor = (float) ($prevSales->omzet ?? 0);
+            $prevGrossProfit = (float) ($prevSales->gross ?? 0);
+
+            $prevTotalDiskon = (float) DB::table('discount_usages as du')
+                ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
+                ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
+                ->sum('du.nominal');
+
+            $prevOmzetBersih = max(0, $prevOmzetKotor - $prevTotalDiskon);
+
+            $deltaGrossProfit = $prevGrossProfit > 0
+                ? round((($grossProfit - $prevGrossProfit) / $prevGrossProfit) * 100, 1)
+                : null;
+
+            $deltaOmzetKotor = $prevOmzetKotor > 0 ? round((($omzetKotor - $prevOmzetKotor) / $prevOmzetKotor) * 100, 1) : null;
+            $deltaTotalDiskon = $prevTotalDiskon > 0 ? round((($totalDiskon - $prevTotalDiskon) / $prevTotalDiskon) * 100, 1) : null;
+            $deltaOmzetBersih = $prevOmzetBersih > 0 ? round((($omzetBersih - $prevOmzetBersih) / $prevOmzetBersih) * 100, 1) : null;
+
+            return compact(
+                'chartLabels', 'chartGross', 'chartNet', 'chartProfit',
+                'omzetKotor', 'prevOmzetKotor', 'totalDiskon', 'prevTotalDiskon',
+                'omzetBersih', 'prevOmzetBersih', 'grossProfit', 'prevGrossProfit',
+                'deltaGrossProfit', 'deltaOmzetKotor', 'deltaTotalDiskon', 'deltaOmzetBersih'
+            );
+        });
+
+        $chartLabels = $salesAndKpi['chartLabels'];
+        $chartGross = $salesAndKpi['chartGross'];
+        $chartNet = $salesAndKpi['chartNet'];
+        $chartProfit = $salesAndKpi['chartProfit'];
+        $omzetKotor = $salesAndKpi['omzetKotor'];
+        $prevOmzetKotor = $salesAndKpi['prevOmzetKotor'];
+        $totalDiskon = $salesAndKpi['totalDiskon'];
+        $prevTotalDiskon = $salesAndKpi['prevTotalDiskon'];
+        $omzetBersih = $salesAndKpi['omzetBersih'];
+        $prevOmzetBersih = $salesAndKpi['prevOmzetBersih'];
+        $grossProfit = $salesAndKpi['grossProfit'];
+        $prevGrossProfit = $salesAndKpi['prevGrossProfit'];
+        $deltaGrossProfit = $salesAndKpi['deltaGrossProfit'];
+        $deltaOmzetKotor = $salesAndKpi['deltaOmzetKotor'];
+        $deltaTotalDiskon = $salesAndKpi['deltaTotalDiskon'];
+        $deltaOmzetBersih = $salesAndKpi['deltaOmzetBersih'];
+
+        // 3. FINANCIAL CONTROL & MEMBER (Posisi Outstanding Terkini - Cached)
+        $financialControl = DashboardCacheService::remember('financial_control', [$today->format('Y-m-d'), $dari, $sampai, $prevDari, $prevSampai], function () use ($today, $dari, $sampai, $prevDari, $prevSampai) {
+            // A. Hutang Supplier (Penerimaan belum lunas - eager loaded untuk eliminasi N+1)
+            $unpaidPenerimaans = Penerimaan::with(['detail', 'pembayaran'])
+                ->where('lunas', false)
+                ->get();
+
+            $totalHutangSupplier = 0;
+            $hutangOverdue = 0;
+            $hutangDueSoon = 0;
+            $hutangNotDue = 0;
+            $countHutangOverdue = 0;
+            $countHutangDueSoon = 0;
+            $countHutangNotDue = 0;
+
+            foreach ($unpaidPenerimaans as $p) {
+                $sisa = $p->sisaTagihan();
+                if ($sisa <= 0) {
+                    continue;
+                }
+                $totalHutangSupplier += $sisa;
+
+                if ($p->jatuh_tempo) {
+                    if ($p->jatuh_tempo->lt($today)) {
+                        $hutangOverdue += $sisa;
+                        $countHutangOverdue++;
+                    } elseif ($p->jatuh_tempo->lte($today->copy()->addDays(7))) {
+                        $hutangDueSoon += $sisa;
+                        $countHutangDueSoon++;
+                    } else {
+                        $hutangNotDue += $sisa;
+                        $countHutangNotDue++;
+                    }
                 } else {
                     $hutangNotDue += $sisa;
                     $countHutangNotDue++;
                 }
-            } else {
-                $hutangNotDue += $sisa;
-                $countHutangNotDue++;
             }
-        }
 
-        // B. Piutang Member
-        $totalPiutangMember = (float) Pelanggan::where('is_member', true)->sum('saldo_piutang');
-        $memberBerpiutangCount = Pelanggan::where('is_member', true)->where('saldo_piutang', '>', 0)->count();
+            // B. Member & Piutang: 5 metrik pelanggan disatukan dalam 1 single query
+            $memberStats = DB::table('pelanggans')
+                ->where('is_member', true)
+                ->selectRaw('
+                    COUNT(*) as total_member,
+                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as new_members,
+                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as prev_new_members,
+                    COALESCE(SUM(saldo_piutang), 0) as total_piutang,
+                    COUNT(CASE WHEN saldo_piutang > 0 THEN 1 END) as berpiutang_count
+                ', [$dari, $sampai, $prevDari, $prevSampai])
+                ->first();
 
-        // Breakdown umur piutang dari transaksi kasir piutang jika ada
-        $unpaidPiutangPenjualans = Penjualan::with('pembayaranPiutang')
-            ->where('metode_pembayaran', 'piutang')
-            ->get()
-            ->map(function ($pj) {
-                $dibayar = (float) $pj->pembayaranPiutang->sum('jumlah');
-                $sisa = max(0, (float) $pj->total - $dibayar);
-                return [
-                    'sisa' => $sisa,
-                    'tanggal' => $pj->tanggal,
-                ];
-            })
-            ->filter(fn ($pj) => $pj['sisa'] > 0);
+            $totalMember = (int) ($memberStats->total_member ?? 0);
+            $newMembersInPeriod = (int) ($memberStats->new_members ?? 0);
+            $prevNewMembers = (int) ($memberStats->prev_new_members ?? 0);
+            $totalPiutangMember = (float) ($memberStats->total_piutang ?? 0);
+            $memberBerpiutangCount = (int) ($memberStats->berpiutang_count ?? 0);
 
-        $piutangOverdue = 0;
-        $piutangDueSoon = 0;
-        $piutangNotDue = 0;
-        $countPiutangOverdue = 0;
-        $countPiutangDueSoon = 0;
-        $countPiutangNotDue = 0;
+            $deltaMember = $prevNewMembers > 0 ? round((($newMembersInPeriod - $prevNewMembers) / $prevNewMembers) * 100, 1) : null;
 
-        foreach ($unpaidPiutangPenjualans as $item) {
-            // Standar termin piutang apotek 30 hari dari tanggal transaksi
-            $dueDate = $item['tanggal'] ? Carbon::parse($item['tanggal'])->addDays(30) : null;
-            if ($dueDate) {
-                if ($dueDate->lt($today)) {
-                    $piutangOverdue += $item['sisa'];
-                    $countPiutangOverdue++;
-                } elseif ($dueDate->lte($today->copy()->addDays(7))) {
-                    $piutangDueSoon += $item['sisa'];
-                    $countPiutangDueSoon++;
+            // C. Umur piutang dari transaksi kasir piutang
+            $unpaidPiutangPenjualans = Penjualan::with('pembayaranPiutang')
+                ->where('metode_pembayaran', 'piutang')
+                ->get()
+                ->map(function ($pj) {
+                    $dibayar = (float) $pj->pembayaranPiutang->sum('jumlah');
+                    $sisa = max(0, (float) $pj->total - $dibayar);
+                    return [
+                        'sisa' => $sisa,
+                        'tanggal' => $pj->tanggal,
+                    ];
+                })
+                ->filter(fn ($pj) => $pj['sisa'] > 0);
+
+            $piutangOverdue = 0;
+            $piutangDueSoon = 0;
+            $piutangNotDue = 0;
+            $countPiutangOverdue = 0;
+            $countPiutangDueSoon = 0;
+            $countPiutangNotDue = 0;
+
+            foreach ($unpaidPiutangPenjualans as $item) {
+                $dueDate = $item['tanggal'] ? Carbon::parse($item['tanggal'])->addDays(30) : null;
+                if ($dueDate) {
+                    if ($dueDate->lt($today)) {
+                        $piutangOverdue += $item['sisa'];
+                        $countPiutangOverdue++;
+                    } elseif ($dueDate->lte($today->copy()->addDays(7))) {
+                        $piutangDueSoon += $item['sisa'];
+                        $countPiutangDueSoon++;
+                    } else {
+                        $piutangNotDue += $item['sisa'];
+                        $countPiutangNotDue++;
+                    }
                 } else {
                     $piutangNotDue += $item['sisa'];
                     $countPiutangNotDue++;
                 }
-            } else {
-                $piutangNotDue += $item['sisa'];
-                $countPiutangNotDue++;
             }
-        }
 
-        // 4. GRAFIK PENJUALAN & LABA (Time-series data untuk Chart.js)
-        $carbonDari = Carbon::parse($dari);
-        $carbonSampai = Carbon::parse($sampai);
-        $diffDays = $carbonDari->diffInDays($carbonSampai);
+            return compact(
+                'totalHutangSupplier', 'hutangOverdue', 'hutangDueSoon', 'hutangNotDue',
+                'countHutangOverdue', 'countHutangDueSoon', 'countHutangNotDue',
+                'totalMember', 'newMembersInPeriod', 'deltaMember',
+                'totalPiutangMember', 'piutangOverdue', 'piutangDueSoon', 'piutangNotDue',
+                'countPiutangOverdue', 'countPiutangDueSoon', 'countPiutangNotDue',
+                'memberBerpiutangCount'
+            );
+        });
 
-        $dailySales = DB::table('penjualans as p')
-            ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
-            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
-            ->whereBetween('p.tanggal', [$dari, $sampai])
-            ->selectRaw('
-                DATE(p.tanggal) as date_val,
-                SUM(dp.harga_jual * dp.jumlah) as gross_sales,
-                SUM(dp.diskon) as line_discount,
-                SUM(dp.subtotal) as net_sales,
-                SUM(dr.harga_beli * dp.jumlah) as total_hpp
-            ')
-            ->groupBy(DB::raw('DATE(p.tanggal)'))
-            ->get()
-            ->keyBy('date_val');
+        $totalHutangSupplier = $financialControl['totalHutangSupplier'];
+        $hutangOverdue = $financialControl['hutangOverdue'];
+        $hutangDueSoon = $financialControl['hutangDueSoon'];
+        $hutangNotDue = $financialControl['hutangNotDue'];
+        $countHutangOverdue = $financialControl['countHutangOverdue'];
+        $countHutangDueSoon = $financialControl['countHutangDueSoon'];
+        $countHutangNotDue = $financialControl['countHutangNotDue'];
+        $totalMember = $financialControl['totalMember'];
+        $newMembersInPeriod = $financialControl['newMembersInPeriod'];
+        $deltaMember = $financialControl['deltaMember'];
+        $totalPiutangMember = $financialControl['totalPiutangMember'];
+        $piutangOverdue = $financialControl['piutangOverdue'];
+        $piutangDueSoon = $financialControl['piutangDueSoon'];
+        $piutangNotDue = $financialControl['piutangNotDue'];
+        $countPiutangOverdue = $financialControl['countPiutangOverdue'];
+        $countPiutangDueSoon = $financialControl['countPiutangDueSoon'];
+        $countPiutangNotDue = $financialControl['countPiutangNotDue'];
+        $memberBerpiutangCount = $financialControl['memberBerpiutangCount'];
 
-        $dailyDiscounts = DB::table('discount_usages as du')
-            ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
-            ->whereBetween('p.tanggal', [$dari, $sampai])
-            ->selectRaw('DATE(p.tanggal) as date_val, SUM(du.nominal) as total_discount')
-            ->groupBy(DB::raw('DATE(p.tanggal)'))
-            ->get()
-            ->keyBy('date_val');
+        // 5 & 6. INVENTORY CONTROL CENTER & BARANG YANG HARUS DIBELI (Cached)
+        $inv = DashboardCacheService::remember('inventory_data', [], function () {
+            $inventoryTotals = DetailPenerimaan::where('aktif', true)
+                ->selectRaw('COALESCE(SUM(stok), 0) as total_stok, COALESCE(SUM(stok * harga_beli), 0) as nilai_persediaan')
+                ->first();
 
-        $chartLabels = [];
-        $chartGross = [];
-        $chartNet = [];
-        $chartProfit = [];
+            $totalStok = (int) ($inventoryTotals->total_stok ?? 0);
+            $nilaiPersediaan = (float) ($inventoryTotals->nilai_persediaan ?? 0);
 
-        if ($diffDays <= 31) {
-            for ($d = $carbonDari->copy(); $d->lte($carbonSampai); $d->addDay()) {
-                $dateKey = $d->format('Y-m-d');
-                $chartLabels[] = $d->format('d M');
-                $row = $dailySales->get($dateKey);
-                $gross = $row ? (float) $row->gross_sales : 0;
-                $disc = isset($dailyDiscounts[$dateKey]) ? (float) $dailyDiscounts[$dateKey]->total_discount : ($row ? (float) $row->line_discount : 0);
-                $net = max(0, $gross - $disc);
-                $hpp = $row ? (float) $row->total_hpp : 0;
-                $profit = max(0, $net - $hpp);
+            $barangsStok = Barang::with('kategori')
+                ->withSum(['detailPenerimaan' => function ($query) {
+                    $query->where('aktif', true);
+                }], 'stok')
+                ->where('aktif', true)
+                ->get();
 
-                $chartGross[] = $gross;
-                $chartNet[] = $net;
-                $chartProfit[] = $profit;
+            $totalSku = $barangsStok->count();
+            $stokHabisCount = 0;
+            $stokMenipisCount = 0;
+            $stokAmanCount = 0;
+            $barangHarusDibeliList = collect();
+
+            foreach ($barangsStok as $b) {
+                $stok = (int) ($b->detail_penerimaan_sum_stok ?? 0);
+                $min = (int) $b->stok_minimum;
+
+                if ($stok == 0) {
+                    $stokHabisCount++;
+                    $barangHarusDibeliList->push([
+                        'barang' => $b,
+                        'stok' => $stok,
+                        'stok_minimum' => $min,
+                        'kekurangan' => max(1, $min),
+                        'status' => 'HABIS',
+                    ]);
+                } elseif ($stok <= $min) {
+                    $stokMenipisCount++;
+                    $barangHarusDibeliList->push([
+                        'barang' => $b,
+                        'stok' => $stok,
+                        'stok_minimum' => $min,
+                        'kekurangan' => max(0, $min - $stok),
+                        'status' => 'SEGERA BELI',
+                    ]);
+                } else {
+                    $stokAmanCount++;
+                }
             }
-        } else {
-            $monthlySales = DB::table('penjualans as p')
-                ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
-                ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
-                ->whereBetween('p.tanggal', [$dari, $sampai])
+
+            $barangHarusDibeli = $barangHarusDibeliList->sortBy([
+                ['stok', 'asc'],
+                ['kekurangan', 'desc'],
+            ])->take(10)->values();
+
+            return compact(
+                'totalStok', 'nilaiPersediaan', 'totalSku',
+                'stokHabisCount', 'stokMenipisCount', 'stokAmanCount',
+                'barangHarusDibeli'
+            );
+        });
+
+        $totalStok = $inv['totalStok'];
+        $nilaiPersediaan = $inv['nilaiPersediaan'];
+        $totalSku = $inv['totalSku'];
+        $stokHabisCount = $inv['stokHabisCount'];
+        $stokMenipisCount = $inv['stokMenipisCount'];
+        $stokAmanCount = $inv['stokAmanCount'];
+        $barangHarusDibeli = $inv['barangHarusDibeli'];
+
+        // 7. EXPIRY HEALTH (Cached & Single Aggregated Query)
+        $expiry = DashboardCacheService::remember('expiry_health', [$today->format('Y-m-d')], function () use ($today) {
+            $oneMonth = $today->copy()->addMonth();
+            $threeMonths = $today->copy()->addMonths(3);
+
+            $expiryStats = DB::table('detail_penerimaans')
+                ->where('aktif', true)
+                ->where('stok', '>', 0)
+                ->whereNull('deleted_at')
                 ->selectRaw('
-                    DATE_FORMAT(p.tanggal, "%Y-%m") as month_val,
-                    SUM(dp.harga_jual * dp.jumlah) as gross_sales,
-                    SUM(dp.diskon) as line_discount,
-                    SUM(dp.subtotal) as net_sales,
-                    SUM(dr.harga_beli * dp.jumlah) as total_hpp
-                ')
-                ->groupBy(DB::raw('DATE_FORMAT(p.tanggal, "%Y-%m")'))
-                ->get()
-                ->keyBy('month_val');
+                    COUNT(*) as total_batches,
+                    COUNT(CASE WHEN expired_date <= ? THEN 1 END) as kadaluarsa,
+                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as critical,
+                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as warning,
+                    COUNT(CASE WHEN expired_date > ? OR expired_date IS NULL THEN 1 END) as aman
+                ', [
+                    $today->format('Y-m-d'),
+                    $today->format('Y-m-d'), $oneMonth->format('Y-m-d'),
+                    $oneMonth->format('Y-m-d'), $threeMonths->format('Y-m-d'),
+                    $threeMonths->format('Y-m-d')
+                ])
+                ->first();
 
-            $monthlyDiscounts = DB::table('discount_usages as du')
-                ->join('penjualans as p', 'du.penjualan_id', '=', 'p.id')
-                ->whereBetween('p.tanggal', [$dari, $sampai])
-                ->selectRaw('DATE_FORMAT(p.tanggal, "%Y-%m") as month_val, SUM(du.nominal) as total_discount')
-                ->groupBy(DB::raw('DATE_FORMAT(p.tanggal, "%Y-%m")'))
-                ->get()
-                ->keyBy('month_val');
+            return [
+                'totalBatchesCount' => (int) ($expiryStats->total_batches ?? 0),
+                'expiryKadaluarsa'  => (int) ($expiryStats->kadaluarsa ?? 0),
+                'expiryCritical'    => (int) ($expiryStats->critical ?? 0),
+                'expiryWarning'     => (int) ($expiryStats->warning ?? 0),
+                'expiryAman'        => (int) ($expiryStats->aman ?? 0),
+            ];
+        });
 
-            for ($d = $carbonDari->copy()->startOfMonth(); $d->lte($carbonSampai); $d->addMonth()) {
-                $monthKey = $d->format('Y-m');
-                $chartLabels[] = $d->format('M Y');
-                $row = $monthlySales->get($monthKey);
-                $gross = $row ? (float) $row->gross_sales : 0;
-                $disc = isset($monthlyDiscounts[$monthKey]) ? (float) $monthlyDiscounts[$monthKey]->total_discount : ($row ? (float) $row->line_discount : 0);
-                $net = max(0, $gross - $disc);
-                $hpp = $row ? (float) $row->total_hpp : 0;
-                $profit = max(0, $net - $hpp);
-
-                $chartGross[] = $gross;
-                $chartNet[] = $net;
-                $chartProfit[] = $profit;
-            }
-        }
-
-        // 5. INVENTORY CONTROL CENTER (Posisi Stok Aktual Terkini)
-        $totalStok = (int) DetailPenerimaan::where('aktif', true)->sum('stok');
-        $nilaiPersediaan = (float) DetailPenerimaan::where('aktif', true)
-            ->selectRaw('COALESCE(SUM(stok * harga_beli), 0) as total')
-            ->value('total');
-
-        // Evaluasi kondisi stok per barang (Single source of truth dengan Laporan Stok)
-        $barangsStok = Barang::with('kategori')
-            ->withSum(['detailPenerimaan' => function ($query) {
-                $query->where('aktif', true);
-            }], 'stok')
-            ->where('aktif', true)
-            ->get();
-
-        $totalSku = $barangsStok->count();
-        $stokHabisCount = 0;
-        $stokMenipisCount = 0;
-        $stokAmanCount = 0;
-        $barangHarusDibeliList = collect();
-
-        foreach ($barangsStok as $b) {
-            $stok = $b->stokTotal();
-            $min = (int) $b->stok_minimum;
-
-            if ($stok == 0) {
-                $stokHabisCount++;
-                $barangHarusDibeliList->push([
-                    'barang' => $b,
-                    'stok' => $stok,
-                    'stok_minimum' => $min,
-                    'kekurangan' => max(1, $min),
-                    'status' => 'HABIS',
-                ]);
-            } elseif ($stok <= $min) {
-                $stokMenipisCount++;
-                $barangHarusDibeliList->push([
-                    'barang' => $b,
-                    'stok' => $stok,
-                    'stok_minimum' => $min,
-                    'kekurangan' => max(0, $min - $stok),
-                    'status' => 'SEGERA BELI',
-                ]);
-            } else {
-                $stokAmanCount++;
-            }
-        }
-
-        // 6. BARANG YANG HARUS DIBELI (Maksimal 10 item)
-        $barangHarusDibeli = $barangHarusDibeliList->sortBy([
-            ['stok', 'asc'],
-            ['kekurangan', 'desc'],
-        ])->take(10)->values();
-
-        // 7. EXPIRY HEALTH (Sesuai klasifikasi Laporan Stok)
-        $today = now()->startOfDay();
-        $oneMonth = $today->copy()->addMonth();
-        $threeMonths = $today->copy()->addMonths(3);
-
-        $baseBatchQuery = DetailPenerimaan::where('aktif', true)->where('stok', '>', 0);
-        $totalBatchesCount = (clone $baseBatchQuery)->count();
-
-        $expiryKadaluarsa = (clone $baseBatchQuery)->whereDate('expired_date', '<=', $today)->count();
-        $expiryCritical = (clone $baseBatchQuery)->whereDate('expired_date', '>', $today)->whereDate('expired_date', '<=', $oneMonth)->count();
-        $expiryWarning = (clone $baseBatchQuery)->whereDate('expired_date', '>', $oneMonth)->whereDate('expired_date', '<=', $threeMonths)->count();
-        $expiryAman = (clone $baseBatchQuery)->where(function ($q) use ($threeMonths) {
-            $q->whereDate('expired_date', '>', $threeMonths)
-              ->orWhereNull('expired_date');
-        })->count();
+        $totalBatchesCount = $expiry['totalBatchesCount'];
+        $expiryKadaluarsa = $expiry['expiryKadaluarsa'];
+        $expiryCritical = $expiry['expiryCritical'];
+        $expiryWarning = $expiry['expiryWarning'];
+        $expiryAman = $expiry['expiryAman'];
 
         // 8. ACTION CENTER (Alerts Dinamis dengan Link Cepat)
         $actionCenter = [
@@ -408,52 +495,56 @@ $deltaGrossProfit = $prevGrossProfit > 0
             ],
         ];
 
-        // 9. 10 OBAT TERLARIS (Sesuai Periode)
-        $topSellingMedicines = DB::table('detail_penjualans as dp')
-            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
-            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
-            ->join('barangs as b', 'dr.barang_id', '=', 'b.id')
-            ->leftJoin('kategoris as k', 'b.kategori_id', '=', 'k.id')
-            ->whereBetween('p.tanggal', [$dari, $sampai])
-            ->select(
-                'b.id',
-                'b.nama',
-                'k.nama as kategori',
-                DB::raw('SUM(dp.jumlah) as total_terjual'),
-                DB::raw('SUM(dp.subtotal) as total_omzet')
-            )
-            ->groupBy('b.id', 'b.nama', 'k.nama')
-            ->orderByDesc('total_terjual')
-            ->orderBy('b.nama')
-            ->limit(10)
-            ->get();
+        // 9 & 10. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL (Satu Subquery Bersama - Cached)
+        $rankings = DashboardCacheService::remember('medicine_rankings', [$dari, $sampai], function () use ($dari, $sampai) {
+            $periodSales = DB::table('detail_penjualans as dp')
+                ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+                ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                ->whereBetween('p.tanggal', [$dari, $sampai])
+                ->select(
+                    'dr.barang_id',
+                    DB::raw('SUM(dp.jumlah) as total_terjual'),
+                    DB::raw('SUM(dp.subtotal) as total_omzet')
+                )
+                ->groupBy('dr.barang_id');
 
-        // 10. 10 OBAT PALING SEDIKIT TERJUAL (Sesuai Periode, mencakup barang yang belum terjual = 0)
-        $leastSellingMedicines = DB::table('barangs as b')
-            ->leftJoin('kategoris as k', 'b.kategori_id', '=', 'k.id')
-            ->leftJoin('detail_penerimaans as dr', 'b.id', '=', 'dr.barang_id')
-            ->leftJoin('detail_penjualans as dp', function ($join) use ($dari, $sampai) {
-                $join->on('dr.id', '=', 'dp.detail_penerimaan_id')
-                    ->whereExists(function ($query) use ($dari, $sampai) {
-                        $query->select(DB::raw(1))
-                            ->from('penjualans as p')
-                            ->whereColumn('p.id', 'dp.penjualan_id')
-                            ->whereBetween('p.tanggal', [$dari, $sampai]);
-                    });
-            })
-            ->where('b.aktif', true)
-            ->select(
-                'b.id',
-                'b.nama',
-                'k.nama as kategori',
-                DB::raw('COALESCE(SUM(dp.jumlah), 0) as total_terjual'),
-                DB::raw('COALESCE(SUM(dp.subtotal), 0) as total_omzet')
-            )
-            ->groupBy('b.id', 'b.nama', 'k.nama')
-            ->orderBy('total_terjual')
-            ->orderBy('b.nama')
-            ->limit(10)
-            ->get();
+            $topSellingMedicines = DB::table('barangs as b')
+                ->leftJoin('kategoris as k', 'b.kategori_id', '=', 'k.id')
+                ->joinSub($periodSales, 's', 'b.id', '=', 's.barang_id')
+                ->where('b.aktif', true)
+                ->select(
+                    'b.id',
+                    'b.nama',
+                    'k.nama as kategori',
+                    's.total_terjual',
+                    's.total_omzet'
+                )
+                ->orderByDesc('s.total_terjual')
+                ->orderBy('b.nama')
+                ->limit(10)
+                ->get();
+
+            $leastSellingMedicines = DB::table('barangs as b')
+                ->leftJoin('kategoris as k', 'b.kategori_id', '=', 'k.id')
+                ->leftJoinSub($periodSales, 's', 'b.id', '=', 's.barang_id')
+                ->where('b.aktif', true)
+                ->select(
+                    'b.id',
+                    'b.nama',
+                    'k.nama as kategori',
+                    DB::raw('COALESCE(s.total_terjual, 0) as total_terjual'),
+                    DB::raw('COALESCE(s.total_omzet, 0) as total_omzet')
+                )
+                ->orderBy('total_terjual')
+                ->orderBy('b.nama')
+                ->limit(10)
+                ->get();
+
+            return compact('topSellingMedicines', 'leastSellingMedicines');
+        });
+
+        $topSellingMedicines = $rankings['topSellingMedicines'];
+        $leastSellingMedicines = $rankings['leastSellingMedicines'];
 
         return view('dashboard', compact(
             'periode',

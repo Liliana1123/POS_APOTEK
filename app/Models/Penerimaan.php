@@ -57,6 +57,9 @@ class Penerimaan extends Model
 
     public function totalFaktur(): float
     {
+        if ($this->relationLoaded('detail')) {
+            return (float) $this->detail->sum(fn ($d) => (float) $d->harga_beli * (int) $d->jumlah);
+        }
         return (float) $this->detail()->sum(DB::raw('harga_beli * jumlah'));
     }
 
@@ -72,6 +75,9 @@ class Penerimaan extends Model
 
     public function totalDibayar(): float
     {
+        if ($this->relationLoaded('pembayaran')) {
+            return (float) $this->pembayaran->sum('jumlah');
+        }
         return (float) $this->pembayaran()->sum('jumlah');
     }
 

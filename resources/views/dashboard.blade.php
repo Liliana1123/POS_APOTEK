@@ -401,8 +401,14 @@
     {{-- ============================================================ --}}
     {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
     {{-- ============================================================ --}}
-    <div class="inventory-row grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
-        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
+    {{-- ============================================================ --}}
+    {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
+    {{-- ============================================================ --}}
+    <div class="inventory-row grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        {{-- ============================================================ --}}
+        {{-- KOLOM KIRI: INVENTORY CONTROL CENTER + KONDISI STOK + EXPIRY HEALTH --}}
+        {{-- ============================================================ --}}
+        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                 <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                     <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
@@ -416,7 +422,7 @@
             </div>
 
             <div class="flex flex-col gap-3 mt-3.5 flex-1 justify-between">
-                {{-- Baris Atas: 2 Kartu Metrik (Total Stok & Nilai Persediaan) --}}
+                {{-- 1. Baris Metrik: Total Stok & Nilai Persediaan --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {{-- Total Stok --}}
                     <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
@@ -449,7 +455,7 @@
                     </div>
                 </div>
 
-                {{-- Baris Bawah: Kondisi Stok dengan Doughnut Chart & Legend --}}
+                {{-- 2. Kondisi Stok dengan Doughnut Chart & Legend --}}
                 @php
                     $totalKondisiStok = $stokHabisCount + $stokMenipisCount + $stokAmanCount;
                     $totalK = max(1, $totalKondisiStok);
@@ -517,156 +523,152 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- 3. Expiry Health dengan Doughnut Chart & Legend (Pindah ke bawah Kondisi Stok) --}}
+                @php
+                    $totalB = max(1, $totalBatchesCount);
+                    $pctAman = ($totalBatchesCount > 0) ? number_format(($expiryAman / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctWarning = ($totalBatchesCount > 0) ? number_format(($expiryWarning / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctCritical = ($totalBatchesCount > 0) ? number_format(($expiryCritical / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
+                @endphp
+                <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Expiry Health
+                        </span>
+                        <a href="{{ route('laporan.stok') }}" class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-0.5">
+                            Lihat Semua &rarr;
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        {{-- Donut Chart Expiry Health with Center Text --}}
+                        <div class="relative w-[88px] h-[88px] shrink-0 flex items-center justify-center">
+                            <canvas id="expiryHealthChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                <span class="text-[8px] text-gray-400 font-medium uppercase tracking-wider">Total</span>
+                                <span class="text-xs font-black text-gray-900 leading-tight">{{ number_format($totalBatchesCount) }}</span>
+                                <span class="text-[8px] text-gray-400 font-medium">Batch</span>
+                            </div>
+                        </div>
+
+                        {{-- Legend List dengan Angka dan Persentase --}}
+                        <div class="flex-1 space-y-1 w-full min-w-0">
+                            <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryAman) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAman }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-amber-700">Warning (30–90 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctWarning }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-orange-700">Critical (&lt;30 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctCritical }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluarsa</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctKadaluarsa }}%</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div></div>
-        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
-                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span class="p-1.5 rounded-lg bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center">
-                        <x-heroicon-o-clock class="w-4 h-4" />
-                    </span>
-                    Expiry Health
-                </h3>
-                <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
-                    Lihat Semua &rarr;
+        </div>
+
+        {{-- ============================================================ --}}
+        {{-- KOLOM KANAN: BARANG YANG HARUS DIBELI                        --}}
+        {{-- ============================================================ --}}
+        <div class="dashboard-card inventory-card p-5 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                        <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900">Barang yang Harus Dibeli</h3>
+                    </div>
+                </div>
+                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    Lihat Selengkapnya &rarr;
                 </a>
             </div>
 
-            @php
-                $totalB = max(1, $totalBatchesCount);
-                $pctAman = ($totalBatchesCount > 0) ? number_format(($expiryAman / $totalB) * 100, 1, ',', '.') : '0';
-                $pctWarning = ($totalBatchesCount > 0) ? number_format(($expiryWarning / $totalB) * 100, 1, ',', '.') : '0';
-                $pctCritical = ($totalBatchesCount > 0) ? number_format(($expiryCritical / $totalB) * 100, 1, ',', '.') : '0';
-                $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
-            @endphp
-
-            <div class="flex flex-col sm:flex-row items-center gap-4 mt-3 my-auto py-2">
-                {{-- Donut Chart Expiry Health with Center Text --}}
-                <div class="relative w-[132px] h-[132px] shrink-0 flex items-center justify-center">
-                    <canvas id="expiryHealthChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                        <span class="text-[10px] text-gray-400 font-medium leading-none">Total</span>
-                        <span class="text-xl font-black text-gray-900 leading-tight my-0.5">{{ number_format($totalBatchesCount) }}</span>
-                        <span class="text-[10px] text-gray-400 font-medium leading-none">Batch</span>
-                    </div>
-                </div>
-
-                {{-- Legend List dengan Angka dan Persentase --}}
-                <div class="flex-1 w-full min-w-0 space-y-1.5">
-                    <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 py-1.5 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryAman) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAman }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-amber-700">Warning (30–90 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctWarning }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-orange-700">Critical (&lt;30 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctCritical }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluarsa</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctKadaluarsa }}%</span>
-                        </div>
-                    </a>
-                </div>
+            <div class="w-full">
+                <table class="table-compact w-full text-left table-fixed">
+                    <thead>
+                        <tr>
+                            <th class="w-[8%] text-center whitespace-normal">No</th>
+                            <th class="w-[32%] whitespace-normal">Nama Barang</th>
+                            <th class="w-[22%] whitespace-normal">Kategori</th>
+                            <th class="w-[20%] text-center whitespace-normal leading-tight">
+                                Stok<br>Saat Ini
+                            </th>
+                            <th class="w-[18%] text-center whitespace-normal leading-tight">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($barangHarusDibeli as $index => $item)
+                            <tr>
+                                <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                <td class="font-bold text-gray-900 whitespace-normal break-words">{{ $item['barang']->nama }}</td>
+                                <td class="text-gray-600 whitespace-normal break-words">{{ $item['barang']->kategori->nama ?? '-' }}</td>
+                                <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
+                                <td class="text-center">
+                                    @if($item['status'] === 'HABIS')
+                                        <span class="badge-chip bg-rose-100 text-rose-700">Habis</span>
+                                    @else
+                                        <span class="badge-chip bg-amber-100 text-amber-700">Segera Beli</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                                    Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-
-    {{-- ============================================================ --}}
-        <div class="xl:col-span-4">{{-- 7. BARANG YANG HARUS DIBELI                                   --}}
-    {{-- ============================================================ --}}
-    <div class="dashboard-card inventory-card p-5 flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
-                    <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
-                </div>
-
-                <div>
-                    <h3 class="text-base font-bold text-gray-900">Barang yang Harus Dibeli</h3>
-                </div>
-            </div>
-            <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                Lihat Selengkapnya &rarr;
-            </a>
-        </div>
-
-       <div class="w-full">
-            <table class="table-compact w-full text-left table-fixed">
-                <thead>
-                    <tr>
-                        <th class="w-[8%] text-center whitespace-normal">No</th>
-                        <th class="w-[32%] whitespace-normal">Nama Barang</th>
-                        <th class="w-[22%] whitespace-normal">Kategori</th>
-                        <th class="w-[20%] text-center whitespace-normal leading-tight">
-                            Stok<br>Saat Ini
-                        </th>
-                        <th class="w-[18%] text-center whitespace-normal leading-tight">
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($barangHarusDibeli as $index => $item)
-                        <tr>
-                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                            <td class="font-bold text-gray-900 whitespace-normal break-words">{{ $item['barang']->nama }}</td>
-                            <td class="text-gray-600 whitespace-normal break-words">{{ $item['barang']->kategori->nama ?? '-' }}</td>
-                            <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
-                            <td class="text-center">
-                                @if($item['status'] === 'HABIS')
-                                    <span class="badge-chip bg-rose-100 text-rose-700">Habis</span>
-                                @else
-                                    <span class="badge-chip bg-amber-100 text-amber-700">Segera Beli</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="py-8 text-center text-xs text-gray-400">
-                                Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}</div>
     </div>
 
     {{-- ============================================================ --}}
