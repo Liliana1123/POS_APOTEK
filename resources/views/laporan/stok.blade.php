@@ -577,7 +577,7 @@
         </h2>
 
         <p>
-            Dicetak pada: {{ now()->format('d M Y H:i') }}
+            Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
         </p>
 
     </div>
@@ -692,7 +692,7 @@
 
                             <!-- Expired -->
                             <td class="text-center font-mono">
-                                {{ $expiredDate ? $expiredDate->format('d M Y') : '—' }}
+                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
                             </td>
 
                             <!-- Status Expired -->
@@ -890,7 +890,7 @@
                             </td>
 
                             <td class="text-center font-mono">
-                                {{ $expiredDate ? $expiredDate->format('d M Y') : '—' }}
+                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
                             </td>
 
                             <td class="text-center">

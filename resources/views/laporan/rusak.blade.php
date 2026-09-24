@@ -151,7 +151,7 @@
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="table-num text-center">{{ $index + 1 }}</td>
-                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal ? $item->tanggal->format('d M Y') : '—' }}</td>
+                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal ? $item->tanggal->translatedFormat('d F Y') : '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
                         <td class="font-mono text-gray-600 text-center">{{ $item->detailPenerimaan->no_batch ?? '—' }} </td>
                         <td class="table-num font-bold text-gray-800 text-center"> {{ number_format($item->jumlah, 0, ',', '.') }} </td>

@@ -16,7 +16,7 @@
             <option value="">Pilih Batch</option>
             @foreach ($batches as $batch)
                 <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
-                    {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date->format('d M Y') }})
+                    {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date?->translatedFormat('d F Y') ?? '-' }})
                 </option>
             @endforeach
         </select>

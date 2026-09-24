@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Carbon\Carbon::setLocale('id');
+        config(['app.locale' => 'id']);
+
         // Auto-invalidate dashboard cache when transactions/stock change
         $modelsToInvalidate = [
             \App\Models\Penjualan::class,
@@ -31,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\Barang::class,
             \App\Models\Pelanggan::class,
             \App\Models\DiscountUsage::class,
+            \App\Models\User::class,
         ];
 
         foreach ($modelsToInvalidate as $modelClass) {

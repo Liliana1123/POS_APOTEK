@@ -35,12 +35,12 @@
 <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '' }}</strong>
+        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '' }}</strong>
     </div>
 
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '' }}</strong>
+        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->translatedFormat('d F Y') ?? '' }}</strong>
     </div>
 
     <div>
@@ -83,7 +83,7 @@
     @if ($penerimaan->jatuh_tempo)
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->format('d M Y') }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->translatedFormat('d F Y') }}</strong>
         </div>
     @endif
 </div>
@@ -338,7 +338,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @foreach ($penerimaan->pembayaran as $p)
                             <tr>
-                                <td class="py-1.5 px-1.5 text-gray-600">{{ $p->tanggal_bayar?->format('d M Y') ?? '' }}</td>
+                                <td class="py-1.5 px-1.5 text-gray-600">{{ $p->tanggal_bayar?->translatedFormat('d F Y') ?? '' }}</td>
                                 <td class="py-1.5 px-1.5 text-right font-medium text-emerald-600">
                                     Rp {{ number_format($p->jumlah, 0, ',', '.') }}
                                 </td>

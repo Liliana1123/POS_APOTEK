@@ -219,7 +219,7 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->format('d M Y') ?? '—' }}
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '—' }}
                         </div>
                     </td>
 
@@ -249,7 +249,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->format('d M Y') ?? '—' }}
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '—' }}
                     </td>
 
                     {{-- Status Pembayaran --}}

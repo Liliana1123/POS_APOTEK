@@ -75,7 +75,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
             <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                + Tambah Baris
+                + Tambah item barang
             </button>
         </div>
 

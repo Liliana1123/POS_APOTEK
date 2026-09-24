@@ -16,6 +16,7 @@ use App\Services\DashboardCacheService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -546,6 +547,42 @@ class DashboardController extends Controller
         $topSellingMedicines = $rankings['topSellingMedicines'];
         $leastSellingMedicines = $rankings['leastSellingMedicines'];
 
+        // 11. KINERJA KARYAWAN (Cached)
+        $kinerjaKaryawan = DashboardCacheService::remember('kinerja_karyawan', [$dari, $sampai], function () use ($dari, $sampai) {
+            $hasTarget = Schema::hasColumn('users', 'target');
+
+            $userSales = DB::table('penjualans')
+                ->whereBetween('tanggal', [$dari, $sampai])
+                ->select(
+                    'user_id',
+                    DB::raw('COUNT(id) as total_transaksi'),
+                    DB::raw('SUM(total) as total_penjualan')
+                )
+                ->groupBy('user_id');
+
+            $selectFields = [
+                'u.id',
+                'u.name',
+                'u.email',
+                'u.role',
+                'u.aktif',
+                DB::raw('COALESCE(s.total_transaksi, 0) as total_transaksi'),
+                DB::raw('COALESCE(s.total_penjualan, 0) as total_penjualan')
+            ];
+
+            if ($hasTarget) {
+                $selectFields[] = 'u.target';
+            }
+
+            return DB::table('users as u')
+                ->leftJoinSub($userSales, 's', 'u.id', '=', 's.user_id')
+                ->select($selectFields)
+                ->orderByDesc('total_penjualan')
+                ->orderByDesc('total_transaksi')
+                ->orderBy('u.name')
+                ->get();
+        });
+
         return view('dashboard', compact(
             'periode',
             'periodeLabel',
@@ -596,7 +633,8 @@ class DashboardController extends Controller
             'actionCenter',
             'barangHarusDibeli',
             'topSellingMedicines',
-            'leastSellingMedicines'
+            'leastSellingMedicines',
+            'kinerjaKaryawan'
         ));
     }
 

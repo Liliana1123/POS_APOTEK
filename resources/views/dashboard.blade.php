@@ -792,7 +792,104 @@
     </div>
 
     {{-- ============================================================ --}}
-    
+    {{-- 9. KINERJA KARYAWAN                                          --}}
+    {{-- ============================================================ --}}
+    <div class="dashboard-card p-5 mt-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+                </div>
+
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
+                    <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                @if ($kinerjaKaryawan->count() > 5)
+                    <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
+                        Lihat Semua ({{ $kinerjaKaryawan->count() }})
+                    </button>
+                @endif
+                <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    Kelola User &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+            <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
+                <thead>
+                    <tr>
+                        <th class="w-12 text-center">No</th>
+                        <th>Nama Karyawan</th>
+                        <th class="text-right">Penjualan</th>
+                        <th class="text-center">Transaksi</th>
+                        <th class="text-right">Target</th>
+                        <th class="w-56 text-left">Pencapaian</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($kinerjaKaryawan as $index => $karyawan)
+                        @php
+                            $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
+                            $penjualan = (float) $karyawan->total_penjualan;
+                            $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
+                            $barWidth = $persen !== null ? min($persen, 100) : 0;
+                            $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
+                            $isCurrentUser = auth()->id() === $karyawan->id;
+                            $isExtra = $index >= 5;
+                        @endphp
+                        <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
+                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
+                                    @if ($isCurrentUser)
+                                        <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">Anda</span>
+                                    @endif
+                                    <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
+                                    @if (!$karyawan->aktif)
+                                        <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="text-right font-semibold text-gray-800">
+                                Rp {{ number_format($penjualan, 0, ',', '.') }}
+                            </td>
+                            <td class="text-center font-bold text-blue-600">
+                                {{ number_format($karyawan->total_transaksi) }}
+                            </td>
+                            <td class="text-right font-medium {{ $target ? 'text-gray-700' : 'text-gray-400 font-mono' }}">
+                                {{ $target ? 'Rp ' . number_format($target, 0, ',', '.') : '—' }}
+                            </td>
+                            <td>
+                                @if ($target !== null)
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden min-w-[80px]">
+                                            <div class="{{ $barColor }} h-2 rounded-full transition-all" style="width: {{ $barWidth }}%"></div>
+                                        </div>
+                                        <span class="text-xs font-semibold text-gray-700 min-w-[42px] text-right">{{ $persen }}%</span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 font-mono text-xs">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-xs text-gray-400">
+                                Belum ada data karyawan terdaftar.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 {{-- Script Chart.js CDN & Interaktivitas --}}
@@ -1037,6 +1134,22 @@
                         }
                     }
                 }
+            });
+        }
+
+        // ==========================================
+        // TOGGLE LIHAT SEMUA: KINERJA KARYAWAN
+        // ==========================================
+        const btnToggleKinerja = document.getElementById('btn-toggle-kinerja');
+        if (btnToggleKinerja) {
+            let expanded = false;
+            const originalText = btnToggleKinerja.textContent.trim();
+            btnToggleKinerja.addEventListener('click', function () {
+                expanded = !expanded;
+                document.querySelectorAll('.kinerja-extra-row').forEach(row => {
+                    row.classList.toggle('hidden', !expanded);
+                });
+                btnToggleKinerja.textContent = expanded ? 'Sembunyikan' : originalText;
             });
         }
     });
