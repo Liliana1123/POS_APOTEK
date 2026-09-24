@@ -56,20 +56,26 @@ class LoginController extends Controller
 
     public function destroy(Request $request)
     {
+        $isAuto = $request->boolean('auto_logout');
+
         $user = Auth::user();
         if ($user) {
             \App\Models\ActivityLog::log(
-                'Logout User',
-                "User: {$user->name} ({$user->role}) keluar dari sistem",
+                $isAuto ? 'Auto Logout User' : 'Logout User',
+                "User: {$user->name} ({$user->role}) " . ($isAuto ? 'keluar otomatis karena tidak ada aktivitas' : 'keluar dari sistem'),
                 \App\Models\ActivityLog::CATEGORY_KEAMANAN
             );
         }
 
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect('/login')->with(
+            'notice',
+            $isAuto
+                ? 'Kamu tidak melakukan aktivitas selama 30 menit. Silakan login kembali.'
+                : null
+        );
     }
 }

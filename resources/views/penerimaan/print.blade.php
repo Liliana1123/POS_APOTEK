@@ -29,20 +29,72 @@
         }
 
         .header {
-            text-align: center;
             margin-bottom: 25px;
         }
 
-        .header h1 {
+        .kop-surat {
+            position: relative;
+            min-height: 90px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kop-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 75px;
+            height: 75px;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .kop-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .kop-info h2 {
             margin: 0 0 5px;
-            font-size: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
         }
 
-        .header p {
+        .kop-info p {
+            margin: 3px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .kop-info h2 {
+            margin: 0 0 5px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .kop-info p {
+            margin: 2px 0;
+            font-size: 12px;
+            color: #444;
+        }
+
+        /* JUDUL DI BAWAH KOP */
+        .judul-dokumen {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .judul-dokumen h1 {
             margin: 0;
-            color: #666;
+            font-size: 20px;
+            font-weight: bold;
         }
-
         .info {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -169,11 +221,70 @@
     </button>
 
     <div class="header">
-        <h1>BUKTI PENERIMAAN BARANG</h1>
-        <p>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</p>
-        @if($apotek?->alamat)
-            <p>{{ $apotek->alamat }}</p>
-        @endif
+
+        {{-- KOP SURAT --}}
+        <div class="kop-surat">
+
+            {{-- LOGO APOTEK --}}
+            @if($apotek?->logo)
+                <img
+                    src="{{ asset('storage/' . $apotek->logo) }}"
+                    alt="Logo {{ $apotek->nama_apotek }}"
+                    class="kop-logo"
+                >
+            @endif
+
+            {{-- INFORMASI APOTEK --}}
+            <div class="kop-info">
+
+                <h2>
+                    {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
+                </h2>
+
+                @if($apotek?->alamat)
+                    <p>{{ $apotek->alamat }}</p>
+                @endif
+
+                @if($apotek?->telepon || $apotek?->email)
+                    <p>
+                        @if($apotek?->telepon)
+                            Telp. {{ $apotek->telepon }}
+                        @endif
+
+                        @if($apotek?->telepon && $apotek?->email)
+                            &nbsp; | &nbsp;
+                        @endif
+
+                        @if($apotek?->email)
+                            Email: {{ $apotek->email }}
+                        @endif
+                    </p>
+                @endif
+
+                @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                    <p>
+                        @if($apotek?->no_izin_sia)
+                            SIA: {{ $apotek->no_izin_sia }}
+                        @endif
+
+                        @if($apotek?->no_izin_sia && $apotek?->no_sipa)
+                            &nbsp;&nbsp;•&nbsp;&nbsp;
+                        @endif
+
+                        @if($apotek?->no_sipa)
+                            SIPA: {{ $apotek->no_sipa }}
+                        @endif
+                    </p>
+                @endif
+
+            </div>
+        </div>
+
+        {{-- JUDUL DOKUMEN DI BAWAH KOP --}}
+        <div class="judul-dokumen">
+            <h1>BUKTI PENERIMAAN BARANG</h1>
+        </div>
+
     </div>
 
     <div class="info">

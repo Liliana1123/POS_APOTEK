@@ -30,7 +30,8 @@
     /* sky-600 */
     --color-info-hover: #0369a1;
     /* sky-700 */
-    --color-background: #f8fafc;
+    --color-background: #cccccc;
+    /*#f8fafc */
     /* slate-50 */
     --color-surface: #ffffff;
     --color-border-custom: #e2e8f0;
@@ -995,6 +996,21 @@ h3,
 
 .table-compact tr:hover td {
     background-color: #f8fafc;
+}
+
+.table-compact th.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8fafc;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.table-compact td.wrap-cell,
+.table-compact th.wrap-cell {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
 }
 
 

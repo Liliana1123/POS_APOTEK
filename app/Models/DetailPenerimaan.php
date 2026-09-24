@@ -42,10 +42,14 @@ class DetailPenerimaan extends Model
         return $this->hasMany(Rusak::class);
     }
 
-    // Batch yang expired_date-nya <= $hari dari sekarang
+    // Batch yang expired_date-nya berada dalam $hari dari hari ini dan belum kadaluarsa
     public function scopeMendekatiExpired(Builder $query, int $hari = 90): Builder
     {
-        return $query->where('expired_date', '<=', now()->addDays($hari));
+        $today = now()->startOfDay();
+
+        return $query->whereNotNull('expired_date')
+            ->whereDate('expired_date', '>', $today)
+            ->whereDate('expired_date', '<=', $today->copy()->addDays($hari));
     }
 
     public function sudahExpired(): bool
