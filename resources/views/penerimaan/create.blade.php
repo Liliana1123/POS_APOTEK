@@ -75,7 +75,7 @@
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
             <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                + Tambah Item Barang
+                + Tambah Baris
             </button>
         </div>
 
@@ -184,7 +184,7 @@
             </select>
         </td>
         <td class="px-3 py-2">
-            <input type="text" class="form-input py-1 px-2 barcode-field bg-gray-50" readonly style="width: 100% !important; max-width: none !important;">
+            <input type="text" class="form-input py-1 px-2 barcode-field bg-gray-50" readonly tabindex="-1" style="width: 100% !important; max-width: none !important;">
         </td>
         <td class="px-3 py-2">
             <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch..." style="min-width: 130px;">
@@ -212,10 +212,10 @@
         <td class="px-3 py-2">
             <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
         </td>
-        <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly style="min-width: 90px;"></td>
+        <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly tabindex="-1" style="min-width: 90px;"></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
         <td class="px-3 py-2 text-center">
-            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
+            <button type="button" tabindex="-1" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
         </td>
     </tr>
 </template>
@@ -229,8 +229,8 @@ const totalFaktur = document.getElementById('total-faktur');
 const ppn = document.getElementById('ppn');
 const totalTagihan = document.getElementById('total-tagihan');
 
-
 function formatRupiah(value) { return 'Rp ' + Math.round(value).toLocaleString('id-ID'); }
+
 function updateTotal() {
     let total = 0;
     tbody.querySelectorAll('tr').forEach(row => {
@@ -246,11 +246,28 @@ function updateTotal() {
     totalTagihan.textContent = formatRupiah(total + nilaiPpn);
 }
 
-function tambahBaris() {
+function getFocusableInputs(row) {
+    if (!row) return [];
+    return Array.from(row.querySelectorAll(
+        'select:not([disabled]):not([tabindex="-1"]), input:not([type="hidden"]):not([disabled]):not([readonly]):not([tabindex="-1"])'
+    ));
+}
+
+function updateRowBarangInfo(selectEl) {
+    const option = selectEl.selectedOptions[0];
+    const row = selectEl.closest('tr');
+    if (row && option) {
+        row.querySelector('.barcode-field').value = option.dataset.barcode || '';
+        row.querySelector('.satuan-field').value = option.dataset.satuan || '';
+    }
+}
+
+function tambahBaris(focusFirst = false) {
     const html = template.innerHTML.replaceAll('__i__', rowIndex);
     const tempTr = document.createElement('tbody');
     tempTr.innerHTML = html;
-    tbody.appendChild(tempTr.firstElementChild);
+    const newRow = tempTr.firstElementChild;
+    tbody.appendChild(newRow);
 
     if (oldItems[rowIndex]) {
         const item = oldItems[rowIndex];
@@ -264,18 +281,40 @@ function tambahBaris() {
         row.querySelector('[name$="[no_rak]"]').value = item.no_rak || '';
         row.querySelector('[name$="[jumlah_dipesan]"]').value = item.jumlah_dipesan || '';
         row.querySelector('[name$="[jumlah_diterima]"]').value = item.jumlah_diterima || '';
+
+        const sel = row.querySelector('.barang-select');
+        if (sel) {
+            updateRowBarangInfo(sel);
+        }
     }
     rowIndex++;
     emptyHint.style.display = 'none';
     updateTotal();
+
+    if (focusFirst) {
+        setTimeout(() => {
+            const inputs = getFocusableInputs(newRow);
+            if (inputs.length > 0) {
+                inputs[0].focus();
+                newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 10);
+    }
+
+    return newRow;
 }
 
 const oldItems = @json(old('items', []));
-document.getElementById('btn-tambah-item').addEventListener('click', tambahBaris);
 
+// Tombol tambah baris manual (mouse)
+document.getElementById('btn-tambah-item').addEventListener('click', function () {
+    tambahBaris(true);
+});
+
+// Hapus baris
 tbody.addEventListener('click', function (e) {
     if (e.target.closest('.btn-hapus-row')) {
-    e.target.closest('tr').remove();
+        e.target.closest('tr').remove();
         if (tbody.children.length === 0) {
             emptyHint.style.display = 'block';
         }
@@ -283,15 +322,80 @@ tbody.addEventListener('click', function (e) {
     }
 });
 
+// Update barcode dan satuan saat pilih barang
 tbody.addEventListener('change', function (e) {
     if (e.target.classList.contains('barang-select')) {
-        const option = e.target.selectedOptions[0];
-        const row = e.target.closest('tr');
-        row.querySelector('.barcode-field').value = option?.dataset.barcode || '';
-        row.querySelector('.satuan-field').value = option?.dataset.satuan || '';
+        updateRowBarangInfo(e.target);
     }
 });
-tbody.addEventListener('input', updateTotal);
+
+tbody.addEventListener('input', function (e) {
+    if (e.target.classList.contains('barang-select')) {
+        updateRowBarangInfo(e.target);
+    }
+    updateTotal();
+});
+
+// Navigasi Keyboard Tab: Auto-tambah baris baru saat Tab di field terakhir
+tbody.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' && !e.shiftKey) {
+        const target = e.target;
+        const row = target.closest('tr.item-row');
+        if (!row) return;
+
+        const focusableInputs = getFocusableInputs(row);
+        if (focusableInputs.length === 0) return;
+
+        const lastInput = focusableInputs[focusableInputs.length - 1];
+
+        // Jika bukan field terakhir pada baris, biarkan tab alami browser berjalan rapi ke field berikutnya
+        if (target !== lastInput) {
+            return;
+        }
+
+        // Jika berada di field terakhir pada baris:
+        const isLastRow = (row === tbody.lastElementChild);
+
+        if (!isLastRow) {
+            // Jika bukan baris terakhir (misal user mengedit baris atas), fokus ke field pertama baris berikutnya
+            const nextRow = row.nextElementSibling;
+            if (nextRow) {
+                const nextInputs = getFocusableInputs(nextRow);
+                if (nextInputs.length > 0) {
+                    e.preventDefault();
+                    nextInputs[0].focus();
+                }
+            }
+            return;
+        }
+
+        // Baris terakhir: Cek apakah seluruh field wajib (required) pada baris ini sudah terisi
+        const requiredInputs = Array.from(row.querySelectorAll('select[required], input[required]'));
+        const invalidInput = requiredInputs.find(input => {
+            if (!input.value || input.value.trim() === '') return true;
+            if (typeof input.checkValidity === 'function' && !input.checkValidity()) return true;
+            return false;
+        });
+
+        if (invalidInput) {
+            // Masih ada field wajib yang belum terisi di baris tersebut, jangan buat baris baru
+            e.preventDefault();
+            invalidInput.focus();
+            if (typeof invalidInput.reportValidity === 'function') {
+                invalidInput.reportValidity();
+            }
+            return;
+        }
+
+        // Semua field wajib sudah terisi, buat baris baru dan otomatis pindah fokus ke field Barang baris baru
+        e.preventDefault();
+        tambahBaris(true);
+    } else if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        // Cegah submit form tiba-tiba saat menekan Enter di input tabel
+        e.preventDefault();
+    }
+});
+
 ppn.addEventListener('input', updateTotal);
 
 document.getElementById('supplier_id').addEventListener('change', function () {
@@ -305,13 +409,13 @@ document.getElementById('form-penerimaan').addEventListener('submit', function (
     }
 });
 
-// Mulai dengan 1 baris kosong
+// Mulai dengan baris awal
 if (oldItems.length > 0) {
     oldItems.forEach(() => {
-        tambahBaris();
+        tambahBaris(false);
     });
 } else {
-    tambahBaris();
+    tambahBaris(false);
 }
 </script>
 @endsection

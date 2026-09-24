@@ -612,7 +612,7 @@
         {{-- ============================================================ --}}
         {{-- KOLOM KANAN: BARANG YANG HARUS DIBELI                        --}}
         {{-- ============================================================ --}}
-        <div class="dashboard-card inventory-card p-5 flex flex-col">
+        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
@@ -620,7 +620,12 @@
                     </div>
 
                     <div>
-                        <h3 class="text-base font-bold text-gray-900">Barang yang Harus Dibeli</h3>
+                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                            Barang yang Harus Dibeli
+                            @if(count($barangHarusDibeli) > 0)
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">{{ count($barangHarusDibeli) }}</span>
+                            @endif
+                        </h3>
                     </div>
                 </div>
                 <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
@@ -628,33 +633,37 @@
                 </a>
             </div>
 
-            <div class="w-full">
+            <div class="w-full flex-1 overflow-y-auto max-h-[480px] rounded-lg border border-gray-100 shadow-2xs">
                 <table class="table-compact w-full text-left table-fixed">
                     <thead>
                         <tr>
-                            <th class="w-[8%] text-center whitespace-normal">No</th>
-                            <th class="w-[32%] whitespace-normal">Nama Barang</th>
-                            <th class="w-[22%] whitespace-normal">Kategori</th>
-                            <th class="w-[20%] text-center whitespace-normal leading-tight">
+                            <th class="w-[8%] text-center sticky-header">No</th>
+                            <th class="w-[36%] sticky-header wrap-cell">Nama Barang</th>
+                            <th class="w-[22%] sticky-header wrap-cell">Kategori</th>
+                            <th class="w-[17%] text-center sticky-header leading-tight">
                                 Stok<br>Saat Ini
                             </th>
-                            <th class="w-[18%] text-center whitespace-normal leading-tight">
+                            <th class="w-[17%] text-center sticky-header leading-tight">
                                 Status
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-100">
                         @forelse ($barangHarusDibeli as $index => $item)
-                            <tr>
+                            <tr class="hover:bg-gray-50/75 transition-colors">
                                 <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                                <td class="font-bold text-gray-900 whitespace-normal break-words">{{ $item['barang']->nama }}</td>
-                                <td class="text-gray-600 whitespace-normal break-words">{{ $item['barang']->kategori->nama ?? '-' }}</td>
+                                <td class="font-bold text-gray-900 wrap-cell leading-snug">
+                                    {{ $item['barang']->nama }}
+                                </td>
+                                <td class="text-gray-600 wrap-cell leading-snug">
+                                    {{ $item['barang']->kategori->nama ?? '-' }}
+                                </td>
                                 <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
                                 <td class="text-center">
                                     @if($item['status'] === 'HABIS')
-                                        <span class="badge-chip bg-rose-100 text-rose-700">Habis</span>
+                                        <span class="badge-chip bg-rose-100 text-rose-700 whitespace-nowrap">Habis</span>
                                     @else
-                                        <span class="badge-chip bg-amber-100 text-amber-700">Segera Beli</span>
+                                        <span class="badge-chip bg-amber-100 text-amber-700 whitespace-nowrap">Segera Beli</span>
                                     @endif
                                 </td>
                             </tr>

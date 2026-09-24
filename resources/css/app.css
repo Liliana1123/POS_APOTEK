@@ -998,6 +998,21 @@ h3,
     background-color: #f8fafc;
 }
 
+.table-compact th.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8fafc;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.table-compact td.wrap-cell,
+.table-compact th.wrap-cell {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
+
 
 /* Dashboard body only — tidak menyentuh header/sidebar dari layouts.app */
 .dashboard-reference {
