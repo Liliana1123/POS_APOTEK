@@ -194,7 +194,7 @@
                                 <a
                                     href="{{ route('penjualan.show', $penjualan) }}"
                                     class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors inline-flex items-center justify-center"
-                                    style="color: #2563EB;"
+                                    style="color: #000000;"
                                     title="Lihat Struk Penjualan"
                                     aria-label="Lihat Struk Penjualan"
                                 >
@@ -373,10 +373,10 @@
     aria-modal="true"
     aria-labelledby="judulDetailPenjualan"
     >
-    
+
     <div
         class="flex w-full flex-col overflow-hidden rounded-xl border border-blue-100 bg-white shadow-2xl"
-        style="max-width: 448px; max-height: 80vh;"
+        style="width: min(900px, 96vw); max-width: 900px; height: 90dvh; max-height: 90dvh;"
     >
 
         {{-- Header Modal --}}
@@ -413,7 +413,7 @@
         {{-- Isi Modal --}}
         <div
             id="isiDetailPenjualan"
-            class="min-h-0 space-y-3 overflow-y-auto p-4"
+            class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3"
         >
             <div class="py-10 text-center text-sm text-slate-500">
                 Memuat detail penjualan...
@@ -542,60 +542,128 @@
                 `;
             }).join('');
 
+            
             const pelanggan = penjualan.pelanggan?.nama || 'Umum';
+
+            const statusMember = penjualan.pelanggan?.status_member || '';
+
+            const isMember = Boolean(penjualan.pelanggan?.is_member);
+
+            const memberVariant = {
+                'Member Keluarga Nakes': 'info',
+                'Member Only': 'warning',
+            }[statusMember] || 'success';
+
+            const labelMember = statusMember || 'Member Pelanggan Tetap';
+
             const kasir = penjualan.user?.name || '-';
             const metode = penjualan.metode_pembayaran || '-';
+            const isPiutang = String(penjualan.metode_pembayaran || '').toLowerCase() === 'piutang';
 
             isiModal.innerHTML = `
                 {{-- Informasi Transaksi --}}
-                <div class="grid grid-cols-1 gap-5 rounded-xl bg-gradient-to-br from-blue-50 to-sky-50 p-6 sm:grid-cols-2">
-
-                    <div class="space-y-4">
-                        <div>
-                           <p class="text-xs text-slate-500">No. Invoice</p>
-                            <p class="mt-1 whitespace-nowrap text-sm font-bold text-slate-800">
-                                ${escapeHtml(penjualan.no_faktur)}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Tanggal</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(formatTanggal(penjualan.tanggal))}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Pelanggan</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(pelanggan)}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Kasir</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(kasir)}
-                            </p>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${isPiutang ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-3">
+                    
+                {{-- No. Invoice --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-document-text class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">No. Invoice</span>
                     </div>
 
-                    <div class="flex flex-col justify-start pt-2 sm:border-l sm:border-blue-200 sm:pl-6">
-                        <div>
-                            <p class="text-xs text-slate-500">Metode Pembayaran</p>
-                            <span class="mt-2 inline-flex rounded-lg bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-700">
-                                ${escapeHtml(metode)}
-                            </span>
-                        </div>
+                    <p class="font-bold text-sm text-slate-800 break-all">
+                        ${escapeHtml(penjualan.no_faktur)}
+                    </p>
+                </div>
 
-                        <div class="mt-8">
-                            <p class="text-xs text-slate-500">Total Transaksi</p>
-                           <p class="mt-1 text-xl font-bold text-blue-600">
-                                ${rupiah(penjualan.total)}
-                            </p>
-                        </div>
+                {{-- Tanggal --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-calendar class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Tanggal</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(formatTanggal(penjualan.tanggal))}
+                    </p>
+                </div>
+
+                {{-- Pelanggan --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-user class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Pelanggan</span>
+                    </div>
+
+                    <div class="flex flex-col items-start gap-2">
+                        <p class="font-bold text-sm text-slate-800">
+                            ${escapeHtml(pelanggan)}
+                        </p>
+
+                        ${
+                            isMember
+                                ? `<span class="inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-[10px] leading-tight font-medium uppercase tracking-normal text-center
+                                    ${
+                                        memberVariant === 'info'
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : memberVariant === 'warning'
+                                                ? 'bg-amber-50 text-amber-700'
+                                                : 'bg-green-50 text-green-700'
+                                    }">
+                                    ${escapeHtml(labelMember)}
+                                </span>`
+                                : ''
+                        }
+
+                        ${(() => {
+                            const discountPercent = penjualan.member_discount_percent_used;
+                            if (!isMember || discountPercent === null || discountPercent === undefined) return '';
+                            return `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
+                                DISKON MEMBER ${Number(discountPercent)}%
+                            </span>`;
+                        })()}
                     </div>
                 </div>
+
+                {{-- Kasir --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-user class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Kasir</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(kasir)}
+                    </p>
+                </div>
+
+                {{-- Metode Pembayaran --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-credit-card class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Metode Pembayaran</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800 uppercase">
+                        ${escapeHtml(metode)}
+                    </p>
+                </div>
+
+                ${isPiutang ? `
+                {{-- Jatuh Tempo --}}
+                <div class="min-w-0 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-white p-3">
+                    <div class="flex items-center gap-2 text-amber-600 mb-3">
+                        <x-heroicon-o-calendar-days class="w-5 h-5" />
+                        <span class="text-xs text-amber-600 font-semibold">Jatuh Tempo</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(penjualan.due_date_formatted || '-')}
+                    </p>
+                </div>
+                ` : ''}
+
+            </div>
 
                 {{-- Rincian Barang: tanpa ikon --}}
                 <div class="rounded-xl border border-blue-100 p-3 sm:p-4">
@@ -604,7 +672,7 @@
                     </h3>
 
                     <div class="overflow-x-auto rounded-lg border border-blue-100">
-                        <table class="w-full min-w-[650px] text-xs">
+                        <table class="w-full min-w-[700px] text-sm">
                             <thead class="bg-blue-50 text-slate-700">
                                 <tr>
                                     <th class="px-3 py-4 text-center">No.</th>
@@ -630,7 +698,7 @@
                     </div>
 
                     {{-- Ringkasan --}}
-                    <div class="mt-3 rounded-lg bg-gradient-to-br from-blue-50 to-sky-50 p-5">
+                    <div class="mt-2 rounded-lg bg-white p-3">
                         <div class="ml-auto w-full space-y-4 sm:w-72">
                             <div class="flex items-center justify-between gap-4">
                                 <span class="text-sm text-slate-600">
