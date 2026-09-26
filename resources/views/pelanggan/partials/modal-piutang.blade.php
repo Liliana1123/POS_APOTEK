@@ -34,9 +34,9 @@
         <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
 
             {{-- Informasi Member --}}
-            <div class="grid grid-cols-1 gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:grid-cols-4">
 
-                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
+                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                         ID Member
                     </div>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
 
-                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:px-5 sm:pb-0">
+                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:px-4 sm:pb-0">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                         Nama Member
                     </div>
@@ -56,13 +56,23 @@
                     </div>
                 </div>
 
-                <div class="sm:pl-5">
+                <div class="border-b border-blue-100 pb-3 sm:border-b-0 sm:border-r sm:px-4 sm:pb-0">
                     <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                         Total Piutang
                     </div>
                     <div id="piutangMemberTotal"
                         class="mt-2 text-lg font-bold text-red-600">
                         Rp 0
+                    </div>
+                </div>
+
+                <div class="sm:pl-4">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        Jatuh Tempo
+                    </div>
+                    <div id="piutangMemberJatuhTempo"
+                        class="mt-2 text-lg font-bold text-gray-800">
+                        -
                     </div>
                 </div>
 
@@ -103,7 +113,7 @@
                     </h4>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-4">
+                <div class="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-5">
 
                     <div class="min-w-0 sm:border-r sm:border-gray-200 sm:pr-4">
                         <div class="text-xs font-medium text-gray-500">
@@ -135,13 +145,23 @@
                         </div>
                     </div>
 
-                    <div class="min-w-0">
+                    <div class="min-w-0 sm:border-r sm:border-gray-200 sm:pr-4">
                         <div class="text-xs font-medium text-gray-500">
                             Sisa Piutang
                         </div>
                         <div id="piutangSisa"
                             class="mt-2 whitespace-nowrap text-base font-bold text-red-600">
                             Rp 0
+                        </div>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs font-medium text-gray-500">
+                            Jatuh Tempo
+                        </div>
+                        <div id="piutangInvoiceJatuhTempo"
+                            class="mt-2 whitespace-nowrap text-base font-semibold text-gray-800">
+                            -
                         </div>
                     </div>
 
@@ -301,6 +321,7 @@ function openPiutangPaymentModal(pelangganId) {
     document.getElementById('piutangMemberId').textContent = '-';
     document.getElementById('piutangMemberNama').textContent = '-';
     document.getElementById('piutangMemberTotal').textContent = 'Rp 0';
+    document.getElementById('piutangMemberJatuhTempo').textContent = '-';
 
     document.getElementById('piutangInvoiceDetail').classList.add('hidden');
     document.getElementById('piutangPaymentForm').classList.add('hidden');
@@ -331,6 +352,9 @@ function openPiutangPaymentModal(pelangganId) {
         document.getElementById('piutangMemberNama').textContent =
             pelanggan.nama || '-';
 
+        document.getElementById('piutangMemberJatuhTempo').textContent =
+            pelanggan.jatuh_tempo || '-';
+
         const totalPiutang = penjualans.reduce(
             (total, item) => total + Number(item.sisa_piutang || 0),
             0
@@ -344,8 +368,9 @@ function openPiutangPaymentModal(pelangganId) {
         penjualans.forEach(item => {
             const option = document.createElement('option');
             option.value = item.id;
+            const jtText = item.due_date_formatted && item.due_date_formatted !== '-' ? ` (Jatuh Tempo: ${item.due_date_formatted})` : '';
             option.textContent =
-                `${item.no_faktur} — ${formatRupiah(item.sisa_piutang)}`;
+                `${item.no_faktur} — ${formatRupiah(item.sisa_piutang)}${jtText}`;
             select.appendChild(option);
         });
 
@@ -420,6 +445,9 @@ if (piutangInvoiceSelect) {
 
             document.getElementById('piutangSisa').textContent =
                 formatRupiah(data.sisa_piutang);
+
+            document.getElementById('piutangInvoiceJatuhTempo').textContent =
+                penjualan.due_date_formatted || '-';
 
             document.getElementById('piutangInvoiceDetail')
                 .classList.remove('hidden');

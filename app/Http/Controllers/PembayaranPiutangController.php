@@ -13,37 +13,44 @@ class PembayaranPiutangController extends Controller
 {
 
     public function pelanggan(Pelanggan $pelanggan)
-{
-    $penjualans = $pelanggan->penjualan()
-        ->where('metode_pembayaran', 'piutang')
-        ->with('pembayaranPiutang')
-        ->latest('tanggal')
-        ->get()
-        ->map(function ($penjualan) {
-            $totalDibayar = $penjualan->pembayaranPiutang->sum('jumlah');
-            $sisaPiutang = max(0, $penjualan->total - $totalDibayar);
+    {
+        $penjualans = $pelanggan->penjualan()
+            ->where('metode_pembayaran', 'piutang')
+            ->with('pembayaranPiutang')
+            ->orderByRaw('due_date IS NULL, due_date asc, tanggal asc')
+            ->get()
+            ->map(function ($penjualan) {
+                $totalDibayar = $penjualan->pembayaranPiutang->sum('jumlah');
+                $sisaPiutang = max(0, $penjualan->total - $totalDibayar);
 
-            return [
-                'id' => $penjualan->id,
-                'no_faktur' => $penjualan->no_faktur,
-                'tanggal' => $penjualan->tanggal?->format('Y-m-d'),
-                'total' => (float) $penjualan->total,
-                'total_dibayar' => (float) $totalDibayar,
-                'sisa_piutang' => (float) $sisaPiutang,
-            ];
-        })
-        ->filter(fn ($penjualan) => $penjualan['sisa_piutang'] > 0)
-        ->values();
+                return [
+                    'id' => $penjualan->id,
+                    'no_faktur' => $penjualan->no_faktur,
+                    'tanggal' => $penjualan->tanggal?->format('Y-m-d'),
+                    'tanggal_formatted' => $penjualan->tanggal?->format('d M Y'),
+                    'due_date' => $penjualan->due_date?->format('Y-m-d'),
+                    'due_date_formatted' => $penjualan->due_date?->format('d M Y') ?? '-',
+                    'total' => (float) $penjualan->total,
+                    'total_dibayar' => (float) $totalDibayar,
+                    'sisa_piutang' => (float) $sisaPiutang,
+                ];
+            })
+            ->filter(fn ($penjualan) => $penjualan['sisa_piutang'] > 0)
+            ->values();
 
-    return response()->json([
-        'pelanggan' => [
-            'id' => $pelanggan->id,
-            'member_id' => $pelanggan->member_id,
-            'nama' => $pelanggan->nama,
-        ],
-        'penjualans' => $penjualans,
-    ]);
-}
+        $activeJatuhTempo = $penjualans->first()['due_date_formatted'] ?? '-';
+
+        return response()->json([
+            'pelanggan' => [
+                'id' => $pelanggan->id,
+                'member_id' => $pelanggan->member_id,
+                'nama' => $pelanggan->nama,
+                'jatuh_tempo' => $activeJatuhTempo,
+            ],
+            'penjualans' => $penjualans,
+        ]);
+    }
+
     public function form(Penjualan $penjualan)
     {
         $penjualan->load([
@@ -56,8 +63,11 @@ class PembayaranPiutangController extends Controller
         $totalDibayar = $penjualan->pembayaranPiutang->sum('jumlah');
         $sisaPiutang = max(0, $penjualan->total - $totalDibayar);
 
+        $penjualanData = $penjualan->toArray();
+        $penjualanData['due_date_formatted'] = $penjualan->due_date?->format('d M Y') ?? '-';
+
         return response()->json([
-            'penjualan' => $penjualan,
+            'penjualan' => $penjualanData,
             'total_dibayar' => $totalDibayar,
             'sisa_piutang' => $sisaPiutang,
             'riwayat' => $penjualan->pembayaranPiutang,

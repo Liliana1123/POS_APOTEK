@@ -62,34 +62,38 @@
 <!-- Table Custom Wrapper --> 
 <div class="table-custom-container"> 
     <div class="overflow-x-auto"> 
-        <table class="table-custom w-[75rem] min-w-[75rem] table-fixed">
+        <table class="table-custom w-[82rem] min-w-[82rem] table-fixed">
            <thead class="table-custom-header">
             <tr>
-                <th scope="col" class="text-center" style="width: 15%;">
+                <th scope="col" class="text-center" style="width: 14%;">
                     Aksi
                 </th>
 
-                <th scope="col" class="text-center" style="width: 13%;">
+                <th scope="col" class="text-center" style="width: 12%;">
                     ID Pelanggan
                 </th>
 
-                <th scope="col" class="text-center" style="width: 20%;">
+                <th scope="col" class="text-center" style="width: 17%;">
                     Nama & No Telp
                 </th>
 
-                <th scope="col" class="text-center" style="width: 16%;">
+                <th scope="col" class="text-center" style="width: 15%;">
                     Status Member
                 </th>
 
-                <th scope="col" class="text-center" style="width: 12%;">
+                <th scope="col" class="text-center" style="width: 11%;">
                     Status Piutang
                 </th>
 
-                <th scope="col" class="text-center" style="width: 12%;">
+                <th scope="col" class="text-center" style="width: 13%;">
+                    Jatuh Tempo
+                </th>
+
+                <th scope="col" class="text-center" style="width: 11%;">
                     Total Diskon
                 </th>
 
-                <th scope="col" class="text-center" style="width: 12%;">
+                <th scope="col" class="text-center" style="width: 11%;">
                     Total Belanja
                 </th>
             </tr>
@@ -126,7 +130,8 @@
                                     data-telepon="{{ $pelanggan->telepon }}"
                                     data-alamat="{{ $pelanggan->alamat }}"
                                     data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
-                                    data-status_member="{{ $pelanggan->status_member }}">
+                                    data-status_member="{{ $pelanggan->status_member }}"
+                                    data-custom_discount_percentage="{{ $pelanggan->custom_discount_percentage }}">
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </button>
 
@@ -134,10 +139,10 @@
                                 <button
                                     type="button"
                                     class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                                    style="color: #2563EB;"
+                                    style="color: #000000;"
                                     title="Cetak Kartu Member"
                                     aria-label="Cetak Kartu Member"
-                                    onclick="openCardModal(@js($pelanggan->nama), @js($pelanggan->member_id), @js($pelanggan->total_belanja ?? 0), @js($pelanggan->status_member))">
+                                    onclick="openCardModal(@js($pelanggan->nama), @js($pelanggan->member_id), @js($pelanggan->total_belanja ?? 0), @js($pelanggan->status_member), @js($pelanggan->custom_discount_percentage))">
                                     <x-heroicon-o-printer class="w-4 h-4" />
                                 </button>
 
@@ -182,6 +187,33 @@
                                 <x-badge variant="success">Lunas</x-badge>
                             @endif
                         </td>
+                        <td class="text-center whitespace-nowrap">
+                            @php
+                                $jatuhTempo = $pelanggan->jatuh_tempo_aktif;
+                            @endphp
+                            @if ($jatuhTempo)
+                                @php
+                                    $today = \Illuminate\Support\Carbon::today();
+                                    $due = \Illuminate\Support\Carbon::parse($jatuhTempo);
+                                @endphp
+                                <div class="font-medium text-gray-800">{{ $due->format('d M Y') }}</div>
+                                @if ($due->lt($today))
+                                    <span class="inline-flex items-center text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded mt-0.5">
+                                        Terlambat
+                                    </span>
+                                @elseif ($due->isSameDay($today))
+                                    <span class="inline-flex items-center text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded mt-0.5">
+                                        Hari ini
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center text-[10px] font-medium text-gray-500 mt-0.5">
+                                        Belum jatuh tempo
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-gray-400 font-mono">-</span>
+                            @endif
+                        </td>
                         <td class="text-center font-semibold text-green-600">
                             Rp {{ number_format($pelanggan->total_diskon ?? 0, 0, ',', '.') }}
                         </td>
@@ -190,7 +222,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-empty-state colspan="7" />
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
         </table>
@@ -238,6 +270,12 @@
             <option value="Member Only">Member Only</option>
         </select>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="status_member"></p>
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Custom Diskon (%)</label>
+        <input type="number" name="custom_discount_percentage" min="0" max="100" step="any" class="form-input" placeholder="Kosongkan untuk diskon default 10%">
+        <p class="text-[11px] text-gray-400 mt-1 font-sans">Kosongkan untuk diskon default 10%.</p>
+        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="custom_discount_percentage"></p>
     </div>
 </x-modal-form>
 
