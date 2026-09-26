@@ -22,8 +22,8 @@
         <span class="sidebar-nav-label truncate whitespace-nowrap font-bold uppercase tracking-wider">{{ $label }}</span>
     </a>
 @else
-    <a href="{{ route($route) }}" title="{{ $label }}" class="sidebar-nav-link sidebar-nav-child flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-xs {{ $activeClass }}" {{ $attributes }}>
-        <x-dynamic-component :component="$iconComponent" class="w-4 h-4 shrink-0" aria-hidden="true" />
+    <a href="{{ route($route) }}" title="{{ $label }}" class="sidebar-nav-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors text-xs {{ $activeClass }}" {{ $attributes }}>
+        <x-dynamic-component :component="$iconComponent" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">{{ $label }}</span>
     </a>
 @endif

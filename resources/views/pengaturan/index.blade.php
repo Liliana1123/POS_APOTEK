@@ -266,7 +266,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                         <label for="input-apoteker-pj" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                            Nama Apoteker PJ (Apt.)
+                            Nama Apoteker Penaggungjawab
                         </label>
                         <input type="text"
                                 id="input-apoteker-pj"

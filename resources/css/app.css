@@ -30,7 +30,7 @@
     /* sky-600 */
     --color-info-hover: #0369a1;
     /* sky-700 */
-    --color-background: #cccccc;
+    --color-background: #f8fafc;
     /*#f8fafc */
     /* slate-50 */
     --color-surface: #ffffff;
@@ -545,11 +545,11 @@ h3,
 }
 
 /* Desktop Rail Mode Geometry:
-   Rail width = w-24 = 96px. Total content box = 96px.
-   Icon center axis = 48px (exactly half of 96px).
-   Top-level icon = w-5 (20px) → left-padding = (96 - 20) / 2 = 38px.
-   Group header icon = w-5 (20px) → same.
-   Child icon = w-4 (16px) → left-padding = (96 - 16) / 2 = 40px. */
+   Rail width = w-24 = 96px. Central Anchor Axis = 48px.
+   Nav padding = px-4 (16px) → 64px content box.
+   Top-level & Group header padding-left = 1.375rem (22px).
+   Primary Icon = 20px (w-5) → Center is 16 + 22 + 10 = 48px.
+   Rail Child Icon = 16px (w-4) → Center is 16 + 24 + 8 = 48px in rail mode. */
 @media (min-width: 1024px) {
     #app-sidebar {
         width: 6rem !important;
@@ -566,80 +566,40 @@ h3,
         /* 256px expanded */
     }
 
-    /* ── Collapsed state: all nav links & group headers are icon-only ── */
-    /* Top-level link: icon perfectly centered in 96px rail */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-top {
-        display: flex !important;
-        justify-content: center !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    /* Fixed anchor padding on top-level links & group headers (never shifts) */
+    #app-sidebar .sidebar-nav-top,
+    #app-sidebar .sidebar-group-header {
+        padding-left: 1.375rem !important;
+        padding-right: 1.375rem !important;
     }
 
-    /* Group header: icon perfectly centered */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-header {
-        display: flex !important;
-        justify-content: center !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    /* Sub-menu items inside group: indented with hierarchy tree in expanded state */
+    #app-sidebar .sidebar-group-items {
+        margin-left: 1.375rem;
+        padding-left: 0.625rem;
+        border-left: 1.5px solid rgba(191, 219, 254, 0.3);
+        transition: border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
     }
 
-    /* Child nav links in collapsed: icon perfectly centered */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-child {
-        display: flex !important;
-        justify-content: center !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+    #app-sidebar .sidebar-nav-child {
+        padding-left: 0.625rem !important;
+        padding-right: 0.75rem !important;
+        transition: padding 0.2s ease, background-color 0.15s ease, color 0.15s ease;
     }
 
-    /* Collapsed: remove group indentation tree lines */
+    /* Collapsed state in rail mode: adjust child items to align with central anchor */
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-items {
         border-left-color: transparent !important;
         margin-left: 0 !important;
         padding-left: 0 !important;
     }
 
-    /* ── Expanded state: restore standard paddings ── */
-    #app-sidebar:hover .sidebar-nav-top,
-    #app-sidebar:focus-within .sidebar-nav-top,
-    #app-sidebar.sidebar-expanded .sidebar-nav-top,
-    #app-sidebar:hover .sidebar-group-header,
-    #app-sidebar:focus-within .sidebar-group-header,
-    #app-sidebar.sidebar-expanded .sidebar-group-header {
-        display: flex !important;
-        justify-content: space-between !important;
-        padding-left: 1.375rem !important;
-        padding-right: 1.375rem !important;
+    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-child {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
     }
 
-    #app-sidebar:hover .sidebar-nav-child,
-    #app-sidebar:focus-within .sidebar-nav-child,
-    #app-sidebar.sidebar-expanded .sidebar-nav-child {
-        display: flex !important;
-        justify-content: flex-start !important;
-        padding-left: 0.625rem !important;
-        padding-right: 0.75rem !important;
-    }
-
-    /* Sub-menu items inside group: indented with hierarchy tree in expanded state */
-    #app-sidebar:hover .sidebar-group-items,
-    #app-sidebar:focus-within .sidebar-group-items,
-    #app-sidebar.sidebar-expanded .sidebar-group-items {
-        margin-left: 1.375rem !important;
-        padding-left: 0.625rem !important;
-        border-left: 1.5px solid rgba(191, 219, 254, 0.3) !important;
-    }
-
-    /* Transition on group items container */
-    #app-sidebar .sidebar-group-items {
-        transition: border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
-    }
-
-    /* Nav child default (before collapse/expand override kicks in) */
-    #app-sidebar .sidebar-nav-child {
-        transition: padding 0.2s ease, background-color 0.15s ease, color 0.15s ease;
-    }
-
-    /* ── Labels, arrow, footer info: hidden in collapsed ── */
+    /* Collapsed state: labels and controls cleanly hidden */
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
@@ -655,7 +615,7 @@ h3,
         padding: 0 !important;
     }
 
-    /* Labels reveal when expanded */
+    /* Expanded state: labels and controls reveal cleanly */
     #app-sidebar:hover .sidebar-nav-label,
     #app-sidebar:focus-within .sidebar-nav-label,
     #app-sidebar.sidebar-expanded .sidebar-nav-label {
@@ -683,23 +643,15 @@ h3,
         transition: opacity 0.2s 0.05s ease-out;
     }
 
-    /* ── Header: fixed padding (logo stays anchored) ── */
+    /* Fixed anchor padding on header and footer (never changes, logo & avatar stay rock-solid) */
     #app-sidebar .sidebar-header {
         padding-left: 1.25rem !important;
         padding-right: 1.25rem !important;
     }
 
-    /* ── Footer: centered avatar in collapsed, full layout in expanded ── */
     #app-sidebar .sidebar-footer {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
-    }
-
-    /* When collapsed: center the avatar in the footer */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer {
-        justify-content: center !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
     }
 }
 
