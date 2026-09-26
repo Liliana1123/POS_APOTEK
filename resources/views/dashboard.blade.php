@@ -827,8 +827,6 @@
                         <th>Nama Karyawan</th>
                         <th class="text-right">Penjualan</th>
                         <th class="text-center">Transaksi</th>
-                        <th class="text-right">Target</th>
-                        <th class="w-56 text-left">Pencapaian</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -861,21 +859,6 @@
                             </td>
                             <td class="text-center font-bold text-blue-600">
                                 {{ number_format($karyawan->total_transaksi) }}
-                            </td>
-                            <td class="text-right font-medium {{ $target ? 'text-gray-700' : 'text-gray-400 font-mono' }}">
-                                {{ $target ? 'Rp ' . number_format($target, 0, ',', '.') : '—' }}
-                            </td>
-                            <td>
-                                @if ($target !== null)
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden min-w-[80px]">
-                                            <div class="{{ $barColor }} h-2 rounded-full transition-all" style="width: {{ $barWidth }}%"></div>
-                                        </div>
-                                        <span class="text-xs font-semibold text-gray-700 min-w-[42px] text-right">{{ $persen }}%</span>
-                                    </div>
-                                @else
-                                    <span class="text-gray-400 font-mono text-xs">—</span>
-                                @endif
                             </td>
                         </tr>
                     @empty

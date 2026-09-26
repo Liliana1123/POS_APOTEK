@@ -164,7 +164,7 @@
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jatuh Tempo</label>
             <input type="date" name="jatuh_tempo" value="{{ old('jatuh_tempo') }}" class="form-input">
         </div>
-        <div class="text-xs text-gray-500">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
+        <div class="text-xs text-gray-500 italic border-l-2 border-red-500 pl-2">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
     </div>
 
     <div class="flex gap-2 pt-2">
