@@ -324,35 +324,43 @@
         }
     }
 
-    /* =========================
+   /* =========================
     TANDA TANGAN
+    HANYA MUNCUL SAAT CETAK
     ========================= */
+
     .print-signature {
-        margin-top: 45px;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        gap: 80px;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+        display: none !important;
     }
 
-    .print-signature-box {
-        text-align: center;
-        font-size: 10px;
-        color: #111;
-    }
+    @media print {
+        .print-signature {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            margin-top: 45px;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
 
-    .print-signature-box p {
-        margin: 3px 0;
-    }
+        .print-signature-box {
+            text-align: center;
+            font-size: 10px;
+            color: #111;
+        }
 
-    .print-signature-space {
-        height: 65px;
-    }
+        .print-signature-box p {
+            margin: 3px 0;
+        }
 
-    .print-signature-name {
-        font-weight: 700;
-        text-decoration: underline;
+        .print-signature-space {
+            height: 65px;
+        }
+
+        .print-signature-name {
+            font-weight: 700;
+            text-decoration: underline;
+        }
     }
 </style>
 
@@ -806,7 +814,7 @@
 <!-- ========================================================= -->
 <!-- SECTION 2 : BATCH MENDEKATI EXPIRED -->
 <!-- ========================================================= -->
-<div class="mb-8 print-hide">
+<div class="mb-8 no-print-expired">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
             <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans">
@@ -969,7 +977,7 @@
 {{-- TANDA TANGAN --}}
 {{-- ========================================================= --}}
 
-<div class="print-only print-signature">
+<div class="print-signature">
 
     {{-- TANDA TANGAN APOTEKER --}}
     <div class="print-signature-box">

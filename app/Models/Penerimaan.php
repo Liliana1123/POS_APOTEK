@@ -100,4 +100,35 @@ class Penerimaan extends Model
 
         return 'LENGKAP';
     }
+
+    public function hasPembayaran(): bool
+    {
+        return $this->totalDibayar() > 0 || $this->pembayaran()->exists();
+    }
+
+    public function hasPenerimaanSusulan(): bool
+    {
+        return $this->riwayatPenerimaan()
+            ->where(function ($q) {
+                $q->where('jenis', 'pembatalan')
+                    ->orWhere(function ($sub) {
+                        $sub->where('jenis', 'penerimaan')
+                            ->where('keterangan', '!=', 'Penerimaan awal');
+                    });
+            })
+            ->exists();
+    }
+
+    public function canBeEdited(): bool
+    {
+        if ($this->hasPembayaran()) {
+            return false;
+        }
+
+        if ($this->hasPenerimaanSusulan()) {
+            return false;
+        }
+
+        return true;
+    }
 }
