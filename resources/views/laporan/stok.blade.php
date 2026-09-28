@@ -21,20 +21,33 @@
 
         @page {
             size: A4 landscape;
-            margin: 12mm;
+            margin: 8mm 10mm;
         }
 
-        /* Sembunyikan elemen navigasi */
+        /* Sembunyikan elemen navigasi, backdrop, filter, dan header web */
+        #sidebar-backdrop,
+        #toast-success,
         aside,
         nav,
         header,
         [role="navigation"],
         .print\:hidden,
-        .no-print {
+        .no-print,
+        .no-print-expired,
+        .page-header-web,
+        .filter-card-web,
+        .card-base {
             display: none !important;
         }
 
+        /* Reset html & body agar multi-page print aktif dan tidak terpotong 1 halaman */
+        html,
         body {
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            display: block !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #fff !important;
@@ -42,17 +55,46 @@
             font-family: Arial, Helvetica, sans-serif !important;
         }
 
+        /* Override wrapper layouts/app yang menggunakan h-screen overflow-y-auto */
+        div.flex-1.flex.flex-col,
+        .h-screen,
+        .overflow-hidden,
+        .overflow-y-auto,
+        .overflow-x-hidden,
+        .overflow-x-auto {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            display: block !important;
+            position: static !important;
+            flex: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
         main {
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
             max-width: none !important;
+            display: block !important;
         }
 
-        .card-base {
+        .table-custom-container,
+        .print-table-wrapper {
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
+            margin: 0 !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            display: block !important;
         }
 
         /* =========================
@@ -65,11 +107,11 @@
             align-items: center;
             justify-content: center;
 
-            min-height: 82px;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            min-height: 52px;
+            padding-bottom: 5px;
+            margin-bottom: 6px;
 
-            border-bottom: 2px solid #222;
+            border-bottom: 1.5px solid #222;
         }
 
         .print-kop-logo {
@@ -78,8 +120,8 @@
             top: 50%;
             transform: translateY(-50%);
 
-            width: 65px;
-            height: 65px;
+            width: 48px;
+            height: 48px;
 
             object-fit: contain;
             object-position: center;
@@ -91,9 +133,9 @@
         }
 
         .print-kop-info h1 {
-            margin: 0 0 4px;
+            margin: 0 0 2px;
 
-            font-size: 18px;
+            font-size: 15px;
             line-height: 1.2;
             font-weight: 700;
 
@@ -102,10 +144,10 @@
         }
 
         .print-kop-info p {
-            margin: 2px 0;
+            margin: 1px 0;
 
-            font-size: 10px;
-            line-height: 1.3;
+            font-size: 8.5px;
+            line-height: 1.25;
 
             color: #333;
         }
@@ -118,22 +160,22 @@
             display: block !important;
 
             text-align: center;
-            margin: 8px 0 15px;
+            margin: 4px 0 8px;
         }
 
         .print-report-title h2 {
             margin: 0;
 
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
             color: #111;
         }
 
         .print-report-title p {
-            margin: 4px 0 0;
+            margin: 2px 0 0;
 
-            font-size: 9px;
+            font-size: 8px;
             color: #555;
         }
 
@@ -142,7 +184,8 @@
         ========================= */
 
         .print-section {
-            margin-bottom: 18px !important;
+            margin-bottom: 10px !important;
+            margin-top: 0 !important;
             page-break-inside: auto;
         }
 
@@ -151,7 +194,7 @@
             justify-content: space-between;
             align-items: flex-end;
 
-            margin-bottom: 7px;
+            margin-bottom: 4px;
         }
 
         .print-section-header h3 {
@@ -226,6 +269,7 @@
 
         .print-table tbody tr {
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         .print-table thead {
@@ -334,38 +378,153 @@
     }
 
     @media print {
+        .no-break {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
         .print-signature {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            margin-top: 45px;
+            display: block !important;
+            margin-top: 40px;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
 
+        .print-signature-grid {
+            display: flex !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            padding: 0 40px !important;
+            box-sizing: border-box !important;
+        }
+
         .print-signature-box {
+            width: 250px;
             text-align: center;
             font-size: 10px;
             color: #111;
         }
 
-        .print-signature-box p {
-            margin: 3px 0;
+        .print-signature-title {
+            margin: 0 !important;
+            font-size: 10px !important;
+            font-weight: normal !important;
+        }
+
+        .print-signature-role {
+            margin: 2px 0 0 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
         }
 
         .print-signature-space {
-            height: 65px;
+            height: 65px !important;
         }
 
         .print-signature-name {
-            font-weight: 700;
-            text-decoration: underline;
+            margin: 0 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+        }
+
+        .print-signature-sipa {
+            margin: 3px 0 0 !important;
+            font-size: 9px !important;
+            color: #333 !important;
         }
     }
 </style>
 
+{{-- ========================================================= --}}
+{{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
+{{-- ========================================================= --}}
+<div class="print-only">
+
+    {{-- KOP APOTEK --}}
+    <div class="print-kop">
+
+        {{-- LOGO --}}
+        @if($apotek?->logo)
+            <img
+                src="{{ asset('storage/' . $apotek->logo) }}"
+                alt="Logo {{ $apotek->nama_apotek }}"
+                class="print-kop-logo"
+            >
+        @endif
+
+        {{-- INFORMASI APOTEK --}}
+        <div class="print-kop-info">
+
+            <h1>
+                {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
+            </h1>
+
+            @if($apotek?->alamat)
+                <p>
+                    {{ $apotek->alamat }}
+                </p>
+            @endif
+
+            @if($apotek?->telepon || $apotek?->email)
+                <p>
+
+                    @if($apotek?->telepon)
+                        Telp: {{ $apotek->telepon }}
+                    @endif
+
+                    @if($apotek?->telepon && $apotek?->email)
+                        &nbsp; | &nbsp;
+                    @endif
+
+                    @if($apotek?->email)
+                        Email: {{ $apotek->email }}
+                    @endif
+
+                </p>
+            @endif
+
+            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                <p>
+
+                    @if($apotek?->no_izin_sia)
+                        SIA: {{ $apotek->no_izin_sia }}
+                    @endif
+
+                    @if($apotek?->no_izin_sia && $apotek?->no_sipa)
+                        &nbsp;&nbsp;•&nbsp;&nbsp;
+                    @endif
+
+                    @if($apotek?->no_sipa)
+                        SIPA: {{ $apotek->no_sipa }}
+                    @endif
+
+                </p>
+            @endif
+
+        </div>
+
+    </div>
+
+
+    {{-- JUDUL LAPORAN --}}
+    <div class="print-report-title">
+
+        <h2>
+            Laporan Ketersediaan Stok & Kadaluarsa
+        </h2>
+
+        <p>
+            Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+        </p>
+
+    </div>
+
+</div>
+
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden no-print page-header-web">
     <div>
         <h1>Laporan Monitoring Stok & Kadaluarsa</h1>
 
@@ -393,7 +552,7 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
+<div class="card-base p-4 mb-6 print:hidden no-print filter-card-web">
     <form method="GET" action="{{ route('laporan.stok') }}" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
@@ -505,109 +664,22 @@
     </form>
 </div>
 
-{{-- ========================================================= --}}
-{{-- TEMPLATE CETAK --}}
-{{-- ========================================================= --}}
-
-<div class="print-only">
-
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-
-        {{-- LOGO --}}
-        @if($apotek?->logo)
-            <img
-                src="{{ asset('storage/' . $apotek->logo) }}"
-                alt="Logo {{ $apotek->nama_apotek }}"
-                class="print-kop-logo"
-            >
-        @endif
-
-        {{-- INFORMASI APOTEK --}}
-        <div class="print-kop-info">
-
-            <h1>
-                {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
-            </h1>
-
-            @if($apotek?->alamat)
-                <p>
-                    {{ $apotek->alamat }}
-                </p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-                <p>
-
-                    @if($apotek?->telepon)
-                        Telp: {{ $apotek->telepon }}
-                    @endif
-
-                    @if($apotek?->telepon && $apotek?->email)
-                        &nbsp; | &nbsp;
-                    @endif
-
-                    @if($apotek?->email)
-                        Email: {{ $apotek->email }}
-                    @endif
-
-                </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-                <p>
-
-                    @if($apotek?->no_izin_sia)
-                        SIA: {{ $apotek->no_izin_sia }}
-                    @endif
-
-                    @if($apotek?->no_izin_sia && $apotek?->no_sipa)
-                        &nbsp;&nbsp;•&nbsp;&nbsp;
-                    @endif
-
-                    @if($apotek?->no_sipa)
-                        SIPA: {{ $apotek->no_sipa }}
-                    @endif
-
-                </p>
-            @endif
-
-        </div>
-
-    </div>
-
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-
-        <h2>
-            Laporan Ketersediaan Stok & Kadaluarsa
-        </h2>
-
-        <p>
-            Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-
-    </div>
-
-</div>
-
 
 <!-- ========================================================= -->
 <!-- SECTION 1 : STOK PER BATCH -->
 <!-- ========================================================= -->
 <div class="mb-8 print-section">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 print:mb-1">
         <div>
-            <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans print:text-gray-900">
                 Stok Per Batch
             </h2>
-            <p class="text-caption mt-0.5">
+            <p class="text-caption mt-0.5 print:text-[8px] print:mt-0">
                 Rincian mutasi stok per batch: Stok Awal − Stok Terjual − Stok Rusak = Sisa Stok.
             </p>
         </div>
-        <div class="text-xs font-medium text-gray-500">
-            Menampilkan <span class="font-semibold text-gray-700">{{ $stokPerBatch->count() }}</span> batch
+        <div class="text-xs font-medium text-gray-500 print:text-[8px]">
+            Menampilkan <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->count() }}</span> batch
         </div>
     </div>
 
@@ -620,19 +692,19 @@
                         <th scope="col" class="w-10 text-center !px-2">
                             No
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="w-44 max-w-[12rem] !px-2.5">
                             Barang
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">
                             Kategori
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-24 text-center !px-2 whitespace-nowrap">
                             No. Batch
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-20 text-center !px-2 whitespace-nowrap">
                             No. Rak
                         </th>
-                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
+                        <th scope="col" class="text-center w-28 !px-2 whitespace-nowrap">
                             Expired
                         </th>
                         <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
@@ -679,36 +751,28 @@
                             </td>
 
                             <!-- Barang -->
-                            <td class="font-medium text-gray-800">
+                            <td class="font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">
                                 {{ $item->barang->nama ?? '—' }}
                             </td>
 
                             <!-- Kategori -->
-                            <td class="text-gray-600">
+                            <td class="text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate" title="{{ $item->barang->kategori->nama ?? '—' }}">
                                 {{ $item->barang->kategori->nama ?? '—' }}
                             </td>
 
                             <!-- Batch -->
-                            <td class="font-mono text-gray-600">
+                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_batch ?? '—' }}
                             </td>
 
                             <!-- Rak -->
-                            <td class="font-mono text-gray-600">
+                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_rak ?? '—' }}
                             </td>
 
                             <!-- Expired -->
                             <td class="text-center font-mono !px-2 whitespace-nowrap">
-                                @if ($expiredDate)
-                                    <div class="leading-tight text-center font-mono text-xs">
-                                        <div>{{ $expiredDate->format('d') }}</div>
-                                        <div>{{ $expiredDate->translatedFormat('F') }}</div>
-                                        <div>{{ $expiredDate->format('Y') }}</div>
-                                    </div>
-                                @else
-                                    —
-                                @endif
+                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
                             </td>
 
                             <!-- Status Expired -->
@@ -818,11 +882,56 @@
     </div>
 </div>
 
+{{-- ========================================================= --}}
+{{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
+{{-- ========================================================= --}}
+<div class="no-break print-signature">
+    <div class="print-signature-grid">
+        {{-- KIRI: PENANGGUNG JAWAB APOTEK --}}
+        <div class="print-signature-box">
+            <p class="print-signature-title">Mengetahui,</p>
+            <p class="print-signature-role">Penanggung Jawab Apotek</p>
+
+            <div class="print-signature-space"></div>
+
+            <p class="print-signature-name">
+                @if (!empty($apotek?->nama_apoteker_pj))
+                    {{ $apotek->nama_apoteker_pj }}
+                @else
+                    (____________________)
+                @endif
+            </p>
+
+            @if (!empty($apotek?->no_sipa))
+                <p class="print-signature-sipa">
+                    No. SIPA: {{ $apotek->no_sipa }}
+                </p>
+            @endif
+        </div>
+
+        {{-- KANAN: PEMBUAT LAPORAN --}}
+        <div class="print-signature-box">
+            <p class="print-signature-title">Dibuat oleh,</p>
+            <p class="print-signature-role">Pembuat Laporan</p>
+
+            <div class="print-signature-space"></div>
+
+            <p class="print-signature-name">
+                @if (!empty(auth()->user()?->name))
+                    {{ auth()->user()->name }}
+                @else
+                    (____________________)
+                @endif
+            </p>
+        </div>
+    </div>
+</div>
+
 
 <!-- ========================================================= -->
 <!-- SECTION 2 : BATCH MENDEKATI EXPIRED -->
 <!-- ========================================================= -->
-<div class="mb-8 no-print-expired">
+<div class="mb-8 no-print print:hidden no-print-expired">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
             <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans">
@@ -846,29 +955,26 @@
                         <th scope="col" class="w-10 text-center !px-2">
                             No
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="w-44 max-w-[12rem] !px-2.5">
                             Barang
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">
                             Kategori
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-24 text-center !px-2 whitespace-nowrap">
                             No. Batch
                         </th>
-                        <th scope="col" class="whitespace-nowrap">
+                        <th scope="col" class="w-20 text-center !px-2 whitespace-nowrap">
                             No. Rak
                         </th>
-                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
+                        <th scope="col" class="text-center w-28 !px-2 whitespace-nowrap">
                             Expired
                         </th>
                         <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
                             Status Expired
                         </th>
-                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
+                        <th scope="col" class="text-right w-20 !px-2 whitespace-nowrap">
                             Sisa Stok
-                        </th>
-                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
-                            Status Stok
                         </th>
                     </tr>
                 </thead>
@@ -889,32 +995,24 @@
                                 {{ $index + 1 }}
                             </td>
 
-                            <td class="font-medium text-gray-800">
+                            <td class="font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">
                                 {{ $item->barang->nama ?? '—' }}
                             </td>
 
-                            <td class="text-gray-600">
+                            <td class="text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate" title="{{ $item->barang->kategori->nama ?? '—' }}">
                                 {{ $item->barang->kategori->nama ?? '—' }}
                             </td>
 
-                            <td class="font-mono text-gray-600">
+                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_batch ?? '—' }}
                             </td>
 
-                            <td class="font-mono text-gray-600">
+                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_rak ?? '—' }}
                             </td>
 
                             <td class="text-center font-mono !px-2 whitespace-nowrap">
-                                @if ($expiredDate)
-                                    <div class="leading-tight text-center font-mono text-xs">
-                                        <div>{{ $expiredDate->format('d') }}</div>
-                                        <div>{{ $expiredDate->translatedFormat('F') }}</div>
-                                        <div>{{ $expiredDate->format('Y') }}</div>
-                                    </div>
-                                @else
-                                    —
-                                @endif
+                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
                             </td>
 
                             <td class="text-center !px-2 whitespace-nowrap">
@@ -944,20 +1042,10 @@
                             <td class="table-num font-bold {{ $sisaStokExp <= 0 ? 'text-red-600' : ($sisaStokExp <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
                                 {{ number_format($sisaStokExp, 0, ',', '.') }}
                             </td>
-
-                            <td class="text-center !px-2 whitespace-nowrap">
-                                @if ($sisaStokExp <= 0)
-                                    <span class="badge-danger">Habis</span>
-                                @elseif ($sisaStokExp <= $stokMinimum)
-                                    <span class="badge-warning">Menipis</span>
-                                @else
-                                    <span class="badge-success">Aman</span>
-                                @endif
-                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="p-0">
+                            <td colspan="8" class="p-0">
                                 <div class="empty-state-container">
                                     <div class="empty-state-title">
                                         Tidak Ada Batch Kadaluarsa / Mendekati Expired
@@ -980,51 +1068,12 @@
                             <td class="table-num !px-2 py-3 text-right text-red-600 font-bold whitespace-nowrap">
                                 {{ number_format($mendekatiExpired->sum(fn ($i) => (int) $i->jumlah - (int) ($i->stok_terjual ?? 0) - (int) ($i->stok_rusak ?? 0)), 0, ',', '.') }}
                             </td>
-                            <td class="!px-2 py-3"></td>
                         </tr>
                     </tfoot>
                 @endif
             </table>
         </div>
     </div>
-</div>
-
-{{-- ========================================================= --}}
-{{-- TANDA TANGAN --}}
-{{-- ========================================================= --}}
-
-<div class="print-signature">
-
-    {{-- TANDA TANGAN APOTEKER --}}
-    <div class="print-signature-box">
-        <p>Mengetahui,</p>
-        <p>Apoteker Penanggung Jawab</p>
-
-        <div class="print-signature-space"></div>
-
-        <p class="print-signature-name">
-            {{ $apotek?->nama_apoteker_pj ?? '.................................' }}
-        </p>
-
-        @if($apotek?->no_sipa)
-            <p>
-                SIPA: {{ $apotek->no_sipa }}
-            </p>
-        @endif
-    </div>
-
-    {{-- TANDA TANGAN ADMIN --}}
-    <div class="print-signature-box">
-        <p>Dibuat oleh,</p>
-        <p>Admin / Petugas Apotek</p>
-
-        <div class="print-signature-space"></div>
-
-        <p class="print-signature-name">
-            {{ auth()->user()->name ?? '.................................' }}
-        </p>
-    </div>
-
 </div>
 
 @endsection
