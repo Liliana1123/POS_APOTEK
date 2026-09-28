@@ -166,7 +166,7 @@
                                     class="btn-secondary !p-1.5 opacity-40 cursor-not-allowed"
                                     style="color: #9CA3AF;"
                                     disabled
-                                    title="{{ $penerimaan->hasPembayaran() ? 'Tidak dapat diedit: Sudah ada pembayaran' : 'Tidak dapat diedit: Sudah ada penerimaan susulan' }}"
+                                    title="{{ $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.' }}"
                                 >
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
                                 </button>
@@ -491,17 +491,6 @@
         </div>
 
         <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
-            @if ($errors->any() && !old('_method'))
-                <div class="alert-danger p-4 mb-6">
-                    <strong class="block text-xs font-bold mb-1.5">Perbaiki kesalahan berikut sebelum menyimpan faktur:</strong>
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
                 @csrf
 
@@ -636,10 +625,10 @@
             <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch...">
         </td>
         <td class="px-3 py-2">
-            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2">
+            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2 expired-field" style="min-width: 130px;">
         </td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0"></td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0" style="min-width: 120px;"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono harga-jual" placeholder="0" style="min-width: 120px;"></td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
             <input type="number" min="0" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
@@ -737,7 +726,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (!response.ok) {
-                throw new Error('Gagal memuat form edit.');
+                let errorMsg = 'Gagal memuat form edit.';
+                try {
+                    const errData = await response.json();
+                    if (errData && errData.message) {
+                        errorMsg = errData.message;
+                    }
+                } catch (e) {}
+                throw new Error(errorMsg);
             }
 
            const html = await response.text();
@@ -760,8 +756,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
             content.innerHTML = `
-                <div class="text-center py-8 text-red-600">
-                    Gagal memuat form edit.
+                <div class="p-6 text-center">
+                    <div class="text-amber-600 font-bold mb-2">Pemberitahuan</div>
+                    <div class="text-sm text-gray-700">${error.message || 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.'}</div>
                 </div>
             `;
 
@@ -1113,7 +1110,224 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            tbodyTambah.addEventListener('input', updateTotalTambah);
+            tbodyTambah.addEventListener('input', function (e) {
+                updateTotalTambah();
+                const target = e.target;
+                const row = target.closest('tr');
+                if (!row) return;
+
+                if (target.name && target.name.includes('[expired_date]')) {
+                    const tgl = document.getElementById('tanggal_tambah')?.value;
+                    validateRowExpiredTambah(row, tgl);
+                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+                    validateRowHargaTambah(row);
+                }
+            });
+
+            tbodyTambah.addEventListener('change', function (e) {
+                const target = e.target;
+                const row = target.closest('tr');
+                if (!row) return;
+
+                if (target.name && target.name.includes('[expired_date]')) {
+                    const tgl = document.getElementById('tanggal_tambah')?.value;
+                    validateRowExpiredTambah(row, tgl);
+                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+                    validateRowHargaTambah(row);
+                }
+            });
+        }
+
+        const tglTambahInput = document.getElementById('tanggal_tambah');
+        if (tglTambahInput) {
+            tglTambahInput.addEventListener('change', function () {
+                const tgl = this.value;
+                if (tbodyTambah) {
+                    tbodyTambah.querySelectorAll('tr').forEach(row => {
+                        validateRowExpiredTambah(row, tgl);
+                    });
+                }
+            });
+        }
+
+        function setFieldErrorTambah(input, message) {
+            if (!input) return;
+            input.classList.remove('border-gray-300');
+            input.classList.add('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            let errEl = container.querySelector('.field-error-msg');
+            if (!errEl) {
+                errEl = document.createElement('span');
+                errEl.className = 'field-error-msg text-[11px] text-red-600 font-semibold block mt-1 leading-tight whitespace-normal';
+                container.appendChild(errEl);
+            }
+            errEl.textContent = message;
+        }
+
+        function clearFieldErrorTambah(input) {
+            if (!input) return;
+            input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+            input.classList.add('border-gray-300');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            const errEl = container.querySelector('.field-error-msg');
+            if (errEl) {
+                errEl.remove();
+            }
+        }
+
+        function clearAllErrorsTambah() {
+            const form = document.getElementById('form-tambah-penerimaan');
+            if (!form) return;
+            form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+            form.querySelectorAll('.!border-red-500').forEach(input => {
+                input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+                input.classList.add('border-gray-300');
+            });
+            const generalBox = document.getElementById('tambah-general-error');
+            if (generalBox) {
+                generalBox.classList.add('hidden');
+                generalBox.textContent = '';
+            }
+        }
+
+        function validateRowExpiredTambah(row, tanggalPenerimaan) {
+            if (!row) return true;
+            const input = row.querySelector('[name$="[expired_date]"]');
+            if (!input) return true;
+
+            if (input.value && tanggalPenerimaan) {
+                if (input.value < tanggalPenerimaan) {
+                    setFieldErrorTambah(input, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(input);
+            return true;
+        }
+
+        function validateRowHargaTambah(row) {
+            if (!row) return true;
+            const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+            const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+            if (!hbInput || !hjInput) return true;
+
+            const hb = parseFloat(hbInput.value);
+            const hj = parseFloat(hjInput.value);
+
+            if (!isNaN(hb) && !isNaN(hj)) {
+                if (hj < hb) {
+                    setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(hjInput);
+            return true;
+        }
+
+        function validateFormTambah() {
+            clearAllErrorsTambah();
+            let isValid = true;
+            let firstErrorField = null;
+
+            const tglPenerimaan = document.getElementById('tanggal_tambah')?.value || '';
+
+            if (tbodyTambah) {
+                tbodyTambah.querySelectorAll('tr').forEach(row => {
+                    // Validasi Expired
+                    const expInput = row.querySelector('[name$="[expired_date]"]');
+                    if (expInput) {
+                        if (!expInput.value) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        } else if (tglPenerimaan && expInput.value < tglPenerimaan) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        }
+                    }
+
+                    // Validasi Harga
+                    const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+                    const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+                    if (hbInput && hjInput) {
+                        const hb = parseFloat(hbInput.value);
+                        const hj = parseFloat(hjInput.value);
+
+                        if (isNaN(hj) || hj < 0) {
+                            setFieldErrorTambah(hjInput, 'Harga jual wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        } else if (!isNaN(hb) && hj < hb) {
+                            setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        }
+                    }
+                });
+            }
+
+            if (!isValid && firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            return isValid;
+        }
+
+        function applyServerErrorsTambah(errors) {
+            clearAllErrorsTambah();
+            const form = document.getElementById('form-tambah-penerimaan');
+            if (!form) return;
+            let firstErrorField = null;
+            let unmappedMessages = [];
+
+            for (const key in errors) {
+                const msgs = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+                const msg = msgs[0];
+
+                const match = key.match(/^items\.(\d+)\.([a-z_]+)$/);
+                if (match && tbodyTambah) {
+                    const rowIndex = parseInt(match[1], 10);
+                    const fieldName = match[2];
+                    const rows = tbodyTambah.querySelectorAll('tr');
+                    const row = rows[rowIndex];
+                    if (row) {
+                        const input = row.querySelector(`[name$="[${fieldName}]"]`);
+                        if (input) {
+                            setFieldErrorTambah(input, msg);
+                            if (!firstErrorField) firstErrorField = input;
+                            continue;
+                        }
+                    }
+                }
+
+                const topInput = form.querySelector(`[name="${key}"]`);
+                if (topInput) {
+                    setFieldErrorTambah(topInput, msg);
+                    if (!firstErrorField) firstErrorField = topInput;
+                    continue;
+                }
+
+                unmappedMessages.push(msg);
+            }
+
+            const generalBox = document.getElementById('tambah-general-error');
+            if (generalBox && unmappedMessages.length > 0) {
+                generalBox.textContent = unmappedMessages.join(', ');
+                generalBox.classList.remove('hidden');
+            }
+
+            if (firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         const supplierSelectTambah = document.getElementById('supplier_id_tambah');
@@ -1134,6 +1348,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (tbodyTambah && tbodyTambah.children.length === 0) {
                     e.preventDefault();
                     alert('Tambahkan minimal 1 baris barang.');
+                    return;
+                }
+
+                if (!validateFormTambah()) {
+                    e.preventDefault();
                 }
             });
         }
@@ -1151,6 +1370,9 @@ document.addEventListener('DOMContentLoaded', function () {
         @if ($errors->any() && !old('_method'))
             modalTambah.classList.remove('hidden');
             modalTambah.setAttribute('aria-hidden', 'false');
+            setTimeout(() => {
+                applyServerErrorsTambah(@json($errors->toArray()));
+            }, 50);
         @endif
     }
 });

@@ -1,15 +1,3 @@
-<div id="edit-errors-container" class="alert-danger p-4 mb-6 {{ $errors->any() ? '' : 'hidden' }}">
-    <strong class="block text-xs font-bold mb-1.5">
-        Perbaiki kesalahan berikut sebelum menyimpan faktur:
-    </strong>
-
-    <ul id="edit-errors-list" class="list-disc pl-5 space-y-1">
-        @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-
 <form
     action="{{ route('penerimaan.update', $penerimaan) }}"
     method="POST"
@@ -59,6 +47,7 @@
             <input
                 type="date"
                 name="tanggal"
+                id="tanggal_edit"
                 value="{{ old('tanggal', $penerimaan->tanggal?->format('Y-m-d')) }}"
                 required
                 class="form-input"
@@ -105,7 +94,7 @@
             >
         </div>
 
-        <div class="sm:col-span-2">
+        <div class="sm:col-span-3">
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
                 Keterangan
             </label>
@@ -116,19 +105,6 @@
                 value="{{ old('keterangan', $penerimaan->keterangan) }}"
                 class="form-input"
                 placeholder="Keterangan penerimaan (opsional)"
-            >
-        </div>
-
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
-                Jatuh Tempo
-            </label>
-
-            <input
-                type="date"
-                name="jatuh_tempo"
-                value="{{ old('jatuh_tempo', $penerimaan->jatuh_tempo?->format('Y-m-d')) }}"
-                class="form-input"
             >
         </div>
 
@@ -299,7 +275,8 @@
                                         name="items[{{ $index }}][expired_date]"
                                         value="{{ $item->expired_date?->format('Y-m-d') }}"
                                         required
-                                        class="form-input py-1 px-2"
+                                        class="form-input py-1 px-2 expired-field"
+                                        style="min-width: 130px;"
                                     >
                                 </td>
 
@@ -313,6 +290,7 @@
                                         required
                                         class="form-input py-1 px-2 text-right font-mono harga-beli"
                                         placeholder="0"
+                                        style="min-width: 120px;"
                                     >
                                 </td>
 
@@ -324,8 +302,9 @@
                                         name="items[{{ $index }}][harga_jual]"
                                         value="{{ $item->harga_jual }}"
                                         required
-                                        class="form-input py-1 px-2 text-right font-mono"
+                                        class="form-input py-1 px-2 text-right font-mono harga-jual"
                                         placeholder="0"
+                                        style="min-width: 120px;"
                                     >
                                 </td>
 
@@ -458,6 +437,46 @@
 
     </div>
 
+    @php
+        $pembayaranPertamaRecord = $penerimaan->pembayaran->firstWhere('keterangan', 'Pembayaran pertama') ?? $penerimaan->pembayaran->first();
+        $pembayaranPertamaNilai = $pembayaranPertamaRecord ? (float) $pembayaranPertamaRecord->jumlah : 0;
+    @endphp
+
+    <!-- Card Pembayaran & Jatuh Tempo -->
+    <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Pembayaran Saat Penerimaan
+            </label>
+            <input
+                type="number"
+                name="pembayaran_pertama"
+                id="pembayaran_pertama_edit"
+                value="{{ old('pembayaran_pertama', $pembayaranPertamaNilai) }}"
+                min="0"
+                step="0.01"
+                class="form-input text-right font-mono"
+            >
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Jatuh Tempo
+            </label>
+            <input
+                type="date"
+                name="jatuh_tempo"
+                id="jatuh_tempo_edit"
+                value="{{ old('jatuh_tempo', $penerimaan->jatuh_tempo?->format('Y-m-d')) }}"
+                class="form-input"
+            >
+        </div>
+
+        <div class="text-xs text-gray-500 italic border-l-2 border-blue-500 pl-2">
+            Jika pembayaran belum lunas, tanggal jatuh tempo wajib diisi. Pembayaran pertama akan diperbarui sesuai input.
+        </div>
+    </div>
+
     {{-- ACTION BUTTONS --}}
     <div class="flex gap-2 pt-2">
         <button
@@ -527,7 +546,8 @@
                 type="date"
                 name="items[__i__][expired_date]"
                 required
-                class="form-input py-1 px-2"
+                class="form-input py-1 px-2 expired-field"
+                style="min-width: 130px;"
             >
         </td>
 
@@ -540,6 +560,7 @@
                 required
                 class="form-input py-1 px-2 text-right font-mono harga-beli"
                 placeholder="0"
+                style="min-width: 120px;"
             >
         </td>
 
@@ -550,8 +571,9 @@
                 min="0"
                 name="items[__i__][harga_jual]"
                 required
-                class="form-input py-1 px-2 text-right font-mono"
+                class="form-input py-1 px-2 text-right font-mono harga-jual"
                 placeholder="0"
+                style="min-width: 120px;"
             >
         </td>
 
@@ -748,6 +770,220 @@ function initEditPenerimaanForm() {
         });
     }
 
+    // Helper Validasi Field
+    function setFieldError(input, message) {
+        if (!input) return;
+        input.classList.remove('border-gray-300');
+        input.classList.add('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+
+        const container = input.closest('td') || input.parentElement;
+        if (!container) return;
+
+        let errEl = container.querySelector('.field-error-msg');
+        if (!errEl) {
+            errEl = document.createElement('span');
+            errEl.className = 'field-error-msg text-[11px] text-red-600 font-semibold block mt-1 leading-tight whitespace-normal';
+            container.appendChild(errEl);
+        }
+        errEl.textContent = message;
+    }
+
+    function clearFieldError(input) {
+        if (!input) return;
+        input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+        input.classList.add('border-gray-300');
+
+        const container = input.closest('td') || input.parentElement;
+        if (!container) return;
+
+        const errEl = container.querySelector('.field-error-msg');
+        if (errEl) {
+            errEl.remove();
+        }
+    }
+
+    function clearAllErrors() {
+        form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+        form.querySelectorAll('.!border-red-500').forEach(input => {
+            input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+            input.classList.add('border-gray-300');
+        });
+        const generalBox = document.getElementById('edit-general-error');
+        if (generalBox) {
+            generalBox.classList.add('hidden');
+            generalBox.textContent = '';
+        }
+    }
+
+    function validateRowExpired(row, tanggalPenerimaan) {
+        if (!row) return true;
+        const input = row.querySelector('[name$="[expired_date]"]');
+        if (!input) return true;
+
+        if (input.value && tanggalPenerimaan) {
+            if (input.value < tanggalPenerimaan) {
+                setFieldError(input, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                return false;
+            }
+        }
+        clearFieldError(input);
+        return true;
+    }
+
+    function validateRowHarga(row) {
+        if (!row) return true;
+        const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+        const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+        if (!hbInput || !hjInput) return true;
+
+        const hb = parseFloat(hbInput.value);
+        const hj = parseFloat(hjInput.value);
+
+        if (!isNaN(hb) && !isNaN(hj)) {
+            if (hj < hb) {
+                setFieldError(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                return false;
+            }
+        }
+        clearFieldError(hjInput);
+        return true;
+    }
+
+    function validateFullForm() {
+        clearAllErrors();
+        let isValid = true;
+        let firstErrorField = null;
+
+        const tglPenerimaan = document.getElementById('tanggal_edit')?.value || form.querySelector('[name="tanggal"]')?.value || '';
+
+        tbody.querySelectorAll('tr').forEach(row => {
+            // Validasi Expired
+            const expInput = row.querySelector('[name$="[expired_date]"]');
+            if (expInput) {
+                if (!expInput.value) {
+                    setFieldError(expInput, 'Tanggal expired wajib diisi.');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = expInput;
+                } else if (tglPenerimaan && expInput.value < tglPenerimaan) {
+                    setFieldError(expInput, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = expInput;
+                }
+            }
+
+            // Validasi Harga
+            const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+            const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+            if (hbInput && hjInput) {
+                const hb = parseFloat(hbInput.value);
+                const hj = parseFloat(hjInput.value);
+
+                if (isNaN(hj) || hj < 0) {
+                    setFieldError(hjInput, 'Harga jual wajib diisi.');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = hjInput;
+                } else if (!isNaN(hb) && hj < hb) {
+                    setFieldError(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                    isValid = false;
+                    if (!firstErrorField) firstErrorField = hjInput;
+                }
+            }
+        });
+
+        if (!isValid && firstErrorField) {
+            firstErrorField.focus();
+            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        return isValid;
+    }
+
+    function applyServerErrors(errors) {
+        clearAllErrors();
+        let firstErrorField = null;
+        let unmappedMessages = [];
+
+        for (const key in errors) {
+            const msgs = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+            const msg = msgs[0];
+
+            // Cek items.0.expired_date atau items.0.harga_jual
+            const match = key.match(/^items\.(\d+)\.([a-z_]+)$/);
+            if (match) {
+                const rowIndex = parseInt(match[1], 10);
+                const fieldName = match[2];
+                const rows = tbody.querySelectorAll('tr');
+                const row = rows[rowIndex];
+                if (row) {
+                    const input = row.querySelector(`[name$="[${fieldName}]"]`);
+                    if (input) {
+                        setFieldError(input, msg);
+                        if (!firstErrorField) firstErrorField = input;
+                        continue;
+                    }
+                }
+            }
+
+            // Cek top level field (no_faktur, tanggal, supplier_id, dll)
+            const topInput = form.querySelector(`[name="${key}"]`);
+            if (topInput) {
+                setFieldError(topInput, msg);
+                if (!firstErrorField) firstErrorField = topInput;
+                continue;
+            }
+
+            unmappedMessages.push(msg);
+        }
+
+        const generalBox = document.getElementById('edit-general-error');
+        if (generalBox && unmappedMessages.length > 0) {
+            generalBox.textContent = unmappedMessages.join(', ');
+            generalBox.classList.remove('hidden');
+        }
+
+        if (firstErrorField) {
+            firstErrorField.focus();
+            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // Realtime input listener untuk validasi instan
+    tbody.addEventListener('input', function (e) {
+        const target = e.target;
+        const row = target.closest('tr');
+        if (!row) return;
+
+        if (target.name && target.name.includes('[expired_date]')) {
+            const tgl = document.getElementById('tanggal_edit')?.value || form.querySelector('[name="tanggal"]')?.value;
+            validateRowExpired(row, tgl);
+        } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+            validateRowHarga(row);
+        }
+    });
+
+    tbody.addEventListener('change', function (e) {
+        const target = e.target;
+        const row = target.closest('tr');
+        if (!row) return;
+
+        if (target.name && target.name.includes('[expired_date]')) {
+            const tgl = document.getElementById('tanggal_edit')?.value || form.querySelector('[name="tanggal"]')?.value;
+            validateRowExpired(row, tgl);
+        } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+            validateRowHarga(row);
+        }
+    });
+
+    const tglEditInput = document.getElementById('tanggal_edit') || form.querySelector('[name="tanggal"]');
+    if (tglEditInput) {
+        tglEditInput.addEventListener('change', function () {
+            const tgl = this.value;
+            tbody.querySelectorAll('tr').forEach(row => {
+                validateRowExpired(row, tgl);
+            });
+        });
+    }
+
     // Submit Edit Form via AJAX
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -757,16 +993,16 @@ function initEditPenerimaanForm() {
             return;
         }
 
+        // Jalankan validasi frontend menyeluruh sebelum submit
+        if (!validateFullForm()) {
+            return;
+        }
+
         const submitBtn = document.getElementById('btn-simpan-edit');
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Menyimpan Perubahan...';
         }
-
-        const errorContainer = document.getElementById('edit-errors-container');
-        const errorList = document.getElementById('edit-errors-list');
-        if (errorContainer) errorContainer.classList.add('hidden');
-        if (errorList) errorList.innerHTML = '';
 
         try {
             const formData = new FormData(form);
@@ -782,31 +1018,18 @@ function initEditPenerimaanForm() {
             const result = await response.json().catch(() => null);
 
             if (!response.ok) {
-                let errorMessages = [];
                 if (result && result.errors) {
-                    for (const key in result.errors) {
-                        if (Array.isArray(result.errors[key])) {
-                            result.errors[key].forEach(msg => errorMessages.push(msg));
-                        } else {
-                            errorMessages.push(result.errors[key]);
-                        }
-                    }
+                    applyServerErrors(result.errors);
                 } else if (result && result.message) {
-                    errorMessages.push(result.message);
+                    const generalBox = document.getElementById('edit-general-error');
+                    if (generalBox) {
+                        generalBox.textContent = result.message;
+                        generalBox.classList.remove('hidden');
+                    } else {
+                        alert(result.message);
+                    }
                 } else {
-                    errorMessages.push('Terjadi kesalahan saat menyimpan perubahan faktur.');
-                }
-
-                if (errorContainer && errorList) {
-                    errorMessages.forEach(msg => {
-                        const li = document.createElement('li');
-                        li.textContent = msg;
-                        errorList.appendChild(li);
-                    });
-                    errorContainer.classList.remove('hidden');
-                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    alert(errorMessages.join('\n'));
+                    alert('Terjadi kesalahan saat menyimpan perubahan faktur.');
                 }
 
                 if (submitBtn) {

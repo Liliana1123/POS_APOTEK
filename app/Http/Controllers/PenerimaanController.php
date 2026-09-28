@@ -132,20 +132,39 @@ class PenerimaanController extends Controller
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.no_batch' => 'required|string|max:100',
             'items.*.harga_beli' => 'required|numeric|min:0',
-            'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
-            'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
+            'items.*.harga_jual' => 'required|numeric|min:0',
+            'items.*.expired_date' => 'required|date',
             'items.*.no_rak' => 'required|string|max:50',
             'items.*.jumlah_dipesan' => 'required|integer|min:1',
             'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
+
+        $itemErrors = [];
         foreach ($data['items'] as $index => $item) {
             if ((int) $item['jumlah_diterima'] > (int) $item['jumlah_dipesan']) {
-                throw ValidationException::withMessages([
-                    "items.$index.jumlah_diterima" =>
-                        'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
-                ]);
+                $itemErrors["items.$index.jumlah_diterima"] = [
+                    'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
+                ];
+            }
+            if (!empty($item['expired_date']) && !empty($data['tanggal'])) {
+                if ($item['expired_date'] < $data['tanggal']) {
+                    $itemErrors["items.$index.expired_date"] = [
+                        'Tanggal expired tidak boleh sebelum tanggal penerimaan.',
+                    ];
+                }
+            }
+            if (isset($item['harga_jual']) && isset($item['harga_beli'])) {
+                if ((float) $item['harga_jual'] < (float) $item['harga_beli']) {
+                    $itemErrors["items.$index.harga_jual"] = [
+                        'Harga jual tidak boleh lebih kecil dari harga beli.',
+                    ];
+                }
             }
         }
+        if (!empty($itemErrors)) {
+            throw ValidationException::withMessages($itemErrors);
+        }
+
         $data['supplier_id'] = (int) $data['supplier_id'];
         $supplier = Supplier::findOrFail($data['supplier_id']);
         $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
@@ -271,11 +290,13 @@ class PenerimaanController extends Controller
 
     public function edit(Penerimaan $penerimaan)
     {
-        abort_unless(
-            $penerimaan->canBeEdited(),
-            403,
-            'Penerimaan ini tidak dapat diedit karena sudah memiliki pembayaran atau penerimaan susulan.'
-        );
+        if (!$penerimaan->canBeEdited()) {
+            $pesan = $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.';
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => $pesan], 403);
+            }
+            abort(403, $pesan);
+        }
 
         $penerimaan->load([
             'supplier',
@@ -285,6 +306,7 @@ class PenerimaanController extends Controller
             'detail.rusak',
             'detailPesanan',
             'riwayatPenerimaan',
+            'pembayaran',
         ]);
 
         $suppliers = Supplier::orderBy('nama')->get();
@@ -303,11 +325,16 @@ class PenerimaanController extends Controller
 
     public function update(Request $request, Penerimaan $penerimaan)
     {
-        abort_unless(
-            $penerimaan->canBeEdited(),
-            403,
-            'Penerimaan ini tidak dapat diedit karena sudah memiliki pembayaran atau penerimaan susulan.'
-        );
+        if (!$penerimaan->canBeEdited()) {
+            $pesan = $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.';
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => $pesan,
+                    'errors' => ['faktur' => [$pesan]],
+                ], 403);
+            }
+            abort(403, $pesan);
+        }
 
         $data = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
@@ -321,18 +348,40 @@ class PenerimaanController extends Controller
                 \Illuminate\Validation\Rule::unique('penerimaans', 'no_faktur')->ignore($penerimaan->id)->whereNull('deleted_at'),
             ],
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
+            'pembayaran_pertama' => 'nullable|numeric|min:0',
 
             'items' => 'required|array|min:1',
             'items.*.detail_id' => 'nullable|integer',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.no_batch' => 'required|string|max:100',
             'items.*.harga_beli' => 'required|numeric|min:0',
-            'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
-            'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
+            'items.*.harga_jual' => 'required|numeric|min:0',
+            'items.*.expired_date' => 'required|date',
             'items.*.no_rak' => 'required|string|max:50',
             'items.*.jumlah_dipesan' => 'required|integer|min:0',
             'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
+
+        $itemErrors = [];
+        foreach ($data['items'] as $index => $item) {
+            if (!empty($item['expired_date']) && !empty($data['tanggal'])) {
+                if ($item['expired_date'] < $data['tanggal']) {
+                    $itemErrors["items.$index.expired_date"] = [
+                        'Tanggal expired tidak boleh sebelum tanggal penerimaan.',
+                    ];
+                }
+            }
+            if (isset($item['harga_jual']) && isset($item['harga_beli'])) {
+                if ((float) $item['harga_jual'] < (float) $item['harga_beli']) {
+                    $itemErrors["items.$index.harga_jual"] = [
+                        'Harga jual tidak boleh lebih kecil dari harga beli.',
+                    ];
+                }
+            }
+        }
+        if (!empty($itemErrors)) {
+            throw ValidationException::withMessages($itemErrors);
+        }
 
         // Total jumlah diterima per barang tidak boleh melebihi total dipesan per barang
         $dipesanPerBarang = [];
@@ -363,7 +412,24 @@ class PenerimaanController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($data, $request, $penerimaan, $dipesanPerBarang) {
+        $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
+        $ppn = round($totalFaktur * 0.11, 2);
+        $totalTagihan = $totalFaktur + $ppn;
+        $pembayaranPertama = (float) ($data['pembayaran_pertama'] ?? 0);
+
+        if ($pembayaranPertama > $totalTagihan) {
+            throw ValidationException::withMessages([
+                'pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total tagihan.',
+            ]);
+        }
+
+        if ($pembayaranPertama < $totalTagihan && empty($data['jatuh_tempo'])) {
+            throw ValidationException::withMessages([
+                'jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.',
+            ]);
+        }
+
+        DB::transaction(function () use ($data, $request, $penerimaan, $dipesanPerBarang, $totalTagihan, $ppn, $pembayaranPertama) {
             $supplier = Supplier::findOrFail($data['supplier_id']);
 
             $penerimaan->update([
@@ -374,7 +440,39 @@ class PenerimaanController extends Controller
                 'tanggal_faktur' => $data['tanggal_faktur'],
                 'no_faktur' => $data['no_faktur'],
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
+                'ppn' => $ppn,
+                'lunas' => $pembayaranPertama >= $totalTagihan,
             ]);
+
+            // Sinkronisasi pembayaran pertama/utama
+            $pembayaranPertamaRecord = $penerimaan->pembayaran()
+                ->where(function ($q) {
+                    $q->where('keterangan', 'Pembayaran pertama')
+                        ->orWhereNull('keterangan');
+                })
+                ->first();
+
+            if ($pembayaranPertama > 0) {
+                if ($pembayaranPertamaRecord) {
+                    $pembayaranPertamaRecord->update([
+                        'jumlah' => $pembayaranPertama,
+                        'tanggal_bayar' => $data['tanggal'],
+                        'keterangan' => 'Pembayaran pertama',
+                    ]);
+                } else {
+                    PembayaranPenerimaan::create([
+                        'penerimaan_id' => $penerimaan->id,
+                        'user_id' => $request->user()?->id ?? $penerimaan->user_id ?? auth()->id() ?? 1,
+                        'tanggal_bayar' => $data['tanggal'],
+                        'jumlah' => $pembayaranPertama,
+                        'keterangan' => 'Pembayaran pertama',
+                    ]);
+                }
+            } else {
+                if ($pembayaranPertamaRecord) {
+                    $pembayaranPertamaRecord->delete();
+                }
+            }
 
             $existingDetails = $penerimaan->detail()
                 ->lockForUpdate()
