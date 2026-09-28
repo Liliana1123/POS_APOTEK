@@ -4,6 +4,15 @@
         now()->addHours(6),
         fn () => \App\Models\InfoApotek::first()
     );
+
+    $petugas = auth()->user()?->name;
+    if (!$petugas && isset($rusak)) {
+        $log = \App\Models\ActivityLog::where('action', 'Catat Barang Rusak')
+            ->where('target', 'like', '%' . ($rusak->detailPenerimaan->no_batch ?? '') . '%')
+            ->latest('id')
+            ->first();
+        $petugas = $log?->user_name;
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -33,6 +42,27 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
+        }
+
+        @page {
+            @top-left {
+                text-align: left;
+            }
+            @top-center {
+                content: none;
+            }
+            @top-right {
+                text-align: right;
+            }
+            @bottom-left {
+                text-align: left;
+            }
+            @bottom-center {
+                content: none;
+            }
+            @bottom-right {
+                text-align: right;
+            }
         }
 
         /* =========================
@@ -131,6 +161,43 @@
         }
 
         /* =========================
+           TANDA TANGAN
+        ========================= */
+
+        .no-break {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .footer-ttd {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature {
+            width: 250px;
+            text-align: center;
+        }
+
+        .signature-title {
+            margin-bottom: 2px;
+        }
+
+        .signature-role {
+            font-weight: bold;
+        }
+
+        .signature-space {
+            height: 75px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+        }
+
+        /* =========================
            PRINT
         ========================= */
 
@@ -141,6 +208,12 @@
 
             .container {
                 max-width: none;
+            }
+
+            .no-break {
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         }
     </style>
@@ -303,6 +376,47 @@
         </tr>
 
     </table>
+
+    {{-- =========================
+         TANDA TANGAN
+    ========================= --}}
+    <div class="no-break">
+        <div class="footer-ttd">
+
+            {{-- KIRI: APOTEKER PENANGGUNG JAWAB --}}
+            <div class="signature">
+                <div class="signature-title">Mengetahui,</div>
+                <div class="signature-role">Apoteker Penanggung Jawab</div>
+
+                <div class="signature-space"></div>
+
+                <div class="signature-name">
+                    @if (!empty($apotek?->nama_apoteker_pj))
+                        ( {{ $apotek->nama_apoteker_pj }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
+            {{-- KANAN: PETUGAS BARANG RUSAK --}}
+            <div class="signature">
+                <div class="signature-title">Dicatat oleh,</div>
+                <div class="signature-role">Petugas Barang Rusak</div>
+
+                <div class="signature-space"></div>
+
+                <div class="signature-name">
+                    @if (!empty($petugas))
+                        ( {{ $petugas }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 

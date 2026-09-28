@@ -614,43 +614,43 @@
     <div class="table-custom-container print-table-wrapper">
         <div class="overflow-x-auto print-table-wrapper">
 
-            <table class="table-custom print-table min-w-[72rem]">
+            <table class="table-custom print-table w-full min-w-[62rem]">
                 <thead class="table-custom-header">
                     <tr>
-                        <th scope="col" class="w-12 text-center">
+                        <th scope="col" class="w-10 text-center !px-2">
                             No
                         </th>
                         <th scope="col">
                             Barang
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             Kategori
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             No. Batch
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             No. Rak
                         </th>
-                        <th scope="col" class="text-center w-28">
+                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
                             Expired
                         </th>
-                        <th scope="col" class="text-center w-28">
+                        <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
                             Status Expired
                         </th>
-                        <th scope="col" class="text-right w-24">
+                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
                             Stok Awal
                         </th>
-                        <th scope="col" class="text-right w-24">
+                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
                             Stok Terjual
                         </th>
-                        <th scope="col" class="text-right w-24">
+                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
                             Stok Rusak
                         </th>
-                        <th scope="col" class="text-right w-28">
+                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
                             Sisa Stok
                         </th>
-                        <th scope="col" class="text-center w-24">
+                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
                             Status Stok
                         </th>
                     </tr>
@@ -699,19 +699,27 @@
                             </td>
 
                             <!-- Expired -->
-                            <td class="text-center font-mono">
-                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
+                            <td class="text-center font-mono !px-2 whitespace-nowrap">
+                                @if ($expiredDate)
+                                    <div class="leading-tight text-center font-mono text-xs">
+                                        <div>{{ $expiredDate->format('d') }}</div>
+                                        <div>{{ $expiredDate->translatedFormat('F') }}</div>
+                                        <div>{{ $expiredDate->format('Y') }}</div>
+                                    </div>
+                                @else
+                                    —
+                                @endif
                             </td>
 
                             <!-- Status Expired -->
-                            <td class="text-center">
+                            <td class="text-center !px-2 whitespace-nowrap">
                                 @if (!$expiredDate)
                                     <span class="badge-secondary">
                                         Tidak Ada Tanggal
                                     </span>
                                 @elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today))
                                     <span class="badge-danger">
-                                        Kadaluarsa
+                                        KADALUARSA
                                     </span>
                                 @elseif ($expiredDate->lte($today->copy()->addMonth()))
                                     <span class="badge-orange">
@@ -729,27 +737,27 @@
                             </td>
 
                             <!-- Stok Awal -->
-                            <td class="table-num font-medium text-gray-700">
+                            <td class="table-num font-medium text-gray-700 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokAwal, 0, ',', '.') }}
                             </td>
 
                             <!-- Stok Terjual -->
-                            <td class="table-num font-semibold text-indigo-600">
+                            <td class="table-num font-semibold text-indigo-600 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokTerjual, 0, ',', '.') }}
                             </td>
 
                             <!-- Stok Rusak -->
-                            <td class="table-num font-semibold text-rose-600">
+                            <td class="table-num font-semibold text-rose-600 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokRusak, 0, ',', '.') }}
                             </td>
 
                             <!-- Sisa Stok Saat Ini -->
-                            <td class="table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }}">
+                            <td class="table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
                                 {{ number_format($sisaStok, 0, ',', '.') }}
                             </td>
 
                             <!-- Status Stok -->
-                            <td class="text-center">
+                            <td class="text-center !px-2 whitespace-nowrap">
                                 @if ($sisaStok <= 0)
                                     <span class="badge-danger">Habis</span>
                                 @elseif ($sisaStok <= $stokMinimum)
@@ -786,22 +794,22 @@
                 @if ($stokPerBatch->isNotEmpty())
                     <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
                         <tr>
-                            <td colspan="7" class="px-5 py-4 text-right uppercase tracking-wider text-gray-600">
+                            <td colspan="7" class="!px-3 py-3 text-right uppercase tracking-wider text-gray-600">
                                 Total (Ringkasan Data Tampil):
                             </td>
-                            <td class="table-num px-5 py-4 text-right text-gray-800 font-bold">
+                            <td class="table-num !px-2 py-3 text-right text-gray-800 font-bold whitespace-nowrap">
                                 {{ number_format($totalStokAwal, 0, ',', '.') }}
                             </td>
-                            <td class="table-num px-5 py-4 text-right text-indigo-700 font-bold">
+                            <td class="table-num !px-2 py-3 text-right text-indigo-700 font-bold whitespace-nowrap">
                                 {{ number_format($totalStokTerjual, 0, ',', '.') }}
                             </td>
-                            <td class="table-num px-5 py-4 text-right text-rose-700 font-bold">
+                            <td class="table-num !px-2 py-3 text-right text-rose-700 font-bold whitespace-nowrap">
                                 {{ number_format($totalStokRusak, 0, ',', '.') }}
                             </td>
-                            <td class="table-num px-5 py-4 text-right {{ $totalSisaStok <= 0 ? 'text-red-600' : 'text-emerald-700' }} font-bold">
+                            <td class="table-num !px-2 py-3 text-right {{ $totalSisaStok <= 0 ? 'text-red-600' : 'text-emerald-700' }} font-bold whitespace-nowrap">
                                 {{ number_format($totalSisaStok, 0, ',', '.') }}
                             </td>
-                            <td class="px-5 py-4"></td>
+                            <td class="!px-2 py-3"></td>
                         </tr>
                     </tfoot>
                 @endif
@@ -832,34 +840,34 @@
    <div class="table-custom-container print-table-wrapper">
         <div class="overflow-x-auto print-table-wrapper">
 
-            <table class="table-custom print-table min-w-[72rem]">
+            <table class="table-custom print-table w-full min-w-[58rem]">
                 <thead class="table-custom-header">
                     <tr>
-                        <th scope="col" class="w-12 text-center">
+                        <th scope="col" class="w-10 text-center !px-2">
                             No
                         </th>
                         <th scope="col">
                             Barang
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             Kategori
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             No. Batch
                         </th>
-                        <th scope="col">
+                        <th scope="col" class="whitespace-nowrap">
                             No. Rak
                         </th>
-                        <th scope="col" class="text-center w-28">
+                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
                             Expired
                         </th>
-                        <th scope="col" class="text-center w-28">
+                        <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
                             Status Expired
                         </th>
-                        <th scope="col" class="text-right w-28">
+                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
                             Sisa Stok
                         </th>
-                        <th scope="col" class="text-center w-24">
+                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
                             Status Stok
                         </th>
                     </tr>
@@ -897,18 +905,26 @@
                                 {{ $item->no_rak ?? '—' }}
                             </td>
 
-                            <td class="text-center font-mono">
-                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
+                            <td class="text-center font-mono !px-2 whitespace-nowrap">
+                                @if ($expiredDate)
+                                    <div class="leading-tight text-center font-mono text-xs">
+                                        <div>{{ $expiredDate->format('d') }}</div>
+                                        <div>{{ $expiredDate->translatedFormat('F') }}</div>
+                                        <div>{{ $expiredDate->format('Y') }}</div>
+                                    </div>
+                                @else
+                                    —
+                                @endif
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-center !px-2 whitespace-nowrap">
                                 @if (!$expiredDate)
                                     <span class="badge-secondary">
                                         Tidak Ada Tanggal
                                     </span>
                                 @elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today))
                                     <span class="badge-danger">
-                                        Kadaluarsa
+                                        KADALUARSA
                                     </span>
                                 @elseif ($expiredDate->lte($today->copy()->addMonth()))
                                     <span class="badge-orange">
@@ -925,11 +941,11 @@
                                 @endif
                             </td>
 
-                            <td class="table-num font-bold {{ $sisaStokExp <= 0 ? 'text-red-600' : ($sisaStokExp <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }}">
+                            <td class="table-num font-bold {{ $sisaStokExp <= 0 ? 'text-red-600' : ($sisaStokExp <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
                                 {{ number_format($sisaStokExp, 0, ',', '.') }}
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-center !px-2 whitespace-nowrap">
                                 @if ($sisaStokExp <= 0)
                                     <span class="badge-danger">Habis</span>
                                 @elseif ($sisaStokExp <= $stokMinimum)
@@ -944,10 +960,10 @@
                             <td colspan="9" class="p-0">
                                 <div class="empty-state-container">
                                     <div class="empty-state-title">
-                                        Tidak Ada Batch Mendekati Expired
+                                        Tidak Ada Batch Kadaluarsa / Mendekati Expired
                                     </div>
                                     <div class="empty-state-desc">
-                                        Tidak terdapat batch dengan sisa stok aktif yang akan kadaluarsa dalam 90 hari.
+                                        Tidak terdapat batch dengan sisa stok aktif yang sudah kadaluarsa atau akan kadaluarsa dalam 90 hari.
                                     </div>
                                 </div>
                             </td>
@@ -958,13 +974,13 @@
                 @if ($mendekatiExpired->isNotEmpty())
                     <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
                         <tr>
-                            <td colspan="7" class="px-5 py-4 text-right uppercase tracking-wider text-gray-600">
-                                Total Sisa Stok Mendekati Expired:
+                            <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider text-gray-600">
+                                Total Sisa Stok Kadaluarsa & Mendekati Expired:
                             </td>
-                            <td class="table-num px-5 py-4 text-right text-red-600 font-bold">
+                            <td class="table-num !px-2 py-3 text-right text-red-600 font-bold whitespace-nowrap">
                                 {{ number_format($mendekatiExpired->sum(fn ($i) => (int) $i->jumlah - (int) ($i->stok_terjual ?? 0) - (int) ($i->stok_rusak ?? 0)), 0, ',', '.') }}
                             </td>
-                            <td class="px-5 py-4"></td>
+                            <td class="!px-2 py-3"></td>
                         </tr>
                     </tfoot>
                 @endif
