@@ -68,6 +68,14 @@
                 {{ $penjualan->metode_pembayaran }}
             </span>
         </div>
+        @if (strtolower($penjualan->metode_pembayaran) === 'piutang' && $penjualan->due_date)
+            <div class="flex justify-between">
+                <span>Jatuh Tempo</span>
+                <span class="font-semibold">
+                    {{ $penjualan->due_date->format('d M Y') }}
+                </span>
+            </div>
+        @endif
     </div>
 
     <div class="border-t border-dashed pt-2.5 space-y-2">

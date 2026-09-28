@@ -22,53 +22,82 @@
     <!-- ===================================================== -->
     <!-- KOLOM KIRI: PENCARIAN OBAT / BARANG -->
     <!-- ===================================================== -->
-    <div class="lg:col-span-1 card-base p-4">
-
-        <div class="border-b pb-2.5 mb-3">
-            <div class="flex items-center justify-between">
-                <h2 class="text-sm font-bold text-gray-800">
-                    Pencarian Obat / Barang
-                </h2>
-
-                <span class="text-[10px] text-blue-600 font-bold font-mono">
-                    [F2]
-                </span>
-            </div>
-
-            <p class="text-[10px] text-gray-400 mt-0.5">
-                Cari dan pilih barang.
+    <div class="lg:col-span-1 card-base p-4 transaksi-card">
+        <div class="border-b border-blue-100 pb-3 mb-3">
+           <h2 class="text-sm font-bold text-slate-800">
+                Pencarian Obat / Barang
+            </h2>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+                Pilih jenis transaksi, lalu cari dan pilih barang.
             </p>
         </div>
 
-        <div class="mb-3">
+        {{-- Jenis Transaksi - Kolom Kiri --}}
+<div class="mb-3">
+    <label class="block text-[10px] font-semibold text-gray-500 mb-1.5">
+        Jenis Transaksi
+    </label>
+
+    <div class="grid grid-cols-2 gap-2">
+        <label class="jenis-option">
+            <input
+                type="radio"
+                name="jenis_transaksi_kiri"
+                id="jenis-non-resep-kiri"
+                value="non_resep"
+                checked
+            >
+            <x-heroicon-o-document-text class="jenis-icon" />
+            <span>Non Resep</span>
+        </label>
+
+        <label class="jenis-option">
+            <input
+                type="radio"
+                name="jenis_transaksi_kiri"
+                id="jenis-resep-kiri"
+                value="resep"
+            >
+            <x-heroicon-o-clipboard-document-list class="jenis-icon" />
+            <span>Resep</span>
+        </label>
+    </div>
+</div>
+
+        {{-- Pencarian Obat / Barang --}}
+        <div class="mb-2">
             <input
                 type="text"
                 id="cari-barang"
-                placeholder="Cari nama barang..."
-                class="form-input text-xs"
+                placeholder="Cari nama atau kode barang..."
+                class="form-input text-xs rounded-lg border-slate-200
+                bg-slate-50/50 transition-all duration-150
+                focus:border-blue-400 focus:bg-white
+                focus:ring-2 focus:ring-blue-100"
             >
         </div>
 
-        <!-- Hasil pencarian -->
+        {{-- Info jumlah barang tersedia --}}
+        <p id="info-jumlah-barang" class="text-[10px] text-slate-400 mb-2 px-0.5"></p>
+
+        {{-- Hasil pencarian --}}
         <div
             id="daftar-barang"
-            class="space-y-1.5 max-h-[calc(100vh-300px)] overflow-y-auto pr-1"
+            class="space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto pr-1"
         ></div>
-
     </div>
-
 
     <!-- ===================================================== -->
     <!-- KOLOM KANAN: KERANJANG TRANSAKSI -->
     <!-- ===================================================== -->
-    <div class="lg:col-span-2 card-base p-4">
+    <div class="lg:col-span-2 card-base p-4 transaksi-card">
 
-        <div class="border-b pb-2.5 mb-4">
-            <h2 class="text-sm font-bold text-gray-800">
+       <div class="border-b border-blue-100 pb-3 mb-3">
+           <h2 class="text-sm font-bold text-slate-800">
                 Keranjang Transaksi
             </h2>
 
-            <p class="text-[10px] text-gray-400 mt-0.5">
+            <p class="text-[10px] text-slate-500 mt-0.5">
                 Ringkasan transaksi dan pembayaran.
             </p>
         </div>
@@ -79,6 +108,12 @@
             id="form-penjualan"
         >
             @csrf
+            <input
+                type="hidden"
+                name="jenis_transaksi"
+                id="jenis-transaksi-value"
+                value="{{ old('jenis_transaksi', 'non_resep') }}"
+            >
 
             <!-- ================================================= -->
             <!-- NO INVOICE + TANGGAL -->
@@ -114,7 +149,6 @@
                 </div>
 
             </div>
-
 
             <!-- ================================================= -->
             <!-- PELANGGAN / MEMBER -->
@@ -157,42 +191,37 @@
                     type="hidden"
                     name="pelanggan_id"
                     id="selected-pelanggan-id"
-                    value=""
+                    value="{{ old('pelanggan_id') }}"
                 >
 
                 <input
                     type="hidden"
                     name="pelanggan_nama"
                     id="pelanggan-nama"
+                    value="{{ old('pelanggan_nama') }}"
                 >
 
                 <input
                     type="hidden"
                     name="pelanggan_telepon"
                     id="pelanggan-telepon"
+                    value="{{ old('pelanggan_telepon') }}"
                 >
 
             </div>
 
-
-            <!-- ================================================= -->
             <!-- INFO PELANGGAN -->
-            <!-- ================================================= -->
             <div
                 id="info-pelanggan-terpilih"
-                class="mb-3 bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-xs"
+                class="mb-3 bg-blue-50/40 border border-blue-100 rounded-lg p-3 text-xs"
             >
-
                 <div class="flex justify-between items-center">
-
                     <div>
-                        <span class="text-gray-400">
-                            Pelanggan:
-                        </span>
+                        <span class="text-slate-500">Pelanggan:</span>
 
                         <strong
                             id="selected-pelanggan-nama"
-                            class="text-gray-800 ml-1"
+                            class="text-slate-800 ml-1 font-semibold"
                         >
                             Umum
                         </strong>
@@ -210,7 +239,6 @@
                     >
                         &times; Batal
                     </button>
-
                 </div>
 
                 <div
@@ -218,14 +246,95 @@
                     class="mt-1.5 badge-success inline-block hidden"
                 >
                     Diskon Member Aktif:
-                    <span
-                        id="label-diskon-percent"
-                        class="font-bold"
-                    >
-                        0
-                    </span>%
+                    <span id="label-diskon-percent" class="font-bold">0</span>%
+                </div>
+            </div>
+
+            {{-- Jenis Transaksi - Kolom Kanan --}}
+            <div class="mb-4 rounded-lg border border-gray-200 p-3">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">
+                    Jenis Transaksi
+                </label>
+
+                <div class="flex flex-wrap gap-4 text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="jenis_transaksi_kanan"
+                            id="jenis-non-resep-kanan"
+                            value="non_resep"
+                            checked
+                            class="text-blue-600"
+                        >
+                        <span>Non Resep</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="radio"
+                            name="jenis_transaksi_kanan"
+                            id="jenis-resep-kanan"
+                            value="resep"
+                            class="text-blue-600"
+                        >
+                        <span>Resep</span>
+                    </label>
                 </div>
 
+                {{-- Form resep hanya satu kali --}}
+                <div
+                    id="form-data-resep"
+                    class="hidden mt-3 border-t border-gray-200 pt-3 space-y-3"
+                >
+                    <p class="text-[11px] text-amber-700">
+                        Lengkapi data resep sesuai resep kertas yang diberikan pasien.
+                    </p>
+
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                            Nama Dokter <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="nama_dokter"
+                            id="nama-dokter"
+                            maxlength="255"
+                            class="form-input text-xs"
+                            placeholder="Masukkan nama dokter"
+                            value="{{ old('nama_dokter') }}"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                            ID Dokter <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="id_dokter"
+                            id="id-dokter"
+                            maxlength="255"
+                            class="form-input text-xs"
+                            placeholder="Masukkan ID dokter"
+                            value="{{ old('id_dokter') }}"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-500 mb-1">
+                            Alamat Lembaga / Klinik <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="alamat_lembaga"
+                            id="alamat-lembaga"
+                            maxlength="255"
+                            class="form-input text-xs"
+                            placeholder="Masukkan alamat lembaga atau klinik"
+                            value="{{ old('alamat_lembaga') }}"
+                        >
+                    </div>
+                </div>
             </div>
 
 
@@ -287,6 +396,22 @@
                         <option value="piutang">Piutang</option>
                     </select>
 
+                </div>
+
+                <!-- JATUH TEMPO (Tepat di bawah Metode Pembayaran, hanya muncul jika Piutang) -->
+                <div id="bagian-jatuh-tempo" class="hidden">
+                    <label for="input-jatuh-tempo" class="block text-[10px] font-semibold text-gray-500 mb-1">
+                        Jatuh Tempo
+                        <span class="text-[9px] text-gray-400 font-normal ml-1">
+                            (Opsional, default 1 bulan)
+                        </span>
+                    </label>
+                    <input
+                        type="date"
+                        name="due_date"
+                        id="input-jatuh-tempo"
+                        class="form-input text-xs"
+                    >
                 </div>
 
 
@@ -468,6 +593,24 @@
                     </option>
                 </select>
             </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5">
+                    Custom Diskon (%)
+                    <span class="text-gray-400 font-normal">(Opsional)</span>
+                </label>
+                <input
+                    type="number"
+                    id="member-custom-discount"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="Kosongkan untuk diskon default 10%"
+                    class="form-input"
+                >
+                <p class="mt-1 text-[10px] text-gray-400">
+                    Jika dikosongkan, member menggunakan diskon default 10%. Batas maksimal 100%.
+                </p>
+            </div>
             <div class="modal-footer-custom">
                 <button type="button" id="btn-cancel-member" class="btn-secondary">Batal</button>
                 <button type="submit" class="btn-primary">Daftar & Gunakan</button>
@@ -477,6 +620,8 @@
 </div>
 
 <script>
+
+
 let pelanggans = @json($pelanggans);
 const barangs = @json($barangs);
 
@@ -487,8 +632,67 @@ const keranjangKosong = document.getElementById('keranjang-kosong');
 const totalDisplay = document.getElementById('total-display');
 const form = document.getElementById('form-penjualan');
 
-// Pelanggan elements
+// Jenis Transaksi & Data Resep Elements
+const radioNonResepKiri = document.getElementById('jenis-non-resep-kiri');
+const radioResepKiri = document.getElementById('jenis-resep-kiri');
+const radioNonResepKanan = document.getElementById('jenis-non-resep-kanan');
+const radioResepKanan = document.getElementById('jenis-resep-kanan');
+const hiddenJenisTransaksi = document.getElementById('jenis-transaksi-value');
+const formDataResep = document.getElementById('form-data-resep');
+const inputNamaDokter = document.getElementById('nama-dokter');
+const inputIdDokter = document.getElementById('id-dokter');
+const inputAlamatLembaga = document.getElementById('alamat-lembaga');
 
+function getJenisTransaksiAktif() {
+    return hiddenJenisTransaksi?.value || 'non_resep';
+}
+
+function sinkronkanJenisTransaksi(nilai) {
+    const isResep = nilai === 'resep';
+
+    // 1. Perbarui hidden input untuk pengiriman form ke backend
+    if (hiddenJenisTransaksi) {
+        hiddenJenisTransaksi.value = isResep ? 'resep' : 'non_resep';
+    }
+
+    // 2. Sinkronkan radio button kiri dan kanan dua arah
+    if (radioNonResepKiri) radioNonResepKiri.checked = !isResep;
+    if (radioResepKiri) radioResepKiri.checked = isResep;
+    if (radioNonResepKanan) radioNonResepKanan.checked = !isResep;
+    if (radioResepKanan) radioResepKanan.checked = isResep;
+
+    // 3. Tampilkan atau sembunyikan form data resep dokter
+    if (formDataResep) {
+        formDataResep.classList.toggle('hidden', !isResep);
+    }
+
+    // 4. Atur status required dan bersihkan data resep jika Non Resep
+    if (inputNamaDokter) inputNamaDokter.required = isResep;
+    if (inputIdDokter) inputIdDokter.required = isResep;
+    if (inputAlamatLembaga) inputAlamatLembaga.required = isResep;
+
+    if (!isResep) {
+        if (inputNamaDokter) inputNamaDokter.value = '';
+        if (inputIdDokter) inputIdDokter.value = '';
+        if (inputAlamatLembaga) inputAlamatLembaga.value = '';
+    }
+
+    // 5. Perbarui tampilan daftar barang
+    renderDaftarBarang(cariInput ? cariInput.value : '');
+}
+
+// Pasang event listener sinkronisasi dua arah untuk semua radio button
+[radioNonResepKiri, radioResepKiri, radioNonResepKanan, radioResepKanan].forEach(radio => {
+    if (radio) {
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                sinkronkanJenisTransaksi(radio.value);
+            }
+        });
+    }
+});
+
+// Pelanggan elements
 const pelangganSearchInput = document.getElementById('pencarian-pelanggan');
 const pelangganSearchHasil = document.getElementById('hasil-pencarian-pelanggan');
 const selectedPelangganIdInput = document.getElementById('selected-pelanggan-id');
@@ -501,7 +705,6 @@ const badgeDiskonMember = document.getElementById('badge-diskon-member');
 const labelDiskonPercent = document.getElementById('label-diskon-percent');
 
 // Modal elements
-
 const modalDaftarMember = document.getElementById('modal-daftar-member');
 const btnTambahMember = document.getElementById('btn-tambah-member');
 const btnCancelMember = document.getElementById('btn-cancel-member');
@@ -518,20 +721,51 @@ function formatRupiah(angka) {
     return 'Rp ' + Math.round(angka).toLocaleString('id-ID');
 }
 
+const infoJumlahBarang = document.getElementById('info-jumlah-barang');
+
 function renderDaftarBarang(filter = '') {
-    const hasil = barangs.filter(b => b.nama.toLowerCase().includes(filter.toLowerCase()));
+    const query = (typeof filter === 'string' ? filter : (cariInput ? cariInput.value : '')).trim().toLowerCase();
+
+    // Cari berdasarkan nama barang ATAU kode apotek
+    const hasil = query
+        ? barangs.filter(b => {
+            const cariNama = b.nama.toLowerCase().includes(query);
+            const cariKode = b.kode_apotek && b.kode_apotek.toLowerCase().includes(query);
+            return cariNama || cariKode;
+          })
+        : barangs;
+
+    // Update info jumlah barang
+    if (infoJumlahBarang) {
+        if (query) {
+            infoJumlahBarang.textContent = hasil.length > 0
+                ? `${hasil.length} barang ditemukan`
+                : '';
+        } else {
+            infoJumlahBarang.textContent = `${barangs.length} barang tersedia`;
+        }
+    }
+
     daftarBarang.innerHTML = hasil.map(b => `
         <button type="button" data-id="${b.id}"
-            class="btn-pilih-barang w-full text-left border border-gray-150 rounded-lg px-2.5 py-2 text-[11px] hover:bg-blue-50 flex justify-between items-center transition-colors">
-            <span>
-                ${b.nama}
+            class="btn-pilih-barang w-full text-left border border-gray-150 rounded-lg px-2.5 py-2 text-[11px] hover:bg-blue-50 flex justify-between items-center transition-colors gap-2">
+            <span class="min-w-0 flex-1">
+                <span class="block font-medium text-gray-800 truncate">${b.nama}</span>
+                ${b.kode_apotek ? `<span class="font-mono text-[9px] text-slate-400">${b.kode_apotek}</span>` : ''}
                 ${b.butuh_resep ? '<span class="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-1">Resep</span>' : ''}
                 ${b.diskon_custom_percent > 0 ? `<span class="text-[9px] bg-red-50 text-red-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-1">Promo ${b.diskon_custom_percent}%</span>` : ''}
             </span>
-            <span class="text-gray-500 font-medium">Stok ${b.stok} &middot; <strong class="text-gray-700">${formatRupiah(b.harga ?? 0)}</strong></span>
+            <span class="text-gray-500 font-medium shrink-0 text-right">
+                <span class="block">Stok <strong class="text-gray-700">${b.stok}</strong></span>
+                <strong class="text-blue-700 text-[10px]">${formatRupiah(b.harga ?? 0)}</strong>
+            </span>
         </button>
     `).join('') || '<p class="text-xs text-gray-400 py-4 text-center">Barang tidak ditemukan.</p>';
 }
+
+// Inisialisasi kondisi awal sesuai jenis transaksi aktif
+const initialJenis = hiddenJenisTransaksi?.value || 'non_resep';
+sinkronkanJenisTransaksi(initialJenis);
 
 function renderKeranjang() {
     const ids = Object.keys(cart);
@@ -588,6 +822,8 @@ function renderKeranjang() {
 let currentTotal = 0;
 const metodePembayaran = document.getElementById('metode-pembayaran');
 const bagianPembayaranCash = document.getElementById('bagian-pembayaran-cash');
+const bagianJatuhTempo = document.getElementById('bagian-jatuh-tempo');
+const inputJatuhTempo = document.getElementById('input-jatuh-tempo');
 const infoPembayaranPiutang = document.getElementById('info-pembayaran-piutang');
 const bagianPembayaranQris = document.getElementById('bagian-pembayaran-qris');
 const bagianPembayaranDebit = document.getElementById('bagian-pembayaran-debit');
@@ -622,8 +858,13 @@ function updateMetodePembayaran() {
     bagianPembayaranCash.classList.toggle('hidden', metode !== 'cash');
     bagianPembayaranQris.classList.toggle('hidden', metode !== 'qris');
     bagianPembayaranDebit.classList.toggle('hidden', metode !== 'debit');
+    bagianJatuhTempo.classList.toggle('hidden', metode !== 'piutang');
     infoPembayaranPiutang.classList.toggle('hidden', metode !== 'piutang');
     barisKembalian.classList.toggle('hidden', metode !== 'cash');
+
+    if (metode !== 'piutang' && inputJatuhTempo) {
+        inputJatuhTempo.value = '';
+    }
 
     if (metode !== 'qris' && qrisLunas) qrisLunas.checked = false;
     if (metode !== 'debit' && debitLunas) debitLunas.checked = false;
@@ -805,19 +1046,25 @@ btnTambahMember.addEventListener('click', () => {
         memberNamaInput.value = '';
     }
     memberTeleponInput.value = '';
+    memberStatusInput.value = '';
+    if (memberCustomDiscountInput) memberCustomDiscountInput.value = '';
     modalDaftarMember.classList.remove('hidden');
 });
 
 btnCancelMember.addEventListener('click', () => {
     modalDaftarMember.classList.add('hidden');
+    if (memberCustomDiscountInput) memberCustomDiscountInput.value = '';
 });
 
 const btnCloseMemberX = document.getElementById('btn-close-member-x');
 if (btnCloseMemberX) {
     btnCloseMemberX.addEventListener('click', () => {
         modalDaftarMember.classList.add('hidden');
+        if (memberCustomDiscountInput) memberCustomDiscountInput.value = '';
     });
 }
+
+const memberCustomDiscountInput = document.getElementById('member-custom-discount');
 
 formDaftarMember.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -834,11 +1081,30 @@ formDaftarMember.addEventListener('submit', (e) => {
         return;
     }
 
-    axios.post('{{ route("pelanggan.register-member") }}', {
+    // Validasi custom diskon
+    const customDiscountRaw = memberCustomDiscountInput ? memberCustomDiscountInput.value.trim() : '';
+    let customDiscountValue = null;
+    if (customDiscountRaw !== '') {
+        const parsed = parseFloat(customDiscountRaw);
+        if (isNaN(parsed) || parsed < 0 || parsed > 100) {
+            memberError.classList.remove('hidden');
+            memberError.textContent = 'Custom Diskon harus berupa angka antara 0 dan 100.';
+            return;
+        }
+        customDiscountValue = parsed;
+    }
+
+    const payload = {
         nama: nama,
         telepon: telepon,
-        status_member: statusMember
-    })
+        status_member: statusMember,
+    };
+
+    if (customDiscountValue !== null) {
+        payload.custom_discount_percentage = customDiscountValue;
+    }
+
+    axios.post('{{ route("pelanggan.register-member") }}', payload)
     .then(response => {
         if (response.data.success) {
             const memberObj = response.data.member;
@@ -853,12 +1119,17 @@ formDaftarMember.addEventListener('submit', (e) => {
 
             selectPelanggan(memberObj);
             modalDaftarMember.classList.add('hidden');
+            // Reset field custom diskon setelah berhasil
+            if (memberCustomDiscountInput) memberCustomDiscountInput.value = '';
         }
     })
     .catch(error => {
         memberError.classList.remove('hidden');
         if (error.response && error.response.data && error.response.data.message) {
             memberError.textContent = error.response.data.message;
+        } else if (error.response && error.response.data && error.response.data.errors) {
+            const firstError = Object.values(error.response.data.errors)[0];
+            memberError.textContent = Array.isArray(firstError) ? firstError[0] : firstError;
         } else {
             memberError.textContent = 'Terjadi kesalahan sistem. Silakan coba lagi.';
         }
@@ -890,14 +1161,15 @@ daftarBarang.addEventListener('click', (e) => {
 
 keranjangItems.addEventListener('input', (e) => {
     const id = e.target.dataset.id;
-    if (!id) return;
+    if (!id || !cart[id]) return;
 
     if (e.target.classList.contains('input-jumlah')) {
         let v = parseInt(e.target.value) || 1;
         cart[id].jumlah = Math.min(Math.max(v, 1), cart[id].stok);
     }
+
     renderKeranjang();
-});
+}); 
 
 keranjangItems.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-hapus-cart')) {
@@ -911,6 +1183,34 @@ form.addEventListener('submit', (e) => {
         e.preventDefault();
         alert('Keranjang masih kosong.');
         return;
+    }
+
+    const jenisAktif = getJenisTransaksiAktif();
+
+    if (jenisAktif === 'resep') {
+        if (!inputNamaDokter || !inputNamaDokter.value.trim()) {
+            e.preventDefault();
+            alert('Nama Dokter wajib diisi untuk transaksi Resep.');
+            if (inputNamaDokter) inputNamaDokter.focus();
+            return;
+        }
+        if (!inputIdDokter || !inputIdDokter.value.trim()) {
+            e.preventDefault();
+            alert('ID Dokter wajib diisi untuk transaksi Resep.');
+            if (inputIdDokter) inputIdDokter.focus();
+            return;
+        }
+        if (!inputAlamatLembaga || !inputAlamatLembaga.value.trim()) {
+            e.preventDefault();
+            alert('Alamat Lembaga / Klinik wajib diisi untuk transaksi Resep.');
+            if (inputAlamatLembaga) inputAlamatLembaga.focus();
+            return;
+        }
+    } else {
+        // Non Resep: pastikan field dokter tidak berisi data
+        if (inputNamaDokter) inputNamaDokter.value = '';
+        if (inputIdDokter) inputIdDokter.value = '';
+        if (inputAlamatLembaga) inputAlamatLembaga.value = '';
     }
     
     const metode = metodePembayaran.value;
@@ -931,10 +1231,21 @@ form.addEventListener('submit', (e) => {
         }
     }
 
-    if (metode === 'piutang' && !pelangganMemberAktif()) {
-        e.preventDefault();
-        alert('Pembayaran piutang hanya dapat digunakan oleh member yang aktif.');
-        return;
+    if (metode === 'piutang') {
+        if (!pelangganMemberAktif()) {
+            e.preventDefault();
+            alert('Metode pembayaran Piutang hanya dapat digunakan oleh Member.');
+            return;
+        }
+
+        if (inputJatuhTempo && inputJatuhTempo.value) {
+            const inputTgl = form.querySelector('input[name="tanggal"]')?.value;
+            if (inputTgl && inputJatuhTempo.value < inputTgl) {
+                e.preventDefault();
+                alert('Tanggal jatuh tempo tidak boleh lebih awal dari tanggal transaksi.');
+                return;
+            }
+        }
     }
 
     const btn = form.querySelector('button[type="submit"]');
@@ -978,3 +1289,80 @@ renderDaftarBarang();
 renderKeranjang();
 </script>
 @endsection
+
+
+<style>
+    .transaksi-card {
+        background-color: #ffffff !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06) !important;
+    }
+</style>
+
+<style>
+    /* Garis biru untuk jenis transaksi yang dipilih */
+    label:has(> input[id^="jenis-"]:checked) > span,
+    label:has(> input[name^="jenis_transaksi"]:checked) > span {
+        border-color: #2563eb !important;
+    }
+
+    /* Garis abu-abu untuk yang tidak dipilih */
+    label:has(> input[id^="jenis-"]:not(:checked)) > span,
+    label:has(> input[name^="jenis_transaksi"]:not(:checked)) > span {
+        border-color: #d1d5db;
+    }
+</style>
+
+<style>
+    .jenis-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        width: 100%;
+        min-width: 0;
+        padding: 10px 12px;
+
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #ffffff;
+
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    /* Radio tetap terlihat dan berada di dalam tombol */
+    .jenis-option input[type="radio"] {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        flex-shrink: 0;
+        accent-color: #2563eb;
+        cursor: pointer;
+    }
+
+    /* Jarak dan ukuran ikon */
+    .jenis-option .jenis-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Tombol yang dipilih */
+    .jenis-option:has(input:checked) {
+        border-color: #2563eb;
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    /* Hover */
+    .jenis-option:hover {
+        border-color: #93c5fd;
+    }
+</style>

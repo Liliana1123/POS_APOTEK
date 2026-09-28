@@ -6,15 +6,23 @@
     <title>@yield('title', 'POS Apotek')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => \App\Models\InfoApotek::first()
+        );
+    @endphp
+    <link rel="icon" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 min-h-screen flex overflow-x-hidden">
+<body class="bg-gray-100 h-screen overflow-hidden flex">
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-24 lg:hover:w-64 transition-all duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:w-24 lg:hover:w-64 transition-all duration-200 ease-in-out print:hidden">
         <script>
             (function () {
                 var sidebar = document.getElementById('app-sidebar');
@@ -33,11 +41,6 @@
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php
-                $apotek = \Illuminate\Support\Facades\Cache::remember(
-                    'info_apotek',
-                    now()->addHours(6),
-                    fn () => \App\Models\InfoApotek::first()
-                );
                 $abbr = ($apotek?->nama_apotek ?? '')
                     ? collect(explode(' ', $apotek->nama_apotek))
                         ->take(2)
@@ -178,7 +181,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <!-- Top Navbar (Sticky) -->
         <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
             <div class="flex items-center gap-3">
@@ -380,6 +383,141 @@
             }
             updateClock();
             setInterval(updateClock, 1000);
+        })();
+    </script>
+
+    <!-- Auto Logout Saat Idle (30 menit, sinkron antar tab) -->
+    <script>
+        (function () {
+            var IDLE = 30 * 60 * 1000;      // 30 menit tanpa aktivitas
+            var WARN = 30 * 1000;           // peringatan 30 detik sebelum logout
+            var TICK = 5000;                // interval pengecekan tiap 5 detik
+            var KEY_LAST = 'pos_apotek_last_activity';
+            var KEY_LOGOUT = 'pos_apotek_logout_request';
+            var lastTouch = 0;
+            var modal = null;
+            var countdownTimer = null;
+            var loggingOut = false;
+
+            function now() { return Date.now(); }
+
+            function touch() {
+                localStorage.setItem(KEY_LAST, String(now()));
+            }
+
+            function doLogout() {
+                if (loggingOut) return;
+                loggingOut = true;
+                var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                var token = csrfMeta ? csrfMeta.content : '';
+                fetch('{{ route('logout') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({ auto_logout: '1', _token: token }),
+                    credentials: 'same-origin'
+                }).then(function (res) {
+                    if (res.redirected || res.ok) {
+                        window.location.href = res.redirected ? res.url : '/login';
+                    } else {
+                        window.location.href = '/login';
+                    }
+                }).catch(function () {
+                    window.location.href = '/login';
+                });
+            }
+
+            function requestLogout() {
+                localStorage.setItem(KEY_LOGOUT, String(now()));
+                doLogout();
+            }
+
+            function hideWarning() {
+                if (modal) {
+                    modal.remove();
+                    modal = null;
+                }
+                if (countdownTimer) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                }
+            }
+
+            function showWarning(remaining) {
+                if (!modal || !modal.isConnected) {
+                    modal = document.createElement('div');
+                    modal.className = 'modal-backdrop-custom';
+                    modal.innerHTML = '' +
+                        '<div class="modal-container-custom mx-4">' +
+                            '<div class="modal-header-custom">' +
+                                '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
+                            '</div>' +
+                            '<div class="modal-body-custom leading-relaxed">' +
+                                'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
+                            '</div>' +
+                            '<div class="modal-footer-custom">' +
+                                '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
+                            '</div>' +
+                        '</div>';
+                    document.body.appendChild(modal);
+                    var resumeBtn = modal.querySelector('#idle-resume');
+                    if (resumeBtn) resumeBtn.addEventListener('click', touch);
+
+                    var last = parseInt(localStorage.getItem(KEY_LAST) || '0', 10);
+                    var shown = remaining;
+                    if (countdownTimer) clearInterval(countdownTimer);
+                    countdownTimer = setInterval(function () {
+                        var el = modal ? modal.querySelector('#idle-countdown') : null;
+                        if (!el) return;
+                        var secs = Math.ceil((IDLE - (now() - last)) / 1000);
+                        el.textContent = Math.max(secs, 0);
+                    }, 1000);
+                } else {
+                    var el = modal.querySelector('#idle-countdown');
+                    if (el) el.textContent = Math.max(remaining, 0);
+                }
+            }
+
+            function check() {
+                var last = parseInt(localStorage.getItem(KEY_LAST) || '0', 10);
+                if (!last) { touch(); return; }
+                var elapsed = now() - last;
+                if (elapsed >= IDLE) {
+                    requestLogout();
+                } else if (elapsed >= IDLE - WARN) {
+                    showWarning(Math.ceil((IDLE - elapsed) / 1000));
+                } else {
+                    hideWarning();
+                }
+            }
+
+            function activityHandler() {
+                var t = now();
+                if (t - lastTouch >= 2000) {
+                    lastTouch = t;
+                    touch();
+                }
+                hideWarning();
+            }
+
+            touch();
+
+            var EVENTS = ['mousemove', 'mousedown', 'click', 'keydown', 'touchstart', 'scroll'];
+            EVENTS.forEach(function (ev) {
+                document.addEventListener(ev, activityHandler, { passive: true });
+            });
+
+            window.addEventListener('storage', function (e) {
+                if (e.key === KEY_LOGOUT && e.newValue) {
+                    hideWarning();
+                    window.location.href = "/login";
+                }
+            });
+
+            setInterval(check, TICK);
         })();
     </script>
 </body>

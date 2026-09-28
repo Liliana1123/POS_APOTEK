@@ -34,8 +34,9 @@
         <p class="text-caption mt-1">Ringkasan barang masuk dan akumulasi nilai pembelian dari supplier.</p>
     </div>
     <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.penerimaan', array_merge(request()->query(), ['export' => 'csv'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-            Export CSV
+        <a href="{{ route('laporan.penerimaan', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            Ekspor Excel
         </a>
         <button onclick="window.print()" class="btn-primary py-2 px-4">
             Cetak Laporan
@@ -46,7 +47,7 @@
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6 print:hidden">
     <form method="GET" action="{{ route('laporan.penerimaan') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                     No. Faktur
@@ -98,6 +99,21 @@
             </div>
 
             <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Status Pembayaran
+                </label>
+                <select name="status_pembayaran" class="form-input">
+                    <option value="">Semua Status</option>
+                    <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>
+                        Lunas
+                    </option>
+                    <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>
+                        Belum Lunas
+                    </option>
+                </select>
+            </div>
+
+            <div>
                 <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                     Tanggal Penerimaan
                 </label>
@@ -123,7 +139,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai']))
+            @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
                 <a
                     href="{{ route('laporan.penerimaan') }}"
                     class="btn-secondary py-1.5 px-4 flex items-center justify-center"
@@ -142,7 +158,7 @@
 <!-- Laporan Info (Khusus Print) -->
 <div class="hidden print:block mb-6 border-b pb-3">
     <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider">Laporan Penerimaan Barang Masuk</h2>
-    <p class="text-xs text-gray-500 mt-1">Periode: {{ date('d M Y', strtotime($dari)) }} s/d {{ date('d M Y', strtotime($sampai)) }}</p>
+    <p class="text-xs text-gray-500 mt-1">Periode: {{ $dari ? date('d M Y', strtotime($dari)) : 'Semua Periode' }} {{ $sampai ? 's/d ' . date('d M Y', strtotime($sampai)) : '' }}</p>
 </div>
 
 <!-- Table Card -->
@@ -165,7 +181,7 @@
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="table-num text-center">{{ $index + 1 }}</td>
-                        <td class="text-center font-mono text-gray-600">{{ $item->penerimaan->tanggal->format('d M Y') }}</td>
+                        <td class="text-center font-mono text-gray-600">{{ $item->penerimaan->tanggal->translatedFormat('d F Y') }}</td>
                         <td class="font-semibold text-gray-800 font-mono">{{ $item->penerimaan->no_faktur }}</td>
                         <td class="text-gray-600 font-medium">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $item->barang->nama ?? '—' }}</td>
@@ -178,17 +194,17 @@
                         <td colspan="8" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai']))
+                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
                                         Penerimaan Tidak Ditemukan
                                     @else
                                         Penerimaan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai']))
+                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
                                         Tidak ada data penerimaan barang masuk yang cocok dengan filter kriteria Anda.
                                     @else
-                                        Tidak ada data penerimaan barang masuk pada rentang tanggal ini.
+                                        Tidak ada data penerimaan barang masuk yang terdaftar di sistem.
                                     @endif
                                 </div>
                             </div>

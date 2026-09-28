@@ -101,6 +101,19 @@
                                 <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="status_member"></p>
                             </div>
                         </div>
+
+                        <!-- Custom Diskon (%) -->
+                        <div class="flex items-start gap-3 min-w-0 md:col-span-2">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                <x-heroicon-o-tag class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Custom Diskon (%)</label>
+                                <input type="number" name="custom_discount_percentage" min="0" max="100" step="any" class="form-input w-full" placeholder="Kosongkan untuk diskon default 10%">
+                                <p class="text-[10px] text-gray-400 mt-1">Kosongkan untuk diskon default 10%.</p>
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="custom_discount_percentage"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -169,6 +182,10 @@
         form.elements.alamat.value = button.dataset.alamat || '';
         form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
         form.elements.status_member.value = button.dataset.status_member || '';
+        const customDisc = button.dataset.custom_discount_percentage;
+        form.elements.custom_discount_percentage.value = (customDisc !== undefined && customDisc !== null && customDisc !== '')
+            ? parseFloat(customDisc)
+            : '';
         form.dataset.id = button.dataset.id || '';
 
         modal.classList.remove('hidden');

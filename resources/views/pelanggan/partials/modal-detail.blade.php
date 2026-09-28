@@ -81,6 +81,20 @@
                         </div>
                     </div>
 
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <x-heroicon-o-tag class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">Benefit Diskon</div>
+                            <div class="mt-0.5">
+                                <span id="detail-benefit-diskon" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                    Diskon Default 10%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- KANAN -->
@@ -99,13 +113,19 @@
                     </div>
 
                     <div class="rounded-lg bg-blue-50 px-3.5 py-3">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
-                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                    <x-heroicon-o-banknotes class="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-medium text-gray-500">Total Piutang</div>
+                                    <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Piutang</div>
-                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+                            <div class="text-right border-l border-blue-200/60 pl-3">
+                                <div class="text-[10px] font-medium text-gray-500">Jatuh Tempo</div>
+                                <div id="detail-jatuh-tempo" class="mt-0.5 text-xs font-semibold text-gray-800">-</div>
                             </div>
                         </div>
                     </div>
@@ -222,8 +242,10 @@ function openDetailModal(pelangganId) {
     document.getElementById('detail-member-id').textContent = '-';
     document.getElementById('detail-telepon').textContent = '-';
     document.getElementById('detail-alamat').textContent = 'Memuat...';
+    document.getElementById('detail-benefit-diskon').textContent = 'Diskon Default 10%';
     document.getElementById('detail-total-belanja').textContent = 'Rp 0';
     document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
+    document.getElementById('detail-jatuh-tempo').textContent = '-';
     document.getElementById('detail-total-diskon').textContent = 'Rp 0';
     document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
 
@@ -257,8 +279,17 @@ function openDetailModal(pelangganId) {
         document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
         document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
         document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
+        
+        const benefitLabel = pelanggan.benefit_diskon_label || (
+            pelanggan.custom_discount_percentage !== null && pelanggan.custom_discount_percentage !== undefined
+                ? `Diskon ${parseFloat(pelanggan.custom_discount_percentage)}%`
+                : 'Diskon Default 10%'
+        );
+        document.getElementById('detail-benefit-diskon').textContent = benefitLabel;
+
         document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
         document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
+        document.getElementById('detail-jatuh-tempo').textContent = pelanggan.jatuh_tempo || '-';
         document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
         document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
 

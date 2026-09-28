@@ -9,16 +9,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Penjualan extends Model
 {
     protected $fillable = [
-    'user_id',
-    'pelanggan_id',
-    'tanggal',
-    'no_faktur',
-    'total',
-    'metode_pembayaran',
-];
+        'user_id',
+        'pelanggan_id',
+        'tanggal',
+        'no_faktur',
+        'total',
+        'metode_pembayaran',
+        'due_date',
+        'jenis_transaksi',
+        'nama_dokter',
+        'id_dokter',
+        'alamat_lembaga',
+    ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'due_date' => 'date',
     ];
 
     public function user(): BelongsTo
@@ -39,5 +45,10 @@ class Penjualan extends Model
     public function pembayaranPiutang(): HasMany
     {
         return $this->hasMany(PembayaranPiutang::class);
+    }
+
+    public function discountUsages(): HasMany
+    {
+        return $this->hasMany(DiscountUsage::class);
     }
 }

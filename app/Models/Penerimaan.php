@@ -57,6 +57,9 @@ class Penerimaan extends Model
 
     public function totalFaktur(): float
     {
+        if ($this->relationLoaded('detail')) {
+            return (float) $this->detail->sum(fn ($d) => (float) $d->harga_beli * (int) $d->jumlah);
+        }
         return (float) $this->detail()->sum(DB::raw('harga_beli * jumlah'));
     }
 
@@ -72,6 +75,9 @@ class Penerimaan extends Model
 
     public function totalDibayar(): float
     {
+        if ($this->relationLoaded('pembayaran')) {
+            return (float) $this->pembayaran->sum('jumlah');
+        }
         return (float) $this->pembayaran()->sum('jumlah');
     }
 
@@ -93,5 +99,79 @@ class Penerimaan extends Model
         }
 
         return 'LENGKAP';
+    }
+
+    public function hasBarangTerjual(): bool
+    {
+        return $this->detail()
+            ->whereHas('detailPenjualan')
+            ->exists();
+    }
+
+    public function hasBarangRusak(): bool
+    {
+        return $this->detail()
+            ->whereHas('rusak')
+            ->exists();
+    }
+
+    public function hasPembayaranSusulan(): bool
+    {
+        // Pembayaran susulan adalah pembayaran di luar pembayaran utama / pembayaran pertama
+        return $this->pembayaran()
+            ->where(function ($q) {
+                $q->whereNull('keterangan')
+                    ->orWhere('keterangan', '!=', 'Pembayaran pertama');
+            })
+            ->exists()
+            || $this->pembayaran()->count() > 1;
+    }
+
+    public function hasPenerimaanSusulan(): bool
+    {
+        return $this->riwayatPenerimaan()
+            ->where(function ($q) {
+                $q->where('jenis', 'pembatalan')
+                    ->orWhere(function ($sub) {
+                        $sub->where('jenis', 'penerimaan')
+                            ->where('keterangan', '!=', 'Penerimaan awal');
+                    });
+            })
+            ->exists();
+    }
+
+    public function canBeEdited(): bool
+    {
+        return !$this->hasBarangTerjual()
+            && !$this->hasBarangRusak()
+            && !$this->hasPembayaranSusulan()
+            && !$this->hasPenerimaanSusulan();
+    }
+
+    public function alasanTidakBisaDiedit(): ?string
+    {
+        $alasan = [];
+
+        if ($this->hasBarangTerjual()) {
+            $alasan[] = 'sebagian barang sudah terjual';
+        }
+
+        if ($this->hasBarangRusak()) {
+            $alasan[] = 'sebagian barang tercatat sebagai barang rusak';
+        }
+
+        if ($this->hasPembayaranSusulan()) {
+            $alasan[] = 'sudah memiliki pembayaran susulan';
+        }
+
+        if ($this->hasPenerimaanSusulan()) {
+            $alasan[] = 'sudah memiliki penerimaan susulan';
+        }
+
+        if (empty($alasan)) {
+            return null;
+        }
+
+        return 'Penerimaan tidak dapat diedit karena ' . implode(', ', $alasan) . '.';
     }
 }

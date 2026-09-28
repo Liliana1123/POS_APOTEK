@@ -150,15 +150,27 @@
                                 <x-heroicon-o-eye class="w-4 h-4" />
                             </button>
 
-                            <button
-                                type="button"
-                                class="btn-secondary !p-1.5 btn-edit-penerimaan"
-                                style="color: #F59E0B;"
-                                title="Edit"
-                                data-url="{{ route('penerimaan.edit', $penerimaan) }}"
-                            >
-                                <x-heroicon-o-pencil-square class="w-4 h-4" />
-                            </button>
+                            @if ($penerimaan->canBeEdited())
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 btn-edit-penerimaan"
+                                    style="color: #F59E0B;"
+                                    title="Edit Faktur & Detail"
+                                    data-url="{{ route('penerimaan.edit', $penerimaan) }}"
+                                >
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                </button>
+                            @else
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 opacity-40 cursor-not-allowed"
+                                    style="color: #9CA3AF;"
+                                    disabled
+                                    title="{{ $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.' }}"
+                                >
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                </button>
+                            @endif
 
                             @if (!$penerimaan->lunas)
                                 <button
@@ -219,7 +231,7 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->format('d M Y') ?? '—' }}
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '—' }}
                         </div>
                     </td>
 
@@ -249,7 +261,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->format('d M Y') ?? '—' }}
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '—' }}
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -479,25 +491,14 @@
         </div>
 
         <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
-            @if ($errors->any())
-                <div class="alert-danger p-4 mb-6">
-                    <strong class="block text-xs font-bold mb-1.5">Perbaiki kesalahan berikut sebelum menyimpan faktur:</strong>
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('penerimaan.store') }}" method="POST" id="form-penerimaan" class="space-y-6">
+            <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
                 @csrf
 
                 <!-- Form Header Card -->
                 <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Faktur <span class="text-red-500 font-bold">*</span></label>
-                        <input type="text" name="no_faktur" value="{{ old('no_faktur') }}" required
+                        <input type="text" name="no_faktur" id="no_faktur_tambah" value="{{ old('_method') ? '' : old('no_faktur') }}" required
                             class="form-input font-mono font-semibold" placeholder="Nomor faktur masuk...">
                     </div>
                     <div>
@@ -507,32 +508,33 @@
                         <input
                             type="date"
                             name="tanggal_faktur"
-                            value="{{ old('tanggal_faktur') }}"
+                            id="tanggal_faktur_tambah"
+                            value="{{ old('_method') ? now()->format('Y-m-d') : old('tanggal_faktur', now()->format('Y-m-d')) }}"
                             required
                             class="form-input"
                         >
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Terima <span class="text-red-500 font-bold">*</span></label>
-                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
+                        <input type="date" name="tanggal" id="tanggal_tambah" value="{{ old('_method') ? now()->format('Y-m-d') : old('tanggal', now()->format('Y-m-d')) }}" required
                             class="form-input">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Supplier <span class="text-red-500 font-bold">*</span></label>
-                        <select name="supplier_id" id="supplier_id" required class="form-input">
+                        <select name="supplier_id" id="supplier_id_tambah" required class="form-input">
                             <option value="">Pilih Supplier</option>
                             @foreach ($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}" data-telepon="{{ $supplier->telepon }}" @selected(old('supplier_id') == $supplier->id)>{{ $supplier->nama }}</option>
+                                <option value="{{ $supplier->id }}" data-telepon="{{ $supplier->telepon }}" @selected((!old('_method') && old('supplier_id') == $supplier->id))>{{ $supplier->nama }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Telepon Supplier</label>
-                        <input type="text" id="telepon_supplier" class="form-input bg-gray-50" readonly placeholder="Otomatis dari master supplier">
+                        <input type="text" id="telepon_supplier_tambah" class="form-input bg-gray-50" readonly placeholder="Otomatis dari master supplier">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
-                        <input type="text" name="keterangan" value="{{ old('keterangan') }}" class="form-input" placeholder="Keterangan penerimaan (opsional)">
+                        <input type="text" name="keterangan" id="keterangan_tambah" value="{{ old('_method') ? '' : old('keterangan') }}" class="form-input" placeholder="Keterangan penerimaan (opsional)">
                     </div>
                 </div>
 
@@ -540,7 +542,7 @@
                 <div class="card-base p-6">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
-                        <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
+                        <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold">
                             + Tambah Item Barang
                         </button>
                     </div>
@@ -564,41 +566,41 @@
                                         <th scope="col" class="px-3 py-2 text-center"></th>
                                     </tr>
                                 </thead>
-                                <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150"></tbody>
+                                <tbody id="item-rows-tambah" class="table-custom-body divide-y divide-gray-150"></tbody>
                             </table>
                         </div>
                     </div>
 
-                    <p class="text-xs text-gray-400 text-center py-4" id="empty-hint">Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.</p>
+                    <p class="text-xs text-gray-400 text-center py-4" id="empty-hint-tambah">Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.</p>
                     <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
                         <span>Total Belanja:</span>
-                        <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
+                        <span id="total-faktur-tambah" class="text-blue-700 font-mono">Rp 0</span>
                     </div>
                     <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
-                        <label for="ppn">PPN (11%)</label>
-                        <input type="text" id="ppn" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
+                        <label for="ppn_tambah">PPN (11%)</label>
+                        <input type="text" id="ppn_tambah" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
                     </div>
 
                     <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
                         <span>Total Tagihan:</span>
-                        <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
+                        <span id="total-tagihan-tambah" class="text-blue-700 font-mono">Rp 0</span>
                     </div>
                 </div>
 
                 <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Pembayaran Saat Penerimaan</label>
-                        <input type="number" name="pembayaran_pertama" id="pembayaran_pertama" value="{{ old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
+                        <input type="number" name="pembayaran_pertama" id="pembayaran_pertama_tambah" value="{{ old('_method') ? 0 : old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jatuh Tempo</label>
-                        <input type="date" name="jatuh_tempo" value="{{ old('jatuh_tempo') }}" class="form-input">
+                        <input type="date" name="jatuh_tempo" id="jatuh_tempo_tambah" value="{{ old('_method') ? '' : old('jatuh_tempo') }}" class="form-input">
                     </div>
                     <div class="text-xs text-gray-500">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="btn-primary">Simpan Faktur</button>
+                    <button type="submit" id="btn-simpan-tambah" class="btn-primary">Simpan Faktur</button>
                     <button type="button" id="btn-batal-tambah" class="btn-secondary">Batal</button>
                 </div>
             </form>
@@ -606,13 +608,13 @@
     </div>
 </div>
 
-<template id="row-template">
+<template id="row-template-tambah">
     <tr class="item-row hover:bg-gray-50 transition-colors">
         <td class="px-3 py-2">
             <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
-                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
                 @endforeach
             </select>
         </td>
@@ -623,13 +625,13 @@
             <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch...">
         </td>
         <td class="px-3 py-2">
-            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2">
+            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2 expired-field" style="min-width: 130px;">
         </td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0"></td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0" style="min-width: 120px;"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono harga-jual" placeholder="0" style="min-width: 120px;"></td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
-            <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
+            <input type="number" min="0" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
         </td>
         <td class="px-3 py-2">
             <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
@@ -637,7 +639,7 @@
         <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
         <td class="px-3 py-2 text-center">
-            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
+            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row-tambah" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
         </td>
     </tr>
 </template>
@@ -724,7 +726,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (!response.ok) {
-                throw new Error('Gagal memuat form edit.');
+                let errorMsg = 'Gagal memuat form edit.';
+                try {
+                    const errData = await response.json();
+                    if (errData && errData.message) {
+                        errorMsg = errData.message;
+                    }
+                } catch (e) {}
+                throw new Error(errorMsg);
             }
 
            const html = await response.text();
@@ -747,8 +756,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
             content.innerHTML = `
-                <div class="text-center py-8 text-red-600">
-                    Gagal memuat form edit.
+                <div class="p-6 text-center">
+                    <div class="text-amber-600 font-bold mb-2">Pemberitahuan</div>
+                    <div class="text-sm text-gray-700">${error.message || 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.'}</div>
                 </div>
             `;
 
@@ -756,17 +766,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    function tutupModalEdit() {
+        const modal = document.getElementById('modal-edit-penerimaan');
+        const content = document.getElementById('edit-penerimaan-content');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        if (content) {
+            content.innerHTML = '';
+        }
+    }
+
     // Tutup modal Edit
     document.addEventListener('click', function (event) {
         if (event.target.closest('#btn-tutup-edit') || event.target.closest('#btn-batal-edit')) {
-            const modal = document.getElementById('modal-edit-penerimaan');
-
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.setAttribute('aria-hidden', 'true');
-            }
+            tutupModalEdit();
         }
     });
+
+    const modalEditContainer = document.getElementById('modal-edit-penerimaan');
+    if (modalEditContainer) {
+        modalEditContainer.addEventListener('click', function (e) {
+            if (e.target === modalEditContainer) {
+                tutupModalEdit();
+            }
+        });
+    }
 
     // =========================
     // MODAL PEMBAYARAN
@@ -937,14 +963,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnTutupTambah = document.getElementById('btn-tutup-tambah');
     const btnBatalTambah = document.getElementById('btn-batal-tambah');
 
-    let rowIndex = 0;
-    const tbodyTambah = document.getElementById('item-rows');
-    const templateTambah = document.getElementById('row-template');
-    const emptyHintTambah = document.getElementById('empty-hint');
-    const totalFakturTambah = document.getElementById('total-faktur');
-    const ppnTambah = document.getElementById('ppn');
-    const totalTagihanTambah = document.getElementById('total-tagihan');
-    const oldItemsTambah = @json(old('items', []));
+    let rowIndexTambah = 0;
+    const tbodyTambah = document.getElementById('item-rows-tambah');
+    const templateTambah = document.getElementById('row-template-tambah');
+    const emptyHintTambah = document.getElementById('empty-hint-tambah');
+    const totalFakturTambah = document.getElementById('total-faktur-tambah');
+    const ppnTambah = document.getElementById('ppn_tambah');
+    const totalTagihanTambah = document.getElementById('total-tagihan-tambah');
+    const oldItemsTambah = @json(old('_method') ? [] : old('items', []));
 
     function formatRupiah(value) {
         return 'Rp ' + Math.round(value).toLocaleString('id-ID');
@@ -969,13 +995,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function tambahBarisPenerimaan() {
         if (!templateTambah || !tbodyTambah) return;
-        const html = templateTambah.innerHTML.replaceAll('__i__', rowIndex);
+        const html = templateTambah.innerHTML.replaceAll('__i__', rowIndexTambah);
         const tempTr = document.createElement('tbody');
         tempTr.innerHTML = html;
         tbodyTambah.appendChild(tempTr.firstElementChild);
 
-        if (oldItemsTambah[rowIndex]) {
-            const item = oldItemsTambah[rowIndex];
+        if (oldItemsTambah && oldItemsTambah[rowIndexTambah]) {
+            const item = oldItemsTambah[rowIndexTambah];
             const row = tbodyTambah.lastElementChild;
 
             const bId = row.querySelector('[name$="[barang_id]"]');
@@ -1002,14 +1028,42 @@ document.addEventListener('DOMContentLoaded', function () {
             const jt = row.querySelector('[name$="[jumlah_diterima]"]');
             if (jt) jt.value = item.jumlah_diterima || '';
         }
-        rowIndex++;
+        rowIndexTambah++;
         if (emptyHintTambah) emptyHintTambah.style.display = 'none';
+        updateTotalTambah();
+    }
+
+    function resetFormTambah() {
+        const formTambah = document.getElementById('form-tambah-penerimaan');
+        if (!formTambah) return;
+        formTambah.reset();
+
+        const today = new Date().toISOString().split('T')[0];
+        const tglFakturInput = document.getElementById('tanggal_faktur_tambah');
+        const tglTerimaInput = document.getElementById('tanggal_tambah');
+        if (tglFakturInput) tglFakturInput.value = today;
+        if (tglTerimaInput) tglTerimaInput.value = today;
+
+        const telEl = document.getElementById('telepon_supplier_tambah');
+        if (telEl) telEl.value = '';
+
+        if (tbodyTambah) {
+            tbodyTambah.innerHTML = '';
+            rowIndexTambah = 0;
+            tambahBarisPenerimaan();
+        }
         updateTotalTambah();
     }
 
     if (modalTambah) {
         if (btnBukaTambah) {
             btnBukaTambah.addEventListener('click', function () {
+                // Selalu tutup dan bersihkan edit modal bila sedang aktif
+                tutupModalEdit();
+
+                // Selalu pastikan form tambah dalam kondisi bersih
+                resetFormTambah();
+
                 modalTambah.classList.remove('hidden');
                 modalTambah.setAttribute('aria-hidden', 'false');
             });
@@ -1029,14 +1083,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        const btnTambahItem = document.getElementById('btn-tambah-item');
+        const btnTambahItem = document.getElementById('btn-tambah-item-tambah');
         if (btnTambahItem) {
             btnTambahItem.addEventListener('click', tambahBarisPenerimaan);
         }
 
         if (tbodyTambah) {
             tbodyTambah.addEventListener('click', function (e) {
-                if (e.target.closest('.btn-hapus-row')) {
+                if (e.target.closest('.btn-hapus-row-tambah')) {
                     e.target.closest('tr').remove();
                     if (tbodyTambah.children.length === 0 && emptyHintTambah) {
                         emptyHintTambah.style.display = 'block';
@@ -1056,27 +1110,249 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            tbodyTambah.addEventListener('input', updateTotalTambah);
+            tbodyTambah.addEventListener('input', function (e) {
+                updateTotalTambah();
+                const target = e.target;
+                const row = target.closest('tr');
+                if (!row) return;
+
+                if (target.name && target.name.includes('[expired_date]')) {
+                    const tgl = document.getElementById('tanggal_tambah')?.value;
+                    validateRowExpiredTambah(row, tgl);
+                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+                    validateRowHargaTambah(row);
+                }
+            });
+
+            tbodyTambah.addEventListener('change', function (e) {
+                const target = e.target;
+                const row = target.closest('tr');
+                if (!row) return;
+
+                if (target.name && target.name.includes('[expired_date]')) {
+                    const tgl = document.getElementById('tanggal_tambah')?.value;
+                    validateRowExpiredTambah(row, tgl);
+                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
+                    validateRowHargaTambah(row);
+                }
+            });
         }
 
-        const supplierSelectTambah = document.getElementById('supplier_id');
+        const tglTambahInput = document.getElementById('tanggal_tambah');
+        if (tglTambahInput) {
+            tglTambahInput.addEventListener('change', function () {
+                const tgl = this.value;
+                if (tbodyTambah) {
+                    tbodyTambah.querySelectorAll('tr').forEach(row => {
+                        validateRowExpiredTambah(row, tgl);
+                    });
+                }
+            });
+        }
+
+        function setFieldErrorTambah(input, message) {
+            if (!input) return;
+            input.classList.remove('border-gray-300');
+            input.classList.add('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            let errEl = container.querySelector('.field-error-msg');
+            if (!errEl) {
+                errEl = document.createElement('span');
+                errEl.className = 'field-error-msg text-[11px] text-red-600 font-semibold block mt-1 leading-tight whitespace-normal';
+                container.appendChild(errEl);
+            }
+            errEl.textContent = message;
+        }
+
+        function clearFieldErrorTambah(input) {
+            if (!input) return;
+            input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+            input.classList.add('border-gray-300');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            const errEl = container.querySelector('.field-error-msg');
+            if (errEl) {
+                errEl.remove();
+            }
+        }
+
+        function clearAllErrorsTambah() {
+            const form = document.getElementById('form-tambah-penerimaan');
+            if (!form) return;
+            form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+            form.querySelectorAll('.!border-red-500').forEach(input => {
+                input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+                input.classList.add('border-gray-300');
+            });
+            const generalBox = document.getElementById('tambah-general-error');
+            if (generalBox) {
+                generalBox.classList.add('hidden');
+                generalBox.textContent = '';
+            }
+        }
+
+        function validateRowExpiredTambah(row, tanggalPenerimaan) {
+            if (!row) return true;
+            const input = row.querySelector('[name$="[expired_date]"]');
+            if (!input) return true;
+
+            if (input.value && tanggalPenerimaan) {
+                if (input.value < tanggalPenerimaan) {
+                    setFieldErrorTambah(input, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(input);
+            return true;
+        }
+
+        function validateRowHargaTambah(row) {
+            if (!row) return true;
+            const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+            const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+            if (!hbInput || !hjInput) return true;
+
+            const hb = parseFloat(hbInput.value);
+            const hj = parseFloat(hjInput.value);
+
+            if (!isNaN(hb) && !isNaN(hj)) {
+                if (hj < hb) {
+                    setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(hjInput);
+            return true;
+        }
+
+        function validateFormTambah() {
+            clearAllErrorsTambah();
+            let isValid = true;
+            let firstErrorField = null;
+
+            const tglPenerimaan = document.getElementById('tanggal_tambah')?.value || '';
+
+            if (tbodyTambah) {
+                tbodyTambah.querySelectorAll('tr').forEach(row => {
+                    // Validasi Expired
+                    const expInput = row.querySelector('[name$="[expired_date]"]');
+                    if (expInput) {
+                        if (!expInput.value) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        } else if (tglPenerimaan && expInput.value < tglPenerimaan) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        }
+                    }
+
+                    // Validasi Harga
+                    const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+                    const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+                    if (hbInput && hjInput) {
+                        const hb = parseFloat(hbInput.value);
+                        const hj = parseFloat(hjInput.value);
+
+                        if (isNaN(hj) || hj < 0) {
+                            setFieldErrorTambah(hjInput, 'Harga jual wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        } else if (!isNaN(hb) && hj < hb) {
+                            setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        }
+                    }
+                });
+            }
+
+            if (!isValid && firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            return isValid;
+        }
+
+        function applyServerErrorsTambah(errors) {
+            clearAllErrorsTambah();
+            const form = document.getElementById('form-tambah-penerimaan');
+            if (!form) return;
+            let firstErrorField = null;
+            let unmappedMessages = [];
+
+            for (const key in errors) {
+                const msgs = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+                const msg = msgs[0];
+
+                const match = key.match(/^items\.(\d+)\.([a-z_]+)$/);
+                if (match && tbodyTambah) {
+                    const rowIndex = parseInt(match[1], 10);
+                    const fieldName = match[2];
+                    const rows = tbodyTambah.querySelectorAll('tr');
+                    const row = rows[rowIndex];
+                    if (row) {
+                        const input = row.querySelector(`[name$="[${fieldName}]"]`);
+                        if (input) {
+                            setFieldErrorTambah(input, msg);
+                            if (!firstErrorField) firstErrorField = input;
+                            continue;
+                        }
+                    }
+                }
+
+                const topInput = form.querySelector(`[name="${key}"]`);
+                if (topInput) {
+                    setFieldErrorTambah(topInput, msg);
+                    if (!firstErrorField) firstErrorField = topInput;
+                    continue;
+                }
+
+                unmappedMessages.push(msg);
+            }
+
+            const generalBox = document.getElementById('tambah-general-error');
+            if (generalBox && unmappedMessages.length > 0) {
+                generalBox.textContent = unmappedMessages.join(', ');
+                generalBox.classList.remove('hidden');
+            }
+
+            if (firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        const supplierSelectTambah = document.getElementById('supplier_id_tambah');
         if (supplierSelectTambah) {
             supplierSelectTambah.addEventListener('change', function () {
-                const telEl = document.getElementById('telepon_supplier');
+                const telEl = document.getElementById('telepon_supplier_tambah');
                 if (telEl) telEl.value = this.selectedOptions[0]?.dataset.telepon || '';
             });
             if (supplierSelectTambah.value) {
-                const telEl = document.getElementById('telepon_supplier');
+                const telEl = document.getElementById('telepon_supplier_tambah');
                 if (telEl) telEl.value = supplierSelectTambah.selectedOptions[0]?.dataset.telepon || '';
             }
         }
 
-        const formTambah = document.getElementById('form-penerimaan');
+        const formTambah = document.getElementById('form-tambah-penerimaan');
         if (formTambah) {
             formTambah.addEventListener('submit', function (e) {
                 if (tbodyTambah && tbodyTambah.children.length === 0) {
                     e.preventDefault();
                     alert('Tambahkan minimal 1 baris barang.');
+                    return;
+                }
+
+                if (!validateFormTambah()) {
+                    e.preventDefault();
                 }
             });
         }
@@ -1090,10 +1366,13 @@ document.addEventListener('DOMContentLoaded', function () {
             tambahBarisPenerimaan();
         }
 
-        // Buka otomatis jika ada error validasi saat submit form
-        @if ($errors->any())
+        // Buka otomatis jika ada error validasi saat submit form tambah baru
+        @if ($errors->any() && !old('_method'))
             modalTambah.classList.remove('hidden');
             modalTambah.setAttribute('aria-hidden', 'false');
+            setTimeout(() => {
+                applyServerErrorsTambah(@json($errors->toArray()));
+            }, 50);
         @endif
     }
 });

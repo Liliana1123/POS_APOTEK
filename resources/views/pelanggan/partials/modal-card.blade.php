@@ -24,7 +24,7 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Benefit Diskon</span>
-                        <strong class="text-sm text-green-600 font-bold">{{ config('pos.diskon_member', 10) }}% OFF</strong>
+                        <strong id="card-discount" class="text-sm text-green-600 font-bold uppercase tracking-wide">BENEFIT DISKON {{ config('pos.diskon_member', 10) }}%</strong>
                     </div>
                 </div>
             </div>
@@ -40,10 +40,42 @@
     </div>
 </div>
 
+<style>
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #modal-card, #modal-card #print-area, #modal-card #print-area * {
+        visibility: visible !important;
+    }
+    #modal-card {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    #print-area {
+        margin: 20px auto !important;
+        box-shadow: none !important;
+    }
+    .modal-footer-custom {
+        display: none !important;
+    }
+}
+</style>
+
 <script>
-function openCardModal(nama, memberId, totalTransaksi, statusMember) {
+function openCardModal(nama, memberId, totalTransaksi, statusMember, customDiscount) {
     document.getElementById('card-name').textContent = nama || '-';
     document.getElementById('card-id').textContent = memberId || '-';
+
+    const discountVal = (customDiscount !== null && customDiscount !== undefined && customDiscount !== '')
+        ? parseFloat(customDiscount)
+        : {{ config('pos.diskon_member', 10) }};
+    document.getElementById('card-discount').textContent = `BENEFIT DISKON ${discountVal}%`;
 
     const statusElement = document.getElementById('card-status-member');
     statusElement.textContent = statusMember || 'Member Pelanggan Tetap';
