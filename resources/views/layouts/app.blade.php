@@ -15,6 +15,24 @@
     @endphp
     <link rel="icon" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        @media print {
+            aside#app-sidebar,
+            #sidebar-backdrop,
+            nav {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                min-height: 0 !important;
+                max-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                position: absolute !important;
+                top: -9999px !important;
+                left: -9999px !important;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 h-screen overflow-hidden flex">

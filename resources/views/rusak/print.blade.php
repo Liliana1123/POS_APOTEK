@@ -171,29 +171,43 @@
         }
 
         .footer-ttd {
-            margin-top: 50px;
+            margin-top: 40px;
             display: flex;
             justify-content: space-between;
+            width: 100%;
+            padding: 0 40px;
+            box-sizing: border-box;
         }
 
+        .print-signature-box,
         .signature {
             width: 250px;
             text-align: center;
+            font-size: 10px;
+            color: #111;
         }
 
+        .print-signature-title,
         .signature-title {
-            margin-bottom: 2px;
+            margin: 0 !important;
+            font-size: 10px !important;
+            font-weight: normal !important;
         }
 
+        .print-signature-role,
         .signature-role {
-            font-weight: bold;
+            margin: 2px 0 0 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
         }
 
+        .print-signature-space,
         .signature-space {
-            height: 75px;
+            height: 65px !important;
         }
 
-         .print-signature-name {
+        .print-signature-name,
+        .signature-name {
             margin: 0 !important;
             font-size: 11px !important;
             font-weight: 700 !important;
@@ -409,25 +423,25 @@
 
                 @if (!empty($apotek?->no_sipa))
                     <p class="print-signature-sipa">
-                        No. SIPA: {{ $apotek->no_sipa }}
+                        SIPA: {{ $apotek->no_sipa }}
                     </p>
                 @endif
             </div>
 
             {{-- KANAN: PETUGAS BARANG RUSAK --}}
-            <div class="signature">
-                <div class="signature-title">Dicatat oleh,</div>
-                <div class="signature-role">Petugas Barang Rusak</div>
+            <div class="print-signature-box">
+                <p class="print-signature-title">Dicatat oleh,</p>
+                <p class="print-signature-role">Petugas Barang Rusak</p>
 
-                <div class="signature-space"></div>
+                <div class="print-signature-space"></div>
 
-                <div class="signature-name">
+                <p class="print-signature-name">
                     @if (!empty($petugas))
-                        ( {{ $petugas }} )
+                        {{ $petugas }}
                     @else
-                        (__________________)
+                        (____________________)
                     @endif
-                </div>
+                </p>
             </div>
 
         </div>

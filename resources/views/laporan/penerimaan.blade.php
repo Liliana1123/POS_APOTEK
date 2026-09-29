@@ -18,60 +18,67 @@
     @media print {
         @page {
             size: A4 landscape;
-            margin: 4mm 10mm 10mm 10mm;
+            margin: 0;
         }
 
         /* Sembunyikan elemen navigasi, filter, dan tombol web */
         #sidebar-backdrop,
         #toast-success,
+        #toast-error,
         aside,
+        #app-sidebar,
         nav,
         header,
         [role="navigation"],
         .print\:hidden,
         .no-print,
-        .card-base {
+        .page-header-web,
+        .filter-card-web,
+        .card-base,
+        button,
+        .btn-primary,
+        .btn-secondary {
             display: none !important;
-        }
-
-        /* Reset html & body agar multi-page print aktif dan tidak terpotong 1 halaman */
-        html,
-        body {
-            height: auto !important;
-            min-height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-            display: block !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            max-height: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-            background: #fff !important;
-            color: #000 !important;
-            font-family: Arial, Helvetica, sans-serif !important;
+            border: none !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
         }
 
-        /* Override wrapper layouts/app yang menggunakan h-screen overflow-y-auto */
-        div.flex-1.flex.flex-col,
-        .h-screen,
-        .overflow-hidden,
-        .overflow-y-auto,
-        .overflow-x-hidden,
-        .overflow-x-auto {
+        /* Reset html & body: nolkan margin browser agar kop surat menempel rapi di atas */
+        html,
+        body {
+            width: 100% !important;
             height: auto !important;
             min-height: 0 !important;
             max-height: none !important;
             overflow: visible !important;
             display: block !important;
             position: static !important;
-            flex: none !important;
-            padding: 0 !important;
             margin: 0 !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
+            padding: 5mm 10mm 10mm 10mm !important;
+            background: #fff !important;
+            color: #000 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
+        /* Override wrapper layouts/app yang menggunakan h-screen overflow-y-auto */
+        body > div.flex-1,
+        div.flex-1.flex.flex-col,
         main {
+            position: static !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
             height: auto !important;
             min-height: 0 !important;
             max-height: none !important;
@@ -80,9 +87,8 @@
             padding: 0 !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            display: block !important;
+            float: none !important;
+            flex: none !important;
         }
 
         .table-custom-container,
@@ -101,16 +107,15 @@
            KOP APOTEK
         ========================= */
         .print-kop {
-            display: flex !important;
+            display: block !important;
             position: relative;
-            align-items: center;
-            justify-content: center;
-            min-height: 52px;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 5px;
-            margin-bottom: 6px;
+            text-align: center;
+            min-height: 50px;
+            margin: 0 0 6px 0 !important;
+            padding: 0 0 5px 0 !important;
             border-bottom: 1.5px solid #222;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         .print-kop-logo {
@@ -127,10 +132,13 @@
         .print-kop-info {
             width: 100%;
             text-align: center;
+            box-sizing: border-box;
+            padding: 0 54px;
         }
 
         .print-kop-info h1 {
-            margin: 0 0 2px;
+            margin: 0 0 2px !important;
+            padding: 0 !important;
             font-size: 15px;
             line-height: 1.2;
             font-weight: 700;
@@ -139,7 +147,8 @@
         }
 
         .print-kop-info p {
-            margin: 1px 0;
+            margin: 1px 0 !important;
+            padding: 0 !important;
             font-size: 8.5px;
             line-height: 1.25;
             color: #333;
@@ -222,7 +231,7 @@
 
     /* Jangan tampil di layar biasa */
     .print-only {
-        display: none;
+        display: none !important;
     }
 
     @media print {
@@ -404,7 +413,7 @@
             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
             Ekspor Excel
         </a>
-        <button onclick="window.print()" class="btn-primary py-2 px-4">
+        <button onclick="printReport()" class="btn-primary py-2 px-4">
             Cetak Laporan
         </button>
     </div>
@@ -626,4 +635,26 @@
         </div>
     </div>
 </div>
+
+<script>
+    function printReport() {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+        setTimeout(function () {
+            window.print();
+        }, 50);
+    }
+
+    window.addEventListener('beforeprint', function () {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+    });
+</script>
+
 @endsection
