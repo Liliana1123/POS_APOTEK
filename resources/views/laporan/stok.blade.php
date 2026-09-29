@@ -21,7 +21,7 @@
 
         @page {
             size: A4 landscape;
-            margin: 8mm 10mm;
+            margin: 4mm 10mm 10mm 10mm;
         }
 
         /* Sembunyikan elemen navigasi, backdrop, filter, dan header web */
@@ -50,6 +50,8 @@
             display: block !important;
             margin: 0 !important;
             padding: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
             background: #fff !important;
             color: #000 !important;
             font-family: Arial, Helvetica, sans-serif !important;
@@ -71,6 +73,8 @@
             flex: none !important;
             padding: 0 !important;
             margin: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
 
         main {
@@ -80,6 +84,8 @@
             overflow: visible !important;
             margin: 0 !important;
             padding: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
             width: 100% !important;
             max-width: none !important;
             display: block !important;
@@ -108,6 +114,8 @@
             justify-content: center;
 
             min-height: 52px;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
             padding-bottom: 5px;
             margin-bottom: 6px;
 
@@ -365,6 +373,10 @@
     @media print {
         .print-only {
             display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
     }
 

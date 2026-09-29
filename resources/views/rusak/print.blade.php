@@ -193,8 +193,17 @@
             height: 75px;
         }
 
-        .signature-name {
-            font-weight: bold;
+         .print-signature-name {
+            margin: 0 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+        }
+
+        .print-signature-sipa {
+            margin: 3px 0 0 !important;
+            font-size: 9px !important;
+            color: #333 !important;
         }
 
         /* =========================
@@ -384,19 +393,25 @@
         <div class="footer-ttd">
 
             {{-- KIRI: APOTEKER PENANGGUNG JAWAB --}}
-            <div class="signature">
-                <div class="signature-title">Mengetahui,</div>
-                <div class="signature-role">Apoteker Penanggung Jawab</div>
+            <div class="print-signature-box">
+                <p class="print-signature-title">Mengetahui,</p>
+                <p class="print-signature-role">Penanggung Jawab Apotek</p>
 
-                <div class="signature-space"></div>
+                <div class="print-signature-space"></div>
 
-                <div class="signature-name">
+                <p class="print-signature-name">
                     @if (!empty($apotek?->nama_apoteker_pj))
-                        ( {{ $apotek->nama_apoteker_pj }} )
+                        {{ $apotek->nama_apoteker_pj }}
                     @else
-                        (__________________)
+                        (____________________)
                     @endif
-                </div>
+                </p>
+
+                @if (!empty($apotek?->no_sipa))
+                    <p class="print-signature-sipa">
+                        No. SIPA: {{ $apotek->no_sipa }}
+                    </p>
+                @endif
             </div>
 
             {{-- KANAN: PETUGAS BARANG RUSAK --}}
