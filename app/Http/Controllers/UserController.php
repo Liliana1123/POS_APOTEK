@@ -74,7 +74,7 @@ class UserController extends Controller
         $this->guardIzinRole($request, $data['role']);
 
         if ($user->isSuperAdmin() && ! $request->user()->isSuperAdmin()) {
-            return back()->with('error', 'Akun Superadmin hanya bisa diubah oleh Superadmin.');
+            abort(403, 'Akun Superadmin hanya bisa diubah oleh Superadmin.');
         }
 
         $update = [
@@ -109,7 +109,7 @@ class UserController extends Controller
         }
 
         if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
-            return back()->with('error', 'Akun Superadmin hanya bisa dinonaktifkan oleh Superadmin.');
+            abort(403, 'Akun Superadmin hanya bisa dinonaktifkan oleh Superadmin.');
         }
 
         $user->update(['aktif' => ! $user->aktif]);
@@ -131,7 +131,7 @@ class UserController extends Controller
         }
 
         if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
-            return back()->with('error', 'Akun Superadmin hanya bisa dihapus oleh Superadmin.');
+            abort(403, 'Akun Superadmin hanya bisa dihapus oleh Superadmin.');
         }
 
         if ($user->penerimaan()->exists() || $user->penjualan()->exists()) {

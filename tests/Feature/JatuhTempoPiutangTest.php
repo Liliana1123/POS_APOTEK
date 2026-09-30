@@ -283,7 +283,7 @@ class JatuhTempoPiutangTest extends TestCase
     {
         $data = $this->setupData();
 
-        $this->actingAs($data['user'])->post(route('penjualan.store'), [
+        $storeResponse = $this->actingAs($data['user'])->post(route('penjualan.store'), [
             'pelanggan_id' => $data['member']->id,
             'tanggal' => '2026-09-24',
             'no_faktur' => 'INV-20260924-0008',
@@ -295,7 +295,10 @@ class JatuhTempoPiutangTest extends TestCase
             ],
         ]);
 
+        $storeResponse->assertRedirect();
+
         $penjualan = Penjualan::where('no_faktur', 'INV-20260924-0008')->first();
+        $this->assertNotNull($penjualan);
 
         // Lakukan pembayaran lunas
         $bayarResponse = $this->actingAs($data['user'])->postJson(route('penjualan.piutang.payments.store', $penjualan), [

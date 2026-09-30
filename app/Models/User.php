@@ -12,6 +12,10 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $casts = [
+        'aktif' => 'boolean',
+    ];
+
     protected ?array $hakAksesCache = null;
 
     public function isAdmin(): bool
@@ -29,6 +33,11 @@ class User extends Authenticatable
         return $this->role === 'kasir';
     }
 
+    public function isGudang(): bool
+    {
+        return $this->role === 'gudang';
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 'superadmin';
@@ -42,7 +51,7 @@ class User extends Authenticatable
 
         $row = $this->hakAkses()[$slug] ?? false;
 
-        return $row['view'] || $row['manage'];
+        return is_array($row) && ($row['view'] ?? false);
     }
 
     public function canManage(string $slug): bool

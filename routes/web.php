@@ -35,61 +35,104 @@ Route::get('/', function () {
 
 // ===== Data Master =====
 
+// Resource master dipisah dua level: halaman daftar (lihat) boleh dibuka role
+// yang cuma punya akses baca, aksi tambah/ubah/hapus butuh kelola.
+//
+// Urutan group di bawah itu wajib: group "kelola" didaftarkan sebelum group
+// "lihat" pada tiap resource. Kalau route parameterized lebih dulu, `barang/create`
+// akan tertangkap `barang/{barang}` (show) dan hasilnya 404 dari model binding.
+
+Route::middleware(['auth', 'permission:master.kategori:kelola'])->group(function () {
+    Route::resource('kategori', KategoriController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+});
 Route::middleware(['auth', 'permission:master.kategori'])->group(function () {
-    Route::resource('kategori', KategoriController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('kategori', [KategoriController::class, 'index'])->name('kategori.index');
 });
 
+Route::middleware(['auth', 'permission:master.satuan:kelola'])->group(function () {
+    Route::resource('satuan', SatuanController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+});
 Route::middleware(['auth', 'permission:master.satuan'])->group(function () {
-    Route::resource('satuan', SatuanController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('satuan', [SatuanController::class, 'index'])->name('satuan.index');
 });
 
+Route::middleware(['auth', 'permission:master.pabrik:kelola'])->group(function () {
+    Route::resource('pabrik', PabrikController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+});
 Route::middleware(['auth', 'permission:master.pabrik'])->group(function () {
-    Route::resource('pabrik', PabrikController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('pabrik', [PabrikController::class, 'index'])->name('pabrik.index');
 });
 
+Route::middleware(['auth', 'permission:master.supplier:kelola'])->group(function () {
+    Route::resource('supplier', SupplierController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+});
 Route::middleware(['auth', 'permission:master.supplier'])->group(function () {
-    Route::resource('supplier', SupplierController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('supplier', [SupplierController::class, 'index'])->name('supplier.index');
 });
 
+Route::middleware(['auth', 'permission:master.pelanggan:kelola'])->group(function () {
+    Route::resource('pelanggan', PelangganController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::post('pelanggan/register-member', [PelangganController::class, 'registerMember'])->name('pelanggan.register-member');
+});
 Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
-    Route::resource('pelanggan', PelangganController::class);
-});
-
-Route::middleware(['auth', 'permission:master.barang'])->group(function () {
-    Route::resource('barang', BarangController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::get('barang/import-template', [BarangController::class, 'importTemplate'])->name('barang.import-template');
+    Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::get('pelanggan/{pelanggan}/piutang', [PembayaranPiutangController::class, 'pelanggan'])->name('pelanggan.piutang');
+    Route::get('pelanggan/{pelanggan}', [PelangganController::class, 'show'])->name('pelanggan.show');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {
+    Route::resource('barang', BarangController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('barang/export', [BarangController::class, 'export'])->name('barang.export');
     Route::post('barang/import', [BarangController::class, 'import'])->name('barang.import');
 });
+Route::middleware(['auth', 'permission:master.barang'])->group(function () {
+    Route::get('barang', [BarangController::class, 'index'])->name('barang.index');
+    Route::get('barang/import-template', [BarangController::class, 'importTemplate'])->name('barang.import-template');
+    Route::get('barang/{barang}', [BarangController::class, 'show'])->name('barang.show');
+});
 
+Route::middleware(['auth', 'permission:master.custom-discount:kelola'])->group(function () {
+    Route::resource('custom-discount', CustomDiscountController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::post('custom-discount/{custom_discount}/toggle', [CustomDiscountController::class, 'toggle'])->name('custom-discount.toggle');
+});
 Route::middleware(['auth', 'permission:master.custom-discount'])->group(function () {
-    Route::resource('custom-discount', CustomDiscountController::class)->except('show');
+    Route::get('custom-discount', [CustomDiscountController::class, 'index'])->name('custom-discount.index');
 });
 
 // ===== Transaksi =====
 
-Route::middleware(['auth', 'permission:transaksi.penjualan'])->group(function () {
-    Route::resource('penjualan', PenjualanController::class)->only(['index', 'create', 'store', 'show']);
-    Route::get('penjualan/{penjualan}/detail', [PenjualanController::class, 'detail'])->name('penjualan.detail');
+Route::middleware(['auth', 'permission:transaksi.penjualan:kelola'])->group(function () {
+    Route::get('penjualan/create', [PenjualanController::class, 'create'])->name('penjualan.create');
+    Route::post('penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
     Route::get('penjualan/{penjualan}/piutang/payment-form', [PembayaranPiutangController::class, 'form'])->name('penjualan.piutang.payments.form');
     Route::post('penjualan/{penjualan}/piutang/payments', [PembayaranPiutangController::class, 'store'])->name('penjualan.piutang.payments.store');
 });
+Route::middleware(['auth', 'permission:transaksi.penjualan'])->group(function () {
+    Route::get('penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
+    Route::get('penjualan/{penjualan}/detail', [PenjualanController::class, 'detail'])->name('penjualan.detail');
+    Route::get('penjualan/{penjualan}', [PenjualanController::class, 'show'])->name('penjualan.show');
+});
 
-Route::middleware(['auth', 'permission:transaksi.penerimaan'])->group(function () {
-    Route::resource('penerimaan', PenerimaanController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::get('penerimaan/{penerimaan}/print', [PenerimaanController::class, 'print'])->name('penerimaan.print');
+Route::middleware(['auth', 'permission:transaksi.penerimaan:kelola'])->group(function () {
+    Route::resource('penerimaan', PenerimaanController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('penerimaan/{penerimaan}/payment-form', [PenerimaanController::class, 'paymentForm'])->name('penerimaan.payments.form');
     Route::post('penerimaan/{penerimaan}/payments', [PenerimaanController::class, 'paymentStore'])->name('penerimaan.payments.store');
     Route::get('penerimaan/{penerimaan}/susulan-form', [PenerimaanController::class, 'susulanForm'])->name('penerimaan.susulan.form');
     Route::post('penerimaan/{penerimaan}/susulan', [PenerimaanController::class, 'susulanStore'])->name('penerimaan.susulan.store');
 });
+Route::middleware(['auth', 'permission:transaksi.penerimaan'])->group(function () {
+    Route::get('penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan.index');
+    Route::get('penerimaan/{penerimaan}/print', [PenerimaanController::class, 'print'])->name('penerimaan.print');
+    Route::get('penerimaan/{penerimaan}', [PenerimaanController::class, 'show'])->name('penerimaan.show');
+});
 
+Route::middleware(['auth', 'permission:transaksi.rusak:kelola'])->group(function () {
+    Route::resource('rusak', RusakController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
+});
 Route::middleware(['auth', 'permission:transaksi.rusak'])->group(function () {
-    Route::resource('rusak', RusakController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('rusak', [RusakController::class, 'index'])->name('rusak.index');
     Route::get('rusak/{rusak}/print', [RusakController::class, 'print'])->name('rusak.print');
+    Route::get('rusak/{rusak}', [RusakController::class, 'show'])->name('rusak.show');
 });
 
 // ===== Laporan =====
@@ -120,9 +163,12 @@ Route::middleware(['auth', 'permission:laporan.diskon'])->prefix('laporan')->nam
 
 // ===== Sistem =====
 
-Route::middleware(['auth', 'permission:sistem.kelola-user'])->group(function () {
-    Route::resource('user', UserController::class)->except('show');
+Route::middleware(['auth', 'permission:sistem.kelola-user:kelola'])->group(function () {
+    Route::resource('user', UserController::class)->except(['index', 'show']);
     Route::patch('user/{user}/toggle', [UserController::class, 'toggle'])->name('user.toggle');
+});
+Route::middleware(['auth', 'permission:sistem.kelola-user'])->group(function () {
+    Route::get('user', [UserController::class, 'index'])->name('user.index');
 });
 
 Route::middleware(['auth', 'permission:sistem.pengaturan:kelola'])->group(function () {
@@ -141,13 +187,3 @@ Route::middleware(['auth', 'superadmin'])->prefix('izin-akses')->name('permissio
     Route::post('/', [PermissionController::class, 'update'])->name('update');
     Route::post('reset', [PermissionController::class, 'reset'])->name('reset');
 });
-
-Route::get(
-    'pelanggan/{pelanggan}/piutang',
-    [PembayaranPiutangController::class, 'pelanggan']
-)->middleware(['auth', 'permission:master.pelanggan'])
-    ->name('pelanggan.piutang');
-
-Route::post('pelanggan/register-member', [PelangganController::class, 'registerMember'])
-    ->middleware(['auth', 'permission:master.pelanggan:kelola'])
-    ->name('pelanggan.register-member');

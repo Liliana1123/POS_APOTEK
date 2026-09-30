@@ -3,7 +3,7 @@
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: superadmin, admin, apoteker, kasir.">
+<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: {{ collect(config('permission.roles'))->pluck('label')->implode(', ') }}.">
     <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah User</span>
@@ -75,6 +75,7 @@
         'superadmin' => 'danger',
         'admin' => 'info',
         'apoteker' => 'warning',
+        'gudang' => 'secondary',
         'kasir' => 'success',
         default => 'gray',
     };

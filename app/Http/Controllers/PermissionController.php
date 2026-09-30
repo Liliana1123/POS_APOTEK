@@ -37,7 +37,6 @@ class PermissionController extends Controller
         $manage = $data['manage'] ?? [];
 
         $rows = [];
-        $now = now();
 
         foreach ($permissions as $slug => $id) {
             foreach ($roles as $role => $meta) {
@@ -53,8 +52,6 @@ class PermissionController extends Controller
                     'permission_id' => $id,
                     'view' => $viewOn,
                     'manage' => $manageOn,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ];
             }
         }
@@ -63,7 +60,7 @@ class PermissionController extends Controller
             DB::table('role_permissions')->upsert(
                 $chunk,
                 ['role', 'permission_id'],
-                ['view', 'manage', 'updated_at']
+                ['view', 'manage']
             );
         }
 
@@ -82,7 +79,6 @@ class PermissionController extends Controller
 
         $permissions = Permission::pluck('id', 'slug');
         $defaults = config('permission.defaults');
-        $now = now();
         $rows = [];
 
         foreach ($defaults as $role => $spec) {
@@ -95,8 +91,6 @@ class PermissionController extends Controller
                     'permission_id' => $id,
                     'view' => $manage || $level === 'lihat',
                     'manage' => $manage,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ];
             }
         }
@@ -105,7 +99,7 @@ class PermissionController extends Controller
             DB::table('role_permissions')->upsert(
                 $chunk,
                 ['role', 'permission_id'],
-                ['view', 'manage', 'updated_at']
+                ['view', 'manage']
             );
         }
 

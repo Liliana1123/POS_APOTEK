@@ -11,6 +11,10 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        // Wajib IPv4 eksplisit. Default Vite menulis public/hot berisi
+        // "http://[::1]:5173" (IPv6). Kalau IPv6 mati/diblokir di browser atau
+        // OS, @vite gagal ambil CSS/JS dan seluruh halaman tampil putih.
+        host: '127.0.0.1',
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
