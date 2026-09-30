@@ -15,6 +15,7 @@ use App\Http\Controllers\PembayaranPiutangController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\CustomDiscountController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PengaturanController;
 
 use Illuminate\Support\Facades\Route;
@@ -131,6 +132,14 @@ Route::middleware(['auth', 'permission:sistem.pengaturan:kelola'])->group(functi
 
 Route::middleware(['auth', 'permission:sistem.activity-log'])->group(function () {
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log');
+});
+
+// Izin Akses tidak lewat permission, hanya superadmin. Kalau lewat permission,
+// superadmin bisa mengunci dirinya sendiri dengan mematikan aksesnya.
+Route::middleware(['auth', 'superadmin'])->prefix('izin-akses')->name('permission.')->group(function () {
+    Route::get('/', [PermissionController::class, 'index'])->name('index');
+    Route::post('/', [PermissionController::class, 'update'])->name('update');
+    Route::post('reset', [PermissionController::class, 'reset'])->name('reset');
 });
 
 Route::get(
