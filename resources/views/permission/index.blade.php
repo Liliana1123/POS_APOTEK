@@ -51,13 +51,7 @@
                                                             data-permission-toggle
                                                             data-role="{{ $role }}"
                                                             data-permission="{{ $perm->id }}"
-                                                            class="peer sr-only">
-                                                        <span class="relative h-5 w-9 rounded-full bg-gray-300 transition-colors
-                                                                    peer-checked:bg-blue-600 peer-focus-visible:ring-2
-                                                                    peer-focus-visible:ring-blue-400 peer-focus-visible:ring-offset-1
-                                                                    after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4
-                                                                    after:rounded-full after:bg-white after:transition-transform
-                                                                    peer-checked:after:translate-x-4"></span>
+                                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                                         <span class="text-xs text-gray-600 font-sans">{{ $label }}</span>
                                                     </label>
                                                 @endforeach

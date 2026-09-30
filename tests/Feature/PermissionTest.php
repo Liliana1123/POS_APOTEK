@@ -189,4 +189,41 @@ class PermissionTest extends TestCase
         $this->get(route('user.index'))->assertRedirect(route('login'));
         $this->get(route('permission.index'))->assertRedirect(route('login'));
     }
+
+    public function test_toggle_izin_terlihat_dan_tidak_memicu_submit_otomatis(): void
+    {
+        $super = $this->buatUser('superadmin');
+
+        $html = $this->actingAs($super)->get(route('permission.index'))->assertOk()->getContent();
+
+        $toggle = substr_count($html, 'data-permission-toggle');
+        $this->assertSame(
+            Permission::count() * (count(config('permission.roles')) - 1) * 2,
+            $toggle
+        );
+
+        $this->assertStringNotContainsString('sr-only', $html);
+        $this->assertStringNotContainsString('peer-checked', $html);
+
+        $this->assertStringNotContainsString('onchange=', $html);
+    }
+
+    public function test_simpan_izin_lalu_kembali_ke_halaman_tetap_terbuka(): void
+    {
+        $super = $this->buatUser('superadmin');
+
+        $response = $this->actingAs($super)
+            ->from(route('permission.index'))
+            ->post(route('permission.update'), [
+                'view' => ['kasir' => [Permission::where('slug', 'laporan.stok')->value('id') => 1]],
+            ]);
+
+        $response->assertRedirect(route('permission.index'));
+        $response->assertSessionHas('success');
+
+        $this->actingAs($super)
+            ->get(route('permission.index'))
+            ->assertOk()
+            ->assertSee('Izin akses berhasil disimpan');
+    }
 }
