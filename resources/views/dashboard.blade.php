@@ -382,13 +382,30 @@
         <h3 class="text-sm font-bold text-gray-900">Action Center</h3>
     </div>
     <div class="space-y-2">
-        <a href="{{ $actionCenter['critical']['route'] }}" class="action-alert-card critical block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Critical</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['critical']['count'] }} · {{ $actionCenter['critical']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
-        <a href="{{ $actionCenter['attention']['route'] }}" class="action-alert-card attention block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-amber-100 text-amber-700">Attention</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['attention']['count'] }} · {{ $actionCenter['attention']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-amber-400" /></div></a>
-        <a href="{{ $actionCenter['monitoring']['route'] }}" class="action-alert-card monitoring block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-sky-100 text-sky-700">Monitoring</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['monitoring']['count'] }} · {{ $actionCenter['monitoring']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-sky-400" /></div></a>
-        <a href="{{ $actionCenter['overdue']['route'] }}" class="action-alert-card overdue block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Overdue</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['overdue']['count'] }} · {{ $actionCenter['overdue']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
-        <a href="{{ $actionCenter['piutang']['route'] }}" class="action-alert-card piutang block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-purple-100 text-purple-700">Piutang</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['piutang']['count'] }} · {{ $actionCenter['piutang']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-purple-400" /></div></a>
+        @php
+            $acakWarna = [
+                'critical' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'critical'],
+                'attention' => ['bg-amber-100 text-amber-700', 'text-amber-400', 'attention'],
+                'monitoring' => ['bg-sky-100 text-sky-700', 'text-sky-400', 'monitoring'],
+                'overdue' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'overdue'],
+                'piutang' => ['bg-purple-100 text-purple-700', 'text-purple-400', 'piutang'],
+            ];
+        @endphp
+        @foreach ($actionCenter as $kunci => $item)
+            @php [$chip, $ikon, $kelas] = $acakWarna[$kunci]; @endphp
+            <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="badge-chip {{ $chip }}">{{ ucfirst($kunci) }}</span>
+                        <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
+                    </div>
+                    <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
+                </div>
+            </a>
+        @endforeach
     </div>
 </div>
+@if (auth()->user()->canManage('transaksi.penjualan'))
 <div class="cashier-card dashboard-card p-3 bg-blue-700 text-white">
     <a href="{{ route('penjualan.create') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors">
         <x-heroicon-o-calculator class="w-4 h-4" />
@@ -396,6 +413,7 @@
         <x-heroicon-o-chevron-right class="w-4 h-4 ml-auto" />
     </a>
 </div></div>
+@endif
     </div>
 
     {{-- ============================================================ --}}

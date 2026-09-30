@@ -80,23 +80,47 @@
                     variant="top"
                 />
 
-                <!-- Group: Master Data -->
                 @php
+                    $u = auth()->user();
                     $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
-                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
+                        || request()->routeIs('permission.*');
+                    $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
+                        || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
+                        || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
+                        || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan')
+                        || $u->isSuperAdmin();
                 @endphp
-                @if (auth()->user()->isAdmin())
+
+                <!-- Group: Master Data -->
+                @if ($adaMaster)
                     <x-sidebar-group name="master" icon="cube" icon-type="s" label="Data Master" :has-active="$masterActive">
-                        <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
-                        <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
-                        <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
-                        <x-nav-link route="pabrik.index" pattern="pabrik.*" icon="building-storefront" label="Pabrik" />
-                        <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
-                        <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
-                        <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
-                        <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                        @if ($u->hasPermission('master.barang'))
+                            <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
+                        @endif
+                        @if ($u->hasPermission('master.kategori'))
+                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                        @endif
+                        @if ($u->hasPermission('master.satuan'))
+                            <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
+                        @endif
+                        @if ($u->hasPermission('master.pabrik'))
+                            <x-nav-link route="pabrik.index" pattern="pabrik.*" icon="building-storefront" label="Pabrik" />
+                        @endif
+                        @if ($u->hasPermission('master.supplier'))
+                            <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
+                        @endif
+                        @if ($u->hasPermission('master.pelanggan'))
+                            <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
+                        @endif
+                        @if ($u->hasPermission('sistem.kelola-user'))
+                            <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
+                        @endif
+                        @if ($u->hasPermission('sistem.pengaturan'))
+                            <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                        @endif
                     </x-sidebar-group>
                 @endif
 
@@ -106,33 +130,61 @@
                         || request()->routeIs('rusak.*');
                 @endphp
                 <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
-                    <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
-                    @if (auth()->user()->isAdmin())
+                    @if ($u->hasPermission('transaksi.penjualan'))
+                        <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
+                    @endif
+                    @if ($u->hasPermission('transaksi.penerimaan'))
                         <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
+                    @endif
+                    @if ($u->hasPermission('transaksi.rusak'))
                         <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
                     @endif
                 </x-sidebar-group>
 
-                <!-- Group: Laporan (Admin Only) -->
-                @if (auth()->user()->isAdmin())
+                <!-- Group: Laporan -->
+                @if ($u->hasPermission('laporan.stok') || $u->hasPermission('laporan.penerimaan')
+                    || $u->hasPermission('laporan.penjualan') || $u->hasPermission('laporan.rusak')
+                    || $u->hasPermission('laporan.laba-rugi') || $u->hasPermission('laporan.diskon'))
                     <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
-                        <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
-                        <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
-                        <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
-                        <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
-                        <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
-                        <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                        @if ($u->hasPermission('laporan.stok'))
+                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                        @endif
+                        @if ($u->hasPermission('laporan.penerimaan'))
+                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                        @endif
+                        @if ($u->hasPermission('laporan.penjualan'))
+                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                        @endif
+                        @if ($u->hasPermission('laporan.rusak'))
+                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                        @endif
+                        @if ($u->hasPermission('laporan.laba-rugi'))
+                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                        @endif
+                        @if ($u->hasPermission('laporan.diskon'))
+                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                        @endif
                     </x-sidebar-group>
                 @endif
 
-                <!-- Group: Promo & Log (Admin Only) -->
-                @if (auth()->user()->isAdmin())
+                <!-- Group: Promo & Log -->
+                @if ($u->hasPermission('master.custom-discount') || $u->hasPermission('sistem.activity-log'))
                     @php
                         $promoActive = request()->routeIs('custom-discount.*') || request()->routeIs('activity-log');
                     @endphp
                     <x-sidebar-group name="promo" icon="gift" icon-type="s" label="Promo & Log" :has-active="$promoActive">
-                        <x-nav-link route="custom-discount.index" pattern="custom-discount.*" icon="tag" label="Custom Discount" />
-                        <x-nav-link route="activity-log" icon="book-open" label="Log Aktivitas" />
+                        @if ($u->hasPermission('master.custom-discount'))
+                            <x-nav-link route="custom-discount.index" pattern="custom-discount.*" icon="tag" label="Custom Discount" />
+                        @endif
+                        @if ($u->hasPermission('sistem.activity-log'))
+                            <x-nav-link route="activity-log" icon="book-open" label="Log Aktivitas" />
+                        @endif
+                    </x-sidebar-group>
+                @endif
+
+                @if ($u->isSuperAdmin())
+                    <x-sidebar-group name="izin" icon="shield-check" icon-type="s" label="Izin Akses" :has-active="request()->routeIs('permission.*')">
+                        <x-nav-link route="permission.index" pattern="permission.*" icon="adjustments-horizontal" label="Izin Akses" />
                     </x-sidebar-group>
                 @endif
 
