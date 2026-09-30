@@ -48,9 +48,6 @@
                                                             name="{{ $level }}[{{ $role }}][{{ $perm->id }}]"
                                                             value="1"
                                                             @checked($matrix[$perm->id][$role][$level])
-                                                            data-permission-toggle
-                                                            data-role="{{ $role }}"
-                                                            data-permission="{{ $perm->id }}"
                                                             class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                                         <span class="text-xs text-gray-600 font-sans">{{ $label }}</span>
                                                     </label>

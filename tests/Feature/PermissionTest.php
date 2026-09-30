@@ -196,7 +196,7 @@ class PermissionTest extends TestCase
 
         $html = $this->actingAs($super)->get(route('permission.index'))->assertOk()->getContent();
 
-        $toggle = substr_count($html, 'data-permission-toggle');
+        $toggle = preg_match_all('/name="(?:view|manage)\[[a-z]+\]\[\d+\]"/', $html);
         $this->assertSame(
             Permission::count() * (count(config('permission.roles')) - 1) * 2,
             $toggle
