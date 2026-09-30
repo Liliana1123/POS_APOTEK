@@ -31,8 +31,10 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'apoteker', 'kasir'])],
+            'role' => ['required', Rule::in(array_keys(config('permission.roles')))],
         ]);
+
+        $this->guardIzinRole($request, $data['role']);
 
         $newUser = User::create([
             'name' => $data['name'],
@@ -66,8 +68,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'apoteker', 'kasir'])],
+            'role' => ['required', Rule::in(array_keys(config('permission.roles')))],
         ]);
+
+        $this->guardIzinRole($request, $data['role']);
+
+        if ($user->isSuperAdmin() && ! $request->user()->isSuperAdmin()) {
+            return back()->with('error', 'Akun Superadmin hanya bisa diubah oleh Superadmin.');
+        }
 
         $update = [
             'name' => $data['name'],
@@ -100,6 +108,10 @@ class UserController extends Controller
             return back()->with('error', 'Tidak bisa menonaktifkan akun yang sedang kamu gunakan.');
         }
 
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            return back()->with('error', 'Akun Superadmin hanya bisa dinonaktifkan oleh Superadmin.');
+        }
+
         $user->update(['aktif' => ! $user->aktif]);
 
         $status = $user->aktif ? 'diaktifkan kembali' : 'dinonaktifkan';
@@ -118,6 +130,10 @@ class UserController extends Controller
             return back()->with('error', 'Tidak bisa menghapus akun sendiri.');
         }
 
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            return back()->with('error', 'Akun Superadmin hanya bisa dihapus oleh Superadmin.');
+        }
+
         if ($user->penerimaan()->exists() || $user->penjualan()->exists()) {
             return back()->with('error', 'User punya riwayat transaksi, tidak bisa dihapus. Nonaktifkan saja.');
         }
@@ -131,5 +147,12 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+    }
+
+    private function guardIzinRole(Request $request, string $roleBaru): void
+    {
+        if (! $request->user()->isSuperAdmin() && $roleBaru === 'superadmin') {
+            abort(403, 'Hanya Superadmin yang bisa membuat atau mengubah role Superadmin.');
+        }
     }
 }

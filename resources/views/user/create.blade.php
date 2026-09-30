@@ -27,6 +27,9 @@
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Role <span class="text-red-500 font-bold">*</span></label>
             <select name="role" required class="form-input">
                 <option value="">Pilih role</option>
+                @if (auth()->user()->isSuperAdmin())
+                    <option value="superadmin" {{ old('role') === 'superadmin' ? 'selected' : '' }}>Superadmin</option>
+                @endif
                 <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="apoteker" {{ old('role') === 'apoteker' ? 'selected' : '' }}>Apoteker</option>
                 <option value="kasir" {{ old('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>

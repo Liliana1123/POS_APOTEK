@@ -3,7 +3,7 @@
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: admin, apoteker, kasir.">
+<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: superadmin, admin, apoteker, kasir.">
     <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah User</span>
@@ -42,10 +42,10 @@
                                 edit-class="btn-edit-user"
                                 :edit-id="$user->id"
                                 :edit-data="['name' => $user->name, 'email' => $user->email, 'role' => $user->role]"
-                                :delete-url="($user->id !== auth()->id() && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
+                                :delete-url="($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
                                 delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
                                 
-                                @if($user->id !== auth()->id())
+                                @if($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()))
                                     <!-- Toggle Aktif / Nonaktif -->
                                     <form action="{{ route('user.toggle', $user) }}" method="POST" class="inline">
                                         @csrf
@@ -70,16 +70,18 @@
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
-                            @php
-                                $roleVariant = match($user->role) {
-                                    'admin' => 'info',
-                                    'apoteker' => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <x-badge :variant="$roleVariant">
-                                {{ ucfirst($user->role) }}
-                            </x-badge>
+@php
+    $roleVariant = match($user->role) {
+        'superadmin' => 'danger',
+        'admin' => 'info',
+        'apoteker' => 'warning',
+        'kasir' => 'success',
+        default => 'gray',
+    };
+@endphp
+<x-badge :variant="$roleVariant">
+    {{ ucfirst($user->role) }}
+</x-badge>
                         </td>
                         <td class="text-center">
                             <x-badge :variant="$user->aktif ? 'success' : 'danger'">
@@ -117,11 +119,15 @@
     </div>
     <div>
         <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Role <span class="text-red-500">*</span></label>
+        @php $roles = config('permission.roles', []); @endphp
         <select name="role" required class="form-input">
             <option value="">Pilih role</option>
-            <option value="admin">Admin</option>
-            <option value="apoteker">Apoteker</option>
-            <option value="kasir">Kasir</option>
+            @foreach ($roles as $slug => $meta)
+                @if (($meta['kunci'] ?? false) && ! auth()->user()->isSuperAdmin())
+                    @continue
+                @endif
+                <option value="{{ $slug }}" {{ old('role') === $slug ? 'selected' : '' }}>{{ $meta['label'] }}</option>
+            @endforeach
         </select>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="role"></p>
     </div>
