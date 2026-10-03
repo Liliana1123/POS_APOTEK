@@ -63,8 +63,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Route Cetak Laporan Riwayat Penjualan
-    Route::resource('penjualan', PenjualanController::class)->only(['index', 'create', 'store', 'show']);
+   // Route Export Data Penjualan ke Excel
+        Route::get(
+            'penjualan/export',
+            [PenjualanController::class, 'export']
+        )->name('penjualan.export');
+
+        Route::resource('penjualan', PenjualanController::class)
+            ->only(['index', 'create', 'store', 'show']);
+
     Route::post('pelanggan/register-member', [PelangganController::class, 'registerMember'])->name('pelanggan.register-member');
 });
 

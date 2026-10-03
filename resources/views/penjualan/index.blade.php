@@ -37,7 +37,30 @@
             size: A4 landscape;
             margin: 12mm;
         }
-    }
+
+        .grand-total-print {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px solid #1e40af;
+            page-break-inside: avoid;
+        }
+
+        .grand-total-print > div {
+            display: flex;
+            justify-content: flex-end;
+            gap: 30px;
+            margin-bottom: 5px;
+        }
+
+        .grand-total-print span {
+            font-weight: 600;
+        }
+
+        .grand-total-print strong {
+            min-width: 150px;
+            text-align: right;
+        }
+            }
 </style>
 
 <div class="screen-only">
@@ -46,10 +69,41 @@
     title="Riwayat Penjualan"
     subtitle="Daftar rekaman seluruh transaksi kasir apotek."
 >
-    <a href="{{ route('penjualan.create') }}" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Transaksi Baru</span>
-    </a>
+    <div class="flex items-center gap-2">
+
+        {{-- Export Data --}}
+        <a
+            href="{{ route('penjualan.export', [
+                'cari' => request('cari'),
+                'tanggal_awal' => request('tanggal_awal'),
+                'tanggal_akhir' => request('tanggal_akhir'),
+            ]) }}"
+            class="btn-secondary flex items-center justify-center gap-2 py-2 px-4 border-blue-500 text-blue-600 hover:bg-blue-50"
+        >
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            <span>Export Data</span>
+        </a>
+
+        {{-- Cetak Laporan --}}
+        <button
+            type="button"
+            onclick="window.print()"
+            class="btn-secondary flex items-center justify-center gap-2 py-2 px-4 border-blue-500 text-blue-600 hover:bg-blue-50"
+        >
+            <x-heroicon-o-printer class="w-4 h-4" />
+            <span>Cetak Laporan</span>
+        </button>
+
+        {{-- Tambah Transaksi Baru --}}
+        <a
+            href="{{ route('penjualan.create') }}"
+            class="btn-primary flex items-center gap-2 py-2 px-4"
+        >
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Transaksi Baru</span>
+        </a>
+
+    </div>
 </x-page-header>
 
 {{-- Filter & Search --}}
@@ -105,18 +159,6 @@
         >
     </div>
 </x-card-filter>
-
-{{-- Tombol Cetak Laporan --}}
-<div class="mb-4 flex justify-end print:hidden">
-    <button
-        type="button"
-        onclick="window.print()"
-        class="btn-secondary flex items-center justify-center gap-2 py-2 px-4"
-    >
-        <x-heroicon-o-printer class="h-4 w-4" />
-        <span>Cetak Laporan</span>
-    </button>
-</div>
 
 {{-- Table --}}
 <div class="table-custom-container">
@@ -345,23 +387,23 @@
                 </tr>
             @endforelse
         </tbody>
-
-        <tfoot>
-            <tr>
-                <th colspan="5" class="border p-2 text-right">
-                    Total
-                </th>
-
-                <th class="border p-2 text-right">
-                    Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
-                </th>
-
-                <th class="border p-2 text-right">
-                    Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
-                </th>
-            </tr>
-        </tfoot>
     </table>
+
+        <div class="grand-total-print">
+        <div>
+            <span>Total Diskon</span>
+            <strong>
+                Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
+            </strong>
+        </div>
+
+        <div>
+            <span>Total Transaksi</span>
+            <strong>
+                Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
+            </strong>
+        </div>
+    </div>
 </div>
 
 
@@ -758,3 +800,4 @@
 </script>
 
 @endsection
+

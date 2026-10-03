@@ -24,21 +24,25 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Benefit Diskon</span>
-                        <strong id="card-discount" class="text-sm text-green-600 font-bold uppercase tracking-wide">BENEFIT DISKON {{ config('pos.diskon_member', 10) }}%</strong>
+                        <strong id="card-discount" class="text-sm text-green-600 font-bold uppercase tracking-wide">
+                            DISKON {{ config('pos.diskon_member', 10) }}%
+                        </strong>
                     </div>
                 </div>
-            </div>
-            <div class="flex justify-center border-t pt-4">
+                           <div class="flex justify-center border-t pt-4">
                 <img id="card-qrcode" class="border p-1.5 bg-white w-32 h-32 rounded-lg shadow-sm" alt="QR Code">
-            </div>
+                        </div>
+                    </div> <!-- Penutup space-y-3 -->
+                </div> <!-- Penutup print-area -->
+
+                <!-- Action Buttons -->
+                <div class="modal-footer-custom mt-4">
+                    <button onclick="closeCardModal()" class="btn-secondary">Tutup</button>
+                    <button onclick="printCard()" class="btn-primary">Cetak Kartu</button>
+                </div>
+            </div> <!-- Penutup modal-container-custom -->
+            </div> <!-- Penutup modal-card -->
         </div>
-        <!-- Action Buttons -->
-        <div class="modal-footer-custom mt-4">
-            <button onclick="closeCardModal()" class="btn-secondary">Tutup</button>
-            <button onclick="printCard()" class="btn-primary">Cetak Kartu</button>
-        </div>
-    </div>
-</div>
 
 <style>
 @media print {
@@ -75,7 +79,7 @@ function openCardModal(nama, memberId, totalTransaksi, statusMember, customDisco
     const discountVal = (customDiscount !== null && customDiscount !== undefined && customDiscount !== '')
         ? parseFloat(customDiscount)
         : {{ config('pos.diskon_member', 10) }};
-    document.getElementById('card-discount').textContent = `BENEFIT DISKON ${discountVal}%`;
+    document.getElementById('card-discount').textContent = `DISKON ${discountVal}%`;
 
     const statusElement = document.getElementById('card-status-member');
     statusElement.textContent = statusMember || 'Member Pelanggan Tetap';

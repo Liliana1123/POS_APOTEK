@@ -316,7 +316,7 @@
                     const modal = document.createElement('div');
                     modal.className = 'modal-backdrop-custom';
                     modal.innerHTML = `
-                        <div class="modal-container-custom mx-4">
+                        <div class="modal-container-custom mx-4 max-w-md">
                             <div class="modal-header-custom">
                                 <h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>
                                 <button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">
@@ -451,7 +451,7 @@
                     modal = document.createElement('div');
                     modal.className = 'modal-backdrop-custom';
                     modal.innerHTML = '' +
-                        '<div class="modal-container-custom mx-4">' +
+                        '<div class="modal-container-custom mx-4 max-w-md">' +
                             '<div class="modal-header-custom">' +
                                 '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
                             '</div>' +

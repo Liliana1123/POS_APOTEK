@@ -39,7 +39,7 @@
 
                         <!-- Nama -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-user class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -51,7 +51,7 @@
 
                         <!-- No Telp -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-phone class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -63,7 +63,7 @@
 
                         <!-- Alamat -->
                         <div class="flex items-start gap-3 min-w-0 md:col-span-2">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-map-pin class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -75,7 +75,7 @@
 
                         <!-- Tanggal Lahir -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-calendar-days class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
