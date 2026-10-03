@@ -104,6 +104,7 @@ Route::middleware(['auth', 'permission:master.custom-discount'])->group(function
 Route::middleware(['auth', 'permission:transaksi.penjualan:kelola'])->group(function () {
     Route::get('penjualan/create', [PenjualanController::class, 'create'])->name('penjualan.create');
     Route::post('penjualan', [PenjualanController::class, 'store'])->name('penjualan.store');
+    Route::get('penjualan/export', [PenjualanController::class, 'export'])->name('penjualan.export');
     Route::get('penjualan/{penjualan}/piutang/payment-form', [PembayaranPiutangController::class, 'form'])->name('penjualan.piutang.payments.form');
     Route::post('penjualan/{penjualan}/piutang/payments', [PembayaranPiutangController::class, 'store'])->name('penjualan.piutang.payments.store');
 });
