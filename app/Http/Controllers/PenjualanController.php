@@ -9,6 +9,9 @@ use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
 
 class PenjualanController extends Controller
 {
@@ -62,8 +65,8 @@ class PenjualanController extends Controller
 
         // Data lengkap untuk laporan cetak, mengikuti filter yang sama
         $laporanPenjualans = (clone $query)
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('no_faktur', 'desc')
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('no_faktur', 'asc')
             ->get();
 
         // Data tabel riwayat tetap memakai pagination
@@ -127,6 +130,94 @@ class PenjualanController extends Controller
             ->values();
 
         return view('penjualan.create', compact('pelanggans', 'barangs'));
+    }
+
+    public function export(Request $request)
+    {
+        $query = Penjualan::with(['user', 'pelanggan', 'detail']);
+
+        // Filter No. Invoice
+        if ($request->filled('cari')) {
+            $query->where(
+                'no_faktur',
+                'like',
+                '%' . $request->cari . '%'
+            );
+        }
+
+        // Filter tanggal awal
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate(
+                'tanggal',
+                '>=',
+                $request->tanggal_awal
+            );
+        }
+
+        // Filter tanggal akhir
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate(
+                'tanggal',
+                '<=',
+                $request->tanggal_akhir
+            );
+        }
+
+        $penjualans = $query
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('no_faktur', 'desc')
+            ->get();
+
+        $headers = [
+            'No.',
+            'No. Invoice',
+            'Tanggal',
+            'Pelanggan',
+            'Kasir',
+            'Total Diskon',
+            'Total Transaksi',
+        ];
+
+        $data = [];
+
+        foreach ($penjualans as $index => $penjualan) {
+            $data[] = [
+                $index + 1,
+                $penjualan->no_faktur,
+                $penjualan->tanggal->format('d M Y'),
+                $penjualan->pelanggan?->nama ?? 'Umum',
+                $penjualan->user?->name ?? '-',
+                $penjualan->detail->sum('diskon'),
+                $penjualan->total,
+            ];
+        }
+
+        return response()->streamDownload(function () use ($headers, $data) {
+            $writer = new Writer();
+
+            $writer->openToFile('php://output');
+
+            $headerStyle = (new Style())
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E40AF');
+
+            $writer->addRow(
+                Row::fromValues($headers, $headerStyle)
+            );
+
+            foreach ($data as $row) {
+                $writer->addRow(
+                    Row::fromValues($row)
+                );
+            }
+
+            $writer->close();
+        }, 'export-penjualan-' . now()->format('Y-m-d-His') . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment',
+            'Cache-Control' => 'max-age=0',
+        ]);
     }
 
     public function store(Request $request)

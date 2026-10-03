@@ -79,6 +79,7 @@ class PembayaranPiutangController extends Controller
         $data = $request->validate([
             'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:0.01',
+            'metode_pembayaran' => 'required|in:cash,qris,debit',
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
@@ -135,6 +136,7 @@ class PembayaranPiutangController extends Controller
                 'tanggal_bayar' => $data['tanggal_bayar'],
                 'jumlah' => $data['jumlah'],
                 'keterangan' => $data['keterangan'] ?? null,
+                'metode_pembayaran' => $data['metode_pembayaran'],
             ]);
 
             $penjualan->pelanggan->decrement(

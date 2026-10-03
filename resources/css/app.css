@@ -469,7 +469,7 @@ h3,
     background-color: var(--color-surface);
     border-radius: 0.75rem;
     border: 1px solid var(--color-border-custom);
-    overflow: hidden;
+    overflow: clip; /* clip clips overflow tanpa mengganggu inner overflow-x:auto */
 }
 
 .table-custom {
@@ -750,8 +750,7 @@ h3,
     /* shadow-2xl */
     border: 1px solid var(--color-border-custom);
     width: 100%;
-    max-width: 28rem;
-    /* max-w-md */
+    /* max-width diatur per-modal via Tailwind (max-w-md, max-w-5xl, dll.) */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1331,4 +1330,41 @@ h3,
 .penerimaan-detail-table th:last-child {
     width: 60px !important;
     min-width: 60px !important;
+}
+
+/* ============================================================
+   TABEL PELANGGAN / MEMBER
+   Proporsional, sejajar, responsif terhadap buka/tutup sidebar
+   ============================================================ */
+.table-pelanggan {
+    width: 100% !important;
+    min-width: 1140px !important;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.table-pelanggan th,
+.table-pelanggan td {
+    padding: 0.75rem 0.65rem !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+.table-pelanggan th {
+    white-space: nowrap !important;
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.table-pelanggan td {
+    font-size: 0.75rem;
+}
+
+.table-pelanggan-wrapper {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }

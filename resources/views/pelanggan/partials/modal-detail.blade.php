@@ -42,7 +42,7 @@
                 <div class="space-y-4">
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-user class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-identification class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -62,7 +62,7 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-phone class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -72,7 +72,7 @@
                     </div>
 
                     <div class="flex items-start gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-map-pin class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -328,11 +328,14 @@ function openDetailModal(pelangganId) {
         document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
         document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
         
-        const benefitLabel = pelanggan.benefit_diskon_label || (
-            pelanggan.custom_discount_percentage !== null && pelanggan.custom_discount_percentage !== undefined
-                ? `Diskon ${parseFloat(pelanggan.custom_discount_percentage)}%`
-                : 'Diskon Default 10%'
-        );
+        const customDiscount = pelanggan.custom_discount_percentage;
+        const benefitLabel =
+            customDiscount !== null &&
+            customDiscount !== undefined &&
+            customDiscount !== ''
+                ? `Diskon ${parseFloat(customDiscount)}%`
+                : 'Diskon 10%';
+
         document.getElementById('detail-benefit-diskon').textContent = benefitLabel;
 
         document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
@@ -363,15 +366,15 @@ function openDetailModal(pelangganId) {
             tanggal.textContent = formatDetailTanggal(item.tanggal);
 
             const faktur = document.createElement('td');
-            faktur.className = 'px-3 py-2.5 whitespace-nowrap font-mono text-[10px] text-blue-600';
+            faktur.className = 'px-3 py-2.5 whitespace-nowrap text-center font-mono text-[10px] text-blue-600';
             faktur.textContent = item.no_faktur || '-';
 
             const metode = document.createElement('td');
-            metode.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
+            metode.className = 'px-3 py-2.5 whitespace-nowrap text-center text-gray-600';
             metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
 
             const total = document.createElement('td');
-            total.className = 'px-3 py-2.5 whitespace-nowrap text-right font-semibold text-gray-800';
+            total.className = 'px-3 py-2.5 whitespace-nowrap text-center font-semibold text-gray-800';
             total.textContent = formatDetailRupiah(item.total);
 
             row.appendChild(tanggal);
