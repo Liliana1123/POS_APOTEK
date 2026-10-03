@@ -29,19 +29,28 @@ return [
         'kasir' => ['label' => 'Kasir'],
     ],
 
+    /*
+    | Urutan 'pages' di bawah = urutan menu di sidebar (layouts/app.blade.php),
+    | dipakai migration untuk mengisi kolom group + sort. Samakan bila
+    | urutan sidebar berubah.
+    */
     'pages' => [
+        // Sidebar: Data Master
         'master.barang' => ['group' => 'Data Master', 'label' => 'Barang / Produk'],
         'master.kategori' => ['group' => 'Data Master', 'label' => 'Kategori'],
         'master.satuan' => ['group' => 'Data Master', 'label' => 'Satuan'],
         'master.pabrik' => ['group' => 'Data Master', 'label' => 'Pabrik'],
         'master.supplier' => ['group' => 'Data Master', 'label' => 'Supplier'],
         'master.pelanggan' => ['group' => 'Data Master', 'label' => 'Pelanggan / Member'],
-        'master.custom-discount' => ['group' => 'Data Master', 'label' => 'Custom Discount'],
+        'sistem.kelola-user' => ['group' => 'Data Master', 'label' => 'Kelola User'],
+        'sistem.pengaturan' => ['group' => 'Data Master', 'label' => 'Pengaturan Apotek'],
 
+        // Sidebar: Transaksi
         'transaksi.penjualan' => ['group' => 'Transaksi', 'label' => 'Penjualan (Kasir)'],
         'transaksi.penerimaan' => ['group' => 'Transaksi', 'label' => 'Penerimaan Barang'],
         'transaksi.rusak' => ['group' => 'Transaksi', 'label' => 'Barang Rusak'],
 
+        // Sidebar: Laporan
         'laporan.stok' => ['group' => 'Laporan', 'label' => 'Laporan Stok'],
         'laporan.penerimaan' => ['group' => 'Laporan', 'label' => 'Laporan Penerimaan'],
         'laporan.penjualan' => ['group' => 'Laporan', 'label' => 'Laporan Penjualan'],
@@ -49,9 +58,9 @@ return [
         'laporan.laba-rugi' => ['group' => 'Laporan', 'label' => 'Laporan Laba Rugi'],
         'laporan.diskon' => ['group' => 'Laporan', 'label' => 'Laporan Diskon'],
 
-        'sistem.kelola-user' => ['group' => 'Sistem', 'label' => 'Kelola User'],
-        'sistem.pengaturan' => ['group' => 'Sistem', 'label' => 'Pengaturan Apotek'],
-        'sistem.activity-log' => ['group' => 'Sistem', 'label' => 'Log Aktivitas'],
+        // Sidebar: Promo & Log
+        'master.custom-discount' => ['group' => 'Promo & Log', 'label' => 'Custom Discount'],
+        'sistem.activity-log' => ['group' => 'Promo & Log', 'label' => 'Log Aktivitas'],
     ],
 
     /*
