@@ -64,6 +64,7 @@ Aplikasi POS Apotek adalah aplikasi **berdiri sendiri (standalone)** berbasis we
 | Peran | Deskripsi |
 |---|---|
 | **Admin** | Pemilik/pengelola apotek. Akses penuh ke seluruh modul termasuk data dasar, manajemen user, dan seluruh laporan. |
+| **Admin Gudang** | Petugas operasional gudang. Akses kelola ke Data Barang, Supplier, Penerimaan, dan Barang Rusak; laporan stok/penerimaan/rusak hanya lihat. |
 | **Apoteker/Kasir** | Petugas operasional harian. Akses ke modul Penjualan, Penerimaan, Barang Rusak, dan Pelanggan; akses laporan bersifat terbatas (lihat Bagian 4). |
 
 > **Catatan asumsi:** Kerangka modul yang diberikan mencantumkan "Data User" tanpa merinci daftar peran (role). Dokumen ini mengasumsikan dua peran minimal (**Admin** dan **Kasir**) yang lazim pada aplikasi POS apotek skala kecil-menengah. Jumlah dan nama peran dapat disesuaikan pada tahap desain teknis lanjutan (lihat matriks hak akses Bagian 4.2).

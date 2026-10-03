@@ -468,33 +468,44 @@ class DashboardController extends Controller
                 'count' => $stokHabisCount,
                 'title' => 'CRITICAL',
                 'label' => 'Barang stok habis',
+                'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_stok' => 'habis']),
             ],
             'attention' => [
                 'count' => $stokMenipisCount,
                 'title' => 'ATTENTION',
                 'label' => 'Barang stok menipis',
+                'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_stok' => 'menipis']),
             ],
             'monitoring' => [
                 'count' => $expiryCritical,
                 'title' => 'MONITORING',
                 'label' => 'Mendekati expired (< 30 hari)',
+                'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_expired' => '1_bulan']),
             ],
             'overdue' => [
                 'count' => $countHutangOverdue,
                 'title' => 'OVERDUE',
                 'label' => 'Hutang supplier jatuh tempo',
+                'izin' => 'transaksi.penerimaan',
                 'route' => route('penerimaan.index', ['status_pembayaran' => 'belum_lunas']),
             ],
             'piutang' => [
                 'count' => $memberBerpiutangCount,
                 'title' => 'PIUTANG',
                 'label' => 'Member memiliki piutang',
+                'izin' => 'master.pelanggan',
                 'route' => route('pelanggan.index', ['status_piutang' => 'belum_lunas']),
             ],
         ];
+
+        // Sembunyikan alert yang targetnya tidak bisa dibuka user ini.
+        $actionCenter = array_filter(
+            $actionCenter,
+            fn ($item) => $request->user()->hasPermission($item['izin'])
+        );
 
         // 9 & 10. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL (Satu Subquery Bersama - Cached)
         $rankings = DashboardCacheService::remember('medicine_rankings', [$dari, $sampai], function () use ($dari, $sampai) {
