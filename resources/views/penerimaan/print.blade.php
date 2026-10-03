@@ -104,12 +104,19 @@
 
         .info-item {
             display: flex;
-            gap: 8px;
+            align-items: baseline;
         }
 
         .info-label {
-            width: 110px;
+            width: 135px;
             font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .info-colon {
+            width: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
         .info-value {
@@ -120,12 +127,23 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            box-sizing: border-box;
         }
 
         th,
         td {
-            border: 1px solid #999;
+            border: 1px solid #777;
             padding: 7px;
+        }
+
+        /* Pastikan border kolom paling kanan / paling belakang dan baris paling akhir tidak hilang */
+        table th:last-child,
+        table td:last-child {
+            border-right: 1px solid #777 !important;
+        }
+
+        table tr:last-child td {
+            border-bottom: 1px solid #777 !important;
         }
 
         th {
@@ -169,19 +187,54 @@
             margin-bottom: 8px;
         }
 
-        .footer {
-            margin-top: 40px;
+        @page {
+            @top-left {
+                text-align: left;
+            }
+            @top-center {
+                content: none;
+            }
+            @top-right {
+                text-align: right;
+            }
+            @bottom-left {
+                text-align: left;
+            }
+            @bottom-center {
+                content: none;
+            }
+            @bottom-right {
+                text-align: right;
+            }
+        }
+
+        .footer-ttd {
+            margin-top: 50px;
             display: flex;
             justify-content: space-between;
         }
 
         .signature {
-            width: 220px;
+            width: 250px;
             text-align: center;
+            font-size: 14px;
+        }
+
+        .signature-title {
+            margin-bottom: 2px;
+            font-weight: normal;
+        }
+
+        .signature-role {
+            font-weight: bold;
         }
 
         .signature-space {
-            height: 70px;
+            height: 75px;
+        }
+
+        .signature-name {
+            font-weight: bold;
         }
 
         .print-button {
@@ -203,10 +256,32 @@
 
             .container {
                 max-width: none;
+                width: 100%;
+                padding-right: 1px;
             }
 
             .print-button {
                 display: none;
+            }
+
+            .no-break {
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            table th,
+            table td {
+                border: 1px solid #777 !important;
+            }
+
+            table th:last-child,
+            table td:last-child {
+                border-right: 1px solid #777 !important;
+            }
+
+            table tr:last-child td {
+                border-bottom: 1px solid #777 !important;
             }
         }
     </style>
@@ -291,6 +366,7 @@
 
         <div class="info-item">
             <div class="info-label">No. Faktur</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->no_faktur }}
             </div>
@@ -298,6 +374,7 @@
 
         <div class="info-item">
             <div class="info-label">Tanggal Terima</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->tanggal?->format('d/m/Y') ?? '—' }}
             </div>
@@ -305,6 +382,7 @@
 
         <div class="info-item">
             <div class="info-label">Supplier</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->supplier->nama ?? '—' }}
             </div>
@@ -312,6 +390,7 @@
 
         <div class="info-item">
             <div class="info-label">Telepon Supplier</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->telepon_supplier ?? '—' }}
             </div>
@@ -319,6 +398,7 @@
 
         <div class="info-item">
             <div class="info-label">Dicatat Oleh</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->user->name ?? '—' }}
             </div>
@@ -326,6 +406,7 @@
 
         <div class="info-item">
             <div class="info-label">Status Pembayaran</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->lunas ? 'Lunas' : 'Belum Lunas' }}
             </div>
@@ -334,6 +415,7 @@
         @if ($penerimaan->jatuh_tempo)
             <div class="info-item">
                 <div class="info-label">Jatuh Tempo</div>
+                <div class="info-colon">:</div>
                 <div class="info-value">
                     {{ $penerimaan->jatuh_tempo->format('d/m/Y') }}
                 </div>
@@ -343,6 +425,7 @@
         @if ($penerimaan->keterangan)
             <div class="info-item">
                 <div class="info-label">Keterangan</div>
+                <div class="info-colon">:</div>
                 <div class="info-value">
                     {{ $penerimaan->keterangan }}
                 </div>
@@ -356,16 +439,16 @@
     <table>
         <thead>
             <tr>
-                <th>No</th>
+                <th style="width: 30px;">No</th>
                 <th>Barang</th>
-                <th>Barcode</th>
-                <th>No. Batch</th>
-                <th>Expired</th>
-                <th>Rak</th>
-                <th>Satuan</th>
-                <th>Jumlah</th>
-                <th>Harga Beli</th>
-                <th>Subtotal</th>
+                <th style="width: 80px;">Barcode</th>
+                <th style="width: 75px;">No. Batch</th>
+                <th style="width: 80px;">Expired</th>
+                <th style="width: 50px;">Rak</th>
+                <th style="width: 55px;">Satuan</th>
+                <th style="width: 40px;">Qty</th>
+                <th style="width: 85px;">Harga Beli</th>
+                <th style="width: 90px;">Subtotal</th>
             </tr>
         </thead>
 
@@ -527,12 +610,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Tanggal</th>
+                        <th style="width: 35px;">No</th>
+                        <th style="width: 85px;">Tanggal</th>
                         <th>Barang</th>
-                        <th>Jumlah</th>
-                        <th>Dicatat Oleh</th>
-                        <th>Keterangan</th>
+                        <th style="width: 45px;">Qty</th>
+                        <th style="width: 110px;">Dicatat Oleh</th>
+                        <th style="width: 150px;">Keterangan</th>
                     </tr>
                 </thead>
 
@@ -552,7 +635,7 @@
                                 {{ $riwayat->detailPesanan->barang->nama ?? $riwayat->detailPenerimaan->barang->nama ?? '—' }}
                             </td>
 
-                            <td class="text-right">
+                            <td class="text-center">
                                 {{ number_format($riwayat->jumlah, 0, ',', '.') }}
                             </td>
 
@@ -575,28 +658,40 @@
 
     </div>
 
-    <div class="footer">
+    <div class="no-break">
+        <div class="footer-ttd">
 
-        <div class="signature">
-            <div>Supplier</div>
+            <div class="signature">
+                <div class="signature-title">Mengetahui,</div>
+                <div class="signature-role">Supplier</div>
 
-            <div class="signature-space"></div>
+                <div class="signature-space"></div>
 
-            <strong>
-                {{ $penerimaan->supplier->nama ?? '—' }}
-            </strong>
+                <div class="signature-name">
+                    @if (!empty($penerimaan->supplier?->nama))
+                        ( {{ $penerimaan->supplier->nama }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
+            <div class="signature">
+                <div class="signature-title">Diterima oleh,</div>
+                <div class="signature-role">Petugas Penerima</div>
+
+                <div class="signature-space"></div>
+
+                <div class="signature-name">
+                    @if (!empty($penerimaan->user?->name))
+                        ( {{ $penerimaan->user->name }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
         </div>
-
-        <div class="signature">
-            <div>Petugas Penerimaan</div>
-
-            <div class="signature-space"></div>
-
-            <strong>
-                {{ $penerimaan->user->name ?? '—' }}
-            </strong>
-        </div>
-
     </div>
 
 </div>

@@ -174,12 +174,14 @@ class LaporanController extends Controller
         $totalStokRusak = $stokPerBatch->sum(fn ($i) => (int) ($i->stok_rusak ?? 0));
         $totalSisaStok = $totalStokAwal - $totalStokTerjual - $totalStokRusak;
 
-        // Batch mendekati expired (<= 90 hari dari hari ini) - otomatis & tidak terpengaruh filter
+        // Batch mendekati expired (<= 90 hari dari hari ini termasuk yang sudah kadaluarsa) - otomatis & tidak terpengaruh filter
         $mendekatiExpired = DetailPenerimaan::with(['barang.kategori'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah')
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
             ->mendekatiExpired(90)
-            ->orderBy('expired_date')
+            ->orderBy('expired_date', 'asc')
             ->get();
 
         if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {

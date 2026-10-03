@@ -4,6 +4,15 @@
         now()->addHours(6),
         fn () => \App\Models\InfoApotek::first()
     );
+
+    $petugas = auth()->user()?->name;
+    if (!$petugas && isset($rusak)) {
+        $log = \App\Models\ActivityLog::where('action', 'Catat Barang Rusak')
+            ->where('target', 'like', '%' . ($rusak->detailPenerimaan->no_batch ?? '') . '%')
+            ->latest('id')
+            ->first();
+        $petugas = $log?->user_name;
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -33,6 +42,27 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
+        }
+
+        @page {
+            @top-left {
+                text-align: left;
+            }
+            @top-center {
+                content: none;
+            }
+            @top-right {
+                text-align: right;
+            }
+            @bottom-left {
+                text-align: left;
+            }
+            @bottom-center {
+                content: none;
+            }
+            @bottom-right {
+                text-align: right;
+            }
         }
 
         /* =========================
@@ -131,6 +161,66 @@
         }
 
         /* =========================
+           TANDA TANGAN
+        ========================= */
+
+        .no-break {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .footer-ttd {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+
+        .print-signature-box,
+        .signature {
+            width: 250px;
+            text-align: center;
+            font-size: 10px;
+            color: #111;
+        }
+
+        .print-signature-title,
+        .signature-title {
+            margin: 0 !important;
+            font-size: 10px !important;
+            font-weight: normal !important;
+        }
+
+        .print-signature-role,
+        .signature-role {
+            margin: 2px 0 0 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+        }
+
+        .print-signature-space,
+        .signature-space {
+            height: 65px !important;
+        }
+
+        .print-signature-name,
+        .signature-name {
+            margin: 0 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+        }
+
+        .print-signature-sipa {
+            margin: 3px 0 0 !important;
+            font-size: 9px !important;
+            color: #333 !important;
+        }
+
+        /* =========================
            PRINT
         ========================= */
 
@@ -141,6 +231,12 @@
 
             .container {
                 max-width: none;
+            }
+
+            .no-break {
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         }
     </style>
@@ -303,6 +399,53 @@
         </tr>
 
     </table>
+
+    {{-- =========================
+         TANDA TANGAN
+    ========================= --}}
+    <div class="no-break">
+        <div class="footer-ttd">
+
+            {{-- KIRI: APOTEKER PENANGGUNG JAWAB --}}
+            <div class="print-signature-box">
+                <p class="print-signature-title">Mengetahui,</p>
+                <p class="print-signature-role">Penanggung Jawab Apotek</p>
+
+                <div class="print-signature-space"></div>
+
+                <p class="print-signature-name">
+                    @if (!empty($apotek?->nama_apoteker_pj))
+                        {{ $apotek->nama_apoteker_pj }}
+                    @else
+                        (____________________)
+                    @endif
+                </p>
+
+                @if (!empty($apotek?->no_sipa))
+                    <p class="print-signature-sipa">
+                        SIPA: {{ $apotek->no_sipa }}
+                    </p>
+                @endif
+            </div>
+
+            {{-- KANAN: PETUGAS BARANG RUSAK --}}
+            <div class="print-signature-box">
+                <p class="print-signature-title">Dicatat oleh,</p>
+                <p class="print-signature-role">Petugas Barang Rusak</p>
+
+                <div class="print-signature-space"></div>
+
+                <p class="print-signature-name">
+                    @if (!empty($petugas))
+                        {{ $petugas }}
+                    @else
+                        (____________________)
+                    @endif
+                </p>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 
