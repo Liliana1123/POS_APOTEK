@@ -431,9 +431,9 @@ class DashboardController extends Controller
                 ->selectRaw('
                     COUNT(*) as total_batches,
                     COUNT(CASE WHEN expired_date <= ? THEN 1 END) as kadaluarsa,
-                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as critical,
-                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as warning,
-                    COUNT(CASE WHEN expired_date > ? OR expired_date IS NULL THEN 1 END) as aman
+                    COUNT(CASE WHEN expired_date > ? AND expired_date < ? THEN 1 END) as critical,
+                    COUNT(CASE WHEN expired_date >= ? AND expired_date < ? THEN 1 END) as warning,
+                    COUNT(CASE WHEN expired_date >= ? OR expired_date IS NULL THEN 1 END) as aman
                 ', [
                     $today->format('Y-m-d'),
                     $today->format('Y-m-d'), $oneMonth->format('Y-m-d'),

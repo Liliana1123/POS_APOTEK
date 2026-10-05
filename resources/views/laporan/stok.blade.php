@@ -184,10 +184,10 @@
                         Kadaluarsa
                     </option>
                     <option value="1_bulan" @selected(request('status_expired') === '1_bulan')>
-                        ≤ 1 Bulan
+                        < 1 Bulan
                     </option>
                     <option value="3_bulan" @selected(request('status_expired') === '3_bulan')>
-                        ≤ 3 Bulan
+                        < 3 Bulan
                     </option>
                     <option value="normal" @selected(request('status_expired') === 'normal')>
                         Normal
@@ -307,6 +307,8 @@
                     @forelse ($stokPerBatch as $index => $item)
                         @php
                             $today = now()->startOfDay();
+                            $oneMonth = $today->copy()->addMonth();
+                            $threeMonths = $today->copy()->addMonths(3);
 
                             $expiredDate = $item->expired_date
                                 ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
@@ -360,13 +362,13 @@
                                     <span class="badge-danger">
                                         KADALUARSA
                                     </span>
-                                @elseif ($expiredDate->lte($today->copy()->addMonth()))
+                                @elseif ($expiredDate->lt($oneMonth))
                                     <span class="badge-orange">
-                                        ≤ 1 Bulan
+                                        < 1 Bulan
                                     </span>
-                                @elseif ($expiredDate->lte($today->copy()->addMonths(3)))
+                                @elseif ($expiredDate->lt($threeMonths))
                                     <span class="badge-warning">
-                                        ≤ 3 Bulan
+                                        < 3 Bulan
                                     </span>
                                 @else
                                     <span class="badge-success">
@@ -558,6 +560,9 @@
                     @forelse ($mendekatiExpired as $index => $item)
                         @php
                             $today = now()->startOfDay();
+                            $oneMonth = $today->copy()->addMonth();
+                            $threeMonths = $today->copy()->addMonths(3);
+
                             $expiredDate = $item->expired_date
                                 ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
                                 : null;
@@ -599,13 +604,13 @@
                                     <span class="badge-danger">
                                         KADALUARSA
                                     </span>
-                                @elseif ($expiredDate->lte($today->copy()->addMonth()))
+                                @elseif ($expiredDate->lt($oneMonth))
                                     <span class="badge-orange">
-                                        ≤ 1 Bulan
+                                        < 1 Bulan
                                     </span>
-                                @elseif ($expiredDate->lte($today->copy()->addMonths(3)))
+                                @elseif ($expiredDate->lt($threeMonths))
                                     <span class="badge-warning">
-                                        ≤ 3 Bulan
+                                        < 3 Bulan
                                     </span>
                                 @else
                                     <span class="badge-success">

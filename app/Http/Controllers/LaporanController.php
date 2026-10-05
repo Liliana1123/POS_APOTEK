@@ -144,16 +144,16 @@ class LaporanController extends Controller
 
                 if ($request->status_expired === '1_bulan') {
                     $query->whereDate('expired_date', '>', $today)
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonth());
+                        ->whereDate('expired_date', '<', $today->copy()->addMonth());
                 }
 
                 if ($request->status_expired === '3_bulan') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonth())
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonth())
+                        ->whereDate('expired_date', '<', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'normal') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'tidak_ada') {
@@ -217,10 +217,10 @@ class LaporanController extends Controller
                     $statusExpired = 'Tidak Ada Tanggal';
                 } elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today)) {
                     $statusExpired = 'Kadaluarsa';
-                } elseif ($expiredDate->lte($today->copy()->addMonth())) {
-                    $statusExpired = '≤ 1 Bulan';
-                } elseif ($expiredDate->lte($today->copy()->addMonths(3))) {
-                    $statusExpired = '≤ 3 Bulan';
+                } elseif ($expiredDate->lt($today->copy()->addMonth())) {
+                    $statusExpired = '< 1 Bulan';
+                } elseif ($expiredDate->lt($today->copy()->addMonths(3))) {
+                    $statusExpired = '< 3 Bulan';
                 } else {
                     $statusExpired = 'Normal';
                 }

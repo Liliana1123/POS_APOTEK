@@ -593,10 +593,10 @@
                             </a>
 
                             <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
-                               class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
+                               class="flex items-center justify-between text-xs hover:bg-yellow-50/50 p-1 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                                    <span class="font-medium text-gray-700 group-hover:text-amber-700">Peringatan (30–90 hari)</span>
+                                    <span class="w-2 h-2 rounded-full bg-yellow-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-yellow-700">Peringatan (30–90 hari)</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
@@ -620,7 +620,7 @@
                                class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-                                    <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluarsa</span>
+                                    <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluwarsa</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
@@ -1107,10 +1107,10 @@
             new Chart(ctxExpiry, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluarsa'],
+                    labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluwarsa'],
                     datasets: [{
                         data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
-                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#eab308', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                         hoverOffset: 4
