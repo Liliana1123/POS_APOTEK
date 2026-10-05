@@ -139,7 +139,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Susulan
+                        Keterangan atau Catatan Susulan
                     </label>
                     <input
                         type="text"
@@ -302,7 +302,7 @@
             <!-- Footer Action Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 <p class="text-xs text-slate-500 text-center sm:text-left">
-                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch & harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
+                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch dan harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
                 </p>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">

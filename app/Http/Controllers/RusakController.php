@@ -38,7 +38,10 @@ class RusakController extends Controller
             $query->whereDate('tanggal', $request->tanggal);
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = (int) $request->input('per_page', 10);
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
 
         $rusaks = $query->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
 

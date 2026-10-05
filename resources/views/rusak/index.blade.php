@@ -16,6 +16,9 @@
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
@@ -80,7 +83,7 @@
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                <a href="{{ route('rusak.index', request()->has('per_page') ? ['per_page' => request('per_page')] : []) }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
             @endif
@@ -101,7 +104,7 @@
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">Tanggal Lapor</th>
-                    <th scope="col">Barang / Obat</th>
+                    <th scope="col">Barang atau Obat</th>
                     <th scope="col">No. Batch</th>
                     <th scope="col" class="text-right">Jumlah</th>
                     <th scope="col">Keterangan</th>
@@ -231,13 +234,12 @@
             name="per_page"
             class="form-input py-1.5 w-20"
             form="filter-form"
-            onchange="this.form.submit()"
+            onchange="document.getElementById('filter-form').submit()"
         >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
+            <option value="10" @selected((int) request('per_page', 10) === 10)>10</option>
+            <option value="25" @selected((int) request('per_page', 10) === 25)>25</option>
+            <option value="50" @selected((int) request('per_page', 10) === 50)>50</option>
+            <option value="100" @selected((int) request('per_page', 10) === 100)>100</option>
         </select>
 
         <span>data</span>
@@ -296,7 +298,7 @@
                 @endif
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang / Obat <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang atau Obat <span class="text-red-500">*</span></label>
                     <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
                         <option value="">Pilih Batch</option>
                         @foreach ($batches as $batch)

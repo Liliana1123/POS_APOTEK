@@ -159,7 +159,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Pembayaran
+                        Keterangan atau Catatan Pembayaran
                     </label>
                     <input
                         type="text"

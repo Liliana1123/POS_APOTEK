@@ -523,7 +523,7 @@
     <div class="print-report-title">
 
         <h2>
-            Laporan Ketersediaan Stok & Kadaluarsa
+            Laporan Ketersediaan Stok dan Kadaluarsa
         </h2>
 
         <p>
@@ -1059,7 +1059,7 @@
                             <td colspan="8" class="p-0">
                                 <div class="empty-state-container">
                                     <div class="empty-state-title">
-                                        Tidak Ada Batch Kadaluarsa / Mendekati Expired
+                                        Tidak Ada Batch Kadaluarsa atau Mendekati Expired
                                     </div>
                                     <div class="empty-state-desc">
                                         Tidak terdapat batch dengan sisa stok aktif yang sudah kadaluarsa atau akan kadaluarsa dalam 90 hari.
@@ -1074,7 +1074,7 @@
                     <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
                         <tr>
                             <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider text-gray-600">
-                                Total Sisa Stok Kadaluarsa & Mendekati Expired:
+                                Total Sisa Stok Kadaluarsa dan Mendekati Expired:
                             </td>
                             <td class="table-num !px-2 py-3 text-right text-red-600 font-bold whitespace-nowrap">
                                 {{ number_format($mendekatiExpired->sum(fn ($i) => (int) $i->jumlah - (int) ($i->stok_terjual ?? 0) - (int) ($i->stok_rusak ?? 0)), 0, ',', '.') }}

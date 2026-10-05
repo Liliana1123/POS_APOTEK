@@ -98,7 +98,10 @@ class PenerimaanController extends Controller
             $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = (int) $request->input('per_page', 10);
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
 
         $penerimaans = $query->withSum('pembayaran', 'jumlah')
             ->orderByDesc('tanggal')->paginate($perPage)->withQueryString();

@@ -405,7 +405,7 @@
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
     <div>
-        <h1>Laporan Barang Rusak / Kadaluarsa</h1>
+        <h1>Laporan Barang Rusak atau Kadaluarsa</h1>
         <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
     </div>
     <div class="flex gap-2 shrink-0">

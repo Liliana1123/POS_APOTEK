@@ -1053,7 +1053,7 @@ function initEditPenerimaanForm() {
 
         } catch (err) {
             console.error('Error saat submit edit penerimaan:', err);
-            alert('Terjadi kesalahan jaringan/sistem saat menyimpan perubahan.');
+            alert('Terjadi kesalahan jaringan atau sistem saat menyimpan perubahan.');
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Simpan Perubahan';

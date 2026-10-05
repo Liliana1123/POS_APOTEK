@@ -102,7 +102,7 @@
         <div class="main-graph-card xl:col-span-5"><div class="dashboard-card p-4 h-full">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
             <div>
-                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan & Omzet</h3>
+                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
                 <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
             </div>
             <div class="flex items-center gap-4 text-xs font-medium">
@@ -176,7 +176,7 @@
 
                     <div>
                         <h3 class="text-sm font-extrabold text-gray-900">
-                            Business Health
+                            Kondisi Bisnis
                         </h3>
                         <p class="text-[9px] text-gray-400 mt-0.5">
                             Kondisi operasional saat ini
@@ -378,7 +378,7 @@
         <div class="main-action-column xl:col-span-3 space-y-3">
             <div class="dashboard-card p-4">
     <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-gray-900">Action Center</h3>
+        <h3 class="text-sm font-bold text-gray-900">Tindak Lanjut</h3>
     </div>
     <div class="space-y-2">
         @php
@@ -389,13 +389,20 @@
                 'overdue' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'overdue'],
                 'piutang' => ['bg-purple-100 text-purple-700', 'text-purple-400', 'piutang'],
             ];
+            $actionCenterLabels = [
+                'critical' => 'Kritis',
+                'attention' => 'Perlu Perhatian',
+                'monitoring' => 'Dalam Pemantauan',
+                'overdue' => 'Terlambat',
+                'piutang' => 'Piutang',
+            ];
         @endphp
         @foreach ($actionCenter as $kunci => $item)
             @php [$chip, $ikon, $kelas] = $acakWarna[$kunci]; @endphp
             <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="badge-chip {{ $chip }}">{{ ucfirst($kunci) }}</span>
+                        <span class="badge-chip {{ $chip }}">{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
                         <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
                     </div>
                     <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
@@ -431,7 +438,7 @@
                     <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                         <x-heroicon-o-archive-box class="w-4 h-4" />
                     </span>
-                    Inventory Control Center
+                    Pemantauan Stok
                 </h3>
                 <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
                     Lihat Stok &rarr;
@@ -589,7 +596,7 @@
                                class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                                    <span class="font-medium text-gray-700 group-hover:text-amber-700">Warning (30–90 hari)</span>
+                                    <span class="font-medium text-gray-700 group-hover:text-amber-700">Peringatan (30–90 hari)</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
@@ -601,7 +608,7 @@
                                class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-                                    <span class="font-medium text-gray-700 group-hover:text-orange-700">Critical (&lt;30 hari)</span>
+                                    <span class="font-medium text-gray-700 group-hover:text-orange-700">Kritis (&lt;30 hari)</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
@@ -1100,7 +1107,7 @@
             new Chart(ctxExpiry, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Aman (>90 hari)', 'Warning (30–90 hari)', 'Critical (<30 hari)', 'Kadaluarsa'],
+                    labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluarsa'],
                     datasets: [{
                         data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
                         backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],

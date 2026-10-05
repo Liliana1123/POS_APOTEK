@@ -16,7 +16,10 @@
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4">
+    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">No. Faktur</label>
@@ -96,8 +99,8 @@
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
-                <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal']))
+                <a href="{{ route('penerimaan.index', request()->has('per_page') ? ['per_page' => request('per_page')] : []) }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
             @endif
@@ -117,7 +120,7 @@
                     <tr>
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
-                    <th scope="col">No. Faktur & Tanggal Terima</th>
+                    <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
                     <th scope="col" class="text-center">Status Penerimaan</th>
                     <th scope="col" class="text-right">Total Transaksi</th>
@@ -155,7 +158,7 @@
                                     type="button"
                                     class="btn-secondary !p-1.5 btn-edit-penerimaan"
                                     style="color: #F59E0B;"
-                                    title="Edit Faktur & Detail"
+                                    title="Edit Faktur dan Detail"
                                     data-url="{{ route('penerimaan.edit', $penerimaan) }}"
                                 >
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
@@ -308,13 +311,13 @@
         <select
             name="per_page"
             class="form-input py-1.5 w-20"
-            onchange="this.form.submit()"
+            form="filter-form"
+            onchange="document.getElementById('filter-form').submit()"
         >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
+            <option value="10" @selected((int) request('per_page', 10) === 10)>10</option>
+            <option value="25" @selected((int) request('per_page', 10) === 25)>25</option>
+            <option value="50" @selected((int) request('per_page', 10) === 50)>50</option>
+            <option value="100" @selected((int) request('per_page', 10) === 100)>100</option>
         </select>
 
         <span>data</span>
