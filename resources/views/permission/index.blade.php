@@ -2,77 +2,72 @@
 @section('title', 'Izin Akses')
 
 @section('content')
-<x-page-header title="Izin Akses" subtitle="Centang Lihat untuk membuka halaman, Kelola untuk dapat menambah, ubah, dan hapus data." />
+<x-page-header title="Izin Akses" subtitle="Centang Access untuk membuka halaman, CRUD untuk menambah, ubah, dan hapus data." />
 
 <form method="POST" action="{{ route('permission.update') }}">
     @csrf
 
-    <div class="space-y-6">
-        @php $grupSekarang = null; @endphp
+    <div class="card-base overflow-hidden">
+        <div class="table-custom-container">
+            <table class="table-custom min-w-[56rem]">
+                <thead class="table-custom-header">
+                    <tr>
+                        <th rowspan="2" scope="col" class="w-12 text-center">No</th>
+                        <th rowspan="2" scope="col" class="w-40">Group</th>
+                        <th rowspan="2" scope="col" class="w-72">Halaman</th>
+                        @foreach ($roles as $role => $meta)
+                            <th colspan="2" scope="colgroup" class="text-center border-l border-blue-500">
+                                {{ $meta['label'] }}
+                                @if ($meta['kunci'] ?? false)
+                                    <span class="block text-[10px] font-normal text-blue-200 normal-case">selalu aktif</span>
+                                @endif
+                            </th>
+                        @endforeach
+                    </tr>
+                    <tr>
+                        @foreach ($roles as $role => $meta)
+                            <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24 border-l border-blue-500">Access</th>
+                            <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24">CRUD</th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody class="table-custom-body">
+                    @foreach ($permissions as $perm)
+                        <tr class="{{ $loop->iteration % 2 === 1 ? 'bg-white' : 'bg-gray-200' }}">
+                            <td class="text-center text-gray-400">{{ $loop->iteration }}</td>
+                            <td class="text-gray-600 text-sm">{{ $perm->group }}</td>
+                            <td class="font-medium text-gray-800">{{ $perm->label }}</td>
 
-        @foreach ($permissions as $perm)
-            @if ($perm->group !== $grupSekarang)
-                @php $grupSekarang = $perm->group; @endphp
-                <h3 class="text-sm font-semibold text-gray-900 mt-6 first:mt-0">{{ $grupSekarang }}</h3>
-            @endif
-
-            <div class="card-base overflow-hidden">
-                <div class="table-custom-container">
-                    <table class="table-custom min-w-[64rem]">
-                        <thead class="table-custom-header">
-                            <tr>
-                                <th scope="col" class="w-64">Halaman</th>
-                                @foreach ($roles as $role => $meta)
-                                    <th scope="col" class="text-center w-32">
-                                        {{ $meta['label'] }}
-                                        @if ($meta['kunci'] ?? false)
-                                            <span class="block text-[10px] font-normal text-gray-400">selalu aktif</span>
-                                        @endif
-                                    </th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody class="table-custom-body divide-gray-150">
-                            <tr>
-                                <td class="font-medium text-gray-800">{{ $perm->label }}</td>
-
-                                @foreach ($roles as $role => $meta)
+                            @foreach ($roles as $role => $meta)
+                                @foreach (['view' => 'Access', 'manage' => 'CRUD'] as $level => $label)
                                     <td class="text-center">
-                                        @if ($meta['kunci'] ?? false)
-                                            <span class="text-gray-300 text-xs">—</span>
-                                        @else
-                                            <div class="inline-flex items-center gap-4">
-                                                @foreach (['view' => 'Lihat', 'manage' => 'Kelola'] as $level => $label)
-                                                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
-                                                        <input type="checkbox"
-                                                            name="{{ $level }}[{{ $role }}][{{ $perm->id }}]"
-                                                            value="1"
-                                                            @checked($matrix[$perm->id][$role][$level])
-                                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                                        <span class="text-xs text-gray-600 font-sans">{{ $label }}</span>
-                                                    </label>
-                                                @endforeach
-                                            </div>
-                                        @endif
+                                        <input type="checkbox"
+                                            name="{{ $level }}[{{ $role }}][{{ $perm->id }}]"
+                                            value="1"
+                                            @checked($matrix[$perm->id][$role][$level])
+                                            @disabled($meta['kunci'] ?? false)
+                                            aria-label="{{ $label }} {{ $meta['label'] }} — {{ $perm->label }}"
+                                            title="{{ $meta['label'] }} · {{ $label }}"
+                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                     </td>
                                 @endforeach
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        @endforeach
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+    <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+        <button type="submit"
+                formaction="{{ route('permission.reset') }}"
+                onclick="return confirm('Reset semua izin akses ke default sistem? Tindakan ini menimpa pengaturan saat ini.')"
+                class="btn-secondary">
+            Reset ke Default
+        </button>
+
         <button type="submit" class="btn-primary">Simpan Izin</button>
     </div>
-</form>
-
-<form method="POST" action="{{ route('permission.reset') }}"
-      class="mt-3"
-      onsubmit="return confirm('Reset semua izin akses ke default sistem? Tindakan ini menimpa pengaturan saat ini.')">
-    @csrf
-    <button type="submit" class="btn-secondary">Reset ke Default</button>
 </form>
 @endsection
