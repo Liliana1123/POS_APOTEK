@@ -386,7 +386,7 @@
     {{-- JUDUL LAPORAN --}}
     <div class="print-report-title">
         <h2>
-            Laporan Kerugian Barang Rusak & Kadaluarsa
+            Laporan Kerugian Barang Rusak atau Kadaluarsa
         </h2>
         <p>
             Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}

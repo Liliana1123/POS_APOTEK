@@ -537,7 +537,7 @@
 <!-- Page Header -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden no-print page-header-web">
     <div>
-        <h1>Laporan Monitoring Stok & Kadaluarsa</h1>
+        <h1>Laporan Monitoring Stok dan Kadaluarsa</h1>
 
         <p class="text-caption mt-1">
             Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa.
