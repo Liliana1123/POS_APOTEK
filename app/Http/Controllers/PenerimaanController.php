@@ -86,16 +86,24 @@ class PenerimaanController extends Controller
         }
     }
 
+        $tanggalMulai = $request->filled('tanggal_mulai')
+            ? $request->tanggal_mulai
+            : ($request->filled('tanggal') ? $request->tanggal : now()->startOfMonth()->format('Y-m-d'));
+
+        $tanggalAkhir = $request->filled('tanggal_akhir')
+            ? $request->tanggal_akhir
+            : ($request->filled('tanggal') ? $request->tanggal : now()->endOfMonth()->format('Y-m-d'));
+
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
-        }
-
-        if ($request->filled('tanggal_mulai')) {
-            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
-        }
-
-        if ($request->filled('tanggal_akhir')) {
-            $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
+        } else {
+            if ($tanggalMulai && $tanggalAkhir) {
+                $query->whereBetween('tanggal', [$tanggalMulai, $tanggalAkhir]);
+            } elseif ($tanggalMulai) {
+                $query->whereDate('tanggal', '>=', $tanggalMulai);
+            } elseif ($tanggalAkhir) {
+                $query->whereDate('tanggal', '<=', $tanggalAkhir);
+            }
         }
 
         $perPage = (int) $request->input('per_page', 10);
@@ -108,7 +116,7 @@ class PenerimaanController extends Controller
         $suppliers = Supplier::orderBy('nama')->get();
         $barangs = Barang::with(['pabrik', 'satuan'])->where('aktif', true)->orderBy('nama')->get();
 
-        return view('penerimaan.index', compact('penerimaans', 'suppliers', 'barangs'));
+        return view('penerimaan.index', compact('penerimaans', 'suppliers', 'barangs', 'tanggalMulai', 'tanggalAkhir'));
     }
 
     public function create()

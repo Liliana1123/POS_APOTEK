@@ -49,7 +49,7 @@
                     <input
                         type="date"
                         name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
                         class="form-input min-w-0"
                     >
 
@@ -58,7 +58,7 @@
                     <input
                         type="date"
                         name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
                         class="form-input min-w-0"
                     >
                 </div>
@@ -282,14 +282,14 @@
                         <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Penerimaan Tidak Ditemukan
                                     @else
                                         Penerimaan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
                                     @else
                                         Belum ada data faktur masuk terdaftar di sistem.
@@ -333,8 +333,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -354,8 +353,7 @@
 
         <div
             id="detail-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
@@ -371,8 +369,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -391,8 +388,7 @@
         </div>
 
         <div id="payment-penerimaan-content"
-             class="modal-body-custom overflow-y-auto"
-             style="max-height: calc(100vh - 180px);">
+             class="modal-body-custom overflow-y-auto modal-body-scroll">
             <div class="text-center py-8 text-gray-500">
                 Memuat pembayaran...
             </div>
@@ -408,8 +404,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Penerimaan Susulan</h2>
@@ -430,8 +425,7 @@
 
         <div
             id="susulan-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat formulir penerimaan susulan...
@@ -445,8 +439,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Edit Penerimaan</h2>
@@ -467,8 +460,7 @@
 
         <div
             id="edit-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat form edit...
@@ -479,7 +471,7 @@
 
 <!-- Modal Tambah Faktur Penerimaan Baru -->
 <div id="modal-tambah-penerimaan" class="modal-backdrop-custom hidden" aria-hidden="true">
-    <div class="modal-container-custom max-w-15xl flex flex-col" style="width: 95vw; max-width: 1100px; max-height: calc(100vh - 60px);">
+    <div class="modal-container-custom max-w-15xl flex flex-col modal-dialog-large" style="max-height: calc(100vh - 60px);">
         <div class="modal-header-custom">
             <div>
                 <h2>Faktur Penerimaan Barang Baru</h2>
@@ -493,7 +485,7 @@
             </button>
         </div>
 
-        <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
+        <div class="modal-body-custom overflow-y-auto modal-body-scroll">
             <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
                 @csrf
 

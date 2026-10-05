@@ -65,7 +65,7 @@
                     <input
                         type="date"
                         name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
                         class="form-input min-w-0"
                     >
 
@@ -74,7 +74,7 @@
                     <input
                         type="date"
                         name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
                         class="form-input min-w-0"
                     >
                 </div>

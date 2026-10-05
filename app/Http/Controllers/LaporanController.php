@@ -282,23 +282,19 @@ class LaporanController extends Controller
     // Laporan penerimaan barang dalam rentang tanggal
     public function penerimaan(Request $request)
     {
-        $hasFilterTanggal = $request->filled('dari') || $request->filled('sampai');
-        $dari = $request->query('dari');
-        $sampai = $request->query('sampai');
+        [$dari, $sampai] = $this->rentangTanggal($request);
 
         $query = DetailPenerimaan::with(['barang', 'penerimaan.supplier']);
 
-        if ($hasFilterTanggal) {
-            $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
-                if ($dari && $sampai) {
-                    $q->whereBetween('tanggal', [$dari, $sampai]);
-                } elseif ($dari) {
-                    $q->where('tanggal', '>=', $dari);
-                } elseif ($sampai) {
-                    $q->where('tanggal', '<=', $sampai);
-                }
-            });
-        }
+        $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
+            if ($dari && $sampai) {
+                $q->whereBetween('tanggal', [$dari, $sampai]);
+            } elseif ($dari) {
+                $q->where('tanggal', '>=', $dari);
+            } elseif ($sampai) {
+                $q->where('tanggal', '<=', $sampai);
+            }
+        });
 
         if ($request->filled('no_faktur')) {
             $query->whereHas('penerimaan', function ($q) use ($request) {
@@ -447,20 +443,16 @@ class LaporanController extends Controller
     // Laporan barang rusak dalam rentang tanggal
     public function rusak(Request $request)
     {
-        $hasFilterTanggal = $request->filled('dari') || $request->filled('sampai');
-        $dari = $request->query('dari');
-        $sampai = $request->query('sampai');
+        [$dari, $sampai] = $this->rentangTanggal($request);
 
         $query = Rusak::with('detailPenerimaan.barang');
 
-        if ($hasFilterTanggal) {
-            if ($dari && $sampai) {
-                $query->whereBetween('tanggal', [$dari, $sampai]);
-            } elseif ($dari) {
-                $query->where('tanggal', '>=', $dari);
-            } elseif ($sampai) {
-                $query->where('tanggal', '<=', $sampai);
-            }
+        if ($dari && $sampai) {
+            $query->whereBetween('tanggal', [$dari, $sampai]);
+        } elseif ($dari) {
+            $query->where('tanggal', '>=', $dari);
+        } elseif ($sampai) {
+            $query->where('tanggal', '<=', $sampai);
         }
 
         if ($request->filled('nama_barang')) {

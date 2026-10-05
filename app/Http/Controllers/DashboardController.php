@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
-use App\Models\DiscountUsage;
-use App\Models\CustomDiscount;
 use App\Models\Penjualan;
-use App\Models\DetailPenjualan;
 use App\Models\Barang;
 use App\Models\DetailPenerimaan;
 use App\Models\Penerimaan;
-use App\Models\PembayaranPenerimaan;
 use App\Models\ActivityLog;
 use App\Services\DashboardCacheService;
 use Carbon\Carbon;

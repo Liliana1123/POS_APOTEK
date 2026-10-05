@@ -1,32 +1,3 @@
-<style>
-    .table-payment-penerimaan {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-
-    .table-payment-penerimaan th {
-        padding: 0.6rem 0.75rem !important;
-        font-size: 0.65rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.03em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
-    }
-
-    .table-payment-penerimaan td {
-        padding: 0.55rem 0.75rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        vertical-align: middle;
-    }
-</style>
-
 <div class="space-y-4">
     <!-- Info Cards Grid (Selaras dengan Form Susulan & Detail Penerimaan) -->
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">

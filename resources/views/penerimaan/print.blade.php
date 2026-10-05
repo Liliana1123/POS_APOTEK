@@ -669,7 +669,11 @@
 
                 <div class="signature-name">
                     @if (!empty($penerimaan->supplier?->nama))
-                        ( {{ $penerimaan->supplier->nama }} )
+                        @php
+                            $supplierWords = preg_split('/\s+/', trim($penerimaan->supplier->nama));
+                            $namaSupplierTtd = implode(' ', array_slice($supplierWords, 0, 3));
+                        @endphp
+                        ( {{ $namaSupplierTtd }} )
                     @else
                         (__________________)
                     @endif
