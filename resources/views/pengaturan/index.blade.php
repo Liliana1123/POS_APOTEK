@@ -251,6 +251,45 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="md:col-span-2 pt-3 border-t border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1">Lokasi Apotek</h4>
+                        <p class="text-[11px] text-gray-500 mb-3">Koordinat lokasi apotek (Latitude dan Longitude) dalam format desimal.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="input-latitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Latitude
+                                </label>
+                                <input type="number"
+                                       id="input-latitude"
+                                       name="latitude"
+                                       value="{{ old('latitude', $apotek->latitude) }}"
+                                       placeholder="Contoh: -6.2088"
+                                       step="any"
+                                       min="-90"
+                                       max="90"
+                                       class="form-input @error('latitude') error @enderror">
+                                @error('latitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label for="input-longitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Longitude
+                                </label>
+                                <input type="number"
+                                       id="input-longitude"
+                                       name="longitude"
+                                       value="{{ old('longitude', $apotek->longitude) }}"
+                                       placeholder="Contoh: 106.8451"
+                                       step="any"
+                                       min="-180"
+                                       max="180"
+                                       class="form-input @error('longitude') error @enderror">
+                                @error('longitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
