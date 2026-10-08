@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Data Master Barang')
 
 @section('content')
@@ -130,14 +130,14 @@
                                     aria-label="Lihat Detail"
                                     data-json="{{ json_encode([
                                         'id' => $barang->id,
-                                        'kode_apotek' => $barang->kode_apotek ?? '—',
-                                        'kode_kfa' => $barang->kode_kfa ?? '—',
+                                        'kode_apotek' => $barang->kode_apotek ?? 'â€”',
+                                        'kode_kfa' => $barang->kode_kfa ?? 'â€”',
                                         'nama' => $barang->nama,
-                                        'merk' => $barang->merk ?? '—',
-                                        'barcode' => $barang->barcode ?? '—',
-                                        'kategori' => $barang->kategori->nama ?? '—',
-                                        'satuan' => $barang->satuan->nama ?? '—',
-                                        'pabrik' => $barang->pabrik->nama ?? '—',
+                                        'merk' => $barang->merk ?? 'â€”',
+                                        'barcode' => $barang->barcode ?? 'â€”',
+                                        'kategori' => $barang->kategori->nama ?? 'â€”',
+                                        'satuan' => $barang->satuan->nama ?? 'â€”',
+                                        'pabrik' => $barang->pabrik->nama ?? 'â€”',
                                         'supplier' => $barang->supplierNama(),
                                         'stok' => $stok,
                                         'stok_minimum' => $barang->stok_minimum,
@@ -151,11 +151,11 @@
                                 </button>
                             </x-table-action>
                         </td>
-                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
-                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_apotek ?? 'â€”' }}</td>
+                        <td class="font-mono">{{ $barang->kode_kfa ?? 'â€”' }}</td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
-                        <td>{{ $barang->merk ?: '—' }}</td>
-                        <td>{{ $barang->satuan->nama ?? '—' }}</td>
+                        <td>{{ $barang->merk ?: 'â€”' }}</td>
+                        <td>{{ $barang->satuan->nama ?? 'â€”' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
                             <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
@@ -283,100 +283,5 @@
 @include('barang.partials.modal-detail')
 @include('barang.partials.modal-import')
 
-<!-- Page Specific Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- DETAIL MODAL LOGIC ---
-    var detailModal = document.getElementById('modal-detail-barang');
-    var detailBackdrop = document.getElementById('modal-detail-barang-backdrop');
-    var btnCloseDetail = document.getElementById('btn-close-detail-modal');
-    var btnCancelDetail = document.getElementById('btn-cancel-detail-modal');
-    var btnEditFromDetail = document.getElementById('btn-edit-from-detail');
-
-    function openDetailModal(data) {
-        document.getElementById('detail-title-nama').textContent = data.nama;
-        document.getElementById('detail-kode-apotek').textContent = data.kode_apotek;
-        document.getElementById('detail-kode-kfa').textContent = data.kode_kfa;
-        document.getElementById('detail-nama').textContent = data.nama;
-        document.getElementById('detail-merk').textContent = data.merk;
-        document.getElementById('detail-barcode').textContent = data.barcode;
-        document.getElementById('detail-kategori').textContent = data.kategori;
-        document.getElementById('detail-satuan').textContent = data.satuan;
-        document.getElementById('detail-pabrik').textContent = data.pabrik;
-        document.getElementById('detail-supplier').textContent = data.supplier;
-        document.getElementById('detail-stok').textContent = data.stok + ' ' + data.satuan;
-        document.getElementById('detail-stok-minimum').textContent = data.stok_minimum + ' ' + data.satuan;
-
-        var badge = document.getElementById('detail-status-stok-badge');
-        badge.className = data.status_stok_badge;
-        badge.textContent = data.status_stok;
-
-        document.getElementById('detail-butuh-resep').textContent = data.butuh_resep;
-        document.getElementById('detail-status-aktif').textContent = data.aktif;
-
-        window.__detailEditId = data.id;
-
-        detailBackdrop.classList.remove('hidden');
-        detailModal.classList.remove('hidden');
-    }
-
-    function closeDetailModal() {
-        detailBackdrop.classList.add('hidden');
-        detailModal.classList.add('hidden');
-    }
-
-    document.querySelectorAll('.btn-detail-barang').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            try {
-                var data = JSON.parse(this.dataset.json);
-                openDetailModal(data);
-            } catch (e) {
-                console.error('Error parsing barang detail JSON', e);
-            }
-        });
-    });
-
-    if (btnCloseDetail) btnCloseDetail.addEventListener('click', closeDetailModal);
-    if (btnCancelDetail) btnCancelDetail.addEventListener('click', closeDetailModal);
-    if (detailBackdrop) detailBackdrop.addEventListener('click', closeDetailModal);
-    if (btnEditFromDetail) btnEditFromDetail.addEventListener('click', function() {
-        closeDetailModal();
-        var editBtn = document.querySelector('.btn-edit-barang[data-id="' + window.__detailEditId + '"]');
-        if (editBtn) editBtn.click();
-    });
-
-    // --- IMPORT MODAL LOGIC ---
-    var importModal = document.getElementById('modal-import-barang');
-    var importBackdrop = document.getElementById('modal-import-barang-backdrop');
-    var btnOpen = document.getElementById('btn-import-barang');
-    var btnClose = document.getElementById('btn-close-import-modal');
-    var btnCancel = document.getElementById('btn-cancel-import-modal');
-    var formImport = document.getElementById('form-import-barang');
-    var submitBtn = document.getElementById('btn-submit-import');
-
-    function openImportModal() {
-        importBackdrop.classList.remove('hidden');
-        importModal.classList.remove('hidden');
-    }
-
-    function closeImportModal() {
-        importBackdrop.classList.add('hidden');
-        importModal.classList.add('hidden');
-    }
-
-    if (btnOpen) btnOpen.addEventListener('click', openImportModal);
-    if (btnClose) btnClose.addEventListener('click', closeImportModal);
-    if (btnCancel) btnCancel.addEventListener('click', closeImportModal);
-    if (importBackdrop) importBackdrop.addEventListener('click', closeImportModal);
-
-    if (formImport) {
-        formImport.addEventListener('submit', function () {
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span>Memproses...</span>';
-            }
-        });
-    }
-});
-</script>
+@vite('resources/js/pages/barang-index.js')
 @endsection

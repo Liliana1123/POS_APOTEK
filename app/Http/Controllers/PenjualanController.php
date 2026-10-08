@@ -115,17 +115,60 @@ class PenjualanController extends Controller
             });
 
         // Cuma barang yang aktif & masih ada stok yang bisa dijual
-        $barangs = Barang::where('aktif', true)
-            ->get()
-            ->filter(fn($b) => $b->stokTotal() > 0)
+        // eager-load stok aggregate (withSum) dan batch FEFO pertama agar tidak terjadi N+1 per baris
+        $barangs = Barang::withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
+            ->with('batchFefoFirst')
+            ->where('aktif', true)
+            ->get();
+
+        // Precompute custom discount % untuk SEMUA barang aktif dalam sekali query (tidak dipanggil per-barang)
+        $activePromos = \App\Models\CustomDiscount::aktifHariIni()
+            ->with(['kategoris', 'barangs'])
+            ->get();
+        $discountMap = [];
+        foreach ($barangs as $b) {
+            $discountMap[$b->id] = 0;
+        }
+        foreach ($activePromos as $promo) {
+            if ($promo->cakupan === 'semua') {
+                foreach ($barangs as $b) {
+                    $discountMap[$b->id] = $promo->persentase;
+                }
+                break;
+            } elseif ($promo->cakupan === 'kategori') {
+                $kategoriIds = $promo->kategoris->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($kategoriIds->contains($b->kategori_id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            } elseif ($promo->cakupan === 'barang') {
+                $barangIds = $promo->barangs->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($barangIds->contains($b->id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            } elseif ($promo->cakupan === 'kombinasi') {
+                $kategoriIds = $promo->kategoris->pluck('id');
+                $barangIds = $promo->barangs->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($kategoriIds->contains($b->kategori_id) || $barangIds->contains($b->id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            }
+        }
+
+        $barangs = $barangs->filter(fn($b) => $b->detail_penerimaan_sum_stok > 0)
             ->map(fn($b) => [
                 'id'                  => $b->id,
                 'kode_apotek'         => $b->kode_apotek,
                 'nama'                => $b->nama,
-                'stok'                => $b->stokTotal(),
-                'harga'               => $b->hargaJualTerkini(),
+                'stok'                => (int) $b->detail_penerimaan_sum_stok,
+                'harga'               => $b->batchFefoFirst->first()?->harga_jual,
                 'butuh_resep'         => $b->butuh_resep,
-                'diskon_custom_percent' => \App\Models\CustomDiscount::getPercentForBarang($b),
+                'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
             ])
             ->values();
 
