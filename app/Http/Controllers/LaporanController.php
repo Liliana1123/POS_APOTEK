@@ -19,59 +19,7 @@ class LaporanController extends Controller
     public function stok(Request $request)
     {
         $kategoris = Kategori::orderBy('nama')->get();
-        $barangs = Barang::with('kategori')
-            ->withSum(['detailPenerimaan' => function ($query) {
-                $query->where('aktif', true);
-            }], 'stok')
-            ->where('aktif', true)
-            ->when($request->filled('nama'), function ($query) use ($request) {
-                $query->where('nama', 'like', '%' . $request->nama . '%');
-            })
-            ->when($request->filled('kategori_id'), function ($query) use ($request) {
-                $query->where('kategori_id', $request->kategori_id);
-            })
-
-            ->when($request->filled('status_stok'), function ($query) use ($request) {
-                if ($request->status_stok === 'habis') {
-                    $query->whereDoesntHave('detailPenerimaan', function ($q) {
-                        $q->where('aktif', true)
-                        ->where('stok', '>', 0);
-                    });
-                }
-
-                if ($request->status_stok === 'menipis') {
-                    $query->whereHas('detailPenerimaan', function ($q) {
-                        $q->where('aktif', true);
-                    })
-                    ->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) > 0'
-                    )
-                    ->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) <= stok_minimum'
-                    );
-                }
-
-                if ($request->status_stok === 'aman') {
-                    $query->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) > stok_minimum'
-                    );
-                }
-            })
-
-            ->orderBy('nama')
-            ->get();
+        $barangs = collect(); // unused, kept for view compatibility
 
         $stokPerBatch = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')

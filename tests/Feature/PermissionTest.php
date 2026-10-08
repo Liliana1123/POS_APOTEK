@@ -198,7 +198,7 @@ class PermissionTest extends TestCase
 
         $toggle = preg_match_all('/name="(?:view|manage)\[[a-z]+\]\[\d+\]"/', $html);
         $this->assertSame(
-            Permission::count() * (count(config('permission.roles')) - 1) * 2,
+            Permission::count() * count(config('permission.roles')) * 2,
             $toggle
         );
 

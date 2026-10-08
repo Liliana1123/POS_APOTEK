@@ -101,6 +101,7 @@ class PenerimaanController extends Controller
         $perPage = $request->input('per_page', 15);
 
         $penerimaans = $query->withSum('pembayaran', 'jumlah')
+            ->with(['detail', 'detailPesanan.riwayatPenerimaan'])
             ->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
         $suppliers = Supplier::orderBy('nama')->get();
         $barangs = Barang::with(['pabrik', 'satuan'])->where('aktif', true)->orderBy('nama')->get();

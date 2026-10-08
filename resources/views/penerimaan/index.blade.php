@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Penerimaan Barang')
 
 @section('content')
@@ -231,13 +231,13 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '—' }}
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? 'â€”' }}
                         </div>
                     </td>
 
                     {{-- Supplier --}}
                     <td class="font-medium text-gray-800">
-                        {{ $penerimaan->supplier->nama ?? '—' }}
+                        {{ $penerimaan->supplier->nama ?? 'â€”' }}
                     </td>
 
                     {{-- Status Penerimaan --}}
@@ -261,7 +261,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '—' }}
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? 'â€”' }}
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -345,7 +345,7 @@
                 id="btn-tutup-detail"
                 class="btn-secondary !p-1.5"
                 title="Tutup">
-                ✕
+                âœ•
             </button>
         </div>
 
@@ -383,7 +383,7 @@
                 id="btn-tutup-payment"
                 class="btn-secondary !p-1.5"
                 title="Tutup">
-                ✕
+                âœ•
             </button>
         </div>
 
@@ -421,7 +421,7 @@
                 class="btn-secondary !p-1.5"
                 title="Tutup"
             >
-                ✕
+                âœ•
             </button>
         </div>
 
@@ -458,7 +458,7 @@
                 class="btn-secondary !p-1.5"
                 title="Tutup"
             >
-                ✕
+                âœ•
             </button>
         </div>
 
@@ -486,7 +486,7 @@
             </div>
 
             <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup">
-                ✕
+                âœ•
             </button>
         </div>
 
@@ -614,7 +614,7 @@
             <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
-                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' â€” ' . $barang->barcode : '' }}</option>
                 @endforeach
             </select>
         </td>
@@ -644,739 +644,15 @@
     </tr>
 </template>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.getElementById('modal-detail-penerimaan');
-    const content = document.getElementById('detail-penerimaan-content');
-    const btnTutup = document.getElementById('btn-tutup-detail');
-
-    const paymentModal = document.getElementById('modal-payment-penerimaan');
-    const paymentContent = document.getElementById('payment-penerimaan-content');
-    const btnTutupPayment = document.getElementById('btn-tutup-payment');
-
-    // =========================
-    // MODAL DETAIL PENERIMAAN
-    // =========================
-    document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const url = button.dataset.url;
-
-            modal.classList.remove('hidden');
-
-            content.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat detail...
-                </div>
-            `;
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal mengambil detail penerimaan.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    content.innerHTML = html;
-                })
-                .catch(error => {
-                    content.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            Gagal memuat detail penerimaan.
-                        </div>
-                    `;
-
-                    console.error(error);
-                });
-        });
-    });
-
-    // Edit Penerimaan
-    document.addEventListener('click', async function (event) {
-        const button = event.target.closest('.btn-edit-penerimaan');
-
-        if (!button) {
-            return;
-        }
-
-        const modal = document.getElementById('modal-edit-penerimaan');
-        const content = document.getElementById('edit-penerimaan-content');
-        const url = button.dataset.url;
-
-        if (!modal || !content || !url) {
-            return;
-        }
-
-        content.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                Memuat form edit...
-            </div>
-        `;
-
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
-            });
-
-            if (!response.ok) {
-                let errorMsg = 'Gagal memuat form edit.';
-                try {
-                    const errData = await response.json();
-                    if (errData && errData.message) {
-                        errorMsg = errData.message;
-                    }
-                } catch (e) {}
-                throw new Error(errorMsg);
-            }
-
-           const html = await response.text();
-
-            content.innerHTML = html;
-
-            content.querySelectorAll('script').forEach(function (oldScript) {
-                const newScript = document.createElement('script');
-
-                newScript.textContent = oldScript.textContent;
-
-                document.body.appendChild(newScript);
-
-                oldScript.remove();
-            });
-
-            if (typeof initEditPenerimaanForm === 'function') {
-                initEditPenerimaanForm();
-            }
-
-        } catch (error) {
-            content.innerHTML = `
-                <div class="p-6 text-center">
-                    <div class="text-amber-600 font-bold mb-2">Pemberitahuan</div>
-                    <div class="text-sm text-gray-700">${error.message || 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.'}</div>
-                </div>
-            `;
-
-            console.error(error);
-        }
-    });
-
-    function tutupModalEdit() {
-        const modal = document.getElementById('modal-edit-penerimaan');
-        const content = document.getElementById('edit-penerimaan-content');
-        if (modal) {
-            modal.classList.add('hidden');
-            modal.setAttribute('aria-hidden', 'true');
-        }
-        if (content) {
-            content.innerHTML = '';
-        }
-    }
-
-    // Tutup modal Edit
-    document.addEventListener('click', function (event) {
-        if (event.target.closest('#btn-tutup-edit') || event.target.closest('#btn-batal-edit')) {
-            tutupModalEdit();
-        }
-    });
-
-    const modalEditContainer = document.getElementById('modal-edit-penerimaan');
-    if (modalEditContainer) {
-        modalEditContainer.addEventListener('click', function (e) {
-            if (e.target === modalEditContainer) {
-                tutupModalEdit();
-            }
-        });
-    }
-
-    // =========================
-    // MODAL PEMBAYARAN
-    // =========================
-    document.querySelectorAll('.btn-payment-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-
-            paymentModal.classList.remove('hidden');
-
-            paymentContent.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat pembayaran...
-                </div>
-            `;
-
-            fetch(`/penerimaan/${id}/payment-form`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal mengambil form pembayaran.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    paymentContent.innerHTML = html;
-                })
-                .catch(error => {
-                    paymentContent.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            Gagal memuat form pembayaran.
-                        </div>
-                    `;
-
-                    console.error(error);
-                });
-        });
-    });
-
-
-     // =========================
-    // MODAL SUSULAN
-    // =========================
-    const susulanModal = document.getElementById('modal-susulan-penerimaan');
-    const susulanContent = document.getElementById('susulan-penerimaan-content');
-    const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
-
-    // BUKA FORM SUSULAN
-    document.querySelectorAll('.btn-susulan-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-
-            susulanModal.classList.remove('hidden');
-
-            susulanContent.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat formulir penerimaan susulan...
-                </div>
-            `;
-
-            fetch(`/penerimaan/${id}/susulan-form`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal memuat formulir penerimaan susulan.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    susulanContent.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error(error);
-
-                    susulanContent.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            ${error.message}
-                        </div>
-                    `;
-                });
-        });
-    });
-
-    // TUTUP FORM SUSULAN
-    if (closeSusulanButton) {
-        closeSusulanButton.addEventListener('click', function () {
-            susulanModal.classList.add('hidden');
-            susulanContent.innerHTML = '';
-        });
-    }
-
-    // SIMPAN PENERIMAAN SUSULAN
-    document.addEventListener('submit', function (event) {
-        if (event.target.id !== 'form-susulan-penerimaan') {
-            return;
-        }
-
-        event.preventDefault();
-
-        const form = event.target;
-        const button = form.querySelector('#btn-simpan-susulan');
-
-        if (!button || button.disabled) {
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = 'Menyimpan...';
-
-        fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form),
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-            .then(async response => {
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        data.message ||
-                        data.errors?.jumlah_susulan?.[0] ||
-                        'Gagal menyimpan penerimaan susulan.'
-                    );
-                }
-
-                return data;
-            })
-            .then(data => {
-                susulanModal.classList.add('hidden');
-                susulanContent.innerHTML = '';
-
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error('Penerimaan susulan:', error);
-
-                alert(error.message || 'Gagal menyimpan penerimaan susulan.');
-
-                button.disabled = false;
-                button.textContent = 'Simpan Penerimaan Susulan';
-            });
-    });
-
-    // =========================
-    // TUTUP MODAL DETAIL
-    // =========================
-    btnTutup.addEventListener('click', function () {
-        modal.classList.add('hidden');
-        content.innerHTML = '';
-    });
-
-    // =========================
-    // TUTUP MODAL PEMBAYARAN
-    // =========================
-    btnTutupPayment.addEventListener('click', function () {
-        paymentModal.classList.add('hidden');
-        paymentContent.innerHTML = '';
-    });
-
-    // ==========================================
-    // MODAL TAMBAH FAKTUR PENERIMAAN BARU
-    // ==========================================
-    const modalTambah = document.getElementById('modal-tambah-penerimaan');
-    const btnBukaTambah = document.getElementById('btn-tambah-penerimaan');
-    const btnTutupTambah = document.getElementById('btn-tutup-tambah');
-    const btnBatalTambah = document.getElementById('btn-batal-tambah');
-
-    let rowIndexTambah = 0;
-    const tbodyTambah = document.getElementById('item-rows-tambah');
-    const templateTambah = document.getElementById('row-template-tambah');
-    const emptyHintTambah = document.getElementById('empty-hint-tambah');
-    const totalFakturTambah = document.getElementById('total-faktur-tambah');
-    const ppnTambah = document.getElementById('ppn_tambah');
-    const totalTagihanTambah = document.getElementById('total-tagihan-tambah');
-    const oldItemsTambah = @json(old('_method') ? [] : old('items', []));
-
-    function formatRupiah(value) {
-        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
-    }
-
-    function updateTotalTambah() {
-        if (!tbodyTambah) return;
-        let total = 0;
-        tbodyTambah.querySelectorAll('tr').forEach(row => {
-            const harga = parseFloat(row.querySelector('.harga-beli')?.value) || 0;
-            const jumlah = parseInt(row.querySelector('.jumlah-diterima-field')?.value, 10) || 0;
-            const subtotal = harga * jumlah;
-            total += subtotal;
-            const subtotalEl = row.querySelector('.subtotal-field');
-            if (subtotalEl) subtotalEl.textContent = formatRupiah(subtotal);
-        });
-        if (totalFakturTambah) totalFakturTambah.textContent = formatRupiah(total);
-        const nilaiPpn = total * 0.11;
-        if (ppnTambah) ppnTambah.value = formatRupiah(nilaiPpn);
-        if (totalTagihanTambah) totalTagihanTambah.textContent = formatRupiah(total + nilaiPpn);
-    }
-
-    function tambahBarisPenerimaan() {
-        if (!templateTambah || !tbodyTambah) return;
-        const html = templateTambah.innerHTML.replaceAll('__i__', rowIndexTambah);
-        const tempTr = document.createElement('tbody');
-        tempTr.innerHTML = html;
-        tbodyTambah.appendChild(tempTr.firstElementChild);
-
-        if (oldItemsTambah && oldItemsTambah[rowIndexTambah]) {
-            const item = oldItemsTambah[rowIndexTambah];
-            const row = tbodyTambah.lastElementChild;
-
-            const bId = row.querySelector('[name$="[barang_id]"]');
-            if (bId) {
-                bId.value = item.barang_id || '';
-                const opt = bId.selectedOptions[0];
-                const bcField = row.querySelector('.barcode-field');
-                const satField = row.querySelector('.satuan-field');
-                if (bcField) bcField.value = opt?.dataset.barcode || '';
-                if (satField) satField.value = opt?.dataset.satuan || '';
-            }
-            const nb = row.querySelector('[name$="[no_batch]"]');
-            if (nb) nb.value = item.no_batch || '';
-            const ed = row.querySelector('[name$="[expired_date]"]');
-            if (ed) ed.value = item.expired_date || '';
-            const hb = row.querySelector('[name$="[harga_beli]"]');
-            if (hb) hb.value = item.harga_beli || '';
-            const hj = row.querySelector('[name$="[harga_jual]"]');
-            if (hj) hj.value = item.harga_jual || '';
-            const nr = row.querySelector('[name$="[no_rak]"]');
-            if (nr) nr.value = item.no_rak || '';
-            const jd = row.querySelector('[name$="[jumlah_dipesan]"]');
-            if (jd) jd.value = item.jumlah_dipesan || '';
-            const jt = row.querySelector('[name$="[jumlah_diterima]"]');
-            if (jt) jt.value = item.jumlah_diterima || '';
-        }
-        rowIndexTambah++;
-        if (emptyHintTambah) emptyHintTambah.style.display = 'none';
-        updateTotalTambah();
-    }
-
-    function resetFormTambah() {
-        const formTambah = document.getElementById('form-tambah-penerimaan');
-        if (!formTambah) return;
-        formTambah.reset();
-
-        const today = new Date().toISOString().split('T')[0];
-        const tglFakturInput = document.getElementById('tanggal_faktur_tambah');
-        const tglTerimaInput = document.getElementById('tanggal_tambah');
-        if (tglFakturInput) tglFakturInput.value = today;
-        if (tglTerimaInput) tglTerimaInput.value = today;
-
-        const telEl = document.getElementById('telepon_supplier_tambah');
-        if (telEl) telEl.value = '';
-
-        if (tbodyTambah) {
-            tbodyTambah.innerHTML = '';
-            rowIndexTambah = 0;
-            tambahBarisPenerimaan();
-        }
-        updateTotalTambah();
-    }
-
-    if (modalTambah) {
-        if (btnBukaTambah) {
-            btnBukaTambah.addEventListener('click', function () {
-                // Selalu tutup dan bersihkan edit modal bila sedang aktif
-                tutupModalEdit();
-
-                // Selalu pastikan form tambah dalam kondisi bersih
-                resetFormTambah();
-
-                modalTambah.classList.remove('hidden');
-                modalTambah.setAttribute('aria-hidden', 'false');
-            });
-        }
-
-        function tutupModalTambah() {
-            modalTambah.classList.add('hidden');
-            modalTambah.setAttribute('aria-hidden', 'true');
-        }
-
-        if (btnTutupTambah) btnTutupTambah.addEventListener('click', tutupModalTambah);
-        if (btnBatalTambah) btnBatalTambah.addEventListener('click', tutupModalTambah);
-
-        modalTambah.addEventListener('click', function (e) {
-            if (e.target === modalTambah) {
-                tutupModalTambah();
-            }
-        });
-
-        const btnTambahItem = document.getElementById('btn-tambah-item-tambah');
-        if (btnTambahItem) {
-            btnTambahItem.addEventListener('click', tambahBarisPenerimaan);
-        }
-
-        if (tbodyTambah) {
-            tbodyTambah.addEventListener('click', function (e) {
-                if (e.target.closest('.btn-hapus-row-tambah')) {
-                    e.target.closest('tr').remove();
-                    if (tbodyTambah.children.length === 0 && emptyHintTambah) {
-                        emptyHintTambah.style.display = 'block';
-                    }
-                    updateTotalTambah();
-                }
-            });
-
-            tbodyTambah.addEventListener('change', function (e) {
-                if (e.target.classList.contains('barang-select')) {
-                    const option = e.target.selectedOptions[0];
-                    const row = e.target.closest('tr');
-                    const bcField = row.querySelector('.barcode-field');
-                    const satField = row.querySelector('.satuan-field');
-                    if (bcField) bcField.value = option?.dataset.barcode || '';
-                    if (satField) satField.value = option?.dataset.satuan || '';
-                }
-            });
-
-            tbodyTambah.addEventListener('input', function (e) {
-                updateTotalTambah();
-                const target = e.target;
-                const row = target.closest('tr');
-                if (!row) return;
-
-                if (target.name && target.name.includes('[expired_date]')) {
-                    const tgl = document.getElementById('tanggal_tambah')?.value;
-                    validateRowExpiredTambah(row, tgl);
-                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
-                    validateRowHargaTambah(row);
-                }
-            });
-
-            tbodyTambah.addEventListener('change', function (e) {
-                const target = e.target;
-                const row = target.closest('tr');
-                if (!row) return;
-
-                if (target.name && target.name.includes('[expired_date]')) {
-                    const tgl = document.getElementById('tanggal_tambah')?.value;
-                    validateRowExpiredTambah(row, tgl);
-                } else if (target.name && (target.name.includes('[harga_beli]') || target.name.includes('[harga_jual]'))) {
-                    validateRowHargaTambah(row);
-                }
-            });
-        }
-
-        const tglTambahInput = document.getElementById('tanggal_tambah');
-        if (tglTambahInput) {
-            tglTambahInput.addEventListener('change', function () {
-                const tgl = this.value;
-                if (tbodyTambah) {
-                    tbodyTambah.querySelectorAll('tr').forEach(row => {
-                        validateRowExpiredTambah(row, tgl);
-                    });
-                }
-            });
-        }
-
-        function setFieldErrorTambah(input, message) {
-            if (!input) return;
-            input.classList.remove('border-gray-300');
-            input.classList.add('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
-
-            const container = input.closest('td') || input.parentElement;
-            if (!container) return;
-
-            let errEl = container.querySelector('.field-error-msg');
-            if (!errEl) {
-                errEl = document.createElement('span');
-                errEl.className = 'field-error-msg text-[11px] text-red-600 font-semibold block mt-1 leading-tight whitespace-normal';
-                container.appendChild(errEl);
-            }
-            errEl.textContent = message;
-        }
-
-        function clearFieldErrorTambah(input) {
-            if (!input) return;
-            input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
-            input.classList.add('border-gray-300');
-
-            const container = input.closest('td') || input.parentElement;
-            if (!container) return;
-
-            const errEl = container.querySelector('.field-error-msg');
-            if (errEl) {
-                errEl.remove();
-            }
-        }
-
-        function clearAllErrorsTambah() {
-            const form = document.getElementById('form-tambah-penerimaan');
-            if (!form) return;
-            form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
-            form.querySelectorAll('.!border-red-500').forEach(input => {
-                input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
-                input.classList.add('border-gray-300');
-            });
-            const generalBox = document.getElementById('tambah-general-error');
-            if (generalBox) {
-                generalBox.classList.add('hidden');
-                generalBox.textContent = '';
-            }
-        }
-
-        function validateRowExpiredTambah(row, tanggalPenerimaan) {
-            if (!row) return true;
-            const input = row.querySelector('[name$="[expired_date]"]');
-            if (!input) return true;
-
-            if (input.value && tanggalPenerimaan) {
-                if (input.value < tanggalPenerimaan) {
-                    setFieldErrorTambah(input, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
-                    return false;
-                }
-            }
-            clearFieldErrorTambah(input);
-            return true;
-        }
-
-        function validateRowHargaTambah(row) {
-            if (!row) return true;
-            const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
-            const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
-            if (!hbInput || !hjInput) return true;
-
-            const hb = parseFloat(hbInput.value);
-            const hj = parseFloat(hjInput.value);
-
-            if (!isNaN(hb) && !isNaN(hj)) {
-                if (hj < hb) {
-                    setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
-                    return false;
-                }
-            }
-            clearFieldErrorTambah(hjInput);
-            return true;
-        }
-
-        function validateFormTambah() {
-            clearAllErrorsTambah();
-            let isValid = true;
-            let firstErrorField = null;
-
-            const tglPenerimaan = document.getElementById('tanggal_tambah')?.value || '';
-
-            if (tbodyTambah) {
-                tbodyTambah.querySelectorAll('tr').forEach(row => {
-                    // Validasi Expired
-                    const expInput = row.querySelector('[name$="[expired_date]"]');
-                    if (expInput) {
-                        if (!expInput.value) {
-                            setFieldErrorTambah(expInput, 'Tanggal expired wajib diisi.');
-                            isValid = false;
-                            if (!firstErrorField) firstErrorField = expInput;
-                        } else if (tglPenerimaan && expInput.value < tglPenerimaan) {
-                            setFieldErrorTambah(expInput, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
-                            isValid = false;
-                            if (!firstErrorField) firstErrorField = expInput;
-                        }
-                    }
-
-                    // Validasi Harga
-                    const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
-                    const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
-                    if (hbInput && hjInput) {
-                        const hb = parseFloat(hbInput.value);
-                        const hj = parseFloat(hjInput.value);
-
-                        if (isNaN(hj) || hj < 0) {
-                            setFieldErrorTambah(hjInput, 'Harga jual wajib diisi.');
-                            isValid = false;
-                            if (!firstErrorField) firstErrorField = hjInput;
-                        } else if (!isNaN(hb) && hj < hb) {
-                            setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
-                            isValid = false;
-                            if (!firstErrorField) firstErrorField = hjInput;
-                        }
-                    }
-                });
-            }
-
-            if (!isValid && firstErrorField) {
-                firstErrorField.focus();
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            return isValid;
-        }
-
-        function applyServerErrorsTambah(errors) {
-            clearAllErrorsTambah();
-            const form = document.getElementById('form-tambah-penerimaan');
-            if (!form) return;
-            let firstErrorField = null;
-            let unmappedMessages = [];
-
-            for (const key in errors) {
-                const msgs = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
-                const msg = msgs[0];
-
-                const match = key.match(/^items\.(\d+)\.([a-z_]+)$/);
-                if (match && tbodyTambah) {
-                    const rowIndex = parseInt(match[1], 10);
-                    const fieldName = match[2];
-                    const rows = tbodyTambah.querySelectorAll('tr');
-                    const row = rows[rowIndex];
-                    if (row) {
-                        const input = row.querySelector(`[name$="[${fieldName}]"]`);
-                        if (input) {
-                            setFieldErrorTambah(input, msg);
-                            if (!firstErrorField) firstErrorField = input;
-                            continue;
-                        }
-                    }
-                }
-
-                const topInput = form.querySelector(`[name="${key}"]`);
-                if (topInput) {
-                    setFieldErrorTambah(topInput, msg);
-                    if (!firstErrorField) firstErrorField = topInput;
-                    continue;
-                }
-
-                unmappedMessages.push(msg);
-            }
-
-            const generalBox = document.getElementById('tambah-general-error');
-            if (generalBox && unmappedMessages.length > 0) {
-                generalBox.textContent = unmappedMessages.join(', ');
-                generalBox.classList.remove('hidden');
-            }
-
-            if (firstErrorField) {
-                firstErrorField.focus();
-                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        const supplierSelectTambah = document.getElementById('supplier_id_tambah');
-        if (supplierSelectTambah) {
-            supplierSelectTambah.addEventListener('change', function () {
-                const telEl = document.getElementById('telepon_supplier_tambah');
-                if (telEl) telEl.value = this.selectedOptions[0]?.dataset.telepon || '';
-            });
-            if (supplierSelectTambah.value) {
-                const telEl = document.getElementById('telepon_supplier_tambah');
-                if (telEl) telEl.value = supplierSelectTambah.selectedOptions[0]?.dataset.telepon || '';
-            }
-        }
-
-        const formTambah = document.getElementById('form-tambah-penerimaan');
-        if (formTambah) {
-            formTambah.addEventListener('submit', function (e) {
-                if (tbodyTambah && tbodyTambah.children.length === 0) {
-                    e.preventDefault();
-                    alert('Tambahkan minimal 1 baris barang.');
-                    return;
-                }
-
-                if (!validateFormTambah()) {
-                    e.preventDefault();
-                }
-            });
-        }
-
-        // Inisialisasi baris item
-        if (oldItemsTambah && oldItemsTambah.length > 0) {
-            oldItemsTambah.forEach(() => {
-                tambahBarisPenerimaan();
-            });
-        } else {
-            tambahBarisPenerimaan();
-        }
-
-        // Buka otomatis jika ada error validasi saat submit form tambah baru
-        @if ($errors->any() && !old('_method'))
-            modalTambah.classList.remove('hidden');
-            modalTambah.setAttribute('aria-hidden', 'false');
-            setTimeout(() => {
-                applyServerErrorsTambah(@json($errors->toArray()));
-            }, 50);
-        @endif
-    }
-});
+{{-- Data untuk halaman penerimaan (dibaca oleh resources/js/pages/penerimaan-index.js) --}}
+<script type="application/json" id="penerimaan-old-items">
+    @json(old("_method") ? [] : old("items", []))
 </script>
+<script type="application/json" id="penerimaan-server-errors">
+    @json((($errors->any() && !old('_method')) ? $errors->toArray() : []))
+</script>
+
+@vite('resources/js/pages/penerimaan-index.js')
 
 
 

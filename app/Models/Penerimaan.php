@@ -55,17 +55,34 @@ class Penerimaan extends Model
         return $this->hasMany(PembayaranPenerimaan::class);
     }
 
+    protected $canBeEditedMemo = null;
+    protected $alasanTidakBisaDieditMemo = null;
+    protected $statusPenerimaanMemo = null;
+    protected $totalFakturMemo = null;
+    protected $totalTagihanMemo = null;
+    protected $totalDibayarMemo = null;
+    protected $sisaTagihanMemo = null;
+
     public function totalFaktur(): float
     {
-        if ($this->relationLoaded('detail')) {
-            return (float) $this->detail->sum(fn ($d) => (float) $d->harga_beli * (int) $d->jumlah);
+        if ($this->totalFakturMemo !== null) {
+            return $this->totalFakturMemo;
         }
-        return (float) $this->detail()->sum(DB::raw('harga_beli * jumlah'));
+        if ($this->relationLoaded('detail')) {
+            $this->totalFakturMemo = (float) $this->detail->sum(fn ($d) => (float) $d->harga_beli * (int) $d->jumlah);
+            return $this->totalFakturMemo;
+        }
+        $this->totalFakturMemo = (float) $this->detail()->sum(DB::raw('harga_beli * jumlah'));
+        return $this->totalFakturMemo;
     }
 
     public function totalTagihan(): float
     {
-        return $this->totalFaktur() + (float) $this->ppn;
+        if ($this->totalTagihanMemo !== null) {
+            return $this->totalTagihanMemo;
+        }
+        $this->totalTagihanMemo = $this->totalFaktur() + (float) $this->ppn;
+        return $this->totalTagihanMemo;
     }
     
     public function kelebihanPembayaran(): float
@@ -75,30 +92,44 @@ class Penerimaan extends Model
 
     public function totalDibayar(): float
     {
-        if ($this->relationLoaded('pembayaran')) {
-            return (float) $this->pembayaran->sum('jumlah');
+        if ($this->totalDibayarMemo !== null) {
+            return $this->totalDibayarMemo;
         }
-        return (float) $this->pembayaran()->sum('jumlah');
+        // Check if withSum('pembayaran', 'jumlah') was used - it sets 'pembayaran_sum_jumlah' attribute
+        if (array_key_exists('pembayaran_sum_jumlah', $this->attributes)) {
+            $this->totalDibayarMemo = (float) $this->attributes['pembayaran_sum_jumlah'];
+            return $this->totalDibayarMemo;
+        }
+        if ($this->relationLoaded('pembayaran')) {
+            $this->totalDibayarMemo = (float) $this->pembayaran->sum('jumlah');
+            return $this->totalDibayarMemo;
+        }
+        $this->totalDibayarMemo = (float) $this->pembayaran()->sum('jumlah');
+        return $this->totalDibayarMemo;
     }
 
     public function sisaTagihan(): float
     {
-        return max(0, $this->totalTagihan() - $this->totalDibayar());
+        if ($this->sisaTagihanMemo !== null) {
+            return $this->sisaTagihanMemo;
+        }
+        $this->sisaTagihanMemo = max(0, $this->totalTagihan() - $this->totalDibayar());
+        return $this->sisaTagihanMemo;
     }
 
     public function statusPenerimaan(): string
     {
+        if ($this->statusPenerimaanMemo !== null) {
+            return $this->statusPenerimaanMemo;
+        }
         $detailPesanan = $this->detailPesanan;
 
         $masihKurang = $detailPesanan->contains(function ($detail) {
             return $detail->kekurangan() > 0;
         });
 
-        if ($masihKurang) {
-            return 'BELUM LENGKAP';
-        }
-
-        return 'LENGKAP';
+        $this->statusPenerimaanMemo = $masihKurang ? 'BELUM LENGKAP' : 'LENGKAP';
+        return $this->statusPenerimaanMemo;
     }
 
     public function hasBarangTerjual(): bool
@@ -118,13 +149,14 @@ class Penerimaan extends Model
     public function hasPembayaranSusulan(): bool
     {
         // Pembayaran susulan adalah pembayaran di luar pembayaran utama / pembayaran pertama
-        return $this->pembayaran()
+        // Combine into single query: exists susulan OR count > 1
+        $susulanCount = $this->pembayaran()
             ->where(function ($q) {
                 $q->whereNull('keterangan')
                     ->orWhere('keterangan', '!=', 'Pembayaran pertama');
             })
-            ->exists()
-            || $this->pembayaran()->count() > 1;
+            ->count();
+        return $susulanCount > 0 || $this->pembayaran()->count() > 1;
     }
 
     public function hasPenerimaanSusulan(): bool
@@ -142,14 +174,21 @@ class Penerimaan extends Model
 
     public function canBeEdited(): bool
     {
-        return !$this->hasBarangTerjual()
+        if ($this->canBeEditedMemo !== null) {
+            return $this->canBeEditedMemo;
+        }
+        $this->canBeEditedMemo = !$this->hasBarangTerjual()
             && !$this->hasBarangRusak()
             && !$this->hasPembayaranSusulan()
             && !$this->hasPenerimaanSusulan();
+        return $this->canBeEditedMemo;
     }
 
     public function alasanTidakBisaDiedit(): ?string
     {
+        if ($this->alasanTidakBisaDieditMemo !== null) {
+            return $this->alasanTidakBisaDieditMemo;
+        }
         $alasan = [];
 
         if ($this->hasBarangTerjual()) {
@@ -169,9 +208,11 @@ class Penerimaan extends Model
         }
 
         if (empty($alasan)) {
+            $this->alasanTidakBisaDieditMemo = null;
             return null;
         }
 
-        return 'Penerimaan tidak dapat diedit karena ' . implode(', ', $alasan) . '.';
+        $this->alasanTidakBisaDieditMemo = 'Penerimaan tidak dapat diedit karena ' . implode(', ', $alasan) . '.';
+        return $this->alasanTidakBisaDieditMemo;
     }
 }
