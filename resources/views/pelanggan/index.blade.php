@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Pelanggan / Member')
+@section('title', 'Pelanggan atau Member')
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Daftar Pelanggan / Member" subtitle="Kelola data pelanggan dan member POS Apotek.">
+<x-page-header title="Daftar Pelanggan atau Member" subtitle="Kelola data pelanggan dan member POS Apotek.">
     <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Pelanggan</span>
@@ -55,6 +55,7 @@
             <option value="semua" @selected($statusPiutang === 'semua')>Semua</option>
             <option value="lunas" @selected($statusPiutang === 'lunas')>Lunas</option>
             <option value="belum_lunas" @selected($statusPiutang === 'belum_lunas')>Belum Lunas</option>
+            <option value="terlambat" @selected($statusPiutang === 'terlambat')>Terlambat</option>
         </select>
     </div>
 </x-card-filter>

@@ -30,46 +30,31 @@
 }
 </style>
 
-<!-- Page Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 print:hidden">
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
+                <div>
+                    <h1>Laporan Penjualan</h1>
+                    <p class="text-caption mt-1">Analisis ringkasan transaksi dan perolehan keuntungan penjualan.</p>
+                </div>
 
-    {{-- Judul & Subtitle --}}
-    <div class="flex items-center gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100 shadow-2xs shrink-0">
-            <x-heroicon-o-document-text class="h-6 w-6" />
-        </div>
-
-        <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight leading-tight">
-                Laporan Penjualan
-            </h1>
-
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Analisis ringkasan transaksi dan perolehan keuntungan penjualan.
-            </p>
-        </div>
-    </div>
-
-    {{-- Tombol Aksi --}}
-    <div class="flex items-center gap-2.5 shrink-0">
-
+        {{-- Tombol Aksi --}}
+        <div class="flex gap-2 shrink-0">
         {{-- Export CSV --}}
         <a
             href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'csv'])) }}"
-            class="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-600 bg-white px-3.5 py-2 text-xs sm:text-sm font-semibold text-blue-600 transition-all duration-150 hover:bg-blue-50 shadow-2xs"
+            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
         >
-            <x-heroicon-o-arrow-down-tray class="h-4 w-4" />
-            <span>Export CSV</span>
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            Export CSV
         </a>
 
         {{-- Cetak Laporan --}}
         <button
             type="button"
             onclick="window.print()"
-            class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white transition-all duration-150 hover:bg-blue-700 shadow-2xs cursor-pointer"
+            class="btn-primary py-2 px-4"
         >
-            <x-heroicon-o-printer class="h-4 w-4" />
-            <span>Cetak Laporan</span>
+            Cetak Laporan
         </button>
 
     </div>
@@ -77,107 +62,166 @@
 </div>
 
 <!-- Filter Card -->
-<div class="card-base mb-4 p-3.5 sm:p-4 print:hidden">
+<div class="card-base p-4 mb-6 print:hidden">
 
     <form
         method="GET"
         action="{{ route('laporan.penjualan') }}"
-        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.2fr_auto_auto] lg:items-end"
+        class="space-y-4"
     >
 
-        {{-- Dari Tanggal --}}
-        <div>
-            <label class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                <x-heroicon-o-calendar-days class="h-4 w-4 text-slate-400" />
-                <span>Dari Tanggal</span>
-            </label>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    {{-- Tanggal Awal --}}
+    <div>
+        <label for="dari" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Tanggal Awal
+        </label>
 
-            <div class="relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <x-heroicon-o-calendar-days class="h-4 w-4" />
-                </div>
-                <input
-                    type="date"
-                    name="dari"
-                    value="{{ $dari }}"
-                    class="h-[38px] w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs sm:text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                >
-            </div>
-        </div>
-
-        {{-- Sampai Tanggal --}}
-        <div>
-            <label class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                <x-heroicon-o-calendar-days class="h-4 w-4 text-slate-400" />
-                <span>Sampai Tanggal</span>
-            </label>
-
-            <div class="relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <x-heroicon-o-calendar-days class="h-4 w-4" />
-                </div>
-                <input
-                    type="date"
-                    name="sampai"
-                    value="{{ $sampai }}"
-                    class="h-[38px] w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs sm:text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                >
-            </div>
-        </div>
-
-        {{-- Status Pelanggan --}}
-        <div>
-            <label class="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                <x-heroicon-o-user class="h-4 w-4 text-slate-400" />
-                <span>Status Pelanggan</span>
-            </label>
-
-            <div class="relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <x-heroicon-o-user class="h-4 w-4" />
-                </div>
-                <select
-                    name="status_pelanggan"
-                    class="h-[38px] w-full appearance-none rounded-lg border border-slate-200 bg-white pl-9 pr-8 py-1.5 text-xs sm:text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                >
-                    <option value="">Semua Pelanggan</option>
-
-                    <option
-                        value="member"
-                        @selected(request('status_pelanggan') === 'member')
-                    >
-                        Member Only
-                    </option>
-
-                    <option
-                        value="non-member"
-                        @selected(request('status_pelanggan') === 'non-member')
-                    >
-                        Umum / Non-Member
-                    </option>
-                </select>
-
-                <x-heroicon-o-chevron-down class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            </div>
-        </div>
-
-        {{-- Tombol Filter --}}
-        <button
-            type="submit"
-            class="inline-flex h-[38px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-xs sm:text-sm font-semibold text-white transition-all duration-150 hover:bg-blue-700 shadow-2xs cursor-pointer"
+        <input
+            type="date"
+            id="dari"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input"
         >
-            <x-heroicon-o-funnel class="h-4 w-4" />
-            <span>Filter</span>
-        </button>
+    </div>
 
-        {{-- Tombol Reset --}}
-        <a
-            href="{{ route('laporan.penjualan') }}"
-            class="inline-flex h-[38px] items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 text-xs sm:text-sm font-semibold text-blue-600 transition-all duration-150 hover:bg-slate-50 hover:border-slate-300 shadow-2xs"
+    {{-- Tanggal Akhir --}}
+    <div>
+        <label for="sampai" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Tanggal Akhir
+        </label>
+
+        <input
+            type="date"
+            id="sampai"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input"
         >
-            <x-heroicon-o-arrow-path class="h-4 w-4" />
-            <span>Reset</span>
-        </a>
+    </div>
+
+    {{-- Metode Pembayaran --}}
+    <div>
+        <label for="metode_pembayaran" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Metode Pembayaran
+        </label>
+
+        <select
+            id="metode_pembayaran"
+            name="metode_pembayaran"
+            class="form-input"
+        >
+            <option value="">Semua</option>
+            <option value="cash" @selected(request('metode_pembayaran') === 'cash')>
+                Cash
+            </option>
+            <option value="qris" @selected(request('metode_pembayaran') === 'qris')>
+                QRIS
+            </option>
+            <option value="debit" @selected(request('metode_pembayaran') === 'debit')>
+                Debit
+            </option>
+            <option value="piutang" @selected(request('metode_pembayaran') === 'piutang')>
+                Piutang
+            </option>
+        </select>
+    </div>
+
+    {{-- Pelanggan / Member --}}
+    <div>
+        <label for="pelanggan" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Pelanggan/Member
+        </label>
+
+        <select
+            id="pelanggan"
+            name="pelanggan"
+            class="form-input"
+        >
+            <option value="">Semua</option>
+
+            <option value="pelanggan_umum" @selected(request('pelanggan') === 'pelanggan_umum')>
+                Pelanggan Umum
+            </option>
+
+            <option value="pelanggan_tetap" @selected(request('pelanggan') === 'pelanggan_tetap')>
+                Member Pelanggan Tetap
+            </option>
+
+            <option value="keluarga_nakes" @selected(request('pelanggan') === 'keluarga_nakes')>
+                Member Keluarga Nakes
+            </option>
+
+            <option value="member_only" @selected(request('pelanggan') === 'member_only')>
+                Member Only
+            </option>
+        </select>
+    </div>
+
+    {{-- Jenis Transaksi --}}
+    <div>
+        <label for="jenis_transaksi" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Jenis Transaksi
+        </label>
+
+        <select
+            id="jenis_transaksi"
+            name="jenis_transaksi"
+            class="form-input"
+        >
+            <option value="">Semua</option>
+
+            <option value="non_resep" @selected(request('jenis_transaksi') === 'non_resep')>
+                Non Resep
+            </option>
+
+            <option value="resep" @selected(request('jenis_transaksi') === 'resep')>
+                Resep
+            </option>
+        </select>
+    </div>
+
+    {{-- Status Piutang --}}
+    <div>
+        <label for="status_piutang" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+            Status Piutang
+        </label>
+
+        <select
+            id="status_piutang"
+            name="status_piutang"
+            class="form-input"
+        >
+            <option value="">Semua</option>
+
+            <option value="lunas" @selected(request('status_piutang') === 'lunas')>
+                Lunas
+            </option>
+
+            <option value="belum_lunas" @selected(request('status_piutang') === 'belum_lunas')>
+                Belum Lunas
+            </option>
+
+            <option value="terlambat" @selected(request('status_piutang') === 'terlambat')>
+                Terlambat
+            </option>
+        </select>
+    </div>
+</div>
+
+     {{-- Area Tombol Filter --}}
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+
+            <button
+                type="submit"
+                class="btn-primary py-1.5 px-4 flex items-center justify-center gap-1.5"
+            >
+                <x-heroicon-o-funnel class="h-4 w-4" />
+                Filter
+            </button>
+
+        </div>
 
     </form>
 
@@ -190,12 +234,12 @@
 </div>
 
 <!-- Summary Cards -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-5 print:mb-4">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
 
     {{-- CARD 1: Ringkasan Transaksi --}}
-    <div class="card-base p-4 sm:p-5">
+    <div class="card-base p-4">
 
-        <div class="flex items-center gap-2.5 mb-4">
+        <div class="flex items-center justify-center gap-2.5 mb-3">
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shrink-0">
                 <x-heroicon-o-clipboard-document-list class="h-5 w-5" />
             </div>
@@ -205,15 +249,15 @@
             </h2>
         </div>
 
-        <div class="grid grid-cols-3 gap-2">
+        <div class="grid grid-cols-3 gap-2 text-center">
 
             {{-- Jumlah Transaksi --}}
-            <div class="pr-2">
+            <div class="px-2">
                 <span class="block text-xs text-slate-500 font-medium">
                     Jumlah Transaksi
                 </span>
 
-                <strong class="mt-2 block text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 tracking-tight">
+                <strong class="mt-1.5 block text-base sm:text-lg lg:text-xl font-bold text-blue-600 tracking-tight">
                     {{ $jumlahTransaksi }} kali
                 </strong>
             </div>
@@ -224,18 +268,18 @@
                     Transaksi Member
                 </span>
 
-                <strong class="mt-2 block text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 tracking-tight">
+                <strong class="mt-1.5 block text-base sm:text-lg lg:text-xl font-bold text-blue-600 tracking-tight">
                     {{ $transaksiMember }} kali
                 </strong>
             </div>
 
             {{-- Umum --}}
-            <div class="pl-2">
+            <div class="px-2">
                 <span class="block text-xs text-slate-500 font-medium">
                     Transaksi Umum
                 </span>
 
-                <strong class="mt-2 block text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 tracking-tight">
+                <strong class="mt-1.5 block text-base sm:text-lg lg:text-xl font-bold text-blue-600 tracking-tight">
                     {{ $transaksiNonMember }} kali
                 </strong>
             </div>
@@ -247,7 +291,7 @@
     {{-- CARD 2: Perolehan Keuntungan --}}
     <div class="card-base p-4 sm:p-5">
 
-        <div class="flex items-center gap-2.5 mb-4">
+       <div class="flex items-center justify-center gap-2.5 mb-3">
             <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
                 <x-heroicon-o-circle-stack class="h-5 w-5" />
             </div>
@@ -257,39 +301,41 @@
             </h2>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 items-center">
+        <div class="grid grid-cols-3 gap-4 items-center text-center">
 
             {{-- Omzet Kotor --}}
-            <div class="pr-2">
+            <div class="w-full px-3">
                 <span class="block text-xs text-slate-500 font-medium">
                     Omzet Kotor
                 </span>
 
-                <strong class="mt-2 block text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 tracking-tight">
+                <strong class="mt-1.5 block text-base sm:text-lg lg:text-xl font-bold text-blue-600 tracking-tight">
                     Rp {{ number_format($omzet, 0, ',', '.') }}
                 </strong>
             </div>
 
             {{-- Total Potongan Diskon --}}
-            <div class="px-2">
+            <div class="w-full px-3">
                 <span class="block text-xs text-slate-500 font-medium">
                     Total Potongan Diskon
                 </span>
 
-                <strong class="mt-2 block text-lg sm:text-xl lg:text-2xl font-bold text-blue-600 tracking-tight">
+                <strong class="mt-1.5 block text-base sm:text-lg lg:text-xl font-bold text-blue-600 tracking-tight">
                     Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                 </strong>
             </div>
 
             {{-- Penjualan Bersih (Net) --}}
-            <div class="rounded-xl bg-emerald-50/80 border border-emerald-100/90 px-3.5 py-2.5 sm:py-3">
-                <span class="block text-xs font-semibold text-emerald-800">
-                    Penjualan Bersih (Net)
-                </span>
+            <div class="w-full px-3">
+                <div class="w-full rounded-xl bg-emerald-50/80 border border-emerald-100/90 px-3 py-2">
+                    <span class="block text-xs font-semibold text-emerald-800">
+                        Penjualan Bersih (Net)
+                    </span>
 
-                <strong class="mt-1 block text-lg sm:text-xl lg:text-2xl font-bold text-emerald-600 tracking-tight">
-                    Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
-                </strong>
+                    <strong class="mt-1 block text-base sm:text-lg lg:text-xl font-bold text-emerald-600 tracking-tight">
+                        Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
+                    </strong>
+                </div>
             </div>
 
         </div>
@@ -299,54 +345,53 @@
 </div>
 
 <!-- Data Table Card -->
-<div class="card-base overflow-hidden p-0 mb-4">
-
-    <div class="overflow-x-auto">
-        <table class="w-full min-w-[900px]">
+<div class="table-custom-container print-table-wrapper">
+    <div class="overflow-x-auto print-table-wrapper">
+        <table class="table-custom table-penjualan print-table w-full min-w-[60rem]">
 
             {{-- Table Header --}}
-            <thead>
-                <tr class="bg-blue-600 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+            <thead class="table-custom-header">
+            <tr>
 
-                    <th class="py-3.5 px-4 text-center w-24">
-                        Aksi
-                    </th>
+                <th scope="col" class="w-[11%] min-w-[6rem] text-center !px-2 py-3">
+                    Aksi
+                </th>
 
-                    <th class="py-3.5 px-4 text-left">
-                        <div class="inline-flex items-center gap-1 cursor-default">
-                            <span>No. Invoice</span>
-                            <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
-                        </div>
-                    </th>
+                <th scope="col" class="w-[16%] min-w-[8rem] !px-2.5 py-3 break-words">
+                    <div class="inline-flex items-center gap-1">
+                        <span>No. Invoice</span>
+                        <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
+                    </div>
+                </th>
 
-                    <th class="py-3.5 px-4 text-left">
-                        <div class="inline-flex items-center gap-1 cursor-default">
-                            <span>Tanggal</span>
-                            <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
-                        </div>
-                    </th>
+                <th scope="col" class="w-[13%] min-w-[7rem] text-center !px-2 py-3 whitespace-nowrap">
+                    <div class="inline-flex items-center justify-center gap-1">
+                        <span>Tanggal</span>
+                        <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
+                    </div>
+                </th>
 
-                    <th class="py-3.5 px-4 text-left">
-                        Pelanggan
-                    </th>
+                <th scope="col" class="w-[22%] min-w-[10rem] !px-3 py-3 break-words">
+                    Pelanggan
+                </th>
 
-                    <th class="py-3.5 px-4 text-left">
-                        Kasir
-                    </th>
+                <th scope="col" class="w-[14%] min-w-[7rem] !px-2.5 py-3 break-words">
+                    Kasir
+                </th>
 
-                    <th class="py-3.5 px-4 text-right">
-                        Total Kotor
-                    </th>
+                <th scope="col" class="w-[12%] min-w-[7rem] text-right !px-2.5 py-3 whitespace-nowrap">
+                    Total Kotor
+                </th>
 
-                    <th class="py-3.5 px-4 text-right">
-                        Total Transaksi
-                    </th>
+                <th scope="col" class="w-[12%] min-w-[7rem] text-right !px-2.5 py-3 whitespace-nowrap">
+                    Total Transaksi
+                </th>
 
-                </tr>
-            </thead>
+            </tr>
+        </thead>
 
             {{-- Table Body --}}
-            <tbody id="table-laporan-body" class="divide-y divide-slate-100 text-xs sm:text-sm">
+            <tbody id="table-laporan-body" class="table-custom-body">
 
                 @forelse ($penjualans as $index => $penjualan)
 
@@ -354,16 +399,18 @@
                         $diskonFaktur = $penjualan->detail->sum('diskon');
                     @endphp
 
-                    <tr class="penjualan-row transition-colors duration-150 hover:bg-blue-50/40" data-row-index="{{ $index }}">
+                    <tr
+                        class="penjualan-row {{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}"
+                        data-row-index="{{ $index }}"
+                    >
 
                         {{-- Aksi --}}
-                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                        <td class="text-center whitespace-nowrap !px-2 py-3">
                             <div class="flex items-center justify-center gap-1.5">
-
                                 {{-- Detail --}}
                                 <a
-                                    href="{{ route('penjualan.show', $penjualan) }}"
-                                    class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-600 transition-colors hover:bg-blue-50 hover:border-blue-300 shadow-2xs"
+                                    href="{{ route('penjualan.show', $penjualan) . '?from=laporan_penjualan&' . http_build_query(request()->query()) }}"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-600 transition-colors hover:bg-blue-50 hover:border-blue-300 shadow-2xs"
                                     title="Lihat Detail"
                                     aria-label="Lihat Detail"
                                 >
@@ -372,9 +419,9 @@
 
                                 {{-- Cetak Struk --}}
                                 <a
-                                    href="{{ route('penjualan.show', $penjualan) }}"
+                                    href="{{ route('penjualan.show', $penjualan) . '?from=laporan_penjualan&' . http_build_query(request()->query()) }}"
                                     target="_blank"
-                                    class="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-600 transition-colors hover:bg-blue-50 hover:border-blue-300 shadow-2xs"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-600 transition-colors hover:bg-blue-50 hover:border-blue-300 shadow-2xs"
                                     title="Cetak Struk"
                                     aria-label="Cetak Struk"
                                 >
@@ -385,9 +432,9 @@
                         </td>
 
                         {{-- No. Invoice --}}
-                        <td class="py-3.5 px-4 whitespace-nowrap">
+                        <td class="font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
                             <a
-                                href="{{ route('penjualan.show', $penjualan) }}"
+                                href="{{ route('penjualan.show', $penjualan) . '?from=laporan_penjualan&' . http_build_query(request()->query()) }}"
                                 class="font-semibold text-blue-600 hover:text-blue-800 hover:underline print:text-gray-800"
                             >
                                 {{ $penjualan->no_faktur }}
@@ -395,23 +442,23 @@
                         </td>
 
                         {{-- Tanggal --}}
-                        <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                        <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
                             {{ $penjualan->tanggal->format('d M Y') }}
                         </td>
 
                         {{-- Pelanggan --}}
-                        <td class="py-3.5 px-4">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-slate-800 text-xs sm:text-sm">
+                        <td class="font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">
+                            <div class="flex flex-col gap-1 min-w-0">
+                                <span class="font-semibold text-slate-800 text-xs sm:text-sm truncate">
                                     {{ $penjualan->pelanggan->nama ?? 'Umum' }}
                                 </span>
 
                                 @if(isset($penjualan->pelanggan) && $penjualan->pelanggan->is_member)
-                                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 border border-emerald-200/60 print:hidden">
+                                    <span class="inline-flex w-fit items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-semibold text-emerald-600 border border-emerald-200/60 print:hidden">
                                         MEMBER
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-600 border border-amber-200/60 print:hidden">
+                                    <span class="inline-flex w-fit items-center rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-600 border border-amber-200/60 print:hidden">
                                         PELANGGAN UMUM
                                     </span>
                                 @endif
@@ -419,36 +466,31 @@
                         </td>
 
                         {{-- Kasir --}}
-                        <td class="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                       <td class="text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">
                             {{ $penjualan->user->name ?? 'Admin' }}
                         </td>
 
                         {{-- Total Kotor --}}
-                        <td class="py-3.5 px-4 text-right font-medium text-slate-600 whitespace-nowrap">
+                        <td class="table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                             Rp {{ number_format($penjualan->total + $diskonFaktur, 0, ',', '.') }}
                         </td>
 
                         {{-- Total Transaksi --}}
-                        <td class="py-3.5 px-4 text-right font-bold text-slate-800 whitespace-nowrap">
+                        <td class="table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                             Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                         </td>
-
                     </tr>
 
                 @empty
 
                     <tr>
-                        <td colspan="7" class="py-12 px-4 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500">
-                                    <x-heroicon-o-document-magnifying-glass class="h-6 w-6" />
-                                </div>
-
-                                <div class="text-sm font-semibold text-slate-700">
+                        <td colspan="7" class="p-0">
+                            <div class="empty-state-container">
+                                <div class="empty-state-title">
                                     Transaksi Tidak Ditemukan
                                 </div>
 
-                                <div class="mt-1 text-xs text-slate-400">
+                                <div class="empty-state-desc">
                                     Tidak ada data transaksi pada filter yang dipilih.
                                 </div>
                             </div>
@@ -462,16 +504,16 @@
             {{-- Table Footer: Total Akumulasi --}}
             @if($penjualans->count() > 0)
                 <tfoot>
-                    <tr class="border-t-2 border-slate-200 bg-slate-50/70 font-semibold text-xs sm:text-sm">
-                        <td colspan="5" class="py-3.5 px-4 text-right text-slate-600 font-semibold">
+                    <tr class="bg-gray-50/50 border-t font-bold text-xs">
+                        <td colspan="5" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">
                             Total Akumulasi
                         </td>
 
-                        <td class="py-3.5 px-4 text-right font-bold text-slate-700 whitespace-nowrap">
+                        <td class="table-num !px-2.5 py-3.5 text-right text-gray-800 font-mono text-sm font-bold whitespace-nowrap">
                             Rp {{ number_format($omzet, 0, ',', '.') }}
                         </td>
 
-                        <td class="py-3.5 px-4 text-right font-bold text-blue-700 whitespace-nowrap">
+                        <td class="table-num !px-2.5 py-3.5 text-right text-blue-700 font-mono text-sm font-bold whitespace-nowrap">
                             Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
                         </td>
                     </tr>

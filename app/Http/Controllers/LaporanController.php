@@ -368,77 +368,218 @@ class LaporanController extends Controller
 
     // Laporan penjualan barang dalam rentang tanggal
     public function penjualan(Request $request)
-    {
-        [$dari, $sampai] = $this->rentangTanggal($request);
+{
+    [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $query = \App\Models\Penjualan::with(['pelanggan', 'detail'])
-            ->whereBetween('tanggal', [$dari, $sampai]);
+    $query = \App\Models\Penjualan::with([
+        'pelanggan',
+        'detail',
+        'user',
+        'pembayaranPiutang',
+    ])->whereBetween('tanggal', [$dari, $sampai]);
 
-        // Filter: member / non-member
-        if ($request->filled('status_pelanggan')) {
-            $status = $request->status_pelanggan;
-            if ($status === 'member') {
-                $query->whereHas('pelanggan', function ($q) {
-                    $q->where('is_member', true);
-                });
-            } elseif ($status === 'non-member') {
-                $query->where(function ($q) {
-                    $q->whereHas('pelanggan', function ($q2) {
-                        $q2->where('is_member', false);
-                    })->orWhereNull('pelanggan_id');
-                });
-            }
-        }
-
-        $penjualans = $query->orderByDesc('tanggal')->orderByDesc('id')->get();
-
-        // Calculate stats
-        $jumlahTransaksi = $penjualans->count();
-        
-        $totalDiskon = $penjualans->sum(function ($p) {
-            return $p->detail->sum('diskon');
-        });
-        
-        $totalPenjualanBersih = $penjualans->sum('total');
-        $omzet = $totalPenjualanBersih + $totalDiskon; // total kotor
-
-        $transaksiMember = $penjualans->filter(function ($p) {
-            return $p->pelanggan && $p->pelanggan->is_member;
-        })->count();
-        
-        $transaksiNonMember = $jumlahTransaksi - $transaksiMember;
-
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Pelanggan', 'Status Pelanggan', 'Kasir', 'Subtotal Kotor', 'Diskon', 'Total'];
-            $data = [];
-            foreach ($penjualans as $p) {
-                $subtotalKotor = $p->total + $p->detail->sum('diskon');
-                $data[] = [
-                    $p->tanggal->format('d M Y'),
-                    $p->no_faktur,
-                    $p->pelanggan->nama ?? 'Umum',
-                    $p->pelanggan ? ($p->pelanggan->is_member ? 'Member' : 'Umum') : 'Umum',
-                    $p->user->name,
-                    $subtotalKotor,
-                    $p->detail->sum('diskon'),
-                    $p->total
-                ];
-            }
-            return $this->exportCsv('laporan-penjualan-' . $dari . '-' . $sampai . '.csv', $headers, $data);
-        }
-
-        return view('laporan.penjualan', compact(
-            'penjualans',
-            'jumlahTransaksi',
-            'omzet',
-            'totalDiskon',
-            'totalPenjualanBersih',
-            'transaksiMember',
-            'transaksiNonMember',
-            'dari',
-            'sampai'
-        ));
+    // =========================================================
+    // FILTER METODE PEMBAYARAN
+    // =========================================================
+    if ($request->filled('metode_pembayaran')) {
+        $query->where(
+            'metode_pembayaran',
+            $request->input('metode_pembayaran')
+        );
     }
+
+    // =========================================================
+    // FILTER PELANGGAN / MEMBER
+    // =========================================================
+    if ($request->filled('pelanggan')) {
+        $pelanggan = $request->input('pelanggan');
+
+        if ($pelanggan === 'pelanggan_umum') {
+            $query->where(function ($q) {
+                $q->whereNull('pelanggan_id')
+                    ->orWhereHas('pelanggan', function ($q2) {
+                        $q2->where('is_member', false);
+                    });
+            });
+        }
+
+        if ($pelanggan === 'pelanggan_tetap') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Pelanggan Tetap'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'keluarga_nakes') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Keluarga Nakes'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'member_only') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Only'
+                    );
+            });
+        }
+    }
+
+    // =========================================================
+    // FILTER JENIS TRANSAKSI
+    // =========================================================
+    if ($request->filled('jenis_transaksi')) {
+        $query->where(
+            'jenis_transaksi',
+            $request->input('jenis_transaksi')
+        );
+    }
+
+    // =========================================================
+    // FILTER STATUS PIUTANG
+    // =========================================================
+    if ($request->filled('status_piutang')) {
+
+        // Status piutang hanya berlaku untuk transaksi piutang
+        $query->where('metode_pembayaran', 'piutang');
+
+        $statusPiutang = $request->input('status_piutang');
+
+        if ($statusPiutang === 'lunas') {
+
+            $query->whereRaw('
+                penjualans.total <= (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'belum_lunas') {
+
+            $query->whereRaw('
+                penjualans.total > (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'terlambat') {
+
+            $query->whereNotNull('due_date')
+                ->whereDate('due_date', '<', now()->toDateString())
+                ->whereRaw('
+                    penjualans.total > (
+                        SELECT COALESCE(SUM(pp.jumlah), 0)
+                        FROM pembayaran_piutangs pp
+                        WHERE pp.penjualan_id = penjualans.id
+                    )
+                ');
+        }
+    }
+
+    // =========================================================
+    // AMBIL DATA
+    // =========================================================
+    $penjualans = $query
+        ->orderByDesc('tanggal')
+        ->orderByDesc('id')
+        ->get();
+
+    // =========================================================
+    // RINGKASAN
+    // =========================================================
+    $jumlahTransaksi = $penjualans->count();
+
+    $totalDiskon = $penjualans->sum(function ($p) {
+        return $p->detail->sum('diskon');
+    });
+
+    $totalPenjualanBersih = $penjualans->sum('total');
+
+    $omzet = $totalPenjualanBersih + $totalDiskon;
+
+    $transaksiMember = $penjualans->filter(function ($p) {
+        return $p->pelanggan
+            && $p->pelanggan->is_member;
+    })->count();
+
+    $transaksiNonMember =
+        $jumlahTransaksi - $transaksiMember;
+
+    // =========================================================
+    // EXPORT CSV
+    // =========================================================
+    if ($request->query('export') === 'csv') {
+
+        $headers = [
+            'Tanggal',
+            'No. Faktur',
+            'Pelanggan',
+            'Status Pelanggan',
+            'Kasir',
+            'Metode Pembayaran',
+            'Jenis Transaksi',
+            'Subtotal Kotor',
+            'Diskon',
+            'Total',
+        ];
+
+        $data = [];
+
+        foreach ($penjualans as $p) {
+
+            $diskon = $p->detail->sum('diskon');
+
+            $subtotalKotor = $p->total + $diskon;
+
+            $data[] = [
+                $p->tanggal->format('d M Y'),
+                $p->no_faktur,
+                $p->pelanggan->nama ?? 'Umum',
+                $p->pelanggan
+                    ? ($p->pelanggan->is_member
+                        ? 'Member'
+                        : 'Umum')
+                    : 'Umum',
+                $p->user->name ?? 'Admin',
+                $p->metode_pembayaran ?? '-',
+                $p->jenis_transaksi ?? '-',
+                $subtotalKotor,
+                $diskon,
+                $p->total,
+            ];
+        }
+
+        return $this->exportCsv(
+            'laporan-penjualan-' . $dari . '-' . $sampai . '.csv',
+            $headers,
+            $data
+        );
+    }
+
+    return view('laporan.penjualan', compact(
+        'penjualans',
+        'jumlahTransaksi',
+        'omzet',
+        'totalDiskon',
+        'totalPenjualanBersih',
+        'transaksiMember',
+        'transaksiNonMember',
+        'dari',
+        'sampai'
+    ));
+}
 
     // Laporan barang rusak dalam rentang tanggal
     public function rusak(Request $request)
