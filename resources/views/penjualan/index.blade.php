@@ -207,9 +207,9 @@
                 </th>
                     <th scope="col" class="w-36 text-center whitespace-nowrap">Tanggal</th>
                     <th scope="col" class="w-52 text-center whitespace-nowrap">Pelanggan</th>
-                    <th scope="col" class="w-36 text-center whitespace-nowrap">Kasir</th>
-                    <th class="px-5 py-3 text-center">Total Diskon</th>
-                    <th scope="col" class="w-44 text-center whitespace-nowrap">Total Transaksi</th>
+                    <th scope="col" class="w-44 text-center whitespace-nowrap">Kasir</th>
+                    <th scope="col" class="w-28 text-center whitespace-nowrap">Total Diskon</th>
+                    <th scope="col" class="w-32 text-center whitespace-nowrap">Total Transaksi</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">

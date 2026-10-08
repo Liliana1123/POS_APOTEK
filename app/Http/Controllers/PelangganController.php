@@ -29,6 +29,7 @@ class PelangganController extends Controller
             'semua',
             'lunas',
             'belum_lunas',
+            'terlambat',
         ];
 
         if (!in_array($statusPiutang, $allowedStatusPiutang, true)) {
@@ -55,7 +56,22 @@ class PelangganController extends Controller
             });
         } elseif ($statusPiutang === 'belum_lunas') {
             $query->where('saldo_piutang', '>', 0);
+        } elseif ($statusPiutang === 'terlambat') {
+            $query->where('saldo_piutang', '>', 0)
+                ->whereHas('penjualan', function ($q) {
+                    $q->where('metode_pembayaran', 'piutang')
+                        ->whereNotNull('due_date')
+                        ->whereDate('due_date', '<', Carbon::today())
+                        ->whereRaw('
+                            penjualans.total > (
+                                SELECT COALESCE(SUM(pp.jumlah), 0)
+                                FROM pembayaran_piutangs pp
+                                WHERE pp.penjualan_id = penjualans.id
+                            )
+                        ');
+                });
         }
+
 
         if ($request->filled('cari')) {
             $search = $request->input('cari');
