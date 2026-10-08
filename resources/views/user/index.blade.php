@@ -66,7 +66,7 @@
                                 @endif
                             </x-table-action>
                         </td>
-                        <td class="table-num">{{ $user->id }}</td>
+                         <td class="table-num">{{ sprintf('%02d', $user->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
