@@ -1,0 +1,29 @@
+[33mcommit 8cc7a9c0ad57a603334eb0b8f2c281d034a9a830[m[33m ([m[1;31morigin/branch-dev[m[33m)[m
+Merge: 2ece851 ae13b3c
+Author: risang <asoygebaygeboy@gmail.com>
+Date:   Thu Oct 8 09:09:12 2026 +0700
+
+    Merge remote-tracking branch 'origin/optimize/performance-optimization' into branch-dev
+
+ app/Http/Controllers/BarangController.php     |   4 [32m+[m[31m-[m
+ app/Http/Controllers/LaporanController.php    |  54 [32m+[m[31m-[m
+ app/Http/Controllers/PenerimaanController.php |   1 [32m+[m
+ app/Http/Controllers/PenjualanController.php  |  55 [32m+[m[31m-[m
+ app/Models/Barang.php                         |  19 [32m+[m
+ app/Models/DetailPesananPenerimaan.php        |  10 [32m+[m
+ app/Models/Penerimaan.php                     |  73 [32m++[m[31m-[m
+ package-lock.json                             |   2 [32m+[m[31m-[m
+ resources/js/app.js                           |   2 [32m+[m
+ resources/js/pages/barang-index.js            |  98 [32m++++[m
+ resources/js/pages/penerimaan-index.js        | 487 [32m+++++++++++++++++[m
+ resources/js/pages/penjualan-create.js        | 568 [32m+++++++++++++++++++[m
+ resources/js/shared/layout.js                 | 329 [32m+++++++++++[m
+ resources/views/barang/index.blade.php        | 121 [32m+[m[31m---[m
+ resources/views/layouts/app.blade.php         | 329 [32m+[m[31m----------[m
+ resources/views/penerimaan/index.blade.php    | 760 [32m+[m[31m-------------------------[m
+ resources/views/penjualan/create.blade.php    | 675 [32m+[m[31m----------------------[m
+ tests/Feature/JatuhTempoPiutangTest.php       |   1 [32m+[m
+ tests/Feature/PenjualanResepTest.php          |   8 [32m+[m[31m-[m
+ tests/Feature/PermissionTest.php              |   2 [32m+[m[31m-[m
+ vite.config.js                                |  11 [32m+[m[31m-[m
+ 21 files changed, 1678 insertions(+), 1931 deletions(-)

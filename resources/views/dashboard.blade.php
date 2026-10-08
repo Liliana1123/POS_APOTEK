@@ -86,7 +86,7 @@
             <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs"><x-heroicon-o-user-group class="w-6 h-6" /></div>
         </div>
         <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Hutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
             <div class="kpi-icon bg-sky-50 text-sky-600 shadow-2xs"><x-heroicon-o-building-office-2 class="w-6 h-6" /></div>
         </div>
         <div class="kpi-card flex items-center justify-between">
