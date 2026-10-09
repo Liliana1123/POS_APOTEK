@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Penerimaan Barang')
 
 @section('content')
@@ -234,13 +234,13 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? 'â€”' }}
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
                         </div>
                     </td>
 
                     {{-- Supplier --}}
                     <td class="font-medium text-gray-800">
-                        {{ $penerimaan->supplier->nama ?? 'â€”' }}
+                        {{ $penerimaan->supplier->nama ?? '-' }}
                     </td>
 
                     {{-- Status Penerimaan --}}
@@ -264,7 +264,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? 'â€”' }}
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -346,8 +346,9 @@
             <button type="button"
                 id="btn-tutup-detail"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                âœ•
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -382,8 +383,9 @@
             <button type="button"
                 id="btn-tutup-payment"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                âœ•
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -418,8 +420,9 @@
                 id="close-susulan-penerimaan"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                âœ•
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -453,8 +456,9 @@
                 id="btn-tutup-edit"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                âœ•
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -480,8 +484,8 @@
                 </p>
             </div>
 
-            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup">
-                âœ•
+            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup" aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -609,7 +613,7 @@
             <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
-                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' â€” ' . $barang->barcode : '' }}</option>
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' - ' . $barang->barcode : '' }}</option>
                 @endforeach
             </select>
         </td>
