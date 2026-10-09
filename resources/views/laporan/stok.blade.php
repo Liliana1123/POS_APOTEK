@@ -433,7 +433,7 @@
                 </tbody>
 
                 @if ($stokPerBatch->isNotEmpty())
-                    <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+                    <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                         <tr>
                             <td colspan="7" class="!px-3 py-3 text-right uppercase tracking-wider text-gray-600">
                                 Total (Ringkasan Data Tampil):
@@ -640,7 +640,7 @@
                 </tbody>
 
                 @if ($mendekatiExpired->isNotEmpty())
-                    <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+                    <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                         <tr>
                             <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider text-gray-600">
                                 Total Sisa Stok Kadaluarsa dan Mendekati Expired:

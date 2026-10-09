@@ -275,7 +275,7 @@
                     </tr>
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
                     <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Nilai Penerimaan:</td>
                     <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNilai, 0, ',', '.') }}</td>

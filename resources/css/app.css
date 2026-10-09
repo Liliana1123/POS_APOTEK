@@ -1595,6 +1595,30 @@ h3,
 }
 
 /* ============================================================
+   Tabel Laporan (Stok, Penerimaan, Rusak) - Garis Abu-Abu Soft
+   ============================================================ */
+.table-custom-container.print-table-wrapper {
+    border: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table {
+    border-collapse: collapse;
+}
+
+.table-custom.print-table thead th {
+    border-bottom: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table tbody tr {
+    border-bottom: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table tfoot,
+.table-custom.print-table tfoot td {
+    border-top: 1.5px solid #D1D5DB;
+}
+
+/* ============================================================
    PRINT TEMPLATE - LAPORAN (A4 LANDSCAPE)
    Digunakan serentak oleh Laporan Stok, Penerimaan & Rusak
    ============================================================ */
@@ -1699,7 +1723,7 @@ h3,
         min-height: 50px;
         margin: 0 0 6px 0 !important;
         padding: 0 0 5px 0 !important;
-        border-bottom: 1.5px solid #222;
+        border-bottom: 1.5px solid #D1D5DB;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
@@ -1815,7 +1839,7 @@ h3,
 
     .print-table td {
         padding: 5px 4px !important;
-        border: 1px solid #bbb !important;
+        border: 1px solid #D1D5DB !important;
         font-size: 8px !important;
         vertical-align: middle !important;
         word-break: normal !important;
@@ -1838,7 +1862,7 @@ h3,
     .print-table tfoot td {
         padding: 7px 4px !important;
         font-weight: 700 !important;
-        border-top: 2px solid #222 !important;
+        border-top: 1.5px solid #D1D5DB !important;
     }
 
     .print-table .col-no { width: 4%; }
