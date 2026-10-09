@@ -305,6 +305,7 @@ class JatuhTempoPiutangTest extends TestCase
             'tanggal_bayar' => '2026-09-25',
             'jumlah' => $penjualan->total,
             'keterangan' => 'Pelunasan piutang',
+            'metode_pembayaran' => 'cash',
         ]);
 
         $bayarResponse->assertStatus(200);

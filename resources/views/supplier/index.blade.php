@@ -43,7 +43,7 @@
                                 delete-confirm="Yakin ingin menghapus supplier ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $supplier->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $supplier->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
                         <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '—' }}</td>

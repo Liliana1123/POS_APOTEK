@@ -40,7 +40,7 @@
                                 delete-confirm="Yakin ingin menghapus kategori ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $kategori->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $kategori->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
                     </tr>
                 @empty

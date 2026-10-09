@@ -177,7 +177,7 @@
 
                             <input type="date"
                                 id="piutangTanggalBayar"
-                                class="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="block w-full rounded-lg border-gray-300 px-1 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
                         {{-- Jumlah Pembayaran --}}
@@ -192,7 +192,7 @@
                                     id="piutangJumlah"
                                     min="0.01"
                                     step="0.01"
-                                    class="block w-full min-w-0 rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="block w-full min-w-0 rounded-lg border-gray-300 px-1 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     placeholder="Masukkan jumlah pembayaran">
                             </div>
                         </div>
@@ -208,7 +208,7 @@
                                 id="piutangMetodePembayaran"
                                 name="metode_pembayaran"
                                 required
-                                class="block w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="block w-full rounded-lg border-gray-300 px-1 bg-white text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
 
                                 <option value="">Pilih metode pembayaran</option>
                                 <option value="cash">Cash</option>
@@ -228,7 +228,7 @@
                                 id="piutangKeterangan"
                                 rows="2"
                                 maxlength="255"
-                                class="block w-full resize-none rounded-lg border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                class="block w-full resize-none rounded-lg border-gray-300 px-1 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 placeholder="Masukkan keterangan pembayaran..."></textarea>
 
                         </div>

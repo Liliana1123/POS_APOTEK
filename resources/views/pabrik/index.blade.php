@@ -42,7 +42,7 @@
                                 delete-confirm="Yakin ingin menghapus pabrik ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $pabrik->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $pabrik->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $pabrik->nama }}</td>
                         <td class="text-gray-600">{{ $pabrik->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $pabrik->alamat }}">{{ $pabrik->alamat ?? '—' }}</td>

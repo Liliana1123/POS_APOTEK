@@ -91,9 +91,11 @@ class PenjualanResepTest extends TestCase
         // Verifikasi komponen pencarian pelanggan kembali ada
         $response->assertSee('id="pencarian-pelanggan"', false);
 
-        // Verifikasi script sinkronkanJenisTransaksi ada
-        $response->assertSee('sinkronkanJenisTransaksi', false);
-        $response->assertSee('renderDaftarBarang', false);
+        // Verifikasi halaman memuat bundle JS penjualan-create (logic sinkronisasi & render dipindah ke bundle)
+        $response->assertSee('penjualan-create', false);
+
+        // Verifikasi halaman memuat data container untuk cart/barang (substituted dari @json inline)
+        $response->assertSee('id="penjualan-data"', false);
     }
 
     public function test_transaksi_non_resep_berhasil_disimpan_tanpa_data_dokter(): void
