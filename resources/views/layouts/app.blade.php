@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -19,7 +19,9 @@
         @media print {
             aside#app-sidebar,
             #sidebar-backdrop,
-            nav {
+            nav,
+            footer,
+            .app-global-footer {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
@@ -243,9 +245,12 @@
         </nav>
 
         <!-- Main Content Wrapper -->
-        <main class="flex-1 p-6 w-full pb-12">
+        <main class="flex-1 p-6 w-full pb-8">
             @yield('content')
         </main>
+
+        <!-- Global Reusable Footer -->
+        @include('layouts.footer')
     </div>
 
     <!-- Session Flash Toast Notifications -->
