@@ -32,7 +32,7 @@
                 &copy; 2026 CV. Kinaryatama Raharja
             </p>
             <p class="text-[11px] sm:text-xs text-slate-500 font-medium">
-                Version 2026.07.A
+                App.Version 26.07.A
             </p>
         </div>
     </div>

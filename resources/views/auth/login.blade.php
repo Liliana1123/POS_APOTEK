@@ -23,83 +23,83 @@
     @stack('styles')
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-        <div class="rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-sky-100 backdrop-blur-sm">
-            <div class="mb-6 text-center">
-                @if($apotek?->logo)
-                    <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 border border-slate-100 shadow-md shadow-blue-100 overflow-hidden">
-                        <img src="{{ asset('storage/' . $apotek->logo) }}"
-                             alt="{{ $apotek->nama_apotek }}"
-                             class="w-full h-full object-contain object-center">
-                    </div>
-                @else
-                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-200">
-                        {{ $abbr }}
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex flex-col justify-between">
+    <div class="flex-1 flex items-center justify-center p-4 w-full">
+        <div class="w-full max-w-md">
+            <div class="rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-sky-100 backdrop-blur-sm">
+                <div class="mb-6 text-center">
+                    @if($apotek?->logo)
+                        <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-2.5 border border-slate-100 shadow-md shadow-blue-100 overflow-hidden">
+                            <img src="{{ asset('storage/' . $apotek->logo) }}"
+                                 alt="{{ $apotek->nama_apotek }}"
+                                 class="w-full h-full object-contain object-center">
+                        </div>
+                    @else
+                        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-200">
+                            {{ $abbr }}
+                        </div>
+                    @endif
+                    <h1 class="text-2xl font-bold text-slate-900">{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
+                    <p class="mt-2 text-sm text-slate-500">Silakan login untuk melanjutkan</p>
+                </div>
+
+                @if ($errors->any())
+                    <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                        {{ $errors->first() }}
                     </div>
                 @endif
-                <h1 class="text-2xl font-bold text-slate-900">{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
-                <p class="mt-2 text-sm text-slate-500">Silakan login untuk melanjutkan</p>
-            </div>
 
-            @if ($errors->any())
-                <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            @if (session('notice'))
-                <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                    {{ session('notice') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
-                @csrf
-
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700" for="email">Email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
-                        class="form-input h-11 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
-                </div>
-
-                <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password">Password</label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password" required
-                            class="form-input h-11 w-full border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 pr-11">
-                        <button type="button" id="password-toggle" tabindex="-1"
-                            class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600"
-                            aria-label="Tampilkan password">
-                            <x-heroicon-o-eye class="h-5 w-5 show-icon" />
-                            <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden" />
-                        </button>
+                @if (session('notice'))
+                    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                        {{ session('notice') }}
                     </div>
-                </div>
+                @endif
 
-                <div class="space-y-1">
-                    @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
-                    @error('captcha')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
+                    @csrf
 
-                <label class="flex items-center gap-2 text-sm text-slate-600">
-                    <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                    Ingat saya
-                </label>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700" for="email">Email</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
+                            class="form-input h-11 border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100">
+                    </div>
 
-                <button type="submit"
-                    class="btn-primary h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-semibold shadow-lg shadow-blue-200 transition hover:from-blue-700 hover:to-indigo-700">
-                    Masuk
-                </button>
-            </form>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password">Password</label>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                class="form-input h-11 w-full border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 pr-11">
+                            <button type="button" id="password-toggle" tabindex="-1"
+                                class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600"
+                                aria-label="Tampilkan password">
+                                <x-heroicon-o-eye class="h-5 w-5 show-icon" />
+                                <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden" />
+                            </button>
+                        </div>
+                    </div>
 
-            <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                <span class="text-xs font-medium text-slate-400 tracking-wider">v{{ config('app.version', '26.7.A') }}</span>
+                    <div class="space-y-1">
+                        @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
+                        @error('captcha')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                        Ingat saya
+                    </label>
+
+                    <button type="submit"
+                        class="btn-primary h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-semibold shadow-lg shadow-blue-200 transition hover:from-blue-700 hover:to-indigo-700">
+                        Masuk
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+
+    @include('layouts.footer')
 
     <script>
         (() => {
