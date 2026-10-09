@@ -17,6 +17,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - {{ $apotek?->nama_apotek ?? 'POS Apotek' }}</title>
+    <link rel="icon" type="{{ pathinfo($apotek?->logo, PATHINFO_EXTENSION) == 'png' ? 'image/png' : 'image/x-icon' }}" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
