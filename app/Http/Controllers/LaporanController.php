@@ -321,7 +321,7 @@ class LaporanController extends Controller
 
     $query = \App\Models\Penjualan::with([
         'pelanggan',
-        'detail',
+        'detail.detailPenerimaan.barang.satuan',
         'user',
         'pembayaranPiutang',
     ])->whereBetween('tanggal', [$dari, $sampai]);
@@ -437,12 +437,25 @@ class LaporanController extends Controller
     }
 
     // =========================================================
-    // AMBIL DATA
+    // SORTING & AMBIL DATA
     // =========================================================
-    $penjualans = $query
-        ->orderByDesc('tanggal')
-        ->orderByDesc('id')
-        ->get();
+    $sort = $request->input('sort', 'tanggal');
+    $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+    $allowedSorts = ['tanggal', 'no_faktur', 'invoice'];
+    if (!in_array($sort, $allowedSorts, true)) {
+        $sort = 'tanggal';
+    }
+
+    if ($sort === 'invoice' || $sort === 'no_faktur') {
+        $query->orderBy('no_faktur', $direction)
+            ->orderBy('tanggal', $direction);
+    } else {
+        $query->orderBy('tanggal', $direction)
+            ->orderBy('no_faktur', $direction);
+    }
+
+    $penjualans = $query->get();
 
     // =========================================================
     // RINGKASAN
@@ -466,53 +479,104 @@ class LaporanController extends Controller
         $jumlahTransaksi - $transaksiMember;
 
     // =========================================================
-    // EXPORT CSV
+    // EXPORT EXCEL (XLSX)
     // =========================================================
-    if ($request->query('export') === 'csv') {
+    if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
 
         $headers = [
             'Tanggal',
-            'No. Faktur',
-            'Pelanggan',
-            'Status Pelanggan',
+            'No. Invoice',
+            'Nama Pelanggan',
+            'Jenis Pelanggan',
             'Kasir',
-            'Metode Pembayaran',
             'Jenis Transaksi',
-            'Subtotal Kotor',
-            'Diskon',
-            'Total',
+            'Metode Pembayaran',
+            'Status Piutang',
+            'Total Kotor',
+            'Total Transaksi',
         ];
 
         $data = [];
+        $totalKotor = 0;
+        $totalTransaksi = 0;
 
         foreach ($penjualans as $p) {
 
             $diskon = $p->detail->sum('diskon');
+            $kotor   = $p->total + $diskon;
+            $totalKotor      += $kotor;
+            $totalTransaksi  += $p->total;
 
-            $subtotalKotor = $p->total + $diskon;
+            // Jenis pelanggan
+            if ($p->pelanggan && $p->pelanggan->is_member) {
+                $jenisPelanggan = $p->pelanggan->status_member ?: 'Member Pelanggan Tetap';
+            } else {
+                $jenisPelanggan = 'Pelanggan Umum';
+            }
+
+            // Jenis transaksi
+            $jenisTransaksi = match($p->jenis_transaksi) {
+                'resep'     => 'Resep',
+                'non_resep' => 'Non Resep',
+                default     => '—',
+            };
+
+            // Metode pembayaran
+            $metode = match(strtolower((string) $p->metode_pembayaran)) {
+                'cash'    => 'Cash',
+                'qris'    => 'QRIS',
+                'debit'   => 'Debit',
+                'piutang' => 'Piutang',
+                default   => ucfirst((string) ($p->metode_pembayaran ?? '—')),
+            };
+
+            // Status piutang
+            if ($p->metode_pembayaran !== 'piutang') {
+                $statusPiutang = '—';
+            } else {
+                $totalDibayar = $p->pembayaranPiutang->sum('jumlah');
+                $sisa = max(0, $p->total - $totalDibayar);
+                if ($sisa <= 0) {
+                    $statusPiutang = 'Lunas';
+                } elseif ($p->due_date && $p->due_date->isPast()) {
+                    $statusPiutang = 'Terlambat';
+                } else {
+                    $statusPiutang = 'Belum Lunas';
+                }
+            }
 
             $data[] = [
-                $p->tanggal->format('d M Y'),
+                $p->tanggal ? $p->tanggal->format('d M Y') : '—',
                 $p->no_faktur,
                 $p->pelanggan->nama ?? 'Umum',
-                $p->pelanggan
-                    ? ($p->pelanggan->is_member
-                        ? 'Member'
-                        : 'Umum')
-                    : 'Umum',
+                $jenisPelanggan,
                 $p->user->name ?? 'Admin',
-                $p->metode_pembayaran ?? '-',
-                $p->jenis_transaksi ?? '-',
-                $subtotalKotor,
-                $diskon,
+                $jenisTransaksi,
+                $metode,
+                $statusPiutang,
+                $kotor,
                 $p->total,
             ];
         }
 
-        return $this->exportCsv(
-            'laporan-penjualan-' . $dari . '-' . $sampai . '.csv',
+        $totalRow = [
+            '',
+            'Total',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $totalKotor,
+            $totalTransaksi,
+        ];
+
+        return $this->exportXlsx(
+            'laporan_penjualan_' . $dari . '_' . $sampai . '.xlsx',
             $headers,
-            $data
+            $data,
+            $totalRow
         );
     }
 
@@ -525,7 +589,9 @@ class LaporanController extends Controller
         'transaksiMember',
         'transaksiNonMember',
         'dari',
-        'sampai'
+        'sampai',
+        'sort',
+        'direction'
     ));
 }
 
