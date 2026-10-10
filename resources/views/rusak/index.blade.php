@@ -83,7 +83,7 @@
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                <a href="{{ route('rusak.index', request()->has('per_page') ? ['per_page' => request('per_page')] : []) }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
             @endif
@@ -226,28 +226,14 @@
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            form="filter-form"
-            onchange="document.getElementById('filter-form').submit()"
-        >
-            <option value="10" @selected((int) request('per_page', 10) === 10)>10</option>
-            <option value="25" @selected((int) request('per_page', 10) === 25)>25</option>
-            <option value="50" @selected((int) request('per_page', 10) === 50)>50</option>
-            <option value="100" @selected((int) request('per_page', 10) === 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $rusaks->links() }}
-    </div>
+<div class="mt-4">
+    @if($rusaks->total() > 0)
+        {{ $rusaks->links('vendor.pagination.apotek') }}
+    @else
+        <p class="text-sm text-gray-700 leading-5">
+            Menampilkan 0–0 dari {{ $rusaks->total() }} data
+        </p>
+    @endif
 </div>
 
     @php

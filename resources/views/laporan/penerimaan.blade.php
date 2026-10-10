@@ -136,6 +136,30 @@
             </div>
 
             <div>
+                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Tanggal Penerimaan
+                </label>
+
+                <div class="flex items-center gap-2">
+                    <input
+                        type="date"
+                        name="dari"
+                        value="{{ $dari }}"
+                        class="form-input min-w-0"
+                    >
+
+                    <span class="text-sm text-gray-400">-</span>
+
+                    <input
+                        type="date"
+                        name="sampai"
+                        value="{{ $sampai }}"
+                        class="form-input min-w-0"
+                    >
+                </div>
+            </div>
+
+            <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                     Supplier
                 </label>
@@ -182,29 +206,7 @@
                 </select>
             </div>
 
-            <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Penerimaan
-                </label>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="dari"
-                        value="{{ $dari }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="sampai"
-                        value="{{ $sampai }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
+            
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">

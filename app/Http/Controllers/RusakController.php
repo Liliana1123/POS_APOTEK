@@ -46,12 +46,7 @@ class RusakController extends Controller
             }
         }
 
-        $perPage = (int) $request->input('per_page', 10);
-        if ($perPage <= 0) {
-            $perPage = 10;
-        }
-
-        $rusaks = $query->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
+        $rusaks = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
         return view('rusak.index', compact('rusaks', 'tanggalMulai', 'tanggalAkhir'));
     }
