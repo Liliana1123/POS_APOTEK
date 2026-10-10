@@ -41,8 +41,7 @@
                     <button onclick="printCard()" class="btn-primary">Cetak Kartu</button>
                 </div>
             </div> <!-- Penutup modal-container-custom -->
-            </div> <!-- Penutup modal-card -->
-        </div>
+        </div> <!-- Penutup modal-card -->
 
 <style>
 @media print {

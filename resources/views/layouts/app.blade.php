@@ -87,6 +87,14 @@
 
                 @php
                     $u = auth()->user();
+                    if (!$u) {
+                        $u = new class {
+                            public $name = '';
+                            public $role = '';
+                            public function hasPermission($name) { return false; }
+                            public function isSuperAdmin() { return false; }
+                        };
+                    }
                     $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
@@ -200,11 +208,11 @@
         <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                    {{ $u ? strtoupper(substr($u->name, 0, 2)) : '' }}
                 </div>
                 <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
-                    <span class="block text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</span>
-                    <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ auth()->user()->role }}</span>
+                    <span class="block text-xs font-semibold text-white truncate">{{ $u?->name }}</span>
+                    <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ $u?->role }}</span>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="sidebar-footer-logout shrink-0 overflow-hidden">
