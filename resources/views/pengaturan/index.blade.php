@@ -381,12 +381,11 @@
 
             <!-- Form Action Footer -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-                <button type="button"
-                        id="btn-reset"
-                        class="btn-secondary"
-                        onclick="resetFormToInitial()">
-                    Clear
-                </button>
+                    <button type="button"
+                            id="btn-reset"
+                            class="btn-secondary">
+                        Clear
+                    </button>
                 <button type="submit" class="btn-primary flex items-center gap-1.5">
                     <x-heroicon-o-check class="w-4 h-4" />
                     <span>Simpan Pengaturan</span>
@@ -402,7 +401,6 @@ const __INITIAL_FORM_STATE = {};
 let __INITIAL_LOGO_URL = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Capture initial values for reset functionality
     document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
         __INITIAL_FORM_STATE[el.name] = el.value;
     });
@@ -432,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevTelepon = document.getElementById('preview-telepon');
     const prevEmail = document.getElementById('preview-email');
     const prevPj = document.getElementById('preview-pj');
-    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
+    const prevLogoImg = document.getElementById('preview-logo-img');
     const formLogoPreview = document.getElementById('form-logo-preview');
     const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
 
@@ -545,7 +543,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnReset = document.getElementById('btn-reset');
+    console.log('btnReset element:', btnReset);
+    if (btnReset) {
+        btnReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Clear button clicked!');
+            window.resetFormToInitial();
+        });
+    }
+
     window.resetFormToInitial = function () {
+        console.log('resetFormToInitial called', __INITIAL_FORM_STATE, __INITIAL_LOGO_URL);
         document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
             const initial = __INITIAL_FORM_STATE[el.name];
             if (initial !== undefined) {
