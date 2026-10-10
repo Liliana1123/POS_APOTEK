@@ -38,62 +38,71 @@ class PelangganController extends Controller
 
         $query = Pelanggan::query();
 
-        // Halaman Pelanggan/Member hanya menampilkan member.
-        $query->where('is_member', true);
+        try {
+            $query->where('is_member', true);
 
-        if ($status === 'pelanggan_tetap') {
-            $query->where('status_member', 'Member Pelanggan Tetap');
-        } elseif ($status === 'keluarga_nakes') {
-            $query->where('status_member', 'Member Keluarga Nakes');
-        } elseif ($status === 'member_only') {
-            $query->where('status_member', 'Member Only');
-        }
+            if ($status === 'pelanggan_tetap') {
+                $query->where('status_member', 'Member Pelanggan Tetap');
+            } elseif ($status === 'keluarga_nakes') {
+                $query->where('status_member', 'Member Keluarga Nakes');
+            } elseif ($status === 'member_only') {
+                $query->where('status_member', 'Member Only');
+            }
 
-        if ($statusPiutang === 'lunas') {
-            $query->where(function ($q) {
-                $q->whereNull('saldo_piutang')
-                    ->orWhere('saldo_piutang', '<=', 0);
-            });
-        } elseif ($statusPiutang === 'belum_lunas') {
-            $query->where('saldo_piutang', '>', 0);
-        } elseif ($statusPiutang === 'terlambat') {
-            $query->where('saldo_piutang', '>', 0)
-                ->whereHas('penjualan', function ($q) {
-                    $q->where('metode_pembayaran', 'piutang')
-                        ->whereNotNull('due_date')
-                        ->whereDate('due_date', '<', Carbon::today())
-                        ->whereRaw('
-                            penjualans.total > (
-                                SELECT COALESCE(SUM(pp.jumlah), 0)
-                                FROM pembayaran_piutangs pp
-                                WHERE pp.penjualan_id = penjualans.id
-                            )
-                        ');
+            if ($statusPiutang === 'lunas') {
+                $query->where(function ($q) {
+                    $q->whereNull('saldo_piutang')
+                        ->orWhere('saldo_piutang', '<=', 0);
                 });
+            } elseif ($statusPiutang === 'belum_lunas') {
+                $query->where('saldo_piutang', '>', 0);
+            } elseif ($statusPiutang === 'terlambat') {
+                $query->where('saldo_piutang', '>', 0)
+                    ->whereHas('penjualan', function ($q) {
+                        $q->where('metode_pembayaran', 'piutang')
+                            ->whereNotNull('due_date')
+                            ->whereDate('due_date', '<', Carbon::today())
+                            ->whereRaw('
+                                penjualans.total > (
+                                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                                    FROM pembayaran_piutangs pp
+                                    WHERE pp.penjualan_id = penjualans.id
+                                )
+                            ');
+                    });
+            }
+
+            if ($request->filled('cari')) {
+                $search = $request->input('cari');
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('telepon', 'like', "%{$search}%")
+                        ->orWhere('member_id', 'like', "%{$search}%");
+                });
+            }
+
+            $pelanggans = $query
+                ->withCount('penjualan')
+                ->withSum('penjualan as total_belanja', 'total')
+                ->withSum('discountUsages as total_diskon', 'nominal')
+                ->with(['penjualan' => function ($q) {
+                    $q->where('metode_pembayaran', 'piutang')
+                      ->with('pembayaranPiutang');
+                }])
+                ->orderByRaw('member_id IS NULL, member_id asc')
+                ->paginate(15)
+                ->withQueryString();
+        } catch (\Throwable $e) {
+            \Log::error('Pelanggan index error: '.$e->getMessage(), [
+                'status' => $status,
+                'status_piutang' => $statusPiutang,
+                'search' => $request->input('cari'),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $pelanggans = collect();
         }
-
-
-        if ($request->filled('cari')) {
-            $search = $request->input('cari');
-
-            $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('telepon', 'like', "%{$search}%")
-                    ->orWhere('member_id', 'like', "%{$search}%");
-            });
-        }
-
-        $pelanggans = $query
-            ->withCount('penjualan')
-            ->withSum('penjualan as total_belanja', 'total')
-            ->withSum('discountUsages as total_diskon', 'nominal')
-            ->with(['penjualan' => function ($q) {
-                $q->where('metode_pembayaran', 'piutang')
-                  ->with('pembayaranPiutang');
-            }])
-            ->orderByRaw('member_id IS NULL, member_id asc')
-            ->paginate(15)
-            ->withQueryString();
 
         return view('pelanggan.index', compact(
             'pelanggans',
