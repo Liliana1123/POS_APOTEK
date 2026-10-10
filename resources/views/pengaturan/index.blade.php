@@ -399,12 +399,16 @@
 <!-- Real-time Synchronizer Script -->
 <script>
 const __INITIAL_FORM_STATE = {};
+let __INITIAL_LOGO_URL = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Capture initial values for reset functionality
     document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
         __INITIAL_FORM_STATE[el.name] = el.value;
     });
+
+    const prevLogoImg = document.getElementById('preview-logo-img');
+    if (prevLogoImg) __INITIAL_LOGO_URL = prevLogoImg.src;
 
     const inputNama = document.getElementById('input-nama-apotek');
     const inputPemilik = document.getElementById('input-nama-pemilik');
@@ -428,7 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevTelepon = document.getElementById('preview-telepon');
     const prevEmail = document.getElementById('preview-email');
     const prevPj = document.getElementById('preview-pj');
-    const prevLogoImg = document.getElementById('preview-logo-img');
     const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
     const formLogoPreview = document.getElementById('form-logo-preview');
     const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
@@ -551,7 +554,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (inputLogo) inputLogo.value = '';
+        if (inputLogo) {
+            inputLogo.value = '';
+            
+            if (__INITIAL_LOGO_URL && !__INITIAL_LOGO_URL.endsWith('/')) {
+                if (prevLogoImg) {
+                    prevLogoImg.src = __INITIAL_LOGO_URL;
+                    prevLogoImg.classList.remove('hidden');
+                }
+                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.add('hidden');
+                if (formLogoPreview) {
+                    formLogoPreview.src = __INITIAL_LOGO_URL;
+                    formLogoPreview.classList.remove('hidden');
+                }
+                if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
+                if (receiptLogo) {
+                    receiptLogo.src = __INITIAL_LOGO_URL;
+                    receiptLogo.classList.remove('hidden');
+                }
+            } else {
+                if (prevLogoImg) prevLogoImg.classList.add('hidden');
+                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.remove('hidden');
+                if (formLogoPreview) formLogoPreview.classList.add('hidden');
+                if (formLogoPlaceholder) formLogoPlaceholder.classList.remove('hidden');
+                if (receiptLogo) receiptLogo.classList.add('hidden');
+            }
+        }
     };
 });
 </script>
