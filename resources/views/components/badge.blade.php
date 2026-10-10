@@ -6,6 +6,8 @@
     $classMap = [
         'success' => 'badge-success',
         'warning' => 'badge-warning',
+        'yellow' => 'badge-warning',
+        'orange' => 'badge-orange',
         'danger' => 'badge-danger',
         'info' => 'badge-info',
         'secondary' => 'badge-secondary',

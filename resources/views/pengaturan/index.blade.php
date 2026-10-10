@@ -67,6 +67,10 @@
 
             <div class="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3.5 font-mono text-xs text-gray-700">
                 <div class="text-center pb-2.5 border-b border-dashed border-gray-300 space-y-0.5">
+                    <img id="receipt-logo"
+                         src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
+                         alt="Logo"
+                         class="w-10 h-10 object-contain mx-auto mb-1 {{ $apotek->logo ? '' : 'hidden' }}">
                     <p id="receipt-nama" class="font-bold text-gray-900 uppercase">
                         {{ $apotek->nama_apotek ?: 'NAMA APOTEK' }}
                     </p>
@@ -247,6 +251,45 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="md:col-span-2 pt-3 border-t border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1">Lokasi Apotek</h4>
+                        <p class="text-[11px] text-gray-500 mb-3">Koordinat lokasi apotek (Latitude dan Longitude) dalam format desimal.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="input-latitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Latitude
+                                </label>
+                                <input type="number"
+                                       id="input-latitude"
+                                       name="latitude"
+                                       value="{{ old('latitude', $apotek->latitude) }}"
+                                       placeholder="Contoh: -6.2088"
+                                       step="any"
+                                       min="-90"
+                                       max="90"
+                                       class="form-input @error('latitude') error @enderror">
+                                @error('latitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label for="input-longitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Longitude
+                                </label>
+                                <input type="number"
+                                       id="input-longitude"
+                                       name="longitude"
+                                       value="{{ old('longitude', $apotek->longitude) }}"
+                                       placeholder="Contoh: 106.8451"
+                                       step="any"
+                                       min="-180"
+                                       max="180"
+                                       class="form-input @error('longitude') error @enderror">
+                                @error('longitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -262,7 +305,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                         <label for="input-apoteker-pj" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                            Nama Apoteker PJ (Apt.)
+                            Nama Apoteker Penaggungjawab
                         </label>
                         <input type="text"
                                 id="input-apoteker-pj"
@@ -338,12 +381,11 @@
 
             <!-- Form Action Footer -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-                <button type="button"
-                        id="btn-reset"
-                        class="btn-secondary"
-                        onclick="resetFormToInitial()">
-                    Clear
-                </button>
+                    <button type="button"
+                            id="btn-reset"
+                            class="btn-secondary">
+                        Clear
+                    </button>
                 <button type="submit" class="btn-primary flex items-center gap-1.5">
                     <x-heroicon-o-check class="w-4 h-4" />
                     <span>Simpan Pengaturan</span>
@@ -356,12 +398,15 @@
 <!-- Real-time Synchronizer Script -->
 <script>
 const __INITIAL_FORM_STATE = {};
+let __INITIAL_LOGO_URL = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Capture initial values for reset functionality
     document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
         __INITIAL_FORM_STATE[el.name] = el.value;
     });
+
+    const prevLogoImg = document.getElementById('preview-logo-img');
+    if (prevLogoImg) __INITIAL_LOGO_URL = prevLogoImg.src;
 
     const inputNama = document.getElementById('input-nama-apotek');
     const inputPemilik = document.getElementById('input-nama-pemilik');
@@ -386,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevEmail = document.getElementById('preview-email');
     const prevPj = document.getElementById('preview-pj');
     const prevLogoImg = document.getElementById('preview-logo-img');
-    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
     const formLogoPreview = document.getElementById('form-logo-preview');
     const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
 
@@ -395,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const receiptKontak = document.getElementById('receipt-kontak');
     const receiptSia = document.getElementById('receipt-sia');
     const receiptSipa = document.getElementById('receipt-sipa');
+    const receiptLogo = document.getElementById('receipt-logo');
 
     function compileAddress() {
         const jalan = inputAlamatJalan ? inputAlamatJalan.value.trim() : '';
@@ -488,13 +533,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         formLogoPreview.classList.remove('hidden');
                     }
                     if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
+                    if (receiptLogo) {
+                        receiptLogo.src = e.target.result;
+                        receiptLogo.classList.remove('hidden');
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         });
     }
 
+    const btnReset = document.getElementById('btn-reset');
+    console.log('btnReset element:', btnReset);
+    if (btnReset) {
+        btnReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Clear button clicked!');
+            window.resetFormToInitial();
+        });
+    }
+
     window.resetFormToInitial = function () {
+        console.log('resetFormToInitial called', __INITIAL_FORM_STATE, __INITIAL_LOGO_URL);
         document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
             const initial = __INITIAL_FORM_STATE[el.name];
             if (initial !== undefined) {
@@ -503,7 +563,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (inputLogo) inputLogo.value = '';
+        if (inputLogo) {
+            inputLogo.value = '';
+            
+            if (__INITIAL_LOGO_URL && !__INITIAL_LOGO_URL.endsWith('/')) {
+                if (prevLogoImg) {
+                    prevLogoImg.src = __INITIAL_LOGO_URL;
+                    prevLogoImg.classList.remove('hidden');
+                }
+                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.add('hidden');
+                if (formLogoPreview) {
+                    formLogoPreview.src = __INITIAL_LOGO_URL;
+                    formLogoPreview.classList.remove('hidden');
+                }
+                if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
+                if (receiptLogo) {
+                    receiptLogo.src = __INITIAL_LOGO_URL;
+                    receiptLogo.classList.remove('hidden');
+                }
+            } else {
+                if (prevLogoImg) prevLogoImg.classList.add('hidden');
+                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.remove('hidden');
+                if (formLogoPreview) formLogoPreview.classList.add('hidden');
+                if (formLogoPlaceholder) formLogoPlaceholder.classList.remove('hidden');
+                if (receiptLogo) receiptLogo.classList.add('hidden');
+            }
+        }
     };
 });
 </script>

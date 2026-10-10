@@ -2,7 +2,7 @@
 <div id="modal-detail-pelanggan"
     class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
 
-    <div class="modal-container-custom w-full max-w-3xl mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden">
+   <div class="modal-container-custom w-full mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden" style="width: 50vw; max-width: 900px;">
 
         <!-- HEADER -->
         <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
@@ -36,23 +36,23 @@
         <div class="overflow-y-auto max-h-[calc(92vh-128px)]">
 
             <!-- INFORMASI PELANGGAN + RINGKASAN -->
-            <div class="grid grid-cols-1 gap-5 px-5 py-5 md:grid-cols-2">
+            <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 px-5 py-5">
 
                 <!-- KIRI -->
                 <div class="space-y-4">
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-user class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
                             <div class="text-[10px] font-medium text-gray-400">Nama</div>
-                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-gray-800 break-words">-</div>
+                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-blue-600 break-words">-</div>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-identification class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -62,7 +62,7 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-phone class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -72,7 +72,7 @@
                     </div>
 
                     <div class="flex items-start gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-map-pin class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -81,49 +81,107 @@
                         </div>
                     </div>
 
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <x-heroicon-o-tag class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">Benefit Diskon</div>
+                            <div class="mt-0.5">
+                                <span id="detail-benefit-diskon" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                    Diskon Default 10%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- KANAN -->
-                <div class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                    <!-- TOTAL BELANJA -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
                         <div class="flex items-center gap-3">
                             <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
                                 <x-heroicon-o-shopping-cart class="w-4 h-4" />
                             </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Belanja</div>
-                                <div id="detail-total-belanja" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Belanja
+                                </div>
+
+                                <div id="detail-total-belanja" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
-                                <x-heroicon-o-banknotes class="w-4 h-4" />
-                            </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Piutang</div>
-                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                    <!-- TOTAL DISKON -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
                         <div class="flex items-center gap-3">
                             <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
                                 <x-heroicon-o-tag class="w-4 h-4" />
                             </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Diskon</div>
-                                <div id="detail-total-diskon" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Diskon
+                                </div>
+
+                                <div id="detail-total-diskon" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- TOTAL PIUTANG -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Piutang
+                                </div>
+
+                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- JATUH TEMPO -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-calendar-days class="w-4 h-4" />
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Jatuh Tempo
+                                </div>
+
+                                <div id="detail-jatuh-tempo" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    -
+                                </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
             </div>
+
 
             <!-- RIWAYAT TRANSAKSI -->
             <div class="border-t border-gray-100 px-5 py-4">
@@ -144,16 +202,19 @@
                     <table class="min-w-full text-xs">
                         <thead class="bg-blue-50">
                             <tr class="border-b border-gray-200">
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Tanggal
                                 </th>
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     No. Faktur
                                 </th>
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Metode
                                 </th>
-                                <th class="px-3 py-2 text-right font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Total
                                 </th>
                             </tr>
@@ -192,6 +253,7 @@ function formatDetailRupiah(angka) {
 }
 
 function formatDetailTanggal(tanggal) {
+    
     if (!tanggal) return '-';
 
     const parts = String(tanggal).split('-');
@@ -222,8 +284,10 @@ function openDetailModal(pelangganId) {
     document.getElementById('detail-member-id').textContent = '-';
     document.getElementById('detail-telepon').textContent = '-';
     document.getElementById('detail-alamat').textContent = 'Memuat...';
+    document.getElementById('detail-benefit-diskon').textContent = 'Diskon Default 10%';
     document.getElementById('detail-total-belanja').textContent = 'Rp 0';
     document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
+    document.getElementById('detail-jatuh-tempo').textContent = '-';
     document.getElementById('detail-total-diskon').textContent = 'Rp 0';
     document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
 
@@ -235,7 +299,13 @@ function openDetailModal(pelangganId) {
         </tr>
     `;
 
+    
+
     modal.classList.remove('hidden');
+    const modalContent = modal.querySelector('.overflow-y-auto');
+    if (modalContent) {
+        modalContent.scrollTop = 0;
+    }
 
     fetch(`{{ url('pelanggan') }}/${pelangganId}`, {
         headers: {
@@ -257,8 +327,20 @@ function openDetailModal(pelangganId) {
         document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
         document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
         document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
+        
+        const customDiscount = pelanggan.custom_discount_percentage;
+        const benefitLabel =
+            customDiscount !== null &&
+            customDiscount !== undefined &&
+            customDiscount !== ''
+                ? `Diskon ${parseFloat(customDiscount)}%`
+                : 'Diskon 10%';
+
+        document.getElementById('detail-benefit-diskon').textContent = benefitLabel;
+
         document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
         document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
+        document.getElementById('detail-jatuh-tempo').textContent = pelanggan.jatuh_tempo || '-';
         document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
         document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
 
@@ -280,19 +362,19 @@ function openDetailModal(pelangganId) {
             row.className = 'hover:bg-gray-50 transition border-b border-gray-100';
 
             const tanggal = document.createElement('td');
-            tanggal.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
+            tanggal.className = 'px-3 py-2.5 whitespace-nowrap text-center text-gray-600';
             tanggal.textContent = formatDetailTanggal(item.tanggal);
 
             const faktur = document.createElement('td');
-            faktur.className = 'px-3 py-2.5 whitespace-nowrap font-mono text-[10px] text-blue-600';
+            faktur.className = 'px-3 py-2.5 whitespace-nowrap text-center font-mono text-[10px] text-blue-600';
             faktur.textContent = item.no_faktur || '-';
 
             const metode = document.createElement('td');
-            metode.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
+            metode.className = 'px-3 py-2.5 whitespace-nowrap text-center text-gray-600';
             metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
 
             const total = document.createElement('td');
-            total.className = 'px-3 py-2.5 whitespace-nowrap text-right font-semibold text-gray-800';
+            total.className = 'px-3 py-2.5 whitespace-nowrap text-center font-semibold text-gray-800';
             total.textContent = formatDetailRupiah(item.total);
 
             row.appendChild(tanggal);

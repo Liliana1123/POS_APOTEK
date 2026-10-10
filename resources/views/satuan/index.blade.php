@@ -40,7 +40,7 @@
                                 delete-confirm="Yakin ingin menghapus satuan ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $satuan->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $satuan->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
                     </tr>
                 @empty
@@ -51,7 +51,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $satuans->links() }}</div>
+<div class="mt-4">{{ $satuans->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-satuan"

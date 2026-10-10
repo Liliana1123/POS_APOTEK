@@ -66,7 +66,6 @@
     </div>
 
     {{-- ============================================================ --}}
-        {{-- ============================================================ --}}
     {{-- 2. KPI UTAMA (6 KARTU)                                       --}}
     {{-- ============================================================ --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -87,7 +86,7 @@
             <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs"><x-heroicon-o-user-group class="w-6 h-6" /></div>
         </div>
         <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Hutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
+            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
             <div class="kpi-icon bg-sky-50 text-sky-600 shadow-2xs"><x-heroicon-o-building-office-2 class="w-6 h-6" /></div>
         </div>
         <div class="kpi-card flex items-center justify-between">
@@ -103,7 +102,7 @@
         <div class="main-graph-card xl:col-span-5"><div class="dashboard-card p-4 h-full">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
             <div>
-                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan & Omzet</h3>
+                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
                 <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
             </div>
             <div class="flex items-center gap-4 text-xs font-medium">
@@ -177,7 +176,7 @@
 
                     <div>
                         <h3 class="text-sm font-extrabold text-gray-900">
-                            Business Health
+                            Kondisi Bisnis
                         </h3>
                         <p class="text-[9px] text-gray-400 mt-0.5">
                             Kondisi operasional saat ini
@@ -379,16 +378,40 @@
         <div class="main-action-column xl:col-span-3 space-y-3">
             <div class="dashboard-card p-4">
     <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-gray-900">Action Center</h3>
+        <h3 class="text-sm font-bold text-gray-900">Tindak Lanjut</h3>
     </div>
     <div class="space-y-2">
-        <a href="{{ $actionCenter['critical']['route'] }}" class="action-alert-card critical block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Critical</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['critical']['count'] }} · {{ $actionCenter['critical']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
-        <a href="{{ $actionCenter['attention']['route'] }}" class="action-alert-card attention block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-amber-100 text-amber-700">Attention</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['attention']['count'] }} · {{ $actionCenter['attention']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-amber-400" /></div></a>
-        <a href="{{ $actionCenter['monitoring']['route'] }}" class="action-alert-card monitoring block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-sky-100 text-sky-700">Monitoring</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['monitoring']['count'] }} · {{ $actionCenter['monitoring']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-sky-400" /></div></a>
-        <a href="{{ $actionCenter['overdue']['route'] }}" class="action-alert-card overdue block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-rose-100 text-rose-700">Overdue</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['overdue']['count'] }} · {{ $actionCenter['overdue']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-rose-400" /></div></a>
-        <a href="{{ $actionCenter['piutang']['route'] }}" class="action-alert-card piutang block !p-3"><div class="flex items-center justify-between"><div><span class="badge-chip bg-purple-100 text-purple-700">Piutang</span><div class="text-xs font-bold text-gray-700 mt-1">{{ $actionCenter['piutang']['count'] }} · {{ $actionCenter['piutang']['label'] }}</div></div><x-heroicon-o-chevron-right class="w-4 h-4 text-purple-400" /></div></a>
+        @php
+            $acakWarna = [
+                'critical' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'critical'],
+                'attention' => ['bg-amber-100 text-amber-700', 'text-amber-400', 'attention'],
+                'monitoring' => ['bg-sky-100 text-sky-700', 'text-sky-400', 'monitoring'],
+                'overdue' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'overdue'],
+                'piutang' => ['bg-purple-100 text-purple-700', 'text-purple-400', 'piutang'],
+            ];
+            $actionCenterLabels = [
+                'critical' => 'Kritis',
+                'attention' => 'Perlu Perhatian',
+                'monitoring' => 'Dalam Pemantauan',
+                'overdue' => 'Terlambat',
+                'piutang' => 'Piutang',
+            ];
+        @endphp
+        @foreach ($actionCenter as $kunci => $item)
+            @php [$chip, $ikon, $kelas] = $acakWarna[$kunci]; @endphp
+            <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="badge-chip {{ $chip }}">{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
+                        <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
+                    </div>
+                    <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
+                </div>
+            </a>
+        @endforeach
     </div>
 </div>
+@if (auth()->user()->canManage('transaksi.penjualan'))
 <div class="cashier-card dashboard-card p-3 bg-blue-700 text-white">
     <a href="{{ route('penjualan.create') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors">
         <x-heroicon-o-calculator class="w-4 h-4" />
@@ -396,19 +419,26 @@
         <x-heroicon-o-chevron-right class="w-4 h-4 ml-auto" />
     </a>
 </div></div>
+@endif
     </div>
 
     {{-- ============================================================ --}}
     {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
     {{-- ============================================================ --}}
-    <div class="inventory-row grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
-        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
+    {{-- ============================================================ --}}
+    {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
+    {{-- ============================================================ --}}
+    <div class="inventory-row grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        {{-- ============================================================ --}}
+        {{-- KOLOM KIRI: INVENTORY CONTROL CENTER + KONDISI STOK + EXPIRY HEALTH --}}
+        {{-- ============================================================ --}}
+        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200">
                 <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                     <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                         <x-heroicon-o-archive-box class="w-4 h-4" />
                     </span>
-                    Inventory Control Center
+                    Pemantauan Stok
                 </h3>
                 <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
                     Lihat Stok &rarr;
@@ -416,7 +446,7 @@
             </div>
 
             <div class="flex flex-col gap-3 mt-3.5 flex-1 justify-between">
-                {{-- Baris Atas: 2 Kartu Metrik (Total Stok & Nilai Persediaan) --}}
+                {{-- 1. Baris Metrik: Total Stok & Nilai Persediaan --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {{-- Total Stok --}}
                     <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
@@ -449,7 +479,7 @@
                     </div>
                 </div>
 
-                {{-- Baris Bawah: Kondisi Stok dengan Doughnut Chart & Legend --}}
+                {{-- 2. Kondisi Stok dengan Doughnut Chart & Legend --}}
                 @php
                     $totalKondisiStok = $stokHabisCount + $stokMenipisCount + $stokAmanCount;
                     $totalK = max(1, $totalKondisiStok);
@@ -517,156 +547,161 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- 3. Expiry Health dengan Doughnut Chart & Legend (Pindah ke bawah Kondisi Stok) --}}
+                @php
+                    $totalB = max(1, $totalBatchesCount);
+                    $pctAman = ($totalBatchesCount > 0) ? number_format(($expiryAman / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctWarning = ($totalBatchesCount > 0) ? number_format(($expiryWarning / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctCritical = ($totalBatchesCount > 0) ? number_format(($expiryCritical / $totalB) * 100, 1, ',', '.') : '0';
+                    $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
+                @endphp
+                <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            Expiry Health
+                        </span>
+                        <a href="{{ route('laporan.stok') }}" class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-0.5">
+                            Lihat Semua &rarr;
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        {{-- Donut Chart Expiry Health with Center Text --}}
+                        <div class="relative w-[88px] h-[88px] shrink-0 flex items-center justify-center">
+                            <canvas id="expiryHealthChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                                <span class="text-[8px] text-gray-400 font-medium uppercase tracking-wider">Total</span>
+                                <span class="text-xs font-black text-gray-900 leading-tight">{{ number_format($totalBatchesCount) }}</span>
+                                <span class="text-[8px] text-gray-400 font-medium">Batch</span>
+                            </div>
+                        </div>
+
+                        {{-- Legend List dengan Angka dan Persentase --}}
+                        <div class="flex-1 space-y-1 w-full min-w-0">
+                            <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryAman) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAman }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-yellow-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-yellow-700">Peringatan (30–90 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctWarning }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-orange-700">Kritis (&lt;30 hari)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctCritical }}%</span>
+                                </div>
+                            </a>
+
+                            <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
+                               class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                                    <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluwarsa</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
+                                    <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctKadaluarsa }}%</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div></div>
-        <div class="xl:col-span-4"><div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
-                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span class="p-1.5 rounded-lg bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center">
-                        <x-heroicon-o-clock class="w-4 h-4" />
-                    </span>
-                    Expiry Health
-                </h3>
-                <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
-                    Lihat Semua &rarr;
+        </div>
+
+        {{-- ============================================================ --}}
+        {{-- KOLOM KANAN: BARANG YANG HARUS DIBELI                        --}}
+        {{-- ============================================================ --}}
+        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
+                        <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                            Barang yang Harus Dibeli
+                            @if(count($barangHarusDibeli) > 0)
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">{{ count($barangHarusDibeli) }}</span>
+                            @endif
+                        </h3>
+                    </div>
+                </div>
+                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    Lihat Selengkapnya &rarr;
                 </a>
             </div>
 
-            @php
-                $totalB = max(1, $totalBatchesCount);
-                $pctAman = ($totalBatchesCount > 0) ? number_format(($expiryAman / $totalB) * 100, 1, ',', '.') : '0';
-                $pctWarning = ($totalBatchesCount > 0) ? number_format(($expiryWarning / $totalB) * 100, 1, ',', '.') : '0';
-                $pctCritical = ($totalBatchesCount > 0) ? number_format(($expiryCritical / $totalB) * 100, 1, ',', '.') : '0';
-                $pctKadaluarsa = ($totalBatchesCount > 0) ? number_format(($expiryKadaluarsa / $totalB) * 100, 1, ',', '.') : '0';
-            @endphp
-
-            <div class="flex flex-col sm:flex-row items-center gap-4 mt-3 my-auto py-2">
-                {{-- Donut Chart Expiry Health with Center Text --}}
-                <div class="relative w-[132px] h-[132px] shrink-0 flex items-center justify-center">
-                    <canvas id="expiryHealthChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                        <span class="text-[10px] text-gray-400 font-medium leading-none">Total</span>
-                        <span class="text-xl font-black text-gray-900 leading-tight my-0.5">{{ number_format($totalBatchesCount) }}</span>
-                        <span class="text-[10px] text-gray-400 font-medium leading-none">Batch</span>
-                    </div>
-                </div>
-
-                {{-- Legend List dengan Angka dan Persentase --}}
-                <div class="flex-1 w-full min-w-0 space-y-1.5">
-                    <a href="{{ route('laporan.stok', ['status_expired' => 'normal']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-emerald-50/50 p-1 py-1.5 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-emerald-700">Aman (>90 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryAman) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctAman }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => '3_bulan']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-amber-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-amber-700">Warning (30–90 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryWarning) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctWarning }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => '1_bulan']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-orange-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-orange-700">Critical (&lt;30 hari)</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryCritical) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctCritical }}%</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('laporan.stok', ['status_expired' => 'kadaluarsa']) }}"
-                       class="flex items-center justify-between text-xs hover:bg-rose-50/50 p-1 rounded transition-colors group">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
-                            <span class="font-medium text-gray-700 group-hover:text-rose-700">Kadaluarsa</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="font-bold text-gray-900">{{ number_format($expiryKadaluarsa) }}</span>
-                            <span class="text-gray-400 text-[11px] w-12 text-right font-medium">{{ $pctKadaluarsa }}%</span>
-                        </div>
-                    </a>
-                </div>
+            <div class="w-full flex-1 overflow-y-auto max-h-[480px] rounded-lg border border-gray-100 shadow-2xs">
+                <table class="table-compact w-full text-left table-fixed">
+                    <thead>
+                        <tr>
+                            <th class="w-[8%] text-center sticky-header">No</th>
+                            <th class="w-[36%] sticky-header wrap-cell">Nama Barang</th>
+                            <th class="w-[22%] sticky-header wrap-cell">Kategori</th>
+                            <th class="w-[17%] text-center sticky-header leading-tight">
+                                Stok<br>Saat Ini
+                            </th>
+                            <th class="w-[17%] text-center sticky-header leading-tight">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($barangHarusDibeli as $index => $item)
+                            <tr class="hover:bg-gray-50/75 transition-colors">
+                                <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                <td class="font-bold text-gray-900 wrap-cell leading-snug">
+                                    {{ $item['barang']->nama }}
+                                </td>
+                                <td class="text-gray-600 wrap-cell leading-snug">
+                                    {{ $item['barang']->kategori->nama ?? '-' }}
+                                </td>
+                                <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
+                                <td class="text-center">
+                                    @if($item['status'] === 'HABIS')
+                                        <span class="badge-chip bg-rose-100 text-rose-700 whitespace-nowrap">Habis</span>
+                                    @else
+                                        <span class="badge-chip bg-amber-100 text-amber-700 whitespace-nowrap">Segera Beli</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                                    Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-
-    {{-- ============================================================ --}}
-        <div class="xl:col-span-4">{{-- 7. BARANG YANG HARUS DIBELI                                   --}}
-    {{-- ============================================================ --}}
-    <div class="dashboard-card inventory-card p-5 flex flex-col">
-        <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
-                    <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
-                </div>
-
-                <div>
-                    <h3 class="text-base font-bold text-gray-900">Barang yang Harus Dibeli</h3>
-                </div>
-            </div>
-            <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                Lihat Selengkapnya &rarr;
-            </a>
-        </div>
-
-       <div class="w-full">
-            <table class="table-compact w-full text-left table-fixed">
-                <thead>
-                    <tr>
-                        <th class="w-[8%] text-center whitespace-normal">No</th>
-                        <th class="w-[32%] whitespace-normal">Nama Barang</th>
-                        <th class="w-[22%] whitespace-normal">Kategori</th>
-                        <th class="w-[20%] text-center whitespace-normal leading-tight">
-                            Stok<br>Saat Ini
-                        </th>
-                        <th class="w-[18%] text-center whitespace-normal leading-tight">
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($barangHarusDibeli as $index => $item)
-                        <tr>
-                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                            <td class="font-bold text-gray-900 whitespace-normal break-words">{{ $item['barang']->nama }}</td>
-                            <td class="text-gray-600 whitespace-normal break-words">{{ $item['barang']->kategori->nama ?? '-' }}</td>
-                            <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
-                            <td class="text-center">
-                                @if($item['status'] === 'HABIS')
-                                    <span class="badge-chip bg-rose-100 text-rose-700">Habis</span>
-                                @else
-                                    <span class="badge-chip bg-amber-100 text-amber-700">Segera Beli</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="py-8 text-center text-xs text-gray-400">
-                                Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- ============================================================ --}}</div>
     </div>
 
     {{-- ============================================================ --}}
@@ -781,7 +816,87 @@
     </div>
 
     {{-- ============================================================ --}}
-    
+    {{-- 9. KINERJA KARYAWAN                                          --}}
+    {{-- ============================================================ --}}
+    <div class="dashboard-card p-5 mt-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+                </div>
+
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
+                    <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                @if ($kinerjaKaryawan->count() > 5)
+                    <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
+                        Lihat Semua ({{ $kinerjaKaryawan->count() }})
+                    </button>
+                @endif
+                <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                    Kelola User &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+            <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
+                <thead>
+                    <tr>
+                        <th class="w-12 text-center">No</th>
+                        <th>Nama Karyawan</th>
+                        <th class="text-right">Penjualan</th>
+                        <th class="text-center">Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($kinerjaKaryawan as $index => $karyawan)
+                        @php
+                            $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
+                            $penjualan = (float) $karyawan->total_penjualan;
+                            $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
+                            $barWidth = $persen !== null ? min($persen, 100) : 0;
+                            $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
+                            $isCurrentUser = auth()->id() === $karyawan->id;
+                            $isExtra = $index >= 5;
+                        @endphp
+                        <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
+                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
+                                    @if ($isCurrentUser)
+                                        <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">Anda</span>
+                                    @endif
+                                    <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
+                                    @if (!$karyawan->aktif)
+                                        <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="text-right font-semibold text-gray-800">
+                                Rp {{ number_format($penjualan, 0, ',', '.') }}
+                            </td>
+                            <td class="text-center font-bold text-blue-600">
+                                {{ number_format($karyawan->total_transaksi) }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-xs text-gray-400">
+                                Belum ada data karyawan terdaftar.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 {{-- Script Chart.js CDN & Interaktivitas --}}
@@ -992,10 +1107,10 @@
             new Chart(ctxExpiry, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Aman (>90 hari)', 'Warning (30–90 hari)', 'Critical (<30 hari)', 'Kadaluarsa'],
+                    labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluwarsa'],
                     datasets: [{
                         data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
-                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#eab308', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                         hoverOffset: 4
@@ -1026,6 +1141,22 @@
                         }
                     }
                 }
+            });
+        }
+
+        // ==========================================
+        // TOGGLE LIHAT SEMUA: KINERJA KARYAWAN
+        // ==========================================
+        const btnToggleKinerja = document.getElementById('btn-toggle-kinerja');
+        if (btnToggleKinerja) {
+            let expanded = false;
+            const originalText = btnToggleKinerja.textContent.trim();
+            btnToggleKinerja.addEventListener('click', function () {
+                expanded = !expanded;
+                document.querySelectorAll('.kinerja-extra-row').forEach(row => {
+                    row.classList.toggle('hidden', !expanded);
+                });
+                btnToggleKinerja.textContent = expanded ? 'Sembunyikan' : originalText;
             });
         }
     });

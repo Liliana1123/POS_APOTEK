@@ -1,69 +1,14 @@
-<style>
-    .table-susulan-penerimaan {
-        width: max-content;
-        min-width: 1350px;
-        table-layout: auto;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-
-    .table-susulan-penerimaan th {
-        padding: 0.6rem 0.55rem !important;
-        font-size: 0.65rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.03em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
-    }
-
-    .table-susulan-penerimaan td {
-        padding: 0.5rem 0.55rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        vertical-align: middle;
-        white-space: nowrap;
-    }
-
-    .table-susulan-penerimaan input {
-        box-sizing: border-box !important;
-        max-width: none !important;
-    }
-
-    .table-susulan-penerimaan input[type="number"] {
-        min-width: 135px !important;
-    }
-
-    .table-susulan-penerimaan input[type="text"] {
-        min-width: 110px !important;
-    }
-
-    .table-susulan-penerimaan input[type="date"] {
-        min-width: 50px !important;
-    }
-
-    .table-susulan-penerimaan td:nth-child(12) input {
-        min-width: 65px !important;
-        width: 65px !important;
-    }
-    
-</style>
-
 <div class="space-y-4">
     <!-- Info Cards Grid (Selaras dengan Detail Penerimaan) -->
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}</strong>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->translatedFormat('d F Y') ?? '-' }}</strong>
         </div>
 
         <div>
@@ -106,7 +51,7 @@
         @if ($penerimaan->jatuh_tempo)
             <div>
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-                <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->format('d M Y') }}</strong>
+                <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->translatedFormat('d F Y') }}</strong>
             </div>
         @endif
     </div>
@@ -139,7 +84,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Susulan
+                        Keterangan atau Catatan Susulan
                     </label>
                     <input
                         type="text"
@@ -302,7 +247,7 @@
             <!-- Footer Action Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 <p class="text-xs text-slate-500 text-center sm:text-left">
-                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch & harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
+                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch dan harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
                 </p>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">

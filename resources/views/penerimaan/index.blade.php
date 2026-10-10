@@ -16,7 +16,10 @@
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4">
+    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">No. Faktur</label>
@@ -28,15 +31,7 @@
                     </span>
                 </div>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Supplier</label>
-                <select name="supplier_id" class="form-input">
-                    <option value="">Semua Supplier</option>
-                    @foreach ($suppliers as $s)
-                        <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>{{ $s->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
+
             <div>
                 <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                     Tanggal Penerimaan
@@ -46,7 +41,7 @@
                     <input
                         type="date"
                         name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
                         class="form-input min-w-0"
                     >
 
@@ -55,11 +50,22 @@
                     <input
                         type="date"
                         name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
                         class="form-input min-w-0"
                     >
                 </div>
             </div>
+
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Supplier</label>
+                <select name="supplier_id" class="form-input">
+                    <option value="">Semua Supplier</option>
+                    @foreach ($suppliers as $s)
+                        <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>{{ $s->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
 
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
@@ -96,7 +102,7 @@
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
+            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal']))
                 <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
@@ -117,7 +123,7 @@
                     <tr>
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
-                    <th scope="col">No. Faktur & Tanggal Terima</th>
+                    <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
                     <th scope="col" class="text-center">Status Penerimaan</th>
                     <th scope="col" class="text-right">Total Transaksi</th>
@@ -150,15 +156,27 @@
                                 <x-heroicon-o-eye class="w-4 h-4" />
                             </button>
 
-                            <button
-                                type="button"
-                                class="btn-secondary !p-1.5 btn-edit-penerimaan"
-                                style="color: #F59E0B;"
-                                title="Edit"
-                                data-url="{{ route('penerimaan.edit', $penerimaan) }}"
-                            >
-                                <x-heroicon-o-pencil-square class="w-4 h-4" />
-                            </button>
+                            @if ($penerimaan->canBeEdited())
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 btn-edit-penerimaan"
+                                    style="color: #F59E0B;"
+                                    title="Edit Faktur dan Detail"
+                                    data-url="{{ route('penerimaan.edit', $penerimaan) }}"
+                                >
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                </button>
+                            @else
+                                <button
+                                    type="button"
+                                    class="btn-secondary !p-1.5 opacity-40 cursor-not-allowed"
+                                    style="color: #9CA3AF;"
+                                    disabled
+                                    title="{{ $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.' }}"
+                                >
+                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                </button>
+                            @endif
 
                             @if (!$penerimaan->lunas)
                                 <button
@@ -219,13 +237,13 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->format('d M Y') ?? '—' }}
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
                         </div>
                     </td>
 
                     {{-- Supplier --}}
                     <td class="font-medium text-gray-800">
-                        {{ $penerimaan->supplier->nama ?? '—' }}
+                        {{ $penerimaan->supplier->nama ?? '-' }}
                     </td>
 
                     {{-- Status Penerimaan --}}
@@ -249,7 +267,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->format('d M Y') ?? '—' }}
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -267,14 +285,14 @@
                         <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Penerimaan Tidak Ditemukan
                                     @else
                                         Penerimaan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
                                     @else
                                         Belum ada data faktur masuk terdaftar di sistem.
@@ -289,28 +307,8 @@
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            onchange="this.form.submit()"
-        >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $penerimaans->links() }}
-    </div>
+<div class="mt-4">
+    {{ $penerimaans->links('vendor.pagination.apotek') }}
 </div>
 
 <!-- Modal Detail Penerimaan -->
@@ -318,8 +316,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -332,15 +329,15 @@
             <button type="button"
                 id="btn-tutup-detail"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                ✕
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="detail-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
@@ -356,8 +353,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -370,14 +366,14 @@
             <button type="button"
                 id="btn-tutup-payment"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                ✕
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div id="payment-penerimaan-content"
-             class="modal-body-custom overflow-y-auto"
-             style="max-height: calc(100vh - 180px);">
+             class="modal-body-custom overflow-y-auto modal-body-scroll">
             <div class="text-center py-8 text-gray-500">
                 Memuat pembayaran...
             </div>
@@ -393,8 +389,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Penerimaan Susulan</h2>
@@ -408,15 +403,15 @@
                 id="close-susulan-penerimaan"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                ✕
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="susulan-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat formulir penerimaan susulan...
@@ -430,8 +425,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Edit Penerimaan</h2>
@@ -445,15 +439,15 @@
                 id="btn-tutup-edit"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                ✕
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="edit-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat form edit...
@@ -464,7 +458,7 @@
 
 <!-- Modal Tambah Faktur Penerimaan Baru -->
 <div id="modal-tambah-penerimaan" class="modal-backdrop-custom hidden" aria-hidden="true">
-    <div class="modal-container-custom max-w-15xl flex flex-col" style="width: 95vw; max-width: 1100px; max-height: calc(100vh - 60px);">
+    <div class="modal-container-custom max-w-15xl flex flex-col modal-dialog-large" style="max-height: calc(100vh - 60px);">
         <div class="modal-header-custom">
             <div>
                 <h2>Faktur Penerimaan Barang Baru</h2>
@@ -473,31 +467,20 @@
                 </p>
             </div>
 
-            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup">
-                ✕
+            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup" aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
-        <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
-            @if ($errors->any())
-                <div class="alert-danger p-4 mb-6">
-                    <strong class="block text-xs font-bold mb-1.5">Perbaiki kesalahan berikut sebelum menyimpan faktur:</strong>
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('penerimaan.store') }}" method="POST" id="form-penerimaan" class="space-y-6">
+        <div class="modal-body-custom overflow-y-auto modal-body-scroll">
+            <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
                 @csrf
 
                 <!-- Form Header Card -->
                 <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Faktur <span class="text-red-500 font-bold">*</span></label>
-                        <input type="text" name="no_faktur" value="{{ old('no_faktur') }}" required
+                        <input type="text" name="no_faktur" id="no_faktur_tambah" value="{{ old('_method') ? '' : old('no_faktur') }}" required
                             class="form-input font-mono font-semibold" placeholder="Nomor faktur masuk...">
                     </div>
                     <div>
@@ -507,32 +490,33 @@
                         <input
                             type="date"
                             name="tanggal_faktur"
-                            value="{{ old('tanggal_faktur') }}"
+                            id="tanggal_faktur_tambah"
+                            value="{{ old('_method') ? now()->format('Y-m-d') : old('tanggal_faktur', now()->format('Y-m-d')) }}"
                             required
                             class="form-input"
                         >
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Terima <span class="text-red-500 font-bold">*</span></label>
-                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
+                        <input type="date" name="tanggal" id="tanggal_tambah" value="{{ old('_method') ? now()->format('Y-m-d') : old('tanggal', now()->format('Y-m-d')) }}" required
                             class="form-input">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Supplier <span class="text-red-500 font-bold">*</span></label>
-                        <select name="supplier_id" id="supplier_id" required class="form-input">
+                        <select name="supplier_id" id="supplier_id_tambah" required class="form-input">
                             <option value="">Pilih Supplier</option>
                             @foreach ($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}" data-telepon="{{ $supplier->telepon }}" @selected(old('supplier_id') == $supplier->id)>{{ $supplier->nama }}</option>
+                                <option value="{{ $supplier->id }}" data-telepon="{{ $supplier->telepon }}" @selected((!old('_method') && old('supplier_id') == $supplier->id))>{{ $supplier->nama }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">No. Telepon Supplier</label>
-                        <input type="text" id="telepon_supplier" class="form-input bg-gray-50" readonly placeholder="Otomatis dari master supplier">
+                        <input type="text" id="telepon_supplier_tambah" class="form-input bg-gray-50" readonly placeholder="Otomatis dari master supplier">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Keterangan</label>
-                        <input type="text" name="keterangan" value="{{ old('keterangan') }}" class="form-input" placeholder="Keterangan penerimaan (opsional)">
+                        <input type="text" name="keterangan" id="keterangan_tambah" value="{{ old('_method') ? '' : old('keterangan') }}" class="form-input" placeholder="Keterangan penerimaan (opsional)">
                     </div>
                 </div>
 
@@ -540,7 +524,7 @@
                 <div class="card-base p-6">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
-                        <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
+                        <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold">
                             + Tambah Item Barang
                         </button>
                     </div>
@@ -564,41 +548,41 @@
                                         <th scope="col" class="px-3 py-2 text-center"></th>
                                     </tr>
                                 </thead>
-                                <tbody id="item-rows" class="table-custom-body divide-y divide-gray-150"></tbody>
+                                <tbody id="item-rows-tambah" class="table-custom-body divide-y divide-gray-150"></tbody>
                             </table>
                         </div>
                     </div>
 
-                    <p class="text-xs text-gray-400 text-center py-4" id="empty-hint">Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.</p>
+                    <p class="text-xs text-gray-400 text-center py-4" id="empty-hint-tambah">Belum ada baris. Klik "+ Tambah Item Barang" untuk mulai input.</p>
                     <div class="mt-4 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
                         <span>Total Belanja:</span>
-                        <span id="total-faktur" class="text-blue-700 font-mono">Rp 0</span>
+                        <span id="total-faktur-tambah" class="text-blue-700 font-mono">Rp 0</span>
                     </div>
                     <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold items-center">
-                        <label for="ppn">PPN (11%)</label>
-                        <input type="text" id="ppn" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
+                        <label for="ppn_tambah">PPN (11%)</label>
+                        <input type="text" id="ppn_tambah" value="Rp 0" readonly class="form-input w-full sm:w-40 text-right font-mono bg-gray-50">
                     </div>
 
                     <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
                         <span>Total Tagihan:</span>
-                        <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
+                        <span id="total-tagihan-tambah" class="text-blue-700 font-mono">Rp 0</span>
                     </div>
                 </div>
 
                 <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Pembayaran Saat Penerimaan</label>
-                        <input type="number" name="pembayaran_pertama" id="pembayaran_pertama" value="{{ old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
+                        <input type="number" name="pembayaran_pertama" id="pembayaran_pertama_tambah" value="{{ old('_method') ? 0 : old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jatuh Tempo</label>
-                        <input type="date" name="jatuh_tempo" value="{{ old('jatuh_tempo') }}" class="form-input">
+                        <input type="date" name="jatuh_tempo" id="jatuh_tempo_tambah" value="{{ old('_method') ? '' : old('jatuh_tempo') }}" class="form-input">
                     </div>
                     <div class="text-xs text-gray-500">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="btn-primary">Simpan Faktur</button>
+                    <button type="submit" id="btn-simpan-tambah" class="btn-primary">Simpan Faktur</button>
                     <button type="button" id="btn-batal-tambah" class="btn-secondary">Batal</button>
                 </div>
             </form>
@@ -606,13 +590,13 @@
     </div>
 </div>
 
-<template id="row-template">
+<template id="row-template-tambah">
     <tr class="item-row hover:bg-gray-50 transition-colors">
         <td class="px-3 py-2">
             <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
-                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->barcode ? ' — ' . $barang->barcode : '' }}</option>
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' - ' . $barang->barcode : '' }}</option>
                 @endforeach
             </select>
         </td>
@@ -623,13 +607,13 @@
             <input type="text" name="items[__i__][no_batch]" required class="form-input py-1 px-2 font-mono" placeholder="Batch...">
         </td>
         <td class="px-3 py-2">
-            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2">
+            <input type="date" name="items[__i__][expired_date]" required class="form-input py-1 px-2 expired-field" style="min-width: 130px;">
         </td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0"></td>
-        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono" placeholder="0"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_beli]" required class="form-input py-1 px-2 text-right font-mono harga-beli" placeholder="0" style="min-width: 120px;"></td>
+        <td class="px-3 py-2"><input type="number" step="0.01" min="0" name="items[__i__][harga_jual]" required class="form-input py-1 px-2 text-right font-mono harga-jual" placeholder="0" style="min-width: 120px;"></td>
         <td class="px-3 py-2"><input type="text" name="items[__i__][no_rak]" required class="form-input py-1 px-2 font-mono" placeholder="A-01"></td>
         <td class="px-3 py-2">
-            <input type="number" min="1" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
+            <input type="number" min="0" name="items[__i__][jumlah_dipesan]" required class="form-input py-1 px-2 text-right font-mono jumlah-dipesan-field" placeholder="1">
         </td>
         <td class="px-3 py-2">
             <input type="number" min="0" name="items[__i__][jumlah_diterima]" required class="form-input py-1 px-2 text-right font-mono jumlah-diterima-field" placeholder="0">
@@ -637,467 +621,20 @@
         <td class="px-3 py-2"><input type="text" class="form-input py-1 px-2 satuan-field bg-gray-50" readonly></td>
         <td class="px-3 py-2 text-right font-mono font-semibold subtotal-field">Rp 0</td>
         <td class="px-3 py-2 text-center">
-            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
+            <button type="button" class="text-red-500 hover:text-red-700 p-1 btn-hapus-row-tambah" aria-label="Hapus baris" title="Hapus baris"><x-heroicon-o-trash class="w-4 h-4" /></button>
         </td>
     </tr>
 </template>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.getElementById('modal-detail-penerimaan');
-    const content = document.getElementById('detail-penerimaan-content');
-    const btnTutup = document.getElementById('btn-tutup-detail');
-
-    const paymentModal = document.getElementById('modal-payment-penerimaan');
-    const paymentContent = document.getElementById('payment-penerimaan-content');
-    const btnTutupPayment = document.getElementById('btn-tutup-payment');
-
-    // =========================
-    // MODAL DETAIL PENERIMAAN
-    // =========================
-    document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const url = button.dataset.url;
-
-            modal.classList.remove('hidden');
-
-            content.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat detail...
-                </div>
-            `;
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal mengambil detail penerimaan.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    content.innerHTML = html;
-                })
-                .catch(error => {
-                    content.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            Gagal memuat detail penerimaan.
-                        </div>
-                    `;
-
-                    console.error(error);
-                });
-        });
-    });
-
-    // Edit Penerimaan
-    document.addEventListener('click', async function (event) {
-        const button = event.target.closest('.btn-edit-penerimaan');
-
-        if (!button) {
-            return;
-        }
-
-        const modal = document.getElementById('modal-edit-penerimaan');
-        const content = document.getElementById('edit-penerimaan-content');
-        const url = button.dataset.url;
-
-        if (!modal || !content || !url) {
-            return;
-        }
-
-        content.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                Memuat form edit...
-            </div>
-        `;
-
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Gagal memuat form edit.');
-            }
-
-           const html = await response.text();
-
-            content.innerHTML = html;
-
-            content.querySelectorAll('script').forEach(function (oldScript) {
-                const newScript = document.createElement('script');
-
-                newScript.textContent = oldScript.textContent;
-
-                document.body.appendChild(newScript);
-
-                oldScript.remove();
-            });
-
-            if (typeof initEditPenerimaanForm === 'function') {
-                initEditPenerimaanForm();
-            }
-
-        } catch (error) {
-            content.innerHTML = `
-                <div class="text-center py-8 text-red-600">
-                    Gagal memuat form edit.
-                </div>
-            `;
-
-            console.error(error);
-        }
-    });
-
-    // Tutup modal Edit
-    document.addEventListener('click', function (event) {
-        if (event.target.closest('#btn-tutup-edit') || event.target.closest('#btn-batal-edit')) {
-            const modal = document.getElementById('modal-edit-penerimaan');
-
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.setAttribute('aria-hidden', 'true');
-            }
-        }
-    });
-
-    // =========================
-    // MODAL PEMBAYARAN
-    // =========================
-    document.querySelectorAll('.btn-payment-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-
-            paymentModal.classList.remove('hidden');
-
-            paymentContent.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat pembayaran...
-                </div>
-            `;
-
-            fetch(`/penerimaan/${id}/payment-form`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal mengambil form pembayaran.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    paymentContent.innerHTML = html;
-                })
-                .catch(error => {
-                    paymentContent.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            Gagal memuat form pembayaran.
-                        </div>
-                    `;
-
-                    console.error(error);
-                });
-        });
-    });
-
-
-     // =========================
-    // MODAL SUSULAN
-    // =========================
-    const susulanModal = document.getElementById('modal-susulan-penerimaan');
-    const susulanContent = document.getElementById('susulan-penerimaan-content');
-    const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
-
-    // BUKA FORM SUSULAN
-    document.querySelectorAll('.btn-susulan-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-
-            susulanModal.classList.remove('hidden');
-
-            susulanContent.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat formulir penerimaan susulan...
-                </div>
-            `;
-
-            fetch(`/penerimaan/${id}/susulan-form`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal memuat formulir penerimaan susulan.');
-                    }
-
-                    return response.text();
-                })
-                .then(html => {
-                    susulanContent.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error(error);
-
-                    susulanContent.innerHTML = `
-                        <div class="text-center py-8 text-red-600">
-                            ${error.message}
-                        </div>
-                    `;
-                });
-        });
-    });
-
-    // TUTUP FORM SUSULAN
-    if (closeSusulanButton) {
-        closeSusulanButton.addEventListener('click', function () {
-            susulanModal.classList.add('hidden');
-            susulanContent.innerHTML = '';
-        });
-    }
-
-    // SIMPAN PENERIMAAN SUSULAN
-    document.addEventListener('submit', function (event) {
-        if (event.target.id !== 'form-susulan-penerimaan') {
-            return;
-        }
-
-        event.preventDefault();
-
-        const form = event.target;
-        const button = form.querySelector('#btn-simpan-susulan');
-
-        if (!button || button.disabled) {
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = 'Menyimpan...';
-
-        fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form),
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-            .then(async response => {
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        data.message ||
-                        data.errors?.jumlah_susulan?.[0] ||
-                        'Gagal menyimpan penerimaan susulan.'
-                    );
-                }
-
-                return data;
-            })
-            .then(data => {
-                susulanModal.classList.add('hidden');
-                susulanContent.innerHTML = '';
-
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error('Penerimaan susulan:', error);
-
-                alert(error.message || 'Gagal menyimpan penerimaan susulan.');
-
-                button.disabled = false;
-                button.textContent = 'Simpan Penerimaan Susulan';
-            });
-    });
-
-    // =========================
-    // TUTUP MODAL DETAIL
-    // =========================
-    btnTutup.addEventListener('click', function () {
-        modal.classList.add('hidden');
-        content.innerHTML = '';
-    });
-
-    // =========================
-    // TUTUP MODAL PEMBAYARAN
-    // =========================
-    btnTutupPayment.addEventListener('click', function () {
-        paymentModal.classList.add('hidden');
-        paymentContent.innerHTML = '';
-    });
-
-    // ==========================================
-    // MODAL TAMBAH FAKTUR PENERIMAAN BARU
-    // ==========================================
-    const modalTambah = document.getElementById('modal-tambah-penerimaan');
-    const btnBukaTambah = document.getElementById('btn-tambah-penerimaan');
-    const btnTutupTambah = document.getElementById('btn-tutup-tambah');
-    const btnBatalTambah = document.getElementById('btn-batal-tambah');
-
-    let rowIndex = 0;
-    const tbodyTambah = document.getElementById('item-rows');
-    const templateTambah = document.getElementById('row-template');
-    const emptyHintTambah = document.getElementById('empty-hint');
-    const totalFakturTambah = document.getElementById('total-faktur');
-    const ppnTambah = document.getElementById('ppn');
-    const totalTagihanTambah = document.getElementById('total-tagihan');
-    const oldItemsTambah = @json(old('items', []));
-
-    function formatRupiah(value) {
-        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
-    }
-
-    function updateTotalTambah() {
-        if (!tbodyTambah) return;
-        let total = 0;
-        tbodyTambah.querySelectorAll('tr').forEach(row => {
-            const harga = parseFloat(row.querySelector('.harga-beli')?.value) || 0;
-            const jumlah = parseInt(row.querySelector('.jumlah-diterima-field')?.value, 10) || 0;
-            const subtotal = harga * jumlah;
-            total += subtotal;
-            const subtotalEl = row.querySelector('.subtotal-field');
-            if (subtotalEl) subtotalEl.textContent = formatRupiah(subtotal);
-        });
-        if (totalFakturTambah) totalFakturTambah.textContent = formatRupiah(total);
-        const nilaiPpn = total * 0.11;
-        if (ppnTambah) ppnTambah.value = formatRupiah(nilaiPpn);
-        if (totalTagihanTambah) totalTagihanTambah.textContent = formatRupiah(total + nilaiPpn);
-    }
-
-    function tambahBarisPenerimaan() {
-        if (!templateTambah || !tbodyTambah) return;
-        const html = templateTambah.innerHTML.replaceAll('__i__', rowIndex);
-        const tempTr = document.createElement('tbody');
-        tempTr.innerHTML = html;
-        tbodyTambah.appendChild(tempTr.firstElementChild);
-
-        if (oldItemsTambah[rowIndex]) {
-            const item = oldItemsTambah[rowIndex];
-            const row = tbodyTambah.lastElementChild;
-
-            const bId = row.querySelector('[name$="[barang_id]"]');
-            if (bId) {
-                bId.value = item.barang_id || '';
-                const opt = bId.selectedOptions[0];
-                const bcField = row.querySelector('.barcode-field');
-                const satField = row.querySelector('.satuan-field');
-                if (bcField) bcField.value = opt?.dataset.barcode || '';
-                if (satField) satField.value = opt?.dataset.satuan || '';
-            }
-            const nb = row.querySelector('[name$="[no_batch]"]');
-            if (nb) nb.value = item.no_batch || '';
-            const ed = row.querySelector('[name$="[expired_date]"]');
-            if (ed) ed.value = item.expired_date || '';
-            const hb = row.querySelector('[name$="[harga_beli]"]');
-            if (hb) hb.value = item.harga_beli || '';
-            const hj = row.querySelector('[name$="[harga_jual]"]');
-            if (hj) hj.value = item.harga_jual || '';
-            const nr = row.querySelector('[name$="[no_rak]"]');
-            if (nr) nr.value = item.no_rak || '';
-            const jd = row.querySelector('[name$="[jumlah_dipesan]"]');
-            if (jd) jd.value = item.jumlah_dipesan || '';
-            const jt = row.querySelector('[name$="[jumlah_diterima]"]');
-            if (jt) jt.value = item.jumlah_diterima || '';
-        }
-        rowIndex++;
-        if (emptyHintTambah) emptyHintTambah.style.display = 'none';
-        updateTotalTambah();
-    }
-
-    if (modalTambah) {
-        if (btnBukaTambah) {
-            btnBukaTambah.addEventListener('click', function () {
-                modalTambah.classList.remove('hidden');
-                modalTambah.setAttribute('aria-hidden', 'false');
-            });
-        }
-
-        function tutupModalTambah() {
-            modalTambah.classList.add('hidden');
-            modalTambah.setAttribute('aria-hidden', 'true');
-        }
-
-        if (btnTutupTambah) btnTutupTambah.addEventListener('click', tutupModalTambah);
-        if (btnBatalTambah) btnBatalTambah.addEventListener('click', tutupModalTambah);
-
-        modalTambah.addEventListener('click', function (e) {
-            if (e.target === modalTambah) {
-                tutupModalTambah();
-            }
-        });
-
-        const btnTambahItem = document.getElementById('btn-tambah-item');
-        if (btnTambahItem) {
-            btnTambahItem.addEventListener('click', tambahBarisPenerimaan);
-        }
-
-        if (tbodyTambah) {
-            tbodyTambah.addEventListener('click', function (e) {
-                if (e.target.closest('.btn-hapus-row')) {
-                    e.target.closest('tr').remove();
-                    if (tbodyTambah.children.length === 0 && emptyHintTambah) {
-                        emptyHintTambah.style.display = 'block';
-                    }
-                    updateTotalTambah();
-                }
-            });
-
-            tbodyTambah.addEventListener('change', function (e) {
-                if (e.target.classList.contains('barang-select')) {
-                    const option = e.target.selectedOptions[0];
-                    const row = e.target.closest('tr');
-                    const bcField = row.querySelector('.barcode-field');
-                    const satField = row.querySelector('.satuan-field');
-                    if (bcField) bcField.value = option?.dataset.barcode || '';
-                    if (satField) satField.value = option?.dataset.satuan || '';
-                }
-            });
-
-            tbodyTambah.addEventListener('input', updateTotalTambah);
-        }
-
-        const supplierSelectTambah = document.getElementById('supplier_id');
-        if (supplierSelectTambah) {
-            supplierSelectTambah.addEventListener('change', function () {
-                const telEl = document.getElementById('telepon_supplier');
-                if (telEl) telEl.value = this.selectedOptions[0]?.dataset.telepon || '';
-            });
-            if (supplierSelectTambah.value) {
-                const telEl = document.getElementById('telepon_supplier');
-                if (telEl) telEl.value = supplierSelectTambah.selectedOptions[0]?.dataset.telepon || '';
-            }
-        }
-
-        const formTambah = document.getElementById('form-penerimaan');
-        if (formTambah) {
-            formTambah.addEventListener('submit', function (e) {
-                if (tbodyTambah && tbodyTambah.children.length === 0) {
-                    e.preventDefault();
-                    alert('Tambahkan minimal 1 baris barang.');
-                }
-            });
-        }
-
-        // Inisialisasi baris item
-        if (oldItemsTambah && oldItemsTambah.length > 0) {
-            oldItemsTambah.forEach(() => {
-                tambahBarisPenerimaan();
-            });
-        } else {
-            tambahBarisPenerimaan();
-        }
-
-        // Buka otomatis jika ada error validasi saat submit form
-        @if ($errors->any())
-            modalTambah.classList.remove('hidden');
-            modalTambah.setAttribute('aria-hidden', 'false');
-        @endif
-    }
-});
+{{-- Data untuk halaman penerimaan (dibaca oleh resources/js/pages/penerimaan-index.js) --}}
+<script type="application/json" id="penerimaan-old-items">
+    @json(old("_method") ? [] : old("items", []))
 </script>
+<script type="application/json" id="penerimaan-server-errors">
+    @json((($errors->any() && !old('_method')) ? $errors->toArray() : []))
+</script>
+
+@vite('resources/js/pages/penerimaan-index.js')
 
 
 

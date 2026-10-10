@@ -4,57 +4,153 @@
         now()->addHours(6),
         fn () => \App\Models\InfoApotek::first()
     );
+
+    $petugas = auth()->user()?->name;
+    if (!$petugas && isset($rusak)) {
+        $log = \App\Models\ActivityLog::where('action', 'Catat Barang Rusak')
+            ->where('target', 'like', '%' . ($rusak->detailPenerimaan->no_batch ?? '') . '%')
+            ->latest('id')
+            ->first();
+        $petugas = $log?->user_name;
+    }
 @endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Bukti Barang Rusak - {{ $rusak->detailPenerimaan->barang->nama ?? '' }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Bukti Barang Rusak - {{ $rusak->detailPenerimaan->barang->nama ?? '' }}
+    </title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            margin: 30px;
-        }
-
-        .header-apotek {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .header-apotek h1 {
             margin: 0;
+            padding: 30px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            color: #222;
+            background: #fff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @page {
+            @top-left {
+                text-align: left;
+            }
+            @top-center {
+                content: none;
+            }
+            @top-right {
+                text-align: right;
+            }
+            @bottom-left {
+                text-align: left;
+            }
+            @bottom-center {
+                content: none;
+            }
+            @bottom-right {
+                text-align: right;
+            }
+        }
+
+        /* =========================
+           KOP SURAT
+        ========================= */
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .kop-surat {
+            position: relative;
+            min-height: 90px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #222;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kop-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+
+            width: 75px;
+            height: 75px;
+
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .kop-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .kop-info h2 {
+            margin: 0 0 5px;
+
             font-size: 18px;
             font-weight: bold;
+            color: #222;
             text-transform: uppercase;
         }
 
-        .header-apotek p {
-            margin: 2px 0 0 0;
-            font-size: 11px;
+        .kop-info p {
+            margin: 3px 0;
+
+            font-size: 12px;
             color: #555;
         }
 
-        h2 {
+        /* =========================
+           JUDUL DOKUMEN
+        ========================= */
+
+        .judul-dokumen {
+            margin-top: 18px;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 15px;
         }
 
-        table {
+        .judul-dokumen h1 {
+            margin: 0;
+
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        /* =========================
+           DATA BARANG RUSAK
+        ========================= */
+
+        .detail-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        td {
+        .detail-table td {
             padding: 8px 5px;
             vertical-align: top;
         }
 
-        .label {
+        .detail-table .label {
             width: 180px;
             font-weight: bold;
         }
@@ -64,9 +160,83 @@
             font-weight: bold;
         }
 
+        /* =========================
+           TANDA TANGAN
+        ========================= */
+
+        .no-break {
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .footer-ttd {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+
+        .print-signature-box,
+        .signature {
+            width: 250px;
+            text-align: center;
+            font-size: 10px;
+            color: #111;
+        }
+
+        .print-signature-title,
+        .signature-title {
+            margin: 0 !important;
+            font-size: 10px !important;
+            font-weight: normal !important;
+        }
+
+        .print-signature-role,
+        .signature-role {
+            margin: 2px 0 0 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+        }
+
+        .print-signature-space,
+        .signature-space {
+            height: 65px !important;
+        }
+
+        .print-signature-name,
+        .signature-name {
+            margin: 0 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+        }
+
+        .print-signature-sipa {
+            margin: 3px 0 0 !important;
+            font-size: 9px !important;
+            color: #333 !important;
+        }
+
+        /* =========================
+           PRINT
+        ========================= */
+
         @media print {
             body {
-                margin: 15px;
+                padding: 15px;
+            }
+
+            .container {
+                max-width: none;
+            }
+
+            .no-break {
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         }
     </style>
@@ -74,64 +244,217 @@
 
 <body>
 
-    <div class="header-apotek">
-        <h1>{{ $apotek?->nama_apotek ?? 'POS APOTEK' }}</h1>
-        @if($apotek?->alamat)<p>{{ $apotek->alamat }}</p>@endif
-        @if($apotek?->telepon || $apotek?->no_izin_sia)
-            <p>
-                @if($apotek?->telepon)Telp: {{ $apotek->telepon }}@endif
-                @if($apotek?->telepon && $apotek?->no_izin_sia) • @endif
-                @if($apotek?->no_izin_sia)SIA: {{ $apotek->no_izin_sia }}@endif
-            </p>
-        @endif
+<div class="container">
+
+    {{-- =========================
+         KOP SURAT
+    ========================= --}}
+    <div class="header">
+
+        <div class="kop-surat">
+
+            {{-- LOGO APOTEK --}}
+            @if($apotek?->logo)
+                <img
+                    src="{{ asset('storage/' . $apotek->logo) }}"
+                    alt="Logo {{ $apotek->nama_apotek }}"
+                    class="kop-logo"
+                >
+            @endif
+
+            {{-- INFORMASI APOTEK --}}
+            <div class="kop-info">
+
+                <h2>
+                    {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
+                </h2>
+
+                @if($apotek?->alamat)
+                    <p>
+                        {{ $apotek->alamat }}
+                    </p>
+                @endif
+
+                @if($apotek?->telepon || $apotek?->email)
+                    <p>
+
+                        @if($apotek?->telepon)
+                            Telp: {{ $apotek->telepon }}
+                        @endif
+
+                        @if($apotek?->telepon && $apotek?->email)
+                            &nbsp; | &nbsp;
+                        @endif
+
+                        @if($apotek?->email)
+                            Email: {{ $apotek->email }}
+                        @endif
+
+                    </p>
+                @endif
+
+                @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                    <p>
+
+                        @if($apotek?->no_izin_sia)
+                            SIA: {{ $apotek->no_izin_sia }}
+                        @endif
+
+                        @if($apotek?->no_izin_sia && $apotek?->no_sipa)
+                            &nbsp;&nbsp;•&nbsp;&nbsp;
+                        @endif
+
+                        @if($apotek?->no_sipa)
+                            SIPA: {{ $apotek->no_sipa }}
+                        @endif
+
+                    </p>
+                @endif
+
+            </div>
+
+        </div>
+
+        {{-- JUDUL DOKUMEN --}}
+        <div class="judul-dokumen">
+            <h1>BUKTI BARANG RUSAK</h1>
+        </div>
+
     </div>
 
-    <h2>BUKTI BARANG RUSAK</h2>
 
-    <table>
+    {{-- =========================
+         DETAIL BARANG RUSAK
+    ========================= --}}
+    <table class="detail-table">
+
         <tr>
-            <td class="label">Tanggal Lapor</td>
-            <td>: {{ $rusak->tanggal?->format('d-m-Y') ?? '-' }}</td>
+            <td class="label">
+                Tanggal Lapor
+            </td>
+
+            <td>
+                : {{ $rusak->tanggal?->format('d-m-Y') ?? '-' }}
+            </td>
         </tr>
 
         <tr>
-            <td class="label">Nama Barang</td>
-            <td>: {{ $rusak->detailPenerimaan->barang->nama ?? '-' }}</td>
+            <td class="label">
+                Nama Barang
+            </td>
+
+            <td>
+                : {{ $rusak->detailPenerimaan->barang->nama ?? '-' }}
+            </td>
         </tr>
 
         <tr>
-            <td class="label">No. Batch</td>
-            <td>: {{ $rusak->detailPenerimaan->no_batch ?? '-' }}</td>
+            <td class="label">
+                No. Batch
+            </td>
+
+            <td>
+                : {{ $rusak->detailPenerimaan->no_batch ?? '-' }}
+            </td>
         </tr>
 
         <tr>
-            <td class="label">No. Rak</td>
-            <td>: {{ $rusak->detailPenerimaan->no_rak ?? '-' }}</td>
+            <td class="label">
+                No. Rak
+            </td>
+
+            <td>
+                : {{ $rusak->detailPenerimaan->no_rak ?? '-' }}
+            </td>
         </tr>
 
         <tr>
-            <td class="label">Expired Date</td>
-            <td>: {{ $rusak->detailPenerimaan->expired_date?->format('d-m-Y') ?? '-' }}</td>
+            <td class="label">
+                Expired Date
+            </td>
+
+            <td>
+                : {{ $rusak->detailPenerimaan->expired_date?->format('d-m-Y') ?? '-' }}
+            </td>
         </tr>
 
         <tr>
-            <td class="label">Jumlah Rusak</td>
+            <td class="label">
+                Jumlah Rusak
+            </td>
+
             <td class="jumlah-rusak">
                 : {{ $rusak->jumlah }}
             </td>
         </tr>
 
         <tr>
-            <td class="label">Keterangan</td>
-            <td>: {{ $rusak->keterangan ?? '-' }}</td>
+            <td class="label">
+                Keterangan
+            </td>
+
+            <td>
+                : {{ $rusak->keterangan ?? '-' }}
+            </td>
         </tr>
+
     </table>
 
-    <script>
-        window.onload = function () {
-            window.print();
-        };
-    </script>
+    {{-- =========================
+         TANDA TANGAN
+    ========================= --}}
+    <div class="no-break">
+        <div class="footer-ttd">
+
+            {{-- KIRI: APOTEKER PENANGGUNG JAWAB --}}
+            <div class="print-signature-box">
+                <p class="print-signature-title">Mengetahui,</p>
+                <p class="print-signature-role">Penanggung Jawab Apotek</p>
+
+                <div class="print-signature-space"></div>
+
+                <p class="print-signature-name">
+                    @if (!empty($apotek?->nama_apoteker_pj))
+                        {{ $apotek->nama_apoteker_pj }}
+                    @else
+                        (____________________)
+                    @endif
+                </p>
+
+                @if (!empty($apotek?->no_sipa))
+                    <p class="print-signature-sipa">
+                        SIPA: {{ $apotek->no_sipa }}
+                    </p>
+                @endif
+            </div>
+
+            {{-- KANAN: PETUGAS BARANG RUSAK --}}
+            <div class="print-signature-box">
+                <p class="print-signature-title">Dicatat oleh,</p>
+                <p class="print-signature-role">Petugas Barang Rusak</p>
+
+                <div class="print-signature-space"></div>
+
+                <p class="print-signature-name">
+                    @if (!empty($petugas))
+                        {{ $petugas }}
+                    @else
+                        (____________________)
+                    @endif
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    window.onload = function () {
+        window.print();
+    };
+</script>
 
 </body>
 </html>

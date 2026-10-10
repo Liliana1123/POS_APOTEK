@@ -86,26 +86,33 @@ class PenerimaanController extends Controller
         }
     }
 
+        $tanggalMulai = $request->filled('tanggal_mulai')
+            ? $request->tanggal_mulai
+            : ($request->filled('tanggal') ? $request->tanggal : now()->startOfMonth()->format('Y-m-d'));
+
+        $tanggalAkhir = $request->filled('tanggal_akhir')
+            ? $request->tanggal_akhir
+            : ($request->filled('tanggal') ? $request->tanggal : now()->endOfMonth()->format('Y-m-d'));
+
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
+        } else {
+            if ($tanggalMulai && $tanggalAkhir) {
+                $query->whereBetween('tanggal', [$tanggalMulai, $tanggalAkhir]);
+            } elseif ($tanggalMulai) {
+                $query->whereDate('tanggal', '>=', $tanggalMulai);
+            } elseif ($tanggalAkhir) {
+                $query->whereDate('tanggal', '<=', $tanggalAkhir);
+            }
         }
-
-        if ($request->filled('tanggal_mulai')) {
-            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
-        }
-
-        if ($request->filled('tanggal_akhir')) {
-            $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
-        }
-
-        $perPage = $request->input('per_page', 15);
 
         $penerimaans = $query->withSum('pembayaran', 'jumlah')
-            ->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
+            ->with(['detail', 'detailPesanan.riwayatPenerimaan'])
+            ->orderByDesc('tanggal')->paginate(15)->withQueryString();
         $suppliers = Supplier::orderBy('nama')->get();
         $barangs = Barang::with(['pabrik', 'satuan'])->where('aktif', true)->orderBy('nama')->get();
 
-        return view('penerimaan.index', compact('penerimaans', 'suppliers', 'barangs'));
+        return view('penerimaan.index', compact('penerimaans', 'suppliers', 'barangs', 'tanggalMulai', 'tanggalAkhir'));
     }
 
     public function create()
@@ -132,20 +139,39 @@ class PenerimaanController extends Controller
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.no_batch' => 'required|string|max:100',
             'items.*.harga_beli' => 'required|numeric|min:0',
-            'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
-            'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
+            'items.*.harga_jual' => 'required|numeric|min:0',
+            'items.*.expired_date' => 'required|date',
             'items.*.no_rak' => 'required|string|max:50',
             'items.*.jumlah_dipesan' => 'required|integer|min:1',
             'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
+
+        $itemErrors = [];
         foreach ($data['items'] as $index => $item) {
             if ((int) $item['jumlah_diterima'] > (int) $item['jumlah_dipesan']) {
-                throw ValidationException::withMessages([
-                    "items.$index.jumlah_diterima" =>
-                        'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
-                ]);
+                $itemErrors["items.$index.jumlah_diterima"] = [
+                    'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
+                ];
+            }
+            if (!empty($item['expired_date']) && !empty($data['tanggal'])) {
+                if ($item['expired_date'] < $data['tanggal']) {
+                    $itemErrors["items.$index.expired_date"] = [
+                        'Tanggal expired tidak boleh sebelum tanggal penerimaan.',
+                    ];
+                }
+            }
+            if (isset($item['harga_jual']) && isset($item['harga_beli'])) {
+                if ((float) $item['harga_jual'] < (float) $item['harga_beli']) {
+                    $itemErrors["items.$index.harga_jual"] = [
+                        'Harga jual tidak boleh lebih kecil dari harga beli.',
+                    ];
+                }
             }
         }
+        if (!empty($itemErrors)) {
+            throw ValidationException::withMessages($itemErrors);
+        }
+
         $data['supplier_id'] = (int) $data['supplier_id'];
         $supplier = Supplier::findOrFail($data['supplier_id']);
         $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
@@ -271,6 +297,14 @@ class PenerimaanController extends Controller
 
     public function edit(Penerimaan $penerimaan)
     {
+        if (!$penerimaan->canBeEdited()) {
+            $pesan = $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.';
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => $pesan], 403);
+            }
+            abort(403, $pesan);
+        }
+
         $penerimaan->load([
             'supplier',
             'detail.barang.pabrik',
@@ -279,6 +313,7 @@ class PenerimaanController extends Controller
             'detail.rusak',
             'detailPesanan',
             'riwayatPenerimaan',
+            'pembayaran',
         ]);
 
         $suppliers = Supplier::orderBy('nama')->get();
@@ -297,32 +332,79 @@ class PenerimaanController extends Controller
 
     public function update(Request $request, Penerimaan $penerimaan)
     {
+        if (!$penerimaan->canBeEdited()) {
+            $pesan = $penerimaan->alasanTidakBisaDiedit() ?? 'Penerimaan tidak dapat diedit karena sudah memiliki transaksi lanjutan.';
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => $pesan,
+                    'errors' => ['faktur' => [$pesan]],
+                ], 403);
+            }
+            abort(403, $pesan);
+        }
+
         $data = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'keterangan' => 'nullable|string',
             'tanggal' => 'required|date',
             'tanggal_faktur' => 'required|date',
-            'no_faktur' => 'required|string|max:100|unique:penerimaans,no_faktur,' . $penerimaan->id,
-            'ppn' => 'nullable|numeric|min:0',
+            'no_faktur' => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('penerimaans', 'no_faktur')->ignore($penerimaan->id)->whereNull('deleted_at'),
+            ],
             'jatuh_tempo' => 'nullable|date|after_or_equal:tanggal',
+            'pembayaran_pertama' => 'nullable|numeric|min:0',
 
             'items' => 'required|array|min:1',
             'items.*.detail_id' => 'nullable|integer',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.no_batch' => 'required|string|max:100',
             'items.*.harga_beli' => 'required|numeric|min:0',
-            'items.*.harga_jual' => 'required|numeric|min:0|gte:items.*.harga_beli',
-            'items.*.expired_date' => 'required|date|after_or_equal:tanggal',
+            'items.*.harga_jual' => 'required|numeric|min:0',
+            'items.*.expired_date' => 'required|date',
             'items.*.no_rak' => 'required|string|max:50',
-            'items.*.jumlah_dipesan' => 'required|integer|min:1',
+            'items.*.jumlah_dipesan' => 'required|integer|min:0',
             'items.*.jumlah_diterima' => 'required|integer|min:0',
         ]);
 
+        $itemErrors = [];
         foreach ($data['items'] as $index => $item) {
-            if ((int) $item['jumlah_diterima'] > (int) $item['jumlah_dipesan']) {
+            if (!empty($item['expired_date']) && !empty($data['tanggal'])) {
+                if ($item['expired_date'] < $data['tanggal']) {
+                    $itemErrors["items.$index.expired_date"] = [
+                        'Tanggal expired tidak boleh sebelum tanggal penerimaan.',
+                    ];
+                }
+            }
+            if (isset($item['harga_jual']) && isset($item['harga_beli'])) {
+                if ((float) $item['harga_jual'] < (float) $item['harga_beli']) {
+                    $itemErrors["items.$index.harga_jual"] = [
+                        'Harga jual tidak boleh lebih kecil dari harga beli.',
+                    ];
+                }
+            }
+        }
+        if (!empty($itemErrors)) {
+            throw ValidationException::withMessages($itemErrors);
+        }
+
+        // Total jumlah diterima per barang tidak boleh melebihi total dipesan per barang
+        $dipesanPerBarang = [];
+        $diterimaPerBarang = [];
+        foreach ($data['items'] as $item) {
+            $bId = (int) $item['barang_id'];
+            $dipesanPerBarang[$bId] = ($dipesanPerBarang[$bId] ?? 0) + (int) $item['jumlah_dipesan'];
+            $diterimaPerBarang[$bId] = ($diterimaPerBarang[$bId] ?? 0) + (int) $item['jumlah_diterima'];
+        }
+
+        foreach ($diterimaPerBarang as $bId => $totalDiterima) {
+            $totalDipesan = $dipesanPerBarang[$bId] ?? 0;
+            if ($totalDiterima > $totalDipesan) {
+                $barangNama = Barang::find($bId)?->nama ?? 'Barang';
                 throw ValidationException::withMessages([
-                    "items.$index.jumlah_diterima" =>
-                        'Jumlah diterima tidak boleh melebihi jumlah dipesan.',
+                    'items' => "Total jumlah diterima untuk [{$barangNama}] ({$totalDiterima}) tidak boleh melebihi total jumlah dipesan ({$totalDipesan}).",
                 ]);
             }
         }
@@ -337,16 +419,67 @@ class PenerimaanController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($data, $request, $penerimaan) {
+        $totalFaktur = collect($data['items'])->sum(fn ($item) => (float) $item['harga_beli'] * (int) $item['jumlah_diterima']);
+        $ppn = round($totalFaktur * 0.11, 2);
+        $totalTagihan = $totalFaktur + $ppn;
+        $pembayaranPertama = (float) ($data['pembayaran_pertama'] ?? 0);
+
+        if ($pembayaranPertama > $totalTagihan) {
+            throw ValidationException::withMessages([
+                'pembayaran_pertama' => 'Pembayaran pertama tidak boleh melebihi total tagihan.',
+            ]);
+        }
+
+        if ($pembayaranPertama < $totalTagihan && empty($data['jatuh_tempo'])) {
+            throw ValidationException::withMessages([
+                'jatuh_tempo' => 'Jatuh tempo wajib diisi jika pembayaran belum lunas.',
+            ]);
+        }
+
+        DB::transaction(function () use ($data, $request, $penerimaan, $dipesanPerBarang, $totalTagihan, $ppn, $pembayaranPertama) {
+            $supplier = Supplier::findOrFail($data['supplier_id']);
+
             $penerimaan->update([
                 'supplier_id' => $data['supplier_id'],
-                'telepon_supplier' => Supplier::findOrFail($data['supplier_id'])->telepon,
+                'telepon_supplier' => $supplier->telepon,
                 'keterangan' => $data['keterangan'] ?? null,
                 'tanggal' => $data['tanggal'],
                 'tanggal_faktur' => $data['tanggal_faktur'],
                 'no_faktur' => $data['no_faktur'],
                 'jatuh_tempo' => $data['jatuh_tempo'] ?? null,
+                'ppn' => $ppn,
+                'lunas' => $pembayaranPertama >= $totalTagihan,
             ]);
+
+            // Sinkronisasi pembayaran pertama/utama
+            $pembayaranPertamaRecord = $penerimaan->pembayaran()
+                ->where(function ($q) {
+                    $q->where('keterangan', 'Pembayaran pertama')
+                        ->orWhereNull('keterangan');
+                })
+                ->first();
+
+            if ($pembayaranPertama > 0) {
+                if ($pembayaranPertamaRecord) {
+                    $pembayaranPertamaRecord->update([
+                        'jumlah' => $pembayaranPertama,
+                        'tanggal_bayar' => $data['tanggal'],
+                        'keterangan' => 'Pembayaran pertama',
+                    ]);
+                } else {
+                    PembayaranPenerimaan::create([
+                        'penerimaan_id' => $penerimaan->id,
+                        'user_id' => $request->user()?->id ?? $penerimaan->user_id ?? auth()->id() ?? 1,
+                        'tanggal_bayar' => $data['tanggal'],
+                        'jumlah' => $pembayaranPertama,
+                        'keterangan' => 'Pembayaran pertama',
+                    ]);
+                }
+            } else {
+                if ($pembayaranPertamaRecord) {
+                    $pembayaranPertamaRecord->delete();
+                }
+            }
 
             $existingDetails = $penerimaan->detail()
                 ->lockForUpdate()
@@ -358,15 +491,30 @@ class PenerimaanController extends Controller
                 ->filter()
                 ->map(fn ($id) => (int) $id);
 
-            // Akumulasi target pesanan per barang untuk edit (mendukung multi-batch barang yang sama)
-            $pesananPerBarang = [];
-            foreach ($data['items'] as $item) {
-                $bId = (int) $item['barang_id'];
-                $pesananPerBarang[$bId] = ($pesananPerBarang[$bId] ?? 0) + (int) $item['jumlah_dipesan'];
+            // 1. Tangani baris yang dihapus oleh user
+            $detailsToDelete = $existingDetails->except($submittedDetailIds->all());
+            foreach ($detailsToDelete as $detail) {
+                $sudahDipakai = $detail->detailPenjualan()->exists() || $detail->rusak()->exists();
+                if ($sudahDipakai) {
+                    $barangNama = $detail->barang->nama ?? 'Obat';
+                    throw ValidationException::withMessages([
+                        'items' => "Barang [{$barangNama}] sudah digunakan untuk transaksi penjualan atau tercatat rusak sehingga tidak boleh dihapus.",
+                    ]);
+                }
+
+                // Hapus riwayat penerimaan awal terkait
+                $penerimaan->riwayatPenerimaan()
+                    ->where('detail_penerimaan_id', $detail->id)
+                    ->delete();
+
+                // Set stok ke 0 dan hapus detail
+                $detail->update(['stok' => 0, 'aktif' => false]);
+                $detail->delete();
             }
 
+            // 2. Sinkronisasi DetailPesananPenerimaan per barang
             $detailPesananMap = [];
-            foreach ($pesananPerBarang as $bId => $totalDipesan) {
+            foreach ($dipesanPerBarang as $bId => $totalDipesan) {
                 $dp = DetailPesananPenerimaan::firstOrNew([
                     'penerimaan_id' => $penerimaan->id,
                     'barang_id' => $bId,
@@ -376,85 +524,44 @@ class PenerimaanController extends Controller
                 $detailPesananMap[$bId] = $dp;
             }
 
+            // Hapus pesanan penerimaan untuk barang yang sudah tidak ada di items
+            DetailPesananPenerimaan::where('penerimaan_id', $penerimaan->id)
+                ->whereNotIn('barang_id', array_keys($dipesanPerBarang))
+                ->delete();
+
+            // 3. Update atau create item detail
             foreach ($data['items'] as $item) {
-                $detailId = isset($item['detail_id'])
-                    ? (int) $item['detail_id']
-                    : null;
+                $detailId = isset($item['detail_id']) ? (int) $item['detail_id'] : null;
 
                 if ($detailId && $existingDetails->has($detailId)) {
                     $detail = $existingDetails->get($detailId);
+                    $sudahDipakai = $detail->detailPenjualan()->exists() || $detail->rusak()->exists();
+                    $terpakai = (int) $detail->jumlah - (int) $detail->stok;
 
-                    $sudahDipakai = $detail->detailPenjualan()->exists()
-                        || $detail->rusak()->exists();
-
-                    if ($sudahDipakai) {
+                    if ($sudahDipakai || $terpakai > 0) {
                         $isBarangChanged = (int) $item['barang_id'] !== (int) $detail->barang_id;
                         $isBatchChanged = (string) $item['no_batch'] !== (string) $detail->no_batch;
-                        $isJumlahChanged = (int) $item['jumlah_diterima'] !== (int) $detail->jumlah;
 
-                        if ($isBarangChanged || $isBatchChanged || $isJumlahChanged) {
+                        if ($isBarangChanged || $isBatchChanged) {
+                            $barangNama = $detail->barang->nama ?? 'Obat';
                             throw ValidationException::withMessages([
-                                'items' => 'Barang [' . ($detail->barang->nama ?? 'Obat') . '] sudah digunakan untuk penjualan atau tercatat rusak sehingga data pokoknya (barang, batch, jumlah) tidak boleh diubah.',
+                                'items' => "Barang [{$barangNama}] dengan nomor batch [{$detail->no_batch}] sudah digunakan dalam transaksi sehingga jenis barang dan nomor batch tidak boleh diubah.",
                             ]);
                         }
-                    }
-                }
 
-                if ($detailId && !$existingDetails->has($detailId)) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Detail penerimaan tidak valid.',
-                    ]);
-                }
-
-                if ($detailId) {
-                    $detail = $existingDetails->get($detailId);
-
-                    $detailPesanan = $detailPesananMap[(int) $item['barang_id']] ?? null;
-
-                    if ($detailPesanan) {
-                        $totalRiwayat = $detailPesanan->totalDiterima()
-                            + $detailPesanan->totalDibatalkan();
-
-                        if ((int) $detailPesanan->jumlah_dipesan < $totalRiwayat) {
+                        if ((int) $item['jumlah_diterima'] < $terpakai) {
+                            $barangNama = $detail->barang->nama ?? 'Obat';
                             throw ValidationException::withMessages([
-                                'items' => 'Total jumlah dipesan untuk barang [' . ($detailPesanan->barang->nama ?? 'Obat') . '] tidak boleh lebih kecil dari jumlah yang sudah diterima (' . $totalRiwayat . ').',
+                                'items' => "Jumlah diterima untuk [{$barangNama}] tidak boleh lebih kecil dari jumlah yang sudah terjual/terpakai ({$terpakai}).",
                             ]);
                         }
+
+                        $newStok = (int) $item['jumlah_diterima'] - $terpakai;
+                    } else {
+                        // Belum pernah dipakai sama sekali, stok mengikuti jumlah diterima baru
+                        $newStok = (int) $item['jumlah_diterima'];
                     }
 
-                    $sudahAdaRiwayat = RiwayatPenerimaan::where(
-                        'detail_penerimaan_id',
-                        $detail->id
-                    )
-                        ->where('jenis', 'penerimaan')
-                        ->exists();
-
-                    if ($sudahAdaRiwayat) {
-                        $totalDiterima = RiwayatPenerimaan::where(
-                            'detail_penerimaan_id',
-                            $detail->id
-                        )
-                            ->where('jenis', 'penerimaan')
-                            ->sum('jumlah');
-
-                        if ((int) $item['jumlah_diterima'] !== (int) $totalDiterima) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Jumlah diterima tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
-                            ]);
-                        }
-                    }
-
-                    if ($sudahAdaRiwayat && (int) $item['barang_id'] !== (int) $detail->barang_id) {
-                        throw ValidationException::withMessages([
-                            'items' => 'Barang tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
-                        ]);
-                    }
-
-                    if ($sudahAdaRiwayat && $item['no_batch'] !== $detail->no_batch) {
-                        throw ValidationException::withMessages([
-                            'items' => 'Nomor batch tidak boleh diubah karena penerimaan sudah memiliki riwayat.',
-                        ]);
-                    }
                     $detail->update([
                         'barang_id' => $item['barang_id'],
                         'no_batch' => $item['no_batch'],
@@ -463,12 +570,47 @@ class PenerimaanController extends Controller
                         'expired_date' => $item['expired_date'],
                         'no_rak' => $item['no_rak'],
                         'jumlah' => $item['jumlah_diterima'],
-                        'stok' => $detail->stok,
+                        'stok' => $newStok,
                         'aktif' => true,
                     ]);
 
                     $detailPesanan = $detailPesananMap[(int) $item['barang_id']];
+
+                    // Update atau buat RiwayatPenerimaan awal
+                    $riwayat = RiwayatPenerimaan::where('penerimaan_id', $penerimaan->id)
+                        ->where('detail_penerimaan_id', $detail->id)
+                        ->first();
+
+                    if ($riwayat) {
+                        if ((int) $item['jumlah_diterima'] > 0) {
+                            $riwayat->update([
+                                'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                                'jumlah' => $item['jumlah_diterima'],
+                                'tanggal' => $data['tanggal'],
+                                'keterangan' => 'Penerimaan awal',
+                            ]);
+                        } else {
+                            $riwayat->delete();
+                        }
+                    } elseif ((int) $item['jumlah_diterima'] > 0) {
+                        RiwayatPenerimaan::create([
+                            'penerimaan_id' => $penerimaan->id,
+                            'detail_pesanan_penerimaan_id' => $detailPesanan->id,
+                            'detail_penerimaan_id' => $detail->id,
+                            'jenis' => 'penerimaan',
+                            'jumlah' => $item['jumlah_diterima'],
+                            'tanggal' => $data['tanggal'],
+                            'keterangan' => 'Penerimaan awal',
+                            'user_id' => $request->user()?->id ?? $penerimaan->user_id ?? auth()->id() ?? 1,
+                        ]);
+                    }
+
+                } elseif ($detailId && !$existingDetails->has($detailId)) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Detail penerimaan tidak valid.',
+                    ]);
                 } else {
+                    // Item baru ditambahkan saat edit
                     $detailPenerimaan = $penerimaan->detail()->create([
                         'barang_id' => $item['barang_id'],
                         'no_batch' => $item['no_batch'],
@@ -491,46 +633,18 @@ class PenerimaanController extends Controller
                             'jenis' => 'penerimaan',
                             'jumlah' => $item['jumlah_diterima'],
                             'tanggal' => $data['tanggal'],
-                            'keterangan' => 'Penerimaan melalui edit',
-                            'user_id' => $request->user()->id,
+                            'keterangan' => 'Penerimaan awal',
+                            'user_id' => $request->user()?->id ?? $penerimaan->user_id ?? auth()->id() ?? 1,
                         ]);
                     }
                 }
             }
 
-           $existingDetails
-            ->except($submittedDetailIds->all())
-            ->each(function ($detail) {
-                $sudahDipakai = $detail->detailPenjualan()->exists()
-                    || $detail->rusak()->exists();
-
-                $sudahAdaRiwayat = RiwayatPenerimaan::where(
-                    'detail_penerimaan_id',
-                    $detail->id
-                )->exists();
-
-                if ($sudahDipakai) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Detail barang yang sudah digunakan untuk penjualan atau barang rusak tidak boleh dihapus.',
-                    ]);
-                }
-
-                if ($sudahAdaRiwayat) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Detail penerimaan yang sudah memiliki riwayat tidak boleh dihapus.',
-                    ]);
-                }
-
-                $detail->delete();
-            });
-
-            $totalFaktur = (float) $penerimaan->detail()
-                ->sum(DB::raw('harga_beli * jumlah'));
-
-            $ppn = $totalFaktur * 0.11;
+            // Hitung ulang total faktur, PPN, dan tagihan
+            $totalFaktur = (float) $penerimaan->detail()->sum(DB::raw('harga_beli * jumlah'));
+            $ppn = round($totalFaktur * 0.11, 2);
             $totalTagihan = $totalFaktur + $ppn;
-
-             $totalDibayar = $penerimaan->totalDibayar();
+            $totalDibayar = $penerimaan->totalDibayar();
 
             if ($totalDibayar < $totalTagihan && empty($data['jatuh_tempo'])) {
                 throw ValidationException::withMessages([
@@ -538,12 +652,24 @@ class PenerimaanController extends Controller
                 ]);
             }
 
-           
             $penerimaan->update([
                 'ppn' => $ppn,
                 'lunas' => $totalDibayar >= $totalTagihan,
             ]);
+
+            \App\Models\ActivityLog::log(
+                'Edit Penerimaan Barang',
+                "Faktur: {$penerimaan->no_faktur}, Supplier: {$supplier->nama}, Total: Rp " . number_format($totalTagihan, 2),
+                \App\Models\ActivityLog::CATEGORY_INVENTARIS
+            );
         });
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan berhasil diperbarui.',
+            ]);
+        }
 
         return redirect()
             ->route('penerimaan.index')

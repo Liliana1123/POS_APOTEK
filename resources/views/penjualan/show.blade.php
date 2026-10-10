@@ -9,7 +9,12 @@
     </div>
     <div class="flex gap-2">
         <button onclick="window.print()" class="btn-primary">Print Struk</button>
-        <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+
+        @if(request('from') === 'laporan_penjualan')
+            <a href="{{ route('laporan.penjualan', request()->except('from')) }}" class="btn-secondary">Kembali</a>
+        @else
+            <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+        @endif
     </div>
 </div>
 
@@ -68,6 +73,14 @@
                 {{ $penjualan->metode_pembayaran }}
             </span>
         </div>
+        @if (strtolower($penjualan->metode_pembayaran) === 'piutang' && $penjualan->due_date)
+            <div class="flex justify-between">
+                <span>Jatuh Tempo</span>
+                <span class="font-semibold">
+                    {{ $penjualan->due_date->format('d M Y') }}
+                </span>
+            </div>
+        @endif
     </div>
 
     <div class="border-t border-dashed pt-2.5 space-y-2">

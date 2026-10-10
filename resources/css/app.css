@@ -31,6 +31,7 @@
     --color-info-hover: #0369a1;
     /* sky-700 */
     --color-background: #f8fafc;
+    /*#f8fafc */
     /* slate-50 */
     --color-surface: #ffffff;
     --color-border-custom: #e2e8f0;
@@ -211,6 +212,76 @@ h3,
     color: #EF4444 !important;
 }
 
+/* Action button color & hover styling */
+.btn-secondary.btn-detail-penerimaan,
+.btn-secondary.btn-action-view,
+.btn-secondary.btn-action-detail,
+.btn-secondary.text-blue-600 {
+    color: #2563EB !important;
+}
+.btn-secondary.btn-detail-penerimaan:hover,
+.btn-secondary.btn-action-view:hover,
+.btn-secondary.btn-action-detail:hover,
+.btn-secondary.text-blue-600:hover {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #2563EB !important;
+}
+
+.btn-secondary.btn-edit-penerimaan,
+.btn-secondary.btn-action-edit,
+.btn-secondary.text-amber-500 {
+    color: #F59E0B !important;
+}
+.btn-secondary.btn-edit-penerimaan:hover,
+.btn-secondary.btn-action-edit:hover,
+.btn-secondary.text-amber-500:hover {
+    background-color: #fffbeb !important;
+    border-color: #fcd34d !important;
+    color: #F59E0B !important;
+}
+
+.btn-secondary.btn-payment-penerimaan,
+.btn-secondary.btn-action-payment,
+.btn-secondary.text-emerald-600 {
+    color: #16A34A !important;
+}
+.btn-secondary.btn-payment-penerimaan:hover,
+.btn-secondary.btn-action-payment:hover,
+.btn-secondary.text-emerald-600:hover {
+    background-color: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #16A34A !important;
+}
+
+.btn-secondary.btn-susulan-penerimaan,
+.btn-secondary.btn-action-susulan,
+.btn-secondary.text-purple-600 {
+    color: #7C3AED !important;
+}
+.btn-secondary.btn-susulan-penerimaan:hover,
+.btn-secondary.btn-action-susulan:hover,
+.btn-secondary.text-purple-600:hover {
+    background-color: #faf5ff !important;
+    border-color: #d8b4fe !important;
+    color: #7C3AED !important;
+}
+
+.btn-secondary.btn-action-delete,
+.btn-secondary.text-red-600 {
+    color: #DC2626 !important;
+}
+.btn-secondary.btn-action-delete:hover,
+.btn-secondary.text-red-600:hover {
+    background-color: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    color: #DC2626 !important;
+}
+
+.btn-secondary.text-gray-400 {
+    color: #9CA3AF !important;
+}
+
 .btn-secondary:active {
     transform: scale(0.98);
 }
@@ -373,7 +444,8 @@ h3,
     color: var(--color-success-hover);
 }
 
-.badge-warning {
+.badge-warning,
+.badge-yellow {
     display: inline-flex;
     align-items: center;
     font-size: 0.5625rem;
@@ -385,9 +457,28 @@ h3,
     /* px-2 py-0.5 */
     border-radius: 0.25rem;
     /* rounded */
-    background-color: #fffbeb;
-    /* amber-50 */
-    color: var(--color-warning-hover);
+    background-color: #fefce8;
+    /* yellow-50 */
+    color: #a16207;
+    /* yellow-700 */
+}
+
+.badge-orange {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.5625rem;
+    /* text-[9px] */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.125rem 0.5rem;
+    /* px-2 py-0.5 */
+    border-radius: 0.25rem;
+    /* rounded */
+    background-color: #fff7ed;
+    /* orange-50 */
+    color: #c2410c;
+    /* orange-700 */
 }
 
 .badge-danger {
@@ -424,6 +515,7 @@ h3,
     color: var(--color-info-hover);
 }
 
+.badge-secondary,
 .badge-neutral {
     display: inline-flex;
     align-items: center;
@@ -468,7 +560,7 @@ h3,
     background-color: var(--color-surface);
     border-radius: 0.75rem;
     border: 1px solid var(--color-border-custom);
-    overflow: hidden;
+    overflow: clip; /* clip clips overflow tanpa mengganggu inner overflow-x:auto */
 }
 
 .table-custom {
@@ -588,9 +680,9 @@ h3,
 
     /* Collapsed state in rail mode: adjust child items to align with central anchor */
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-items {
-        border-left-color: transparent;
-        margin-left: 0;
-        padding-left: 0;
+        border-left-color: transparent !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
     }
 
     #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-child {
@@ -749,8 +841,7 @@ h3,
     /* shadow-2xl */
     border: 1px solid var(--color-border-custom);
     width: 100%;
-    max-width: 28rem;
-    /* max-w-md */
+    /* max-width diatur per-modal via Tailwind (max-w-md, max-w-5xl, dll.) */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -995,6 +1086,21 @@ h3,
 
 .table-compact tr:hover td {
     background-color: #f8fafc;
+}
+
+.table-compact th.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8fafc;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.table-compact td.wrap-cell,
+.table-compact th.wrap-cell {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
 }
 
 
@@ -1315,4 +1421,564 @@ h3,
 .penerimaan-detail-table th:last-child {
     width: 60px !important;
     min-width: 60px !important;
+}
+
+/* ============================================================
+   TABEL PELANGGAN / MEMBER
+   Proporsional, sejajar, responsif terhadap buka/tutup sidebar
+   ============================================================ */
+.table-pelanggan {
+    width: 100% !important;
+    min-width: 1140px !important;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.table-pelanggan th,
+.table-pelanggan td {
+    padding: 0.75rem 0.65rem !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+.table-pelanggan th {
+    white-space: nowrap !important;
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.table-pelanggan td {
+    font-size: 0.75rem;
+}
+
+.table-pelanggan-wrapper {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   MODAL CONTAINER & SIZING UTILITIES
+   ============================================================ */
+.modal-dialog-large {
+    width: 95vw !important;
+    max-width: 1100px !important;
+}
+
+.modal-body-scroll {
+    max-height: calc(100vh - 180px) !important;
+}
+
+/* ============================================================
+   TABEL DETAIL, PAYMENT & SUSULAN PENERIMAAN
+   ============================================================ */
+.table-detail-penerimaan {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.table-detail-penerimaan th {
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #1d4ed8 !important;
+    white-space: nowrap !important;
+}
+
+.table-detail-penerimaan td {
+    padding: 0.4rem 0.65rem !important;
+    font-size: 0.75rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.table-detail-penerimaan tbody td:nth-child(6),
+.table-detail-penerimaan tbody td:nth-child(7),
+.table-detail-penerimaan tbody td:nth-child(8),
+.table-detail-penerimaan tbody td:nth-child(9) {
+    text-align: center !important;
+}
+
+.table-payment-penerimaan {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.table-payment-penerimaan th {
+    padding: 0.6rem 0.75rem !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #1d4ed8 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+
+.table-payment-penerimaan td {
+    padding: 0.55rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle;
+}
+
+.table-susulan-penerimaan {
+    width: max-content;
+    min-width: 1350px;
+    table-layout: auto;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+.table-susulan-penerimaan th {
+    padding: 0.6rem 0.55rem !important;
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid #1d4ed8 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+
+.table-susulan-penerimaan td {
+    padding: 0.5rem 0.55rem !important;
+    font-size: 0.75rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table-susulan-penerimaan input {
+    box-sizing: border-box !important;
+    max-width: none !important;
+}
+
+.table-susulan-penerimaan input[type="number"] {
+    min-width: 135px !important;
+}
+
+.table-susulan-penerimaan input[type="text"] {
+    min-width: 110px !important;
+}
+
+.table-susulan-penerimaan input[type="date"] {
+    min-width: 50px !important;
+}
+
+.table-susulan-penerimaan td:nth-child(12) input {
+    min-width: 65px !important;
+    width: 65px !important;
+}
+
+/* Penyelarasan Vertikal Web */
+.table-penerimaan th,
+.table-penerimaan td,
+.table-rusak th,
+.table-rusak td {
+    vertical-align: middle;
+}
+
+/* ============================================================
+   Tabel Laporan (Stok, Penerimaan, Rusak) - Garis Abu-Abu Soft
+   ============================================================ */
+.table-custom-container.print-table-wrapper {
+    border: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table {
+    border-collapse: collapse;
+}
+
+.table-custom.print-table thead th {
+    border-bottom: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table tbody tr {
+    border-bottom: 1px solid #D1D5DB;
+}
+
+.table-custom.print-table tfoot,
+.table-custom.print-table tfoot td {
+    border-top: 1.5px solid #D1D5DB;
+}
+
+/* ============================================================
+   PRINT TEMPLATE - LAPORAN (A4 LANDSCAPE)
+   Digunakan serentak oleh Laporan Stok, Penerimaan & Rusak
+   ============================================================ */
+.print-only {
+    display: none;
+}
+
+.print-signature {
+    display: none !important;
+}
+
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 0;
+    }
+
+    #sidebar-backdrop,
+    #toast-success,
+    #toast-error,
+    aside,
+    #app-sidebar,
+    nav,
+    header,
+    [role="navigation"],
+    .print\:hidden,
+    .no-print,
+    .no-print-expired,
+    .page-header-web,
+    .filter-card-web,
+    .card-base:not(.print-table-card, .print-table-wrapper),
+    button,
+    .btn-primary,
+    .btn-secondary {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+    }
+
+    html,
+    body {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important;
+        position: static !important;
+        margin: 0 !important;
+        padding: 5mm 10mm 10mm 10mm !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body > div.flex-1,
+    div.flex-1.flex.flex-col,
+    main {
+        position: static !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        float: none !important;
+        flex: none !important;
+    }
+
+    .table-custom-container,
+    .print-table-wrapper {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    .print-kop {
+        display: block !important;
+        position: relative;
+        text-align: center;
+        min-height: 50px;
+        margin: 0 0 6px 0 !important;
+        padding: 0 0 5px 0 !important;
+        border-bottom: 1.5px solid #D1D5DB;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-kop-logo {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .print-kop-info {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 0 54px;
+    }
+
+    .print-kop-info h1 {
+        margin: 0 0 2px !important;
+        padding: 0 !important;
+        font-size: 15px;
+        line-height: 1.2;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #111;
+    }
+
+    .print-kop-info p {
+        margin: 1px 0 !important;
+        padding: 0 !important;
+        font-size: 8.5px;
+        line-height: 1.25;
+        color: #333;
+    }
+
+    .print-report-title {
+        display: block !important;
+        text-align: center;
+        margin: 4px 0 8px;
+    }
+
+    .print-report-title h2 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #111;
+    }
+
+    .print-report-title p {
+        margin: 2px 0 0;
+        font-size: 8px;
+        color: #555;
+    }
+
+    .print-section {
+        margin-bottom: 10px !important;
+        margin-top: 0 !important;
+        page-break-inside: auto;
+    }
+
+    .print-section-header {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 4px;
+    }
+
+    .print-section-header h3 {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .print-section-header p {
+        margin: 2px 0 0;
+        font-size: 8px;
+        color: #555;
+    }
+
+    .print-section-count {
+        font-size: 8px;
+        color: #555;
+        white-space: nowrap;
+    }
+
+    .print-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        font-size: 8px !important;
+    }
+
+    .print-table th {
+        padding: 6px 4px !important;
+        background: #2563eb !important;
+        color: #fff !important;
+        border: 1px solid #1d4ed8 !important;
+        font-size: 7px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        white-space: normal !important;
+    }
+
+    .print-table td {
+        padding: 5px 4px !important;
+        border: 1px solid #D1D5DB !important;
+        font-size: 8px !important;
+        vertical-align: middle !important;
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
+    }
+
+    .print-table tbody tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-table thead {
+        display: table-header-group !important;
+    }
+
+    .print-table tfoot {
+        display: table-row-group !important;
+    }
+
+    .print-table tfoot td {
+        padding: 7px 4px !important;
+        font-weight: 700 !important;
+        border-top: 1.5px solid #D1D5DB !important;
+    }
+
+    .print-table .col-no { width: 4%; }
+    .print-table .col-barang { width: 14%; }
+    .print-table .col-kategori { width: 11%; }
+    .print-table .col-batch { width: 8%; }
+    .print-table .col-rak { width: 7%; }
+    .print-table .col-expired { width: 9%; }
+    .print-table .col-status-expired { width: 11%; }
+    .print-table .col-number { width: 7%; }
+    .print-table .col-status-stok { width: 8%; }
+
+    .print-table .badge-danger {
+        color: #b91c1c !important;
+        background: #fee2e2 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+
+    .print-table .badge-warning,
+    .print-table .badge-yellow {
+        color: #854d0e !important;
+        background: #fef9c3 !important;
+        border: 1px solid #fde047 !important;
+    }
+
+    .print-table .badge-orange {
+        color: #c2410c !important;
+        background: #ffedd5 !important;
+        border: 1px solid #fdba74 !important;
+    }
+
+    .print-table .badge-success {
+        color: #15803d !important;
+        background: #dcfce7 !important;
+        border: 1px solid #86efac !important;
+    }
+
+    .print-table .badge-secondary,
+    .print-table .badge-neutral {
+        color: #374151 !important;
+        background: #f3f4f6 !important;
+        border: 1px solid #d1d5db !important;
+    }
+
+    .print-hide {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .no-break {
+        -webkit-column-break-inside: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .print-signature {
+        display: block !important;
+        margin-top: 40px;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .print-signature-grid {
+        display: flex !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding: 0 40px !important;
+        box-sizing: border-box !important;
+    }
+
+    .print-signature-box {
+        width: 250px;
+        text-align: center;
+        font-size: 10px;
+        color: #111;
+    }
+
+    .print-signature-location {
+        margin: 0 0 2px 0 !important;
+        font-size: 10px !important;
+        color: #111;
+    }
+
+    .print-signature-title {
+        margin: 0 !important;
+        font-size: 10px !important;
+        font-weight: normal !important;
+    }
+
+    .print-signature-role {
+        margin: 2px 0 0 !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    .print-signature-space {
+        height: 65px !important;
+    }
+
+    .print-signature-name {
+        margin: 0 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+    }
+
+    .print-signature-sipa {
+        margin: 3px 0 0 !important;
+        font-size: 9px !important;
+        color: #333 !important;
+    }
 }

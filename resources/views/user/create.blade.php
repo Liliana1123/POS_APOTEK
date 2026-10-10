@@ -25,11 +25,15 @@
 
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Role <span class="text-red-500 font-bold">*</span></label>
+            @php $roles = config('permission.roles', []); @endphp
             <select name="role" required class="form-input">
                 <option value="">Pilih role</option>
-                <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                <option value="apoteker" {{ old('role') === 'apoteker' ? 'selected' : '' }}>Apoteker</option>
-                <option value="kasir" {{ old('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
+                @foreach ($roles as $slug => $meta)
+                    @if (($meta['kunci'] ?? false) && ! auth()->user()->isSuperAdmin())
+                        @continue
+                    @endif
+                    <option value="{{ $slug }}" {{ old('role') === $slug ? 'selected' : '' }}>{{ $meta['label'] }}</option>
+                @endforeach
             </select>
             @error('role') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
         </div>

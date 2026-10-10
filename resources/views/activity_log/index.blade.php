@@ -74,12 +74,12 @@
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Dari Tanggal</label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Awal</label>
             <input type="date" name="dari" value="{{ $dari }}" class="form-input">
         </div>
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Sampai Tanggal</label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Akhir</label>
             <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
         </div>
     </x-card-filter>
@@ -105,7 +105,7 @@
                     <th scope="col" class="w-40">Waktu</th>
                     <th scope="col" class="w-36">Kategori</th>
                     <th scope="col" class="w-44">User / Staf</th>
-                    <th scope="col" class="w-52">Tindakan / Aksi</th>
+                    <th scope="col" class="w-52">Tindakan</th>
                     <th scope="col">Rincian Target</th>
                 </tr>
             </thead>

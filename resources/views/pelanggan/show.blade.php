@@ -113,6 +113,12 @@
             </div>
             @if ($pelanggan->is_member)
                 <div>
+                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Benefit Diskon</span>
+                    <span class="inline-flex items-center px-2 py-0.5 mt-0.5 rounded text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                        {{ $pelanggan->custom_discount_percentage !== null ? 'Diskon ' . (float)$pelanggan->custom_discount_percentage . '%' : 'Diskon Default ' . config('pos.diskon_member', 10) . '%' }}
+                    </span>
+                </div>
+                <div>
                     <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
                     <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
                 </div>

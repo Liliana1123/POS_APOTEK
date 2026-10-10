@@ -9,6 +9,9 @@ use App\Models\DetailPenerimaan;
 use App\Models\DetailPenjualan;
 use App\Models\Rusak;
 use Illuminate\Http\Request;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
 
 class LaporanController extends Controller
 {
@@ -16,61 +19,9 @@ class LaporanController extends Controller
     public function stok(Request $request)
     {
         $kategoris = Kategori::orderBy('nama')->get();
-        $barangs = Barang::with('kategori')
-            ->withSum(['detailPenerimaan' => function ($query) {
-                $query->where('aktif', true);
-            }], 'stok')
-            ->where('aktif', true)
-            ->when($request->filled('nama'), function ($query) use ($request) {
-                $query->where('nama', 'like', '%' . $request->nama . '%');
-            })
-            ->when($request->filled('kategori_id'), function ($query) use ($request) {
-                $query->where('kategori_id', $request->kategori_id);
-            })
+        $barangs = collect(); // unused, kept for view compatibility
 
-            ->when($request->filled('status_stok'), function ($query) use ($request) {
-                if ($request->status_stok === 'habis') {
-                    $query->whereDoesntHave('detailPenerimaan', function ($q) {
-                        $q->where('aktif', true)
-                        ->where('stok', '>', 0);
-                    });
-                }
-
-                if ($request->status_stok === 'menipis') {
-                    $query->whereHas('detailPenerimaan', function ($q) {
-                        $q->where('aktif', true);
-                    })
-                    ->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) > 0'
-                    )
-                    ->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) <= stok_minimum'
-                    );
-                }
-
-                if ($request->status_stok === 'aman') {
-                    $query->whereRaw(
-                        '(SELECT COALESCE(SUM(dp.stok), 0)
-                        FROM detail_penerimaans dp
-                        WHERE dp.barang_id = barangs.id
-                        AND dp.aktif = 1
-                        AND dp.deleted_at IS NULL) > stok_minimum'
-                    );
-                }
-            })
-
-            ->orderBy('nama')
-            ->get();
-
-        $stokPerBatch = DetailPenerimaan::with(['barang.kategori'])
+        $stokPerBatch = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah')
             ->when($request->status_stok !== 'habis', function ($query) {
@@ -82,13 +33,36 @@ class LaporanController extends Controller
                     $q->where('nama', 'like', '%' . $request->nama . '%');
                 });
             })
-
+            ->when($request->filled('barang'), function ($query) use ($request) {
+                $query->whereHas('barang', function ($q) use ($request) {
+                    $q->where('nama', 'like', '%' . $request->barang . '%');
+                });
+            })
             ->when($request->filled('kategori_id'), function ($query) use ($request) {
                 $query->whereHas('barang', function ($q) use ($request) {
                     $q->where('kategori_id', $request->kategori_id);
                 });
             })
-
+            ->when($request->filled('supplier_id'), function ($query) use ($request) {
+                $query->whereHas('penerimaan', function ($q) use ($request) {
+                    $q->where('supplier_id', $request->supplier_id);
+                });
+            })
+            ->when($request->filled('batch'), function ($query) use ($request) {
+                $query->where('no_batch', 'like', '%' . $request->batch . '%');
+            })
+            ->when($request->filled('no_batch'), function ($query) use ($request) {
+                $query->where('no_batch', 'like', '%' . $request->no_batch . '%');
+            })
+            ->when($request->filled('tanggal'), function ($query) use ($request) {
+                $query->whereDate('expired_date', $request->tanggal);
+            })
+            ->when($request->filled('dari'), function ($query) use ($request) {
+                $query->whereDate('expired_date', '>=', $request->dari);
+            })
+            ->when($request->filled('sampai'), function ($query) use ($request) {
+                $query->whereDate('expired_date', '<=', $request->sampai);
+            })
             ->when($request->filled('status_stok'), function ($query) use ($request) {
 
                 if ($request->status_stok === 'habis') {
@@ -118,16 +92,16 @@ class LaporanController extends Controller
 
                 if ($request->status_expired === '1_bulan') {
                     $query->whereDate('expired_date', '>', $today)
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonth());
+                        ->whereDate('expired_date', '<', $today->copy()->addMonth());
                 }
 
                 if ($request->status_expired === '3_bulan') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonth())
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonth())
+                        ->whereDate('expired_date', '<', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'normal') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'tidak_ada') {
@@ -148,37 +122,97 @@ class LaporanController extends Controller
         $totalStokRusak = $stokPerBatch->sum(fn ($i) => (int) ($i->stok_rusak ?? 0));
         $totalSisaStok = $totalStokAwal - $totalStokTerjual - $totalStokRusak;
 
+        // Batch mendekati expired (<= 90 hari dari hari ini termasuk yang sudah kadaluarsa) - otomatis & tidak terpengaruh filter
         $mendekatiExpired = DetailPenerimaan::with(['barang.kategori'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah')
-            ->when($request->filled('nama'), function ($query) use ($request) {
-                $query->whereHas('barang', function ($q) use ($request) {
-                    $q->where('nama', 'like', '%' . $request->nama . '%');
-                });
-            })
-            ->when($request->filled('kategori_id'), function ($query) use ($request) {
-                $query->whereHas('barang', function ($q) use ($request) {
-                    $q->where('kategori_id', $request->kategori_id);
-                });
-            })
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
             ->mendekatiExpired(90)
-            ->orderBy('expired_date')
+            ->orderBy('expired_date', 'asc')
             ->get();
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status'];
+        if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+            $headers = [
+                'No',
+                'Barang',
+                'Kategori',
+                'No. Batch',
+                'No. Rak',
+                'Expired',
+                'Status Expired',
+                'Stok Awal',
+                'Stok Terjual',
+                'Stok Rusak',
+                'Sisa Stok',
+                'Status Stok',
+            ];
+
+            $today = now()->startOfDay();
             $data = [];
-            foreach ($barangs as $b) {
-                $stok = $b->stokTotal();
+            foreach ($stokPerBatch as $index => $item) {
+                $expiredDate = $item->expired_date
+                    ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
+                    : null;
+
+                $stokAwal = (int) $item->jumlah;
+                $stokTerjual = (int) ($item->stok_terjual ?? 0);
+                $stokRusak = (int) ($item->stok_rusak ?? 0);
+                $sisaStok = $stokAwal - $stokTerjual - $stokRusak;
+                $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
+
+                if (!$expiredDate) {
+                    $statusExpired = 'Tidak Ada Tanggal';
+                } elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today)) {
+                    $statusExpired = 'Kadaluarsa';
+                } elseif ($expiredDate->lt($today->copy()->addMonth())) {
+                    $statusExpired = '< 1 Bulan';
+                } elseif ($expiredDate->lt($today->copy()->addMonths(3))) {
+                    $statusExpired = '< 3 Bulan';
+                } else {
+                    $statusExpired = 'Normal';
+                }
+
+                if ($sisaStok <= 0) {
+                    $statusStok = 'Habis';
+                } elseif ($sisaStok <= $stokMinimum) {
+                    $statusStok = 'Menipis';
+                } else {
+                    $statusStok = 'Aman';
+                }
+
                 $data[] = [
-                    $b->nama,
-                    $b->kategori->nama,
-                    $stok,
-                    $b->stok_minimum,
-                    $stok <= $b->stok_minimum ? 'Menipis' : 'Aman'
+                    $index + 1,
+                    $item->barang->nama ?? '—',
+                    $item->barang->kategori->nama ?? '—',
+                    $item->no_batch ?? '—',
+                    $item->no_rak ?? '—',
+                    $expiredDate ? $expiredDate->format('d M Y') : '—',
+                    $statusExpired,
+                    $stokAwal,
+                    $stokTerjual,
+                    $stokRusak,
+                    $sisaStok,
+                    $statusStok,
                 ];
             }
-            return $this->exportCsv('laporan-stok-' . now()->format('Ymd') . '.csv', $headers, $data);
+
+            $totalRow = [
+                '',
+                'Total',
+                '',
+                '',
+                '',
+                '',
+                '',
+                $totalStokAwal,
+                $totalStokTerjual,
+                $totalStokRusak,
+                $totalSisaStok,
+                '',
+            ];
+
+            return $this->exportXlsx('monitoring_stok_per_batch.xlsx', $headers, $data, $totalRow);
         }
 
         return view('laporan.stok', compact(
@@ -198,10 +232,17 @@ class LaporanController extends Controller
     {
         [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $query = DetailPenerimaan::with(['barang', 'penerimaan.supplier'])
-            ->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
+        $query = DetailPenerimaan::with(['barang', 'penerimaan.supplier']);
+
+        $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
+            if ($dari && $sampai) {
                 $q->whereBetween('tanggal', [$dari, $sampai]);
-            });
+            } elseif ($dari) {
+                $q->where('tanggal', '>=', $dari);
+            } elseif ($sampai) {
+                $q->where('tanggal', '<=', $sampai);
+            }
+        });
 
         if ($request->filled('no_faktur')) {
             $query->whereHas('penerimaan', function ($q) use ($request) {
@@ -221,17 +262,31 @@ class LaporanController extends Controller
             });
         }
 
+        if ($request->filled('status_pembayaran')) {
+            $status = $request->status_pembayaran;
+            if ($status === 'lunas' || $status === '1') {
+                $query->whereHas('penerimaan', function ($q) {
+                    $q->where('lunas', true);
+                });
+            } elseif ($status === 'belum_lunas' || $status === '0') {
+                $query->whereHas('penerimaan', function ($q) {
+                    $q->where('lunas', false);
+                });
+            }
+        }
+
         $items = $query->orderByDesc('created_at')->get();
 
         $totalNilai = $items->sum(fn ($i) => $i->harga_beli * $i->jumlah);
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Supplier', 'Barang', 'Jumlah', 'Harga Beli', 'Total'];
+        if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+            $headers = ['No', 'Tanggal', 'No. Faktur', 'Supplier', 'Nama Barang', 'Jumlah', 'Harga Beli', 'Total Nilai'];
             $data = [];
-            foreach ($items as $item) {
+            foreach ($items as $index => $item) {
                 $data[] = [
-                    $item->penerimaan->tanggal->format('d M Y'),
-                    $item->penerimaan->no_faktur,
+                    $index + 1,
+                    $item->penerimaan->tanggal ? $item->penerimaan->tanggal->format('d M Y') : '—',
+                    $item->penerimaan->no_faktur ?? '—',
                     $item->penerimaan->supplier->nama ?? '—',
                     $item->barang->nama ?? '—',
                     $item->jumlah,
@@ -239,7 +294,19 @@ class LaporanController extends Controller
                     $item->harga_beli * $item->jumlah
                 ];
             }
-            return $this->exportCsv('laporan-penerimaan-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+
+            $totalRow = [
+                '',
+                'Total',
+                '',
+                '',
+                '',
+                $items->sum('jumlah'),
+                '',
+                $totalNilai,
+            ];
+
+            return $this->exportXlsx('laporan_penerimaan_barang.xlsx', $headers, $data, $totalRow);
         }
 
         $suppliers = Supplier::orderBy('nama')->get();
@@ -249,89 +316,315 @@ class LaporanController extends Controller
 
     // Laporan penjualan barang dalam rentang tanggal
     public function penjualan(Request $request)
-    {
-        [$dari, $sampai] = $this->rentangTanggal($request);
+{
+    [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $query = \App\Models\Penjualan::with(['pelanggan', 'detail'])
-            ->whereBetween('tanggal', [$dari, $sampai]);
+    $query = \App\Models\Penjualan::with([
+        'pelanggan',
+        'detail.detailPenerimaan.barang.satuan',
+        'user',
+        'pembayaranPiutang',
+    ])->whereBetween('tanggal', [$dari, $sampai]);
 
-        // Filter: member / non-member
-        if ($request->filled('status_pelanggan')) {
-            $status = $request->status_pelanggan;
-            if ($status === 'member') {
-                $query->whereHas('pelanggan', function ($q) {
-                    $q->where('is_member', true);
-                });
-            } elseif ($status === 'non-member') {
-                $query->where(function ($q) {
-                    $q->whereHas('pelanggan', function ($q2) {
-                        $q2->where('is_member', false);
-                    })->orWhereNull('pelanggan_id');
-                });
-            }
-        }
-
-        $penjualans = $query->orderByDesc('tanggal')->orderByDesc('id')->get();
-
-        // Calculate stats
-        $jumlahTransaksi = $penjualans->count();
-        
-        $totalDiskon = $penjualans->sum(function ($p) {
-            return $p->detail->sum('diskon');
-        });
-        
-        $totalPenjualanBersih = $penjualans->sum('total');
-        $omzet = $totalPenjualanBersih + $totalDiskon; // total kotor
-
-        $transaksiMember = $penjualans->filter(function ($p) {
-            return $p->pelanggan && $p->pelanggan->is_member;
-        })->count();
-        
-        $transaksiNonMember = $jumlahTransaksi - $transaksiMember;
-
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Pelanggan', 'Status Pelanggan', 'Kasir', 'Subtotal Kotor', 'Diskon', 'Total'];
-            $data = [];
-            foreach ($penjualans as $p) {
-                $subtotalKotor = $p->total + $p->detail->sum('diskon');
-                $data[] = [
-                    $p->tanggal->format('d M Y'),
-                    $p->no_faktur,
-                    $p->pelanggan->nama ?? 'Umum',
-                    $p->pelanggan ? ($p->pelanggan->is_member ? 'Member' : 'Umum') : 'Umum',
-                    $p->user->name,
-                    $subtotalKotor,
-                    $p->detail->sum('diskon'),
-                    $p->total
-                ];
-            }
-            return $this->exportCsv('laporan-penjualan-' . $dari . '-' . $sampai . '.csv', $headers, $data);
-        }
-
-        return view('laporan.penjualan', compact(
-            'penjualans',
-            'jumlahTransaksi',
-            'omzet',
-            'totalDiskon',
-            'totalPenjualanBersih',
-            'transaksiMember',
-            'transaksiNonMember',
-            'dari',
-            'sampai'
-        ));
+    // =========================================================
+    // FILTER METODE PEMBAYARAN
+    // =========================================================
+    if ($request->filled('metode_pembayaran')) {
+        $query->where(
+            'metode_pembayaran',
+            $request->input('metode_pembayaran')
+        );
     }
+
+    // =========================================================
+    // FILTER PELANGGAN / MEMBER
+    // =========================================================
+    if ($request->filled('pelanggan')) {
+        $pelanggan = $request->input('pelanggan');
+
+        if ($pelanggan === 'pelanggan_umum') {
+            $query->where(function ($q) {
+                $q->whereNull('pelanggan_id')
+                    ->orWhereHas('pelanggan', function ($q2) {
+                        $q2->where('is_member', false);
+                    });
+            });
+        }
+
+        if ($pelanggan === 'pelanggan_tetap') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Pelanggan Tetap'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'keluarga_nakes') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Keluarga Nakes'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'member_only') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Only'
+                    );
+            });
+        }
+    }
+
+    // =========================================================
+    // FILTER JENIS TRANSAKSI
+    // =========================================================
+    if ($request->filled('jenis_transaksi')) {
+        $query->where(
+            'jenis_transaksi',
+            $request->input('jenis_transaksi')
+        );
+    }
+
+    // =========================================================
+    // FILTER STATUS PIUTANG
+    // =========================================================
+    if ($request->filled('status_piutang')) {
+
+        // Status piutang hanya berlaku untuk transaksi piutang
+        $query->where('metode_pembayaran', 'piutang');
+
+        $statusPiutang = $request->input('status_piutang');
+
+        if ($statusPiutang === 'lunas') {
+
+            $query->whereRaw('
+                penjualans.total <= (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'belum_lunas') {
+
+            $query->whereRaw('
+                penjualans.total > (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'terlambat') {
+
+            $query->whereNotNull('due_date')
+                ->whereDate('due_date', '<', now()->toDateString())
+                ->whereRaw('
+                    penjualans.total > (
+                        SELECT COALESCE(SUM(pp.jumlah), 0)
+                        FROM pembayaran_piutangs pp
+                        WHERE pp.penjualan_id = penjualans.id
+                    )
+                ');
+        }
+    }
+
+    // =========================================================
+    // SORTING & AMBIL DATA
+    // =========================================================
+    $sort = $request->input('sort', 'tanggal');
+    $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+    $allowedSorts = ['tanggal', 'no_faktur', 'invoice'];
+    if (!in_array($sort, $allowedSorts, true)) {
+        $sort = 'tanggal';
+    }
+
+    if ($sort === 'invoice' || $sort === 'no_faktur') {
+        $query->orderBy('no_faktur', $direction)
+            ->orderBy('tanggal', $direction);
+    } else {
+        $query->orderBy('tanggal', $direction)
+            ->orderBy('no_faktur', $direction);
+    }
+
+    $penjualans = $query->get();
+
+    // =========================================================
+    // RINGKASAN
+    // =========================================================
+    $jumlahTransaksi = $penjualans->count();
+
+    $totalDiskon = $penjualans->sum(function ($p) {
+        return $p->detail->sum('diskon');
+    });
+
+    $totalPenjualanBersih = $penjualans->sum('total');
+
+    $omzet = $totalPenjualanBersih + $totalDiskon;
+
+    $transaksiMember = $penjualans->filter(function ($p) {
+        return $p->pelanggan
+            && $p->pelanggan->is_member;
+    })->count();
+
+    $transaksiNonMember =
+        $jumlahTransaksi - $transaksiMember;
+
+    // =========================================================
+    // EXPORT EXCEL (XLSX)
+    // =========================================================
+    if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+
+        $headers = [
+            'Tanggal',
+            'No. Invoice',
+            'Nama Pelanggan',
+            'Jenis Pelanggan',
+            'Kasir',
+            'Jenis Transaksi',
+            'Metode Pembayaran',
+            'Status Piutang',
+            'Total Kotor',
+            'Total Transaksi',
+        ];
+
+        $data = [];
+        $totalKotor = 0;
+        $totalTransaksi = 0;
+
+        foreach ($penjualans as $p) {
+
+            $diskon = $p->detail->sum('diskon');
+            $kotor   = $p->total + $diskon;
+            $totalKotor      += $kotor;
+            $totalTransaksi  += $p->total;
+
+            // Jenis pelanggan
+            if ($p->pelanggan && $p->pelanggan->is_member) {
+                $jenisPelanggan = $p->pelanggan->status_member ?: 'Member Pelanggan Tetap';
+            } else {
+                $jenisPelanggan = 'Pelanggan Umum';
+            }
+
+            // Jenis transaksi
+            $jenisTransaksi = match($p->jenis_transaksi) {
+                'resep'     => 'Resep',
+                'non_resep' => 'Non Resep',
+                default     => '—',
+            };
+
+            // Metode pembayaran
+            $metode = match(strtolower((string) $p->metode_pembayaran)) {
+                'cash'    => 'Cash',
+                'qris'    => 'QRIS',
+                'debit'   => 'Debit',
+                'piutang' => 'Piutang',
+                default   => ucfirst((string) ($p->metode_pembayaran ?? '—')),
+            };
+
+            // Status piutang
+            if ($p->metode_pembayaran !== 'piutang') {
+                $statusPiutang = '—';
+            } else {
+                $totalDibayar = $p->pembayaranPiutang->sum('jumlah');
+                $sisa = max(0, $p->total - $totalDibayar);
+                if ($sisa <= 0) {
+                    $statusPiutang = 'Lunas';
+                } elseif ($p->due_date && $p->due_date->isPast()) {
+                    $statusPiutang = 'Terlambat';
+                } else {
+                    $statusPiutang = 'Belum Lunas';
+                }
+            }
+
+            $data[] = [
+                $p->tanggal ? $p->tanggal->format('d M Y') : '—',
+                $p->no_faktur,
+                $p->pelanggan->nama ?? 'Umum',
+                $jenisPelanggan,
+                $p->user->name ?? 'Admin',
+                $jenisTransaksi,
+                $metode,
+                $statusPiutang,
+                $kotor,
+                $p->total,
+            ];
+        }
+
+        $totalRow = [
+            '',
+            'Total',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $totalKotor,
+            $totalTransaksi,
+        ];
+
+        return $this->exportXlsx(
+            'laporan_penjualan_' . $dari . '_' . $sampai . '.xlsx',
+            $headers,
+            $data,
+            $totalRow
+        );
+    }
+
+    return view('laporan.penjualan', compact(
+        'penjualans',
+        'jumlahTransaksi',
+        'omzet',
+        'totalDiskon',
+        'totalPenjualanBersih',
+        'transaksiMember',
+        'transaksiNonMember',
+        'dari',
+        'sampai',
+        'sort',
+        'direction'
+    ));
+}
 
     // Laporan barang rusak dalam rentang tanggal
     public function rusak(Request $request)
     {
         [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $query = Rusak::with('detailPenerimaan.barang')
-            ->whereBetween('tanggal', [$dari, $sampai]);
+        $query = Rusak::with('detailPenerimaan.barang');
+
+        if ($dari && $sampai) {
+            $query->whereBetween('tanggal', [$dari, $sampai]);
+        } elseif ($dari) {
+            $query->where('tanggal', '>=', $dari);
+        } elseif ($sampai) {
+            $query->where('tanggal', '<=', $sampai);
+        }
 
         if ($request->filled('nama_barang')) {
             $query->whereHas('detailPenerimaan.barang', function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->nama_barang . '%');
+            });
+        }
+
+        if ($request->filled('barang')) {
+            $query->whereHas('detailPenerimaan.barang', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->barang . '%');
+            });
+        }
+
+        if ($request->filled('cari')) {
+            $query->whereHas('detailPenerimaan.barang', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->cari . '%');
             });
         }
 
@@ -341,16 +634,31 @@ class LaporanController extends Controller
             });
         }
 
+        if ($request->filled('batch')) {
+            $query->whereHas('detailPenerimaan', function ($q) use ($request) {
+                $q->where('no_batch', 'like', '%' . $request->batch . '%');
+            });
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('keterangan', 'like', '%' . $request->jenis . '%');
+        }
+
+        if ($request->filled('keterangan')) {
+            $query->where('keterangan', 'like', '%' . $request->keterangan . '%');
+        }
+
         $items = $query->orderByDesc('tanggal')->get();
 
         $totalKerugian = $items->sum(fn ($r) => $r->jumlah * ($r->detailPenerimaan->harga_beli ?? 0));
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'Barang', 'No. Batch', 'Jumlah', 'Kerugian (Harga Beli)', 'Keterangan'];
+        if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+            $headers = ['No', 'Tanggal Lapor', 'Nama Barang', 'No. Batch', 'Jumlah', 'Total Kerugian', 'Keterangan'];
             $data = [];
-            foreach ($items as $item) {
+            foreach ($items as $index => $item) {
                 $data[] = [
-                    $item->tanggal->format('d M Y'),
+                    $index + 1,
+                    $item->tanggal ? $item->tanggal->format('d M Y') : '—',
                     $item->detailPenerimaan->barang->nama ?? '—',
                     $item->detailPenerimaan->no_batch ?? '—',
                     $item->jumlah,
@@ -358,7 +666,18 @@ class LaporanController extends Controller
                     $item->keterangan ?? '-'
                 ];
             }
-            return $this->exportCsv('laporan-barang-rusak-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+
+            $totalRow = [
+                '',
+                'Total',
+                '',
+                '',
+                $items->sum('jumlah'),
+                $totalKerugian,
+                '',
+            ];
+
+            return $this->exportXlsx('laporan_barang_rusak_kadaluwarsa.xlsx', $headers, $data, $totalRow);
         }
 
         return view('laporan.rusak', compact('items', 'totalKerugian', 'dari', 'sampai'));
@@ -442,6 +761,39 @@ class LaporanController extends Controller
         }
 
         return view('laporan.diskon', compact('usages', 'totalNominal', 'promos', 'dari', 'sampai'));
+    }
+
+    // Helper: export data ke format Excel (.xlsx) menggunakan OpenSpout
+    private function exportXlsx(string $filename, array $headers, array $data, ?array $totalRow = null)
+    {
+        return response()->streamDownload(function () use ($headers, $data, $totalRow) {
+            $writer = new Writer();
+            $writer->openToFile('php://output');
+
+            $headerStyle = (new Style())
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E40AF');
+
+            $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+            foreach ($data as $row) {
+                $writer->addRow(Row::fromValues($row));
+            }
+
+            if ($totalRow) {
+                $totalStyle = (new Style())
+                    ->setFontBold()
+                    ->setBackgroundColor('F3F4F6');
+                $writer->addRow(Row::fromValues($totalRow, $totalStyle));
+            }
+
+            $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
     }
 
     // Helper: export data ke format CSV native PHP stream
