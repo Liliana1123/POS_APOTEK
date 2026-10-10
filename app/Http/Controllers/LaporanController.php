@@ -8,6 +8,14 @@ use App\Models\Supplier;
 use App\Models\DetailPenerimaan;
 use App\Models\DetailPenjualan;
 use App\Models\Rusak;
+use App\Models\Beban;
+use App\Models\Penjualan;
+use App\Models\Penerimaan;
+use App\Models\Pelanggan;
+use App\Models\ActivityLog;
+use App\Services\DashboardCacheService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
@@ -683,22 +691,320 @@ class LaporanController extends Controller
         return view('laporan.rusak', compact('items', 'totalKerugian', 'dari', 'sampai'));
     }
 
-    // Laporan laba-rugi: pendapatan penjualan dikurangi harga pokok (harga beli) barang terjual
+    // Laporan laba-rugi: Redesign komprehensif (Omzet, Diskon, Penjualan Bersih, HPP Perpetual, Laba Kotor, Beban Operasional, Laba Bersih, Piutang & Utang)
     public function labaRugi(Request $request)
     {
-        [$dari, $sampai] = $this->rentangTanggal($request);
+        // 1. Filter rentang tanggal
+        $periode = $request->input('periode', 'bulan_ini');
+        if ($request->filled('dari') || $request->filled('sampai')) {
+            $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+            $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+            $periode = 'custom';
+        } else {
+            switch ($periode) {
+                case 'hari_ini':
+                    $dari = now()->startOfDay()->format('Y-m-d');
+                    $sampai = now()->endOfDay()->format('Y-m-d');
+                    break;
+                case 'minggu_ini':
+                    $dari = now()->startOfWeek()->format('Y-m-d');
+                    $sampai = now()->endOfWeek()->format('Y-m-d');
+                    break;
+                case 'bulan_lalu':
+                    $dari = now()->subMonth()->startOfMonth()->format('Y-m-d');
+                    $sampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
+                    break;
+                case 'tahun_ini':
+                    $dari = now()->startOfYear()->format('Y-m-d');
+                    $sampai = now()->endOfYear()->format('Y-m-d');
+                    break;
+                case 'semua':
+                    $minTanggal = Penjualan::min('tanggal') ?? now()->startOfYear()->format('Y-m-d');
+                    $dari = Carbon::parse($minTanggal)->format('Y-m-d');
+                    $sampai = now()->endOfDay()->format('Y-m-d');
+                    break;
+                case 'bulan_ini':
+                default:
+                    $periode = 'bulan_ini';
+                    $dari = now()->startOfMonth()->format('Y-m-d');
+                    $sampai = now()->endOfMonth()->format('Y-m-d');
+                    break;
+            }
+        }
 
-        $items = DetailPenjualan::with(['detailPenerimaan.barang', 'penjualan'])
-            ->whereHas('penjualan', function ($q) use ($dari, $sampai) {
-                $q->whereBetween('tanggal', [$dari, $sampai]);
-            })
+        // 2. Hitung metrik Penjualan & HPP Perpetual (berdasarkan relasi detail penjualan & penerimaan)
+        $salesData = DB::table('detail_penjualans as dp')
+            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$dari, $sampai])
+            ->selectRaw('
+                COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as omzet_kotor,
+                COALESCE(SUM(dp.diskon), 0) as total_diskon,
+                COALESCE(SUM(dp.subtotal), 0) as penjualan_bersih,
+                COALESCE(SUM(dr.harga_beli * dp.jumlah), 0) as total_hpp,
+                COUNT(DISTINCT p.id) as jumlah_transaksi,
+                COALESCE(SUM(dp.jumlah), 0) as total_item_terjual
+            ')
+            ->first();
+
+        $omzetKotor = (float) ($salesData->omzet_kotor ?? 0);
+        $totalDiskon = (float) ($salesData->total_diskon ?? 0);
+        $penjualanBersih = max(0, $omzetKotor - $totalDiskon);
+        $hpp = (float) ($salesData->total_hpp ?? 0);
+        $labaKotor = $penjualanBersih - $hpp;
+        $jumlahTransaksi = (int) ($salesData->jumlah_transaksi ?? 0);
+        $totalItemTerjual = (int) ($salesData->total_item_terjual ?? 0);
+
+        // 3. Beban Operasional dalam rentang tanggal
+        $totalBeban = (float) Beban::whereBetween('tanggal', [$dari, $sampai])->sum('nominal');
+        $labaBersih = $labaKotor - $totalBeban;
+
+        $bebanPerKategori = Beban::whereBetween('tanggal', [$dari, $sampai])
+            ->selectRaw('kategori, SUM(nominal) as total, COUNT(*) as jumlah_transaksi')
+            ->groupBy('kategori')
+            ->orderByDesc('total')
             ->get();
 
-        $pendapatan = $items->sum('subtotal');
-        $hpp = $items->sum(fn ($i) => $i->detailPenerimaan->harga_beli * $i->jumlah);
-        $labaKotor = $pendapatan - $hpp;
+        $daftarBeban = Beban::with('user')
+            ->whereBetween('tanggal', [$dari, $sampai])
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id')
+            ->get();
 
-        return view('laporan.laba_rugi', compact('pendapatan', 'hpp', 'labaKotor', 'dari', 'sampai'));
+        // 4. Financial Control: Piutang Member & Hutang Supplier (sumber data riil, selaras dengan Dashboard)
+        $today = now()->startOfDay();
+
+        // Hutang Supplier (Penerimaan belum lunas)
+        $unpaidPenerimaans = Penerimaan::with(['detail', 'pembayaran'])
+            ->where('lunas', false)
+            ->get();
+
+        $totalHutangSupplier = 0;
+        $hutangOverdue = 0;
+        $countHutangBelumLunas = 0;
+
+        foreach ($unpaidPenerimaans as $p) {
+            $sisa = $p->sisaTagihan();
+            if ($sisa <= 0) {
+                continue;
+            }
+            $totalHutangSupplier += $sisa;
+            $countHutangBelumLunas++;
+            if ($p->jatuh_tempo && $p->jatuh_tempo->lt($today)) {
+                $hutangOverdue += $sisa;
+            }
+        }
+
+        // Piutang Member
+        $totalPiutangMember = (float) DB::table('pelanggans')->where('is_member', true)->sum('saldo_piutang');
+        $memberBerpiutangCount = (int) DB::table('pelanggans')->where('is_member', true)->where('saldo_piutang', '>', 0)->count();
+
+        $unpaidPiutangPenjualans = Penjualan::with('pembayaranPiutang')
+            ->where('metode_pembayaran', 'piutang')
+            ->get()
+            ->map(function ($pj) {
+                $dibayar = (float) $pj->pembayaranPiutang->sum('jumlah');
+                $sisa = max(0, (float) $pj->total - $dibayar);
+                return [
+                    'sisa' => $sisa,
+                    'tanggal' => $pj->tanggal,
+                    'due_date' => $pj->due_date,
+                ];
+            })
+            ->filter(fn ($pj) => $pj['sisa'] > 0);
+
+        $piutangOverdue = 0;
+        $countPiutangBelumLunas = $unpaidPiutangPenjualans->count();
+
+        foreach ($unpaidPiutangPenjualans as $item) {
+            $dueDate = $item['due_date'] ? Carbon::parse($item['due_date']) : ($item['tanggal'] ? Carbon::parse($item['tanggal'])->addDays(30) : null);
+            if ($dueDate && $dueDate->lt($today)) {
+                $piutangOverdue += $item['sisa'];
+            }
+        }
+
+        // 5. Margin persentase
+        $marginKotorPersen = $penjualanBersih > 0 ? round(($labaKotor / $penjualanBersih) * 100, 1) : 0;
+        $marginBersihPersen = $penjualanBersih > 0 ? round(($labaBersih / $penjualanBersih) * 100, 1) : 0;
+        $hppPersen = $penjualanBersih > 0 ? round(($hpp / $penjualanBersih) * 100, 1) : 0;
+        $diskonPersen = $omzetKotor > 0 ? round(($totalDiskon / $omzetKotor) * 100, 1) : 0;
+        $bebanPersen = $penjualanBersih > 0 ? round(($totalBeban / $penjualanBersih) * 100, 1) : 0;
+
+        // 6. Rincian Tren Harian Penjualan & Laba
+        $rincianHarian = DB::table('penjualans as p')
+            ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$dari, $sampai])
+            ->selectRaw('
+                DATE(p.tanggal) as tanggal,
+                SUM(dp.harga_jual * dp.jumlah) as omzet_kotor,
+                SUM(dp.diskon) as total_diskon,
+                SUM(dp.subtotal) as penjualan_bersih,
+                SUM(dr.harga_beli * dp.jumlah) as hpp,
+                SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah) as laba_kotor,
+                COUNT(DISTINCT p.id) as transaksi_count
+            ')
+            ->groupBy(DB::raw('DATE(p.tanggal)'))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        $bebanHarian = Beban::whereBetween('tanggal', [$dari, $sampai])
+            ->selectRaw('DATE(tanggal) as tanggal, SUM(nominal) as total_beban')
+            ->groupBy(DB::raw('DATE(tanggal)'))
+            ->pluck('total_beban', 'tanggal');
+
+        // 7. Ekspor Excel (.xlsx) menggunakan OpenSpout
+        if (in_array($request->query('export'), ['excel', 'xlsx'])) {
+            $filename = 'laporan_laba_rugi_' . $dari . '_' . $sampai . '.xlsx';
+            $headers = ['Komponen Laporan', 'Keterangan', 'Persentase', 'Nominal (Rp)'];
+            $data = [
+                ['I. PENDAPATAN PENJUALAN', '', '', ''],
+                ['  Omzet Kotor (Gross Sales)', 'Total nilai penjualan sebelum potongan diskon', ($omzetKotor > 0 ? '100.0%' : '0%'), $omzetKotor],
+                ['  Total Diskon', 'Potongan diskon member dan promosi khusus', ($omzetKotor > 0 ? $diskonPersen . '%' : '0%'), -$totalDiskon],
+                ['PENJUALAN BERSIH (NET SALES)', 'Omzet Kotor dikurangi Total Diskon', '100.0%', $penjualanBersih],
+                ['', '', '', ''],
+                ['II. HARGA POKOK PENJUALAN (HPP)', '', '', ''],
+                ['  HPP Barang Terjual (Perpetual)', 'Total akumulasi harga beli batch barang terjual', ($penjualanBersih > 0 ? $hppPersen . '%' : '0%'), -$hpp],
+                ['', '', '', ''],
+                ['III. LABA KOTOR (GROSS PROFIT)', 'Penjualan Bersih dikurangi HPP', ($penjualanBersih > 0 ? $marginKotorPersen . '%' : '0%'), $labaKotor],
+                ['', '', '', ''],
+                ['IV. BEBAN OPERASIONAL', '', '', ''],
+            ];
+
+            foreach ($bebanPerKategori as $bpk) {
+                $pct = $penjualanBersih > 0 ? round(($bpk->total / $penjualanBersih) * 100, 1) . '%' : '0%';
+                $data[] = [
+                    '  Beban ' . $bpk->kategori,
+                    $bpk->jumlah_transaksi . ' transaksi pengeluaran tercatat',
+                    $pct,
+                    -$bpk->total
+                ];
+            }
+            if ($bebanPerKategori->isEmpty()) {
+                $data[] = ['  Beban Operasional', 'Belum ada catatan beban operasional pada periode ini', '0%', 0];
+            }
+
+            $data[] = ['TOTAL BEBAN OPERASIONAL', 'Akumulasi beban operasional periode ini', ($penjualanBersih > 0 ? $bebanPersen . '%' : '0%'), -$totalBeban];
+            $data[] = ['', '', '', ''];
+            $data[] = ['V. LABA BERSIH OPERASIONAL (NET PROFIT)', 'Laba Kotor dikurangi Total Beban Operasional', ($penjualanBersih > 0 ? $marginBersihPersen . '%' : '0%'), $labaBersih];
+            $data[] = ['', '', '', ''];
+            $data[] = ['VI. POSISI KEUANGAN OUTSTANDING (TERKINI)', '', '', ''];
+            $data[] = ['  Total Piutang Member', $memberBerpiutangCount . ' member memiliki tagihan aktif', '', $totalPiutangMember];
+            $data[] = ['  Total Utang Supplier', $countHutangBelumLunas . ' penerimaan barang belum lunas', '', $totalHutangSupplier];
+
+            $totalRow = [
+                'LABA BERSIH AKHIR PERIODE',
+                'Periode: ' . $dari . ' s/d ' . $sampai,
+                ($penjualanBersih > 0 ? $marginBersihPersen . '%' : '0%'),
+                $labaBersih
+            ];
+
+            return $this->exportXlsx($filename, $headers, $data, $totalRow);
+        }
+
+        return view('laporan.laba_rugi', compact(
+            'dari',
+            'sampai',
+            'periode',
+            'omzetKotor',
+            'totalDiskon',
+            'penjualanBersih',
+            'hpp',
+            'labaKotor',
+            'totalBeban',
+            'labaBersih',
+            'marginKotorPersen',
+            'marginBersihPersen',
+            'hppPersen',
+            'diskonPersen',
+            'bebanPersen',
+            'jumlahTransaksi',
+            'totalItemTerjual',
+            'totalPiutangMember',
+            'memberBerpiutangCount',
+            'piutangOverdue',
+            'countPiutangBelumLunas',
+            'totalHutangSupplier',
+            'hutangOverdue',
+            'countHutangBelumLunas',
+            'bebanPerKategori',
+            'daftarBeban',
+            'rincianHarian',
+            'bebanHarian'
+        ));
+    }
+
+    // Simpan beban operasional baru
+    public function storeBeban(Request $request)
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'kategori' => 'required|string|max:100',
+            'keterangan' => 'nullable|string|max:255',
+            'nominal' => 'required|numeric|min:1',
+        ], [
+            'tanggal.required' => 'Tanggal pengeluaran wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'kategori.required' => 'Kategori pengeluaran wajib dipilih/diisi.',
+            'nominal.required' => 'Nominal pengeluaran wajib diisi.',
+            'nominal.numeric' => 'Nominal harus berupa angka numerik valid.',
+            'nominal.min' => 'Nominal pengeluaran minimal Rp 1.',
+        ]);
+
+        $beban = Beban::create([
+            'user_id' => $request->user()?->id,
+            'tanggal' => $validated['tanggal'],
+            'kategori' => $validated['kategori'],
+            'keterangan' => $validated['keterangan'] ?? null,
+            'nominal' => $validated['nominal'],
+        ]);
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::log(
+                'Tambah Beban Operasional',
+                "Kategori: {$beban->kategori}, Nominal: Rp " . number_format($beban->nominal, 0, ',', '.') . ($beban->keterangan ? " ({$beban->keterangan})" : ''),
+                ActivityLog::CATEGORY_KEUANGAN
+            );
+        }
+
+        DashboardCacheService::clear();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Beban operasional sebesar Rp ' . number_format($beban->nominal, 0, ',', '.') . ' berhasil disimpan.',
+                'data' => $beban,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Beban operasional sebesar Rp ' . number_format($beban->nominal, 0, ',', '.') . ' berhasil ditambahkan.');
+    }
+
+    // Hapus data beban operasional
+    public function destroyBeban(Request $request, Beban $beban)
+    {
+        $nominal = $beban->nominal;
+        $kategori = $beban->kategori;
+        $beban->delete();
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::log(
+                'Hapus Beban Operasional',
+                "Hapus beban kategori: {$kategori}, Nominal: Rp " . number_format($nominal, 0, ',', '.'),
+                ActivityLog::CATEGORY_KEUANGAN
+            );
+        }
+
+        DashboardCacheService::clear();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Beban operasional berhasil dihapus.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Beban operasional berhasil dihapus.');
     }
 
     // Laporan penggunaan diskon (Fase 3)
