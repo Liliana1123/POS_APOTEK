@@ -30,7 +30,7 @@
             <div>
                 <p class="text-sm text-gray-700 leading-5 dark:text-gray-600">
                     Menampilkan
-                    <span class="font-medium">{{ $paginator->firstItem() ?? 0 }}–{{ $paginator->lastItem() ?? 0 }}</span>
+                    <span class="font-medium">{{ $paginator->firstItem() ?? 0 }} – {{ $paginator->lastItem() ?? 0 }}</span>
                     dari
                     <span class="font-medium">{{ $paginator->total() }}</span>
                     data
@@ -97,4 +97,14 @@
             </div>
         </div>
     </nav>
+@else
+    <div class="flex items-center">
+        <p class="text-sm leading-5 text-slate-500">
+            Menampilkan
+            <span class="font-medium">0 – 0</span>
+            dari
+            <span class="font-medium">{{ $paginator->total() }}</span>
+            data
+        </p>
+    </div>
 @endif

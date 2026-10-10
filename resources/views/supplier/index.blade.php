@@ -57,7 +57,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $suppliers->links() }}</div>
+<div class="mt-4">{{ $suppliers->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-supplier"

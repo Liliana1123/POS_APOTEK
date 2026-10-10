@@ -51,7 +51,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $kategoris->links() }}</div>
+<div class="mt-4">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-kategori"

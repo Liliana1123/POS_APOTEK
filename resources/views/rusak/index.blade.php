@@ -227,13 +227,7 @@
 </div>
 
 <div class="mt-4">
-    @if($rusaks->total() > 0)
-        {{ $rusaks->links('vendor.pagination.apotek') }}
-    @else
-        <p class="text-sm text-gray-700 leading-5">
-            Menampilkan 0–0 dari {{ $rusaks->total() }} data
-        </p>
-    @endif
+    {{ $rusaks->links('vendor.pagination.apotek') }}
 </div>
 
     @php

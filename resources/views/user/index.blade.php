@@ -98,7 +98,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $users->links() }}</div>
+<div class="mt-4">{{ $users->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-user"

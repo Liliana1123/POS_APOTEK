@@ -309,7 +309,7 @@
 </div>
 
 <div class="mt-4">
-    {{ $penjualans->links() }}
+    {{ $penjualans->links('vendor.pagination.apotek') }}
 </div>
 
 </div>
@@ -800,4 +800,3 @@
 </script>
 
 @endsection
-

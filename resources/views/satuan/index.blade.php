@@ -51,7 +51,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $satuans->links() }}</div>
+<div class="mt-4">{{ $satuans->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-satuan"

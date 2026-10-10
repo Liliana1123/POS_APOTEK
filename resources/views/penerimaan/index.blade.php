@@ -308,13 +308,7 @@
 </div>
 
 <div class="mt-4">
-    @if($penerimaans->total() > 0)
-        {{ $penerimaans->links('vendor.pagination.apotek') }}
-    @else
-        <p class="text-sm text-gray-700 leading-5">
-            Menampilkan 0–0 dari {{ $penerimaans->total() }} data
-        </p>
-    @endif
+    {{ $penerimaans->links('vendor.pagination.apotek') }}
 </div>
 
 <!-- Modal Detail Penerimaan -->

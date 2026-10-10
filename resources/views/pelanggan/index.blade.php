@@ -241,7 +241,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $pelanggans->links() }}</div>
+<div class="mt-4">{{ $pelanggans->links('vendor.pagination.apotek') }}</div>
 
 <!-- Modal Tambah Pelanggan -->
 <x-modal-form
