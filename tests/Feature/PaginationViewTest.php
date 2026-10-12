@@ -64,4 +64,12 @@ class PaginationViewTest extends TestCase
         $this->assertStringContainsString('aria-disabled="true" aria-label="Sebelumnya"', $html);
         $this->assertStringContainsString('aria-disabled="true" aria-label="Berikutnya"', $html);
     }
+
+    public function test_custom_discount_index_declares_shared_indonesian_pagination(): void
+    {
+        $contents = file_get_contents(resource_path('views/custom_discount/index.blade.php'));
+
+        $this->assertStringContainsString("links('vendor.pagination.apotek')", $contents);
+    }
 }
+

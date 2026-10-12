@@ -136,9 +136,15 @@
             </div>
 
             <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Penerimaan
-                </label>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Awal
+                    </label>
+                    <span class="text-sm invisible select-none">-</span>
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Akhir
+                    </label>
+                </div>
 
                 <div class="flex items-center gap-2">
                     <input

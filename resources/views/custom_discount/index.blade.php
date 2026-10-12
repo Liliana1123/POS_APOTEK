@@ -143,7 +143,7 @@
 </div>
 
 <div class="mt-4">
-    {{ $discounts->links() }}
+    {{ $discounts->links('vendor.pagination.apotek') }}
 </div>
 
 <!-- Modal Form CRUD Promo -->
