@@ -695,9 +695,19 @@
             keterangan: document.getElementById('edit-keterangan-rusak').value
         })
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
-            throw new Error('Gagal menyimpan perubahan.');
+            let errorMsg = 'Gagal menyimpan perubahan.';
+            try {
+                const errData = await response.json();
+                if (errData?.errors) {
+                    const firstErr = Object.values(errData.errors).flat()[0];
+                    if (firstErr) errorMsg = firstErr;
+                } else if (errData?.message) {
+                    errorMsg = errData.message;
+                }
+            } catch (e) {}
+            throw new Error(errorMsg);
         }
 
         closeEditRusak();
@@ -705,7 +715,7 @@
     })
     .catch(error => {
         console.error(error);
-        alert('Gagal menyimpan perubahan.');
+        alert(error.message || 'Gagal menyimpan perubahan.');
     });
 });
 
