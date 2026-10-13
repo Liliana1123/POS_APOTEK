@@ -227,12 +227,13 @@
                     href="{{ route('laporan.stok') }}"
                     class="btn-secondary py-1.5 px-4 flex items-center justify-center"
                 >
-                    Reset
+                    Clear
                 </a>
             @endif
 
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
 
         </div>

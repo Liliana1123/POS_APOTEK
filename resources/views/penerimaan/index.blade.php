@@ -113,8 +113,9 @@
                     Clear
                 </a>
             @endif
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -242,7 +243,7 @@
                         <div class="font-semibold text-gray-800 font-mono">
                             {{ $penerimaan->no_faktur }}
                         </div>
-                        <div class="text-sm text-gray-500 mt-0.5">
+                        <div class="text-xs text-gray-500 mt-0.5">
                             {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
                         </div>
                     </td>
@@ -272,7 +273,7 @@
                     </td>
 
                     {{-- Tanggal Jatuh Tempo --}}
-                    <td class="text-center text-gray-600">
+                    <td class="text-center text-xs text-gray-600">
                         {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
                     </td>
 
