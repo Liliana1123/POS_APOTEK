@@ -122,13 +122,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Dari Tanggal
+                    TANGGAL AWAL
                 </label>
                 <input type="date" name="dari" value="{{ $dari }}" class="form-input">
             </div>
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Sampai Tanggal
+                    TANGGAL AKHIR
                 </label>
                 <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
             </div>

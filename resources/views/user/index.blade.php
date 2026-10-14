@@ -11,7 +11,11 @@
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<x-card-filter :action="route('user.index')" :reset-url="route('user.index')">
+<x-card-filter
+    :action="route('user.index')"
+    :reset-url="route('user.index')"
+    :grid="true"
+    :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
