@@ -696,40 +696,60 @@ class LaporanController extends Controller
     {
         // 1. Filter rentang tanggal
         $periode = $request->input('periode', 'bulan_ini');
-        if ($request->filled('dari') || $request->filled('sampai')) {
-            $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
-            $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
-            $periode = 'custom';
-        } else {
-            switch ($periode) {
-                case 'hari_ini':
-                    $dari = now()->startOfDay()->format('Y-m-d');
-                    $sampai = now()->endOfDay()->format('Y-m-d');
-                    break;
-                case 'minggu_ini':
-                    $dari = now()->startOfWeek()->format('Y-m-d');
-                    $sampai = now()->endOfWeek()->format('Y-m-d');
-                    break;
-                case 'bulan_lalu':
-                    $dari = now()->subMonth()->startOfMonth()->format('Y-m-d');
-                    $sampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
-                    break;
-                case 'tahun_ini':
-                    $dari = now()->startOfYear()->format('Y-m-d');
-                    $sampai = now()->endOfYear()->format('Y-m-d');
-                    break;
-                case 'semua':
-                    $minTanggal = Penjualan::min('tanggal') ?? now()->startOfYear()->format('Y-m-d');
-                    $dari = Carbon::parse($minTanggal)->format('Y-m-d');
-                    $sampai = now()->endOfDay()->format('Y-m-d');
-                    break;
-                case 'bulan_ini':
-                default:
+
+        // Validasi Custom: tanggal awal tidak boleh melebihi tanggal akhir
+        if ($request->filled('dari') && $request->filled('sampai') && $request->input('dari') > $request->input('sampai')) {
+            return redirect()->route('laporan.laba-rugi', [
+                'periode' => 'custom',
+                'dari' => $request->input('sampai'),
+                'sampai' => $request->input('dari'),
+            ])->withErrors(['Tanggal awal tidak boleh melebihi tanggal akhir.']);
+        }
+
+        switch ($periode) {
+            case 'hari_ini':
+                $dari = now()->startOfDay()->format('Y-m-d');
+                $sampai = now()->endOfDay()->format('Y-m-d');
+                break;
+            case 'minggu_ini':
+                $dari = now()->startOfWeek()->format('Y-m-d');
+                $sampai = now()->endOfWeek()->format('Y-m-d');
+                break;
+            case 'tahun_ini':
+                $dari = now()->startOfYear()->format('Y-m-d');
+                $sampai = now()->endOfYear()->format('Y-m-d');
+                break;
+            case 'custom':
+                $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+                $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+                if ($dari > $sampai) {
+                    [$dari, $sampai] = [$sampai, $dari];
+                }
+                break;
+            case 'bulan_lalu':
+                $dari = now()->subMonth()->startOfMonth()->format('Y-m-d');
+                $sampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
+                break;
+            case 'semua':
+                $minTanggal = Penjualan::min('tanggal') ?? now()->startOfYear()->format('Y-m-d');
+                $dari = Carbon::parse($minTanggal)->format('Y-m-d');
+                $sampai = now()->endOfDay()->format('Y-m-d');
+                break;
+            case 'bulan_ini':
+            default:
+                if ($request->filled('dari') || $request->filled('sampai')) {
+                    $periode = 'custom';
+                    $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+                    $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+                    if ($dari > $sampai) {
+                        [$dari, $sampai] = [$sampai, $dari];
+                    }
+                } else {
                     $periode = 'bulan_ini';
                     $dari = now()->startOfMonth()->format('Y-m-d');
                     $sampai = now()->endOfMonth()->format('Y-m-d');
-                    break;
-            }
+                }
+                break;
         }
 
         // 2. Hitung metrik Penjualan & HPP Perpetual (berdasarkan relasi detail penjualan & penerimaan)

@@ -166,148 +166,81 @@
         </table>
     </div>
 
-    {{-- TANDA TANGAN (CETAK) --}}
-    <div class="print-signatures">
-        <div class="print-signature-box">
-            <p class="print-signature-title">Mengetahui,</p>
-            <p class="print-signature-role">Apoteker Penanggung Jawab</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if(!empty($apotek?->nama_apoteker_pj))
-                    {{ $apotek->nama_apoteker_pj }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-            @if(!empty($apotek?->no_sipa))
-                <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
-            @endif
-        </div>
-        <div class="print-signature-box">
-            <p class="print-signature-title">Dibuat oleh,</p>
-            <p class="print-signature-role">Pembuat Laporan</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if(!empty(auth()->user()?->name))
-                    {{ auth()->user()->name }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-        </div>
-    </div>
+
 
 </div>
 
 {{-- ========================================================= --}}
-{{-- TAMPILAN LAYAR APLIKASI (SCREEN UI SESUAI GAMBAR REFERENSI) --}}
+{{-- TAMPILAN LAYAR APLIKASI (SCREEN UI) --}}
 {{-- ========================================================= --}}
 
 {{-- Header Halaman & Filter Controls --}}
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 print:hidden">
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6 print:hidden">
     <div>
         <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Laporan Laba Rugi</h1>
         <p class="text-xs text-slate-500 mt-0.5">Ringkasan keuangan apotek berdasarkan periode yang dipilih</p>
     </div>
 
-    {{-- Filter Periode, Date Input & Tombol Ekspor/Cetak --}}
-    <div class="flex flex-wrap items-center gap-2">
+    {{-- Tombol Ekspor/Cetak + Filter Periode (sebelah kanan, vertikal) --}}
+    <div class="flex flex-col items-end gap-2">
+        {{-- Baris 1: Ekspor Excel & Cetak Laporan --}}
+        <div class="flex gap-2 shrink-0">
+            {{-- Ekspor Excel --}}
+            <a
+                id="btn-export-excel"
+                href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
+                class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
+            >
+                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                Ekspor Excel
+            </a>
 
-        {{-- Form Filter Periode --}}
-        <form method="GET" action="{{ route('laporan.laba-rugi') }}" id="filter-laba-rugi-form" class="flex flex-wrap items-center gap-2">
-            <input type="hidden" name="periode" id="input-periode" value="{{ $currentPeriode }}">
-            <input type="hidden" name="dari" id="input-dari" value="{{ $dari }}">
-            <input type="hidden" name="sampai" id="input-sampai" value="{{ $sampai }}">
+            {{-- Cetak Laporan --}}
+            <button
+                type="button"
+                id="btn-cetak-laporan"
+                onclick="window.print()"
+                class="btn-primary py-2 px-4"
+            >
+                Cetak Laporan
+            </button>
+        </div>
 
-            {{-- Date Display Button with Popover / Modal trigger --}}
-            <div class="relative">
-                <button
-                    type="button"
-                    onclick="toggleDatePopover()"
-                    class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-medium shadow-sm transition-colors cursor-pointer"
-                    title="Ubah rentang tanggal kustom"
-                >
-                    <x-heroicon-o-calendar class="w-4 h-4 text-blue-600" />
-                    <span>{{ \Carbon\Carbon::parse($dari)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($sampai)->format('d/m/Y') }}</span>
-                </button>
-
-                {{-- Date Popover Dropdown --}}
-                <div id="date-popover" class="hidden absolute right-0 sm:left-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-4 z-40">
-                    <div class="text-xs font-bold text-slate-700 mb-2 pb-1 border-b border-slate-100 flex items-center justify-between">
-                        <span>Pilih Rentang Tanggal</span>
-                        <button type="button" onclick="toggleDatePopover()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
-                    </div>
-                    <div class="space-y-2.5">
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Dari Tanggal</label>
-                            <input type="date" id="popover-dari" value="{{ $dari }}" class="form-input text-xs w-full py-1.5">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Sampai Tanggal</label>
-                            <input type="date" id="popover-sampai" value="{{ $sampai }}" class="form-input text-xs w-full py-1.5">
-                        </div>
-                        <div class="pt-2 flex justify-end gap-1.5 border-t border-slate-100">
-                            <button type="button" onclick="toggleDatePopover()" class="btn-secondary py-1 px-3 text-xs">Batal</button>
-                            <button type="button" onclick="applyCustomDate()" class="btn-primary py-1 px-3 text-xs">Terapkan</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Period Filter Pills (Hari Ini, Bulan Ini, Bulan Lalu, Tahun Ini) --}}
-            <div class="flex items-center gap-1.5">
-                <button
-                    type="button"
-                    onclick="setPeriode('hari_ini')"
-                    class="px-3 py-1.5 text-xs rounded-lg font-medium transition-all {{ $currentPeriode === 'hari_ini' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' }}"
-                >
+        {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
+        <div class="flex flex-wrap items-center gap-2">
+            {{-- Tombol Preset Periode --}}
+            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
+                <a href="{{ route('laporan.laba-rugi', ['periode' => 'hari_ini']) }}"
+                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                     Hari Ini
-                </button>
-                <button
-                    type="button"
-                    onclick="setPeriode('bulan_ini')"
-                    class="px-3 py-1.5 text-xs rounded-lg font-medium transition-all {{ $currentPeriode === 'bulan_ini' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' }}"
-                >
+                </a>
+                <a href="{{ route('laporan.laba-rugi', ['periode' => 'minggu_ini']) }}"
+                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                    Minggu Ini
+                </a>
+                <a href="{{ route('laporan.laba-rugi', ['periode' => 'bulan_ini']) }}"
+                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                     Bulan Ini
-                </button>
-                <button
-                    type="button"
-                    onclick="setPeriode('bulan_lalu')"
-                    class="px-3 py-1.5 text-xs rounded-lg font-medium transition-all {{ $currentPeriode === 'bulan_lalu' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' }}"
-                >
-                    Bulan Lalu
-                </button>
-                <button
-                    type="button"
-                    onclick="setPeriode('tahun_ini')"
-                    class="px-3 py-1.5 text-xs rounded-lg font-medium transition-all {{ $currentPeriode === 'tahun_ini' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' }}"
-                >
+                </a>
+                <a href="{{ route('laporan.laba-rugi', ['periode' => 'tahun_ini']) }}"
+                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                     Tahun Ini
+                </a>
+                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
+                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                    Custom
                 </button>
             </div>
-        </form>
 
-        {{-- Tombol Ekspor Excel --}}
-        <a
-            id="btn-export-excel"
-            href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
-            class="bg-white hover:bg-blue-50/50 border border-blue-400 text-blue-600 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5 text-blue-600" />
-            <span>Ekspor Excel</span>
-        </a>
-
-        {{-- Tombol Cetak PDF --}}
-        <button
-            type="button"
-            id="btn-cetak-laporan"
-            onclick="window.print()"
-            class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3.5 py-1.5 text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-colors"
-        >
-            <x-heroicon-o-printer class="w-3.5 h-3.5" />
-            <span>Cetak PDF</span>
-        </button>
-
+            {{-- Form Rentang Tanggal Custom (hanya tampil saat Custom aktif) --}}
+            <form method="GET" action="{{ route('laporan.laba-rugi') }}" id="customDateContainer" class="{{ $currentPeriode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
+                <input type="hidden" name="periode" value="custom">
+                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
+                <span class="text-xs text-gray-400">s/d</span>
+                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
+                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -896,51 +829,51 @@
 {{-- ========================================================= --}}
 {{-- SCRIPT INTERAKSI MODAL & FILTER --}}
 {{-- ========================================================= --}}
+{{-- Signature Section for Print PDF --}}
+<div class="no-break print-signature">
+    <div class="print-signature-grid">
+        {{-- Left: Penanggung Jawab Apotek --}}
+        <div class="print-signature-box">
+            <p class="print-signature-title">Mengetahui,</p>
+            <p class="print-signature-role">Penanggung Jawab Apotek</p>
+            <div class="print-signature-space"></div>
+            <p class="print-signature-name">
+                @if (!empty($apotek->nama_apoteker_pj))
+                    {{ $apotek->nama_apoteker_pj }}
+                @else
+                    (____________________)
+                @endif
+            </p>
+            @if (!empty($apotek->no_sipa))
+                <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
+            @endif
+        </div>
+        {{-- Right: Pembuat Laporan --}}
+        <div class="print-signature-box text-right">
+            <p class="print-signature-title">Dibuat oleh,</p>
+            <p class="print-signature-role">Pembuat Laporan</p>
+            <div class="print-signature-space"></div>
+            <p class="print-signature-name">
+                @if (!empty(auth()->user()->name))
+                    {{ auth()->user()->name }}
+                @else
+                    (____________________)
+                @endif
+            </p>
+        </div>
+    </div>
+</div>
+{{-- End of Signature Section --}}
 <script>
-function setPeriode(p) {
-    document.getElementById('input-periode').value = p;
-    var dari = document.getElementById('input-dari');
-    var sampai = document.getElementById('input-sampai');
-    var today = new Date();
-    var y = today.getFullYear();
-    var m = String(today.getMonth() + 1).padStart(2, '0');
-    var d = String(today.getDate()).padStart(2, '0');
-
-    if (p === 'hari_ini') {
-        dari.value = y + '-' + m + '-' + d;
-        sampai.value = y + '-' + m + '-' + d;
-    } else if (p === 'bulan_ini') {
-        dari.value = y + '-' + m + '-01';
-        var lastDay = new Date(y, today.getMonth() + 1, 0).getDate();
-        sampai.value = y + '-' + m + '-' + String(lastDay).padStart(2, '0');
-    } else if (p === 'bulan_lalu') {
-        var prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        var py = prevMonth.getFullYear();
-        var pm = String(prevMonth.getMonth() + 1).padStart(2, '0');
-        var pLastDay = new Date(py, prevMonth.getMonth() + 1, 0).getDate();
-        dari.value = py + '-' + pm + '-01';
-        sampai.value = py + '-' + pm + '-' + String(pLastDay).padStart(2, '0');
-    } else if (p === 'tahun_ini') {
-        dari.value = y + '-01-01';
-        sampai.value = y + '-12-31';
-    }
-
-    document.getElementById('filter-laba-rugi-form').submit();
-}
-
-function toggleDatePopover() {
-    var pop = document.getElementById('date-popover');
-    if (pop) pop.classList.toggle('hidden');
-}
-
-function applyCustomDate() {
-    var dariVal = document.getElementById('popover-dari').value;
-    var sampaiVal = document.getElementById('popover-sampai').value;
-    if (dariVal && sampaiVal) {
-        document.getElementById('input-dari').value = dariVal;
-        document.getElementById('input-sampai').value = sampaiVal;
-        document.getElementById('input-periode').value = 'custom';
-        document.getElementById('filter-laba-rugi-form').submit();
+// Toggle tampilan form custom date (sama dengan Dashboard)
+function toggleCustomDate() {
+    var container = document.getElementById('customDateContainer');
+    if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        container.classList.add('flex');
+    } else {
+        container.classList.add('hidden');
+        container.classList.remove('flex');
     }
 }
 
@@ -968,21 +901,11 @@ function closeModalSemuaBeban() {
     document.getElementById('modal-semua-beban').classList.add('hidden');
 }
 
-// Tutup popover & modal ketika klik luar atau ESC
+// Tutup modal ketika klik luar atau ESC
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeModalTambahBeban();
         closeModalSemuaBeban();
-        var pop = document.getElementById('date-popover');
-        if (pop) pop.classList.add('hidden');
-    }
-});
-
-document.addEventListener('click', function(e) {
-    var pop = document.getElementById('date-popover');
-    var btn = e.target.closest('button[onclick="toggleDatePopover()"]');
-    if (pop && !pop.classList.contains('hidden') && !pop.contains(e.target) && !btn) {
-        pop.classList.add('hidden');
     }
 });
 
