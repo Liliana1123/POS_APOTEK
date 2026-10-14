@@ -71,29 +71,6 @@
 >
     <div class="flex items-center gap-2">
 
-        {{-- Export Data --}}
-        <a
-            href="{{ route('penjualan.export', [
-                'cari' => request('cari'),
-                'tanggal_awal' => request('tanggal_awal'),
-                'tanggal_akhir' => request('tanggal_akhir'),
-            ]) }}"
-            class="btn-secondary flex items-center justify-center gap-2 py-2 px-4 border-blue-500 text-blue-600 hover:bg-blue-50"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            <span>Export Data</span>
-        </a>
-
-        {{-- Cetak Laporan --}}
-        <button
-            type="button"
-            onclick="window.print()"
-            class="btn-secondary flex items-center justify-center gap-2 py-2 px-4 border-blue-500 text-blue-600 hover:bg-blue-50"
-        >
-            <x-heroicon-o-printer class="w-4 h-4" />
-            <span>Cetak Laporan</span>
-        </button>
-
         {{-- Tambah Transaksi Baru --}}
         <a
             href="{{ route('penjualan.create') }}"
@@ -102,7 +79,6 @@
             <x-heroicon-o-plus class="w-4 h-4" />
             <span>Tambah Transaksi Baru</span>
         </a>
-
     </div>
 </x-page-header>
 

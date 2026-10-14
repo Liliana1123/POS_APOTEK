@@ -12,6 +12,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
 
 class DashboardController extends Controller
 {
@@ -677,35 +680,48 @@ class DashboardController extends Controller
 
         $query = $baseQuery->with('user');
 
-        if ($request->query('export') === 'csv') {
-            $allLogs = $query->orderByDesc('created_at')->get();
+        if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+            $allLogs = (clone $query)->orderByDesc('created_at')->get();
             $headers = ['Tanggal & Waktu', 'Kategori', 'User', 'Role', 'Tindakan / Aksi', 'Rincian Target'];
-            $callback = function() use ($headers, $allLogs) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $headers);
-                foreach ($allLogs as $log) {
-                    fputcsv($file, [
-                        $log->created_at->format('d M Y H:i:s'),
-                        strtoupper($log->kategori ?? 'SISTEM'),
-                        $log->user->name ?? $log->user_name,
-                        $log->user->role ?? '-',
-                        $log->action,
-                        $log->target ?? '-'
-                    ]);
-                }
-                fclose($file);
-            };
+            $data = [];
+            foreach ($allLogs as $log) {
+                $data[] = [
+                    $log->created_at ? $log->created_at->format('d M Y H:i:s') : '-',
+                    strtoupper($log->kategori ?? 'SISTEM'),
+                    $log->user->name ?? $log->user_name ?? '-',
+                    $log->user->role ?? '-',
+                    $log->action,
+                    $log->target ?? '-'
+                ];
+            }
 
-            return response()->stream($callback, 200, [
-                "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=laporan-activity-log-" . now()->format('Ymd-His') . ".csv",
-                "Pragma"              => "no-cache",
-                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                "Expires"             => "0"
+            $filename = 'laporan-activity-log-' . now()->format('Ymd-His') . '.xlsx';
+
+            return response()->streamDownload(function () use ($headers, $data) {
+                $writer = new Writer();
+                $writer->openToFile('php://output');
+
+                $headerStyle = (new Style())
+                    ->setFontBold()
+                    ->setFontColor('FFFFFF')
+                    ->setBackgroundColor('1E40AF');
+
+                $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+                foreach ($data as $row) {
+                    $writer->addRow(Row::fromValues($row));
+                }
+
+                $writer->close();
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
             ]);
         }
 
-        $logs = $query->orderByDesc('created_at')->paginate(25)->withQueryString();
+        $logs = (clone $query)->orderByDesc('created_at')->paginate(25)->withQueryString();
+        $printLogs = (clone $query)->orderByDesc('created_at')->get();
         $users = \App\Models\User::orderBy('name')->get();
 
         $categories = [
@@ -720,6 +736,7 @@ class DashboardController extends Controller
 
         return view('activity_log.index', compact(
             'logs',
+            'printLogs',
             'dari',
             'sampai',
             'users',
