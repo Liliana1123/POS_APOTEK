@@ -17,7 +17,7 @@
         body {
             margin: 0;
             padding: 30px;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
             font-size: 12px;
             color: #222;
             background: #fff;
