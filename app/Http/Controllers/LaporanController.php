@@ -1048,22 +1048,52 @@ class LaporanController extends Controller
         // Untuk dropdown filter promo
         $promos = \App\Models\CustomDiscount::orderBy('nama')->get();
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Barang', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase', 'Nominal'];
+        if ($request->query('export') === 'excel' || $request->query('export') === 'xlsx' || $request->query('export') === 'csv') {
+            if ($request->query('export') === 'csv') {
+                $headers = ['Tanggal', 'No. Faktur', 'Barang', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase', 'Nominal'];
+                $data = [];
+                foreach ($usages as $usage) {
+                    $data[] = [
+                        $usage->created_at->format('d M Y H:i'),
+                        $usage->penjualan->no_faktur ?? '',
+                        $usage->barang_nama,
+                        $usage->penjualan->pelanggan->nama ?? 'Umum',
+                        $usage->jenis,
+                        $usage->custom_discount_nama ?? '-',
+                        $usage->persentase,
+                        $usage->nominal
+                    ];
+                }
+                return $this->exportCsv('laporan-diskon-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+            }
+
+            $headers = ['Tanggal', 'No. Faktur', 'Barang / Obat', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase (%)', 'Hemat Rupiah'];
             $data = [];
             foreach ($usages as $usage) {
                 $data[] = [
-                    $usage->created_at->format('d M Y H:i'),
-                    $usage->penjualan->no_faktur ?? '',
-                    $usage->barang_nama,
+                    $usage->created_at ? $usage->created_at->format('d M Y H:i') : '—',
+                    $usage->penjualan->no_faktur ?? '—',
+                    $usage->barang_nama ?? '—',
                     $usage->penjualan->pelanggan->nama ?? 'Umum',
-                    $usage->jenis,
+                    $usage->jenis === 'member' ? 'Member' : 'Custom Promo',
                     $usage->custom_discount_nama ?? '-',
-                    $usage->persentase,
+                    $usage->persentase . '%',
                     $usage->nominal
                 ];
             }
-            return $this->exportCsv('laporan-diskon-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+
+            $totalRow = [
+                'Total Hemat',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                $totalNominal,
+            ];
+
+            return $this->exportXlsx('laporan_penggunaan_diskon_dan_promo.xlsx', $headers, $data, $totalRow);
         }
 
         return view('laporan.diskon', compact('usages', 'totalNominal', 'promos', 'dari', 'sampai'));
