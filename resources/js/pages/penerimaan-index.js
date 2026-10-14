@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function clearAllErrorsTambah() {
             if (!formTambah) return;
             formTambah.querySelectorAll('.field-error-msg').forEach(el => el.remove());
-            formTambah.querySelectorAll('.!border-red-500').forEach(input => {
+            formTambah.querySelectorAll('.\\!border-red-500').forEach(input => {
                 input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
                 input.classList.add('border-gray-300');
             });
