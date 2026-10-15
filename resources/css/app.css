@@ -561,9 +561,15 @@ h3,
 
     #app-sidebar:hover,
     #app-sidebar:focus-within,
-    #app-sidebar.sidebar-expanded {
+    #app-sidebar.sidebar-expanded,
+    html.sidebar-keep-expanded #app-sidebar {
         width: 16rem !important;
         /* 256px expanded */
+    }
+
+    /* Avoid rail→expand animation on the first paint after a menu click */
+    html.sidebar-keep-expanded #app-sidebar {
+        transition: none !important;
     }
 
     /* Fixed anchor padding on top-level links & group headers (never shifts) */
@@ -588,22 +594,22 @@ h3,
     }
 
     /* Collapsed state in rail mode: adjust child items to align with central anchor */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-items {
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-items {
         border-left-color: transparent !important;
         margin-left: 0 !important;
         padding-left: 0 !important;
     }
 
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-child {
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-child {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
     }
 
     /* Collapsed state: labels and controls cleanly hidden */
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
-    #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout {
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -618,7 +624,8 @@ h3,
     /* Expanded state: labels and controls reveal cleanly */
     #app-sidebar:hover .sidebar-nav-label,
     #app-sidebar:focus-within .sidebar-nav-label,
-    #app-sidebar.sidebar-expanded .sidebar-nav-label {
+    #app-sidebar.sidebar-expanded .sidebar-nav-label,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-nav-label {
         display: inline-block !important;
         opacity: 1 !important;
         visibility: visible !important;
@@ -630,12 +637,15 @@ h3,
     #app-sidebar:hover .sidebar-group-arrow,
     #app-sidebar:focus-within .sidebar-group-arrow,
     #app-sidebar.sidebar-expanded .sidebar-group-arrow,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-group-arrow,
     #app-sidebar:hover .sidebar-footer-info,
     #app-sidebar:focus-within .sidebar-footer-info,
     #app-sidebar.sidebar-expanded .sidebar-footer-info,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-footer-info,
     #app-sidebar:hover .sidebar-footer-logout,
     #app-sidebar:focus-within .sidebar-footer-logout,
-    #app-sidebar.sidebar-expanded .sidebar-footer-logout {
+    #app-sidebar.sidebar-expanded .sidebar-footer-logout,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-footer-logout {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;

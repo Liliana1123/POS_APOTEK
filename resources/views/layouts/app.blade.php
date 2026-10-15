@@ -3,6 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function () {
+            try {
+                if (sessionStorage.getItem('sidebar-keep-expanded') === '1'
+                    && window.matchMedia('(min-width: 1024px)').matches) {
+                    document.documentElement.classList.add('sidebar-keep-expanded');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>@yield('title', 'POS Apotek')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
