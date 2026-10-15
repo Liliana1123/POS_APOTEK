@@ -4,11 +4,6 @@
 @section('content')
 <!-- Page Header -->
 <x-page-header title="Daftar Barang & Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
-    <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Barang</span>
-    </button>
-
     <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
         <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
         <span>Import Data</span>
@@ -18,6 +13,11 @@
         <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
         <span>Export Data</span>
     </a>
+
+    <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
+        <x-heroicon-o-plus class="w-4 h-4" />
+        <span>Tambah Barang</span>
+    </button>
 </x-page-header>
 
 <!-- Filter & Search Card -->
@@ -41,7 +41,7 @@
         <select name="kategori_id" class="form-input">
             <option value="">Semua Kategori</option>
             @foreach ($kategoris as $k)
-                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
+            <option value="{{ $k->id }}" @selected(request('kategori_id')==$k->id)>{{ $k->nama }}</option>
             @endforeach
         </select>
     </div>
@@ -49,25 +49,25 @@
         <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
         <select name="butuh_resep" class="form-input">
             <option value="">Semua</option>
-            <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
-            <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
+            <option value="1" @selected(request('butuh_resep')==='1' )>Wajib Resep</option>
+            <option value="0" @selected(request('butuh_resep')==='0' )>Bebas</option>
         </select>
     </div>
     <div>
         <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
         <select name="aktif" class="form-input">
             <option value="">Semua</option>
-            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+            <option value="1" @selected(request('aktif')==='1' )>Aktif</option>
+            <option value="0" @selected(request('aktif')==='0' )>Nonaktif</option>
         </select>
     </div>
     <div>
         <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
         <select name="stok" class="form-input">
             <option value="">Semua</option>
-            <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
-            <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
-            <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+            <option value="habis" @selected(request('stok')==='habis' )>Habis</option>
+            <option value="menipis" @selected(request('stok')==='menipis' )>Menipis</option>
+            <option value="aman" @selected(request('stok')==='aman' )>Aman</option>
         </select>
     </div>
 </x-card-filter>
@@ -90,17 +90,17 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($barangs as $index => $barang)
-                    @php
-                        $stok = $barang->stokTotal();
-                        $statusStok = 'Aman';
-                        $statusStokBadge = 'badge-success';
-                        if ($stok <= 0) {
-                            $statusStok = 'Habis';
-                            $statusStokBadge = 'badge-danger';
-                        } elseif ($stok <= $barang->stok_minimum) {
-                            $statusStok = 'Menipis';
-                            $statusStokBadge = 'badge-warning';
-                        }
+                @php
+                $stok = $barang->stokTotal();
+                $statusStok = 'Aman';
+                $statusStokBadge = 'badge-success';
+                if ($stok <= 0) {
+                    $statusStok='Habis' ;
+                    $statusStokBadge='badge-danger' ;
+                    } elseif ($stok <=$barang->stok_minimum) {
+                    $statusStok = 'Menipis';
+                    $statusStokBadge = 'badge-warning';
+                    }
                     @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
@@ -122,7 +122,7 @@
                                 ]"
                                 :delete-url="route('barang.destroy', $barang)"
                                 delete-confirm="Yakin ingin menghapus barang ini?">
-                                
+
                                 <button type="button"
                                     class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors btn-detail-barang"
                                     style="color: #2563EB;"
@@ -130,14 +130,14 @@
                                     aria-label="Lihat Detail"
                                     data-json="{{ json_encode([
                                         'id' => $barang->id,
-                                        'kode_apotek' => $barang->kode_apotek ?? '—',
-                                        'kode_kfa' => $barang->kode_kfa ?? '—',
+                                        'kode_apotek' => $barang->kode_apotek ?? 'â€”',
+                                        'kode_kfa' => $barang->kode_kfa ?? 'â€”',
                                         'nama' => $barang->nama,
-                                        'merk' => $barang->merk ?? '—',
-                                        'barcode' => $barang->barcode ?? '—',
-                                        'kategori' => $barang->kategori->nama ?? '—',
-                                        'satuan' => $barang->satuan->nama ?? '—',
-                                        'pabrik' => $barang->pabrik->nama ?? '—',
+                                        'merk' => $barang->merk ?? 'â€”',
+                                        'barcode' => $barang->barcode ?? 'â€”',
+                                        'kategori' => $barang->kategori->nama ?? 'â€”',
+                                        'satuan' => $barang->satuan->nama ?? 'â€”',
+                                        'pabrik' => $barang->pabrik->nama ?? 'â€”',
                                         'supplier' => $barang->supplierNama(),
                                         'stok' => $stok,
                                         'stok_minimum' => $barang->stok_minimum,
@@ -151,11 +151,11 @@
                                 </button>
                             </x-table-action>
                         </td>
-                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
-                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_apotek ?? 'â€”' }}</td>
+                        <td class="font-mono">{{ $barang->kode_kfa ?? 'â€”' }}</td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
-                        <td>{{ $barang->merk ?: '—' }}</td>
-                        <td>{{ $barang->satuan->nama ?? '—' }}</td>
+                        <td>{{ $barang->merk ?: 'â€”' }}</td>
+                        <td>{{ $barang->satuan->nama ?? 'â€”' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
                             <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
@@ -163,15 +163,15 @@
                             </x-badge>
                         </td>
                     </tr>
-                @empty
+                    @empty
                     <x-empty-state colspan="8" />
-                @endforelse
+                    @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4">{{ $barangs->links() }}</div>
+<div class="mt-4">{{ $barangs->links('vendor.pagination.apotek') }}</div>
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form
@@ -222,7 +222,7 @@
                 <select name="kategori_id" required class="form-input">
                     <option value="">Pilih</option>
                     @foreach ($kategoris as $k)
-                        <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                    <option value="{{ $k->id }}">{{ $k->nama }}</option>
                     @endforeach
                 </select>
                 <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kategori_id"></p>
@@ -232,7 +232,7 @@
                 <select name="satuan_id" required class="form-input">
                     <option value="">Pilih</option>
                     @foreach ($satuans as $s)
-                        <option value="{{ $s->id }}">{{ $s->nama }}</option>
+                    <option value="{{ $s->id }}">{{ $s->nama }}</option>
                     @endforeach
                 </select>
                 <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="satuan_id"></p>
@@ -242,7 +242,7 @@
                 <select name="pabrik_id" required class="form-input">
                     <option value="">Pilih</option>
                     @foreach ($pabriks as $p)
-                        <option value="{{ $p->id }}">{{ $p->nama }}</option>
+                    <option value="{{ $p->id }}">{{ $p->nama }}</option>
                     @endforeach
                 </select>
                 <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="pabrik_id"></p>
@@ -274,7 +274,7 @@
                     <span class="font-semibold">Barang aktif</span>
                     <p class="text-[10px] text-gray-400 mt-0.5">Produk tampil dan dapat dipakai transaksi baru.</p>
                 </div>
-            </label>                     
+            </label>
         </div>
     </div>
 </x-modal-form>
@@ -283,100 +283,5 @@
 @include('barang.partials.modal-detail')
 @include('barang.partials.modal-import')
 
-<!-- Page Specific Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- DETAIL MODAL LOGIC ---
-    var detailModal = document.getElementById('modal-detail-barang');
-    var detailBackdrop = document.getElementById('modal-detail-barang-backdrop');
-    var btnCloseDetail = document.getElementById('btn-close-detail-modal');
-    var btnCancelDetail = document.getElementById('btn-cancel-detail-modal');
-    var btnEditFromDetail = document.getElementById('btn-edit-from-detail');
-
-    function openDetailModal(data) {
-        document.getElementById('detail-title-nama').textContent = data.nama;
-        document.getElementById('detail-kode-apotek').textContent = data.kode_apotek;
-        document.getElementById('detail-kode-kfa').textContent = data.kode_kfa;
-        document.getElementById('detail-nama').textContent = data.nama;
-        document.getElementById('detail-merk').textContent = data.merk;
-        document.getElementById('detail-barcode').textContent = data.barcode;
-        document.getElementById('detail-kategori').textContent = data.kategori;
-        document.getElementById('detail-satuan').textContent = data.satuan;
-        document.getElementById('detail-pabrik').textContent = data.pabrik;
-        document.getElementById('detail-supplier').textContent = data.supplier;
-        document.getElementById('detail-stok').textContent = data.stok + ' ' + data.satuan;
-        document.getElementById('detail-stok-minimum').textContent = data.stok_minimum + ' ' + data.satuan;
-
-        var badge = document.getElementById('detail-status-stok-badge');
-        badge.className = data.status_stok_badge;
-        badge.textContent = data.status_stok;
-
-        document.getElementById('detail-butuh-resep').textContent = data.butuh_resep;
-        document.getElementById('detail-status-aktif').textContent = data.aktif;
-
-        window.__detailEditId = data.id;
-
-        detailBackdrop.classList.remove('hidden');
-        detailModal.classList.remove('hidden');
-    }
-
-    function closeDetailModal() {
-        detailBackdrop.classList.add('hidden');
-        detailModal.classList.add('hidden');
-    }
-
-    document.querySelectorAll('.btn-detail-barang').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            try {
-                var data = JSON.parse(this.dataset.json);
-                openDetailModal(data);
-            } catch (e) {
-                console.error('Error parsing barang detail JSON', e);
-            }
-        });
-    });
-
-    if (btnCloseDetail) btnCloseDetail.addEventListener('click', closeDetailModal);
-    if (btnCancelDetail) btnCancelDetail.addEventListener('click', closeDetailModal);
-    if (detailBackdrop) detailBackdrop.addEventListener('click', closeDetailModal);
-    if (btnEditFromDetail) btnEditFromDetail.addEventListener('click', function() {
-        closeDetailModal();
-        var editBtn = document.querySelector('.btn-edit-barang[data-id="' + window.__detailEditId + '"]');
-        if (editBtn) editBtn.click();
-    });
-
-    // --- IMPORT MODAL LOGIC ---
-    var importModal = document.getElementById('modal-import-barang');
-    var importBackdrop = document.getElementById('modal-import-barang-backdrop');
-    var btnOpen = document.getElementById('btn-import-barang');
-    var btnClose = document.getElementById('btn-close-import-modal');
-    var btnCancel = document.getElementById('btn-cancel-import-modal');
-    var formImport = document.getElementById('form-import-barang');
-    var submitBtn = document.getElementById('btn-submit-import');
-
-    function openImportModal() {
-        importBackdrop.classList.remove('hidden');
-        importModal.classList.remove('hidden');
-    }
-
-    function closeImportModal() {
-        importBackdrop.classList.add('hidden');
-        importModal.classList.add('hidden');
-    }
-
-    if (btnOpen) btnOpen.addEventListener('click', openImportModal);
-    if (btnClose) btnClose.addEventListener('click', closeImportModal);
-    if (btnCancel) btnCancel.addEventListener('click', closeImportModal);
-    if (importBackdrop) importBackdrop.addEventListener('click', closeImportModal);
-
-    if (formImport) {
-        formImport.addEventListener('submit', function () {
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span>Memproses...</span>';
-            }
-        });
-    }
-});
-</script>
+@vite('resources/js/pages/barang-index.js')
 @endsection

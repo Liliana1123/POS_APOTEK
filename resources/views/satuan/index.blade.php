@@ -30,21 +30,20 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($satuans as $index => $satuan)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
-                            <x-table-action
-                                edit-class="btn-edit-satuan"
-                                :edit-id="$satuan->id"
-                                :edit-data="['nama' => $satuan->nama]"
-                                :delete-url="route('satuan.destroy', $satuan)"
-                                delete-confirm="Yakin ingin menghapus satuan ini?"
-                            />
-                        </td>
-                        <td class="table-num">{{ $satuan->id }}</td>
-                        <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
-                    </tr>
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                    <td class="text-left">
+                        <x-table-action
+                            edit-class="btn-edit-satuan"
+                            :edit-id="$satuan->id"
+                            :edit-data="['nama' => $satuan->nama]"
+                            :delete-url="route('satuan.destroy', $satuan)"
+                            delete-confirm="Yakin ingin menghapus satuan ini?" />
+                    </td>
+                    <td class="table-num">{{ $satuan->id }}</td>
+                    <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
+                </tr>
                 @empty
-                    <x-empty-state colspan="3" />
+                <x-empty-state colspan="3" />
                 @endforelse
             </tbody>
         </table>

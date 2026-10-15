@@ -20,8 +20,7 @@
                 id="close-edit-pelanggan"
                 class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
                 title="Tutup"
-                aria-label="Tutup"
-            >
+                aria-label="Tutup">
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
         </div>
@@ -39,7 +38,7 @@
 
                         <!-- Nama -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-user class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -51,7 +50,7 @@
 
                         <!-- No Telp -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-phone class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -63,7 +62,7 @@
 
                         <!-- Alamat -->
                         <div class="flex items-start gap-3 min-w-0 md:col-span-2">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-map-pin class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -75,7 +74,7 @@
 
                         <!-- Tanggal Lahir -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-calendar-days class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -101,6 +100,19 @@
                                 <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="status_member"></p>
                             </div>
                         </div>
+
+                        <!-- Custom Diskon (%) -->
+                        <div class="flex items-start gap-3 min-w-0 md:col-span-2">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                <x-heroicon-o-tag class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Custom Diskon (%)</label>
+                                <input type="number" name="custom_discount_percentage" min="0" max="100" step="any" class="form-input w-full" placeholder="Kosongkan untuk diskon default 10%">
+                                <p class="text-[10px] text-gray-400 mt-1">Kosongkan untuk diskon default 10%.</p>
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="custom_discount_percentage"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -111,15 +123,13 @@
             <button
                 type="button"
                 id="cancel-edit-pelanggan"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
-            >
+                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition">
                 Batal
             </button>
             <button
                 type="button"
                 id="save-edit-pelanggan"
-                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
+                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed">
                 Simpan Perubahan
             </button>
         </div>
@@ -127,130 +137,138 @@
 </div>
 
 <script>
-(function () {
-    const modal = document.getElementById('modal-edit-pelanggan');
-    const form = document.getElementById('form-edit-pelanggan');
-    const errorBox = document.getElementById('edit-pelanggan-error');
-    const saveBtn = document.getElementById('save-edit-pelanggan');
-    const editButtons = document.querySelectorAll('.btn-edit-pelanggan');
+    (function() {
+        const modal = document.getElementById('modal-edit-pelanggan');
+        const form = document.getElementById('form-edit-pelanggan');
+        const errorBox = document.getElementById('edit-pelanggan-error');
+        const saveBtn = document.getElementById('save-edit-pelanggan');
+        const editButtons = document.querySelectorAll('.btn-edit-pelanggan');
 
-    if (!modal || !form) return;
+        if (!modal || !form) return;
 
-    function clearEditErrors() {
-        errorBox.classList.add('hidden');
-        errorBox.textContent = '';
-        form.querySelectorAll('.edit-field-error').forEach(function (el) {
-            el.textContent = '';
-            el.classList.add('hidden');
-        });
-        form.querySelectorAll('.form-input, select, textarea').forEach(function (el) {
-            el.classList.remove('border-red-500');
-        });
-    }
-
-    function showEditErrors(errors) {
-        Object.keys(errors || {}).forEach(function (field) {
-            const el = form.querySelector('[data-error-for="' + field + '"]');
-            const input = form.querySelector('[name="' + field + '"]');
-            if (el) {
-                el.textContent = (errors[field] || []).join(' ');
-                el.classList.remove('hidden');
-            }
-            if (input) input.classList.add('border-red-500');
-        });
-    }
-
-    function openEditModal(button) {
-        clearEditErrors();
-        form.reset();
-
-        form.elements.nama.value = button.dataset.nama || '';
-        form.elements.telepon.value = button.dataset.telepon || '';
-        form.elements.alamat.value = button.dataset.alamat || '';
-        form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
-        form.elements.status_member.value = button.dataset.status_member || '';
-        form.dataset.id = button.dataset.id || '';
-
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-    }
-
-    function closeEditModal() {
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    }
-
-    editButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            openEditModal(this);
-        });
-    });
-
-    document.getElementById('close-edit-pelanggan')?.addEventListener('click', closeEditModal);
-    document.getElementById('cancel-edit-pelanggan')?.addEventListener('click', closeEditModal);
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) closeEditModal();
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
-            closeEditModal();
-        }
-    });
-
-    saveBtn.addEventListener('click', function () {
-        clearEditErrors();
-
-        const id = form.dataset.id;
-        if (!id) return;
-
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Menyimpan...';
-
-        const formData = new FormData(form);
-        const url = '{{ url('pelanggan') }}/' + id;
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(function (response) {
-            return response.json().then(function (body) {
-                return { status: response.status, body: body };
+        function clearEditErrors() {
+            errorBox.classList.add('hidden');
+            errorBox.textContent = '';
+            form.querySelectorAll('.edit-field-error').forEach(function(el) {
+                el.textContent = '';
+                el.classList.add('hidden');
             });
-        })
-        .then(function (result) {
-            if (result.status === 422) {
-                showEditErrors(result.body.errors || {});
-                if (result.body.message) {
-                    errorBox.textContent = result.body.message;
-                    errorBox.classList.remove('hidden');
+            form.querySelectorAll('.form-input, select, textarea').forEach(function(el) {
+                el.classList.remove('border-red-500');
+            });
+        }
+
+        function showEditErrors(errors) {
+            Object.keys(errors || {}).forEach(function(field) {
+                const el = form.querySelector('[data-error-for="' + field + '"]');
+                const input = form.querySelector('[name="' + field + '"]');
+                if (el) {
+                    el.textContent = (errors[field] || []).join(' ');
+                    el.classList.remove('hidden');
                 }
-                return;
-            }
+                if (input) input.classList.add('border-red-500');
+            });
+        }
 
-            if (result.status >= 200 && result.status < 300) {
-                closeEditModal();
-                window.location.reload();
-                return;
-            }
+        function openEditModal(button) {
+            clearEditErrors();
+            form.reset();
 
-            errorBox.textContent = result.body.message || 'Terjadi kesalahan saat menyimpan perubahan.';
-            errorBox.classList.remove('hidden');
-        })
-        .catch(function () {
-            errorBox.textContent = 'Gagal menghubungi server.';
-            errorBox.classList.remove('hidden');
-        })
-        .finally(function () {
-            saveBtn.disabled = false;
-            saveBtn.textContent = 'Simpan Perubahan';
+            form.elements.nama.value = button.dataset.nama || '';
+            form.elements.telepon.value = button.dataset.telepon || '';
+            form.elements.alamat.value = button.dataset.alamat || '';
+            form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
+            form.elements.status_member.value = button.dataset.status_member || '';
+            const customDisc = button.dataset.custom_discount_percentage;
+            form.elements.custom_discount_percentage.value = (customDisc !== undefined && customDisc !== null && customDisc !== '') ?
+                parseFloat(customDisc) :
+                '';
+            form.dataset.id = button.dataset.id || '';
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeEditModal() {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                openEditModal(this);
+            });
         });
-    });
-})();
+
+        document.getElementById('close-edit-pelanggan')?.addEventListener('click', closeEditModal);
+        document.getElementById('cancel-edit-pelanggan')?.addEventListener('click', closeEditModal);
+
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) closeEditModal();
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeEditModal();
+            }
+        });
+
+        saveBtn.addEventListener('click', function() {
+            clearEditErrors();
+
+            const id = form.dataset.id;
+            if (!id) return;
+
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Menyimpan...';
+
+            const formData = new FormData(form);
+            const url = '{{ url('
+            pelanggan ') }}/' + id;
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(function(response) {
+                    return response.json().then(function(body) {
+                        return {
+                            status: response.status,
+                            body: body
+                        };
+                    });
+                })
+                .then(function(result) {
+                    if (result.status === 422) {
+                        showEditErrors(result.body.errors || {});
+                        if (result.body.message) {
+                            errorBox.textContent = result.body.message;
+                            errorBox.classList.remove('hidden');
+                        }
+                        return;
+                    }
+
+                    if (result.status >= 200 && result.status < 300) {
+                        closeEditModal();
+                        window.location.reload();
+                        return;
+                    }
+
+                    errorBox.textContent = result.body.message || 'Terjadi kesalahan saat menyimpan perubahan.';
+                    errorBox.classList.remove('hidden');
+                })
+                .catch(function() {
+                    errorBox.textContent = 'Gagal menghubungi server.';
+                    errorBox.classList.remove('hidden');
+                })
+                .finally(function() {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Simpan Perubahan';
+                });
+        });
+    })();
 </script>

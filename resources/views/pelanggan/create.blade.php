@@ -43,11 +43,20 @@
             </label>
             <select id="status_member" name="status_member" required class="form-input">
                 <option value="">Pilih status member</option>
-                <option value="Member Pelanggan Tetap" @selected(old('status_member') === 'Member Pelanggan Tetap')>Member Pelanggan Tetap</option>
-                <option value="Member Keluarga Nakes" @selected(old('status_member') === 'Member Keluarga Nakes')>Member Keluarga Nakes</option>
-                <option value="Member Only" @selected(old('status_member') === 'Member Only')>Member Only</option>
+                <option value="Member Pelanggan Tetap" @selected(old('status_member')==='Member Pelanggan Tetap' )>Member Pelanggan Tetap</option>
+                <option value="Member Keluarga Nakes" @selected(old('status_member')==='Member Keluarga Nakes' )>Member Keluarga Nakes</option>
+                <option value="Member Only" @selected(old('status_member')==='Member Only' )>Member Only</option>
             </select>
             @error('status_member') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <label for="custom_discount_percentage" class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">
+                Custom Diskon (%)
+            </label>
+            <input type="number" id="custom_discount_percentage" name="custom_discount_percentage" value="{{ old('custom_discount_percentage') }}" min="0" max="100" step="any" placeholder="Kosongkan untuk diskon default 10%" class="form-input">
+            <p class="text-[11px] text-gray-400 mt-1 font-sans">Kosongkan untuk menggunakan diskon default 10%.</p>
+            @error('custom_discount_percentage') <p class="text-red-600 text-xs mt-1 font-sans">{{ $message }}</p> @enderror
         </div>
 
         <div class="flex justify-end gap-2 border-t border-gray-100 pt-4 mt-6">

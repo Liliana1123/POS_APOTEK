@@ -37,141 +37,150 @@
             size: A4 landscape;
             margin: 12mm;
         }
+
+        .grand-total-print {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px solid #1e40af;
+            page-break-inside: avoid;
+        }
+
+        .grand-total-print>div {
+            display: flex;
+            justify-content: flex-end;
+            gap: 30px;
+            margin-bottom: 5px;
+        }
+
+        .grand-total-print span {
+            font-weight: 600;
+        }
+
+        .grand-total-print strong {
+            min-width: 150px;
+            text-align: right;
+        }
     }
 </style>
 
 <div class="screen-only">
-{{-- Page Header --}}
-<x-page-header
-    title="Riwayat Penjualan"
-    subtitle="Daftar rekaman seluruh transaksi kasir apotek."
->
-    <a href="{{ route('penjualan.create') }}" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Transaksi Baru</span>
-    </a>
-</x-page-header>
+    {{-- Page Header --}}
+    <x-page-header
+        title="Riwayat Penjualan"
+        subtitle="Daftar rekaman seluruh transaksi kasir apotek.">
+        <div class="flex items-center gap-2">
 
-{{-- Filter & Search --}}
-<x-card-filter
-    :action="route('penjualan.index')"
-    :reset-url="route('penjualan.index')"
-    :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-    :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
->
-    {{-- Cari No. Invoice --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Cari No. Invoice
-        </label>
-        <div class="relative">
-            <input
-                type="text"
-                name="cari"
-                value="{{ request('cari') }}"
-                placeholder="Cari no. invoice..."
-                class="form-input pr-8"
-            >
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
+            {{-- Tambah Transaksi Baru --}}
+            <a
+                href="{{ route('penjualan.create') }}"
+                class="btn-primary flex items-center gap-2 py-2 px-4">
+                <x-heroicon-o-plus class="w-4 h-4" />
+                <span>Tambah Transaksi Baru</span>
+            </a>
         </div>
-    </div>
+    </x-page-header>
 
-    {{-- Tanggal Awal --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Awal
-        </label>
-        <input
-            type="date"
-            name="tanggal_awal"
-            value="{{ request('tanggal_awal') }}"
-            class="form-input"
-        >
-    </div>
+    {{-- Filter & Search --}}
+    <x-card-filter
+        :action="route('penjualan.index')"
+        :reset-url="route('penjualan.index')"
+        :grid="true"
+        grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+        :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])">
+        {{-- Cari No. Invoice --}}
+        <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                Cari No. Invoice
+            </label>
+            <div class="relative">
+                <input
+                    type="text"
+                    name="cari"
+                    value="{{ request('cari') }}"
+                    placeholder="Cari no. invoice..."
+                    class="form-input pr-8">
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                </span>
+            </div>
+        </div>
 
-    {{-- Tanggal Akhir --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Akhir
-        </label>
-        <input
-            type="date"
-            name="tanggal_akhir"
-            value="{{ request('tanggal_akhir') }}"
-            class="form-input"
-        >
-    </div>
-</x-card-filter>
+        {{-- Tanggal Awal --}}
+        <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                Tanggal Awal
+            </label>
+            <input
+                type="date"
+                name="tanggal_awal"
+                value="{{ request('tanggal_awal') }}"
+                class="form-input">
+        </div>
 
-{{-- Tombol Cetak Laporan --}}
-<div class="mb-4 flex justify-end print:hidden">
-    <button
-        type="button"
-        onclick="window.print()"
-        class="btn-secondary flex items-center justify-center gap-2 py-2 px-4"
-    >
-        <x-heroicon-o-printer class="h-4 w-4" />
-        <span>Cetak Laporan</span>
-    </button>
-</div>
+        {{-- Tanggal Akhir --}}
+        <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                Tanggal Akhir
+            </label>
+            <input
+                type="date"
+                name="tanggal_akhir"
+                value="{{ request('tanggal_akhir') }}"
+                class="form-input">
+        </div>
+    </x-card-filter>
 
-{{-- Table --}}
-<div class="table-custom-container">
-    <div class="overflow-x-auto">
-        <table class="table-custom min-w-[67rem]">
-            <thead class="table-custom-header">
-                <tr>
-                    <th scope="col" class="w-28 text-center whitespace-nowrap">Aksi</th>
-                    <th class="w-52">
-                    @php
-                        $invoiceDirection =
+    {{-- Table --}}
+    <div class="table-custom-container">
+        <div class="overflow-x-auto">
+            <table class="table-custom min-w-[67rem]">
+                <thead class="table-custom-header">
+                    <tr>
+                        <th scope="col" class="w-28 text-center whitespace-nowrap">Aksi</th>
+                        <th class="w-52">
+                            @php
+                            $invoiceDirection =
                             request('sort', 'no_faktur') === 'no_faktur'
                             && request('direction', 'desc') === 'desc'
-                                ? 'asc'
-                                : 'desc';
-                    @endphp
+                            ? 'asc'
+                            : 'desc';
+                            @endphp
 
-                    <a
-                        href="{{ request()->fullUrlWithQuery([
+                            <a
+                                href="{{ request()->fullUrlWithQuery([
                             'sort' => 'no_faktur',
                             'direction' => $invoiceDirection,
                             'page' => 1,
                         ]) }}"
-                        class="flex w-full items-center justify-center gap-1 whitespace-nowrap hover:text-blue-600"
-                    >
-                        <span>No. Invoice</span>
+                                class="flex w-full items-center justify-center gap-1 whitespace-nowrap hover:text-blue-600">
+                                <span>No. Invoice</span>
 
-                        <span class="inline-flex flex-col leading-[7px]">
-                            <span
-                                class="text-[7px] {{ request('sort', 'no_faktur') === 'no_faktur' && request('direction', 'desc') === 'asc'
+                                <span class="inline-flex flex-col leading-[7px]">
+                                    <span
+                                        class="text-[7px] {{ request('sort', 'no_faktur') === 'no_faktur' && request('direction', 'desc') === 'asc'
                                     ? 'text-blue-600'
-                                    : 'text-gray-300' }}"
-                            >
-                                ▲
-                            </span>
+                                    : 'text-gray-300' }}">
+                                        ▲
+                                    </span>
 
-                            <span
-                                class="text-[7px] {{ request('sort', 'no_faktur') === 'no_faktur' && request('direction', 'desc') === 'desc'
+                                    <span
+                                        class="text-[7px] {{ request('sort', 'no_faktur') === 'no_faktur' && request('direction', 'desc') === 'desc'
                                     ? 'text-blue-600'
-                                    : 'text-gray-300' }}"
-                            >
-                                ▼
-                            </span>
-                        </span>
-                    </a>
-                </th>
-                    <th scope="col" class="w-36 text-center whitespace-nowrap">Tanggal</th>
-                    <th scope="col" class="w-52 text-center whitespace-nowrap">Pelanggan</th>
-                    <th scope="col" class="w-36 text-center whitespace-nowrap">Kasir</th>
-                    <th class="px-5 py-3 text-center">Total Diskon</th>
-                    <th scope="col" class="w-44 text-center whitespace-nowrap">Total Transaksi</th>
-                </tr>
-            </thead>
-            <tbody class="table-custom-body divide-gray-150">
-                @forelse ($penjualans as $index => $penjualan)
+                                    : 'text-gray-300' }}">
+                                        ▼
+                                    </span>
+                                </span>
+                            </a>
+                        </th>
+                        <th scope="col" class="w-36 text-center whitespace-nowrap">Tanggal</th>
+                        <th scope="col" class="w-52 text-center whitespace-nowrap">Pelanggan</th>
+                        <th scope="col" class="w-44 text-center whitespace-nowrap">Kasir</th>
+                        <th scope="col" class="w-28 text-center whitespace-nowrap">Total Diskon</th>
+                        <th scope="col" class="w-32 text-center whitespace-nowrap">Total Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody class="table-custom-body divide-gray-150">
+                    @forelse ($penjualans as $index => $penjualan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
 
                         {{-- Aksi: Lihat Detail / Cetak Struk --}}
@@ -185,8 +194,7 @@
                                     style="color: #2563EB;"
                                     title="Lihat Detail Penjualan"
                                     aria-label="Lihat Detail Penjualan"
-                                    onclick="bukaDetailPenjualan({{ $penjualan->id }})"
-                                >
+                                    onclick="bukaDetailPenjualan({{ $penjualan->id }})">
                                     <x-heroicon-o-eye class="w-4 h-4" />
                                 </button>
 
@@ -194,10 +202,9 @@
                                 <a
                                     href="{{ route('penjualan.show', $penjualan) }}"
                                     class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors inline-flex items-center justify-center"
-                                    style="color: #2563EB;"
+                                    style="color: #000000;"
                                     title="Lihat Struk Penjualan"
-                                    aria-label="Lihat Struk Penjualan"
-                                >
+                                    aria-label="Lihat Struk Penjualan">
                                     <x-heroicon-o-printer class="w-4 h-4" />
                                 </a>
 
@@ -214,32 +221,32 @@
                             {{ $penjualan->tanggal->format('d M Y') }}
                         </td>
 
-                       {{-- Pelanggan --}}
+                        {{-- Pelanggan --}}
                         <td class="px-5 py-3.5 text-center text-gray-600 font-medium">
                             @if($penjualan->pelanggan && $penjualan->pelanggan->is_member)
-                                <div class="flex flex-col items-center">
-                                    <span class="text-gray-900 font-medium">
-                                        {{ $penjualan->pelanggan->nama }}
-                                    </span>
-
-                                     @php
-                                        $statusMember = trim((string) $penjualan->pelanggan->status_member);
-
-                                        $memberVariant = match($statusMember) {
-                                            'Member Keluarga Nakes' => 'info',
-                                            'Member Only' => 'warning',
-                                            default => 'success',
-                                        };
-                                    @endphp
-
-                                    <x-badge :variant="$memberVariant">
-                                        {{ $statusMember ?: 'Member Pelanggan Tetap' }}
-                                    </x-badge>
-                                </div>
-                            @else
-                                <span class="text-gray-600 font-medium">
-                                    Umum
+                            <div class="flex flex-col items-center">
+                                <span class="text-gray-900 font-medium">
+                                    {{ $penjualan->pelanggan->nama }}
                                 </span>
+
+                                @php
+                                $statusMember = trim((string) $penjualan->pelanggan->status_member);
+
+                                $memberVariant = match($statusMember) {
+                                'Member Keluarga Nakes' => 'info',
+                                'Member Only' => 'warning',
+                                default => 'success',
+                                };
+                                @endphp
+
+                                <x-badge :variant="$memberVariant">
+                                    {{ $statusMember ?: 'Member Pelanggan Tetap' }}
+                                </x-badge>
+                            </div>
+                            @else
+                            <span class="text-gray-600 font-medium">
+                                Umum
+                            </span>
                             @endif
                         </td>
 
@@ -258,17 +265,17 @@
                             Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                         </td>
                     </tr>
-                @empty
+                    @empty
                     <x-empty-state colspan="7" />
-                @endforelse
-            </tbody>
-        </table>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
-<div class="mt-4">
-    {{ $penjualans->links() }}
-</div>
+    <div class="mt-4">
+        {{ $penjualans->links('vendor.pagination.apotek') }}
+    </div>
 
 </div>
 
@@ -287,9 +294,9 @@
         </p>
 
         @if(request('cari'))
-            <p class="text-sm">
-                No. Invoice: {{ request('cari') }}
-            </p>
+        <p class="text-sm">
+            No. Invoice: {{ request('cari') }}
+        </p>
         @endif
     </div>
 
@@ -308,89 +315,86 @@
 
         <tbody>
             @forelse($laporanPenjualans as $index => $penjualan)
-                <tr>
-                    <td class="border p-2 text-center">
-                        {{ $index + 1 }}
-                    </td>
+            <tr>
+                <td class="border p-2 text-center">
+                    {{ $index + 1 }}
+                </td>
 
-                    <td class="border p-2">
-                        {{ $penjualan->no_faktur }}
-                    </td>
+                <td class="border p-2">
+                    {{ $penjualan->no_faktur }}
+                </td>
 
-                    <td class="border p-2">
-                        {{ $penjualan->tanggal->format('d M Y') }}
-                    </td>
+                <td class="border p-2">
+                    {{ $penjualan->tanggal->format('d M Y') }}
+                </td>
 
-                    <td class="border p-2">
-                        {{ $penjualan->pelanggan?->nama ?? 'Umum' }}
-                    </td>
+                <td class="border p-2">
+                    {{ $penjualan->pelanggan?->nama ?? 'Umum' }}
+                </td>
 
-                    <td class="border p-2">
-                        {{ $penjualan->user?->name ?? '-' }}
-                    </td>
+                <td class="border p-2">
+                    {{ $penjualan->user?->name ?? '-' }}
+                </td>
 
-                    <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
-                    </td>
+                <td class="border p-2 text-right">
+                    Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                </td>
 
-                    <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->total, 0, ',', '.') }}
-                    </td>
-                </tr>
+                <td class="border p-2 text-right">
+                    Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                </td>
+            </tr>
             @empty
-                <tr>
-                    <td colspan="7" class="border p-2 text-center">
-                        Tidak ada data penjualan.
-                    </td>
-                </tr>
+            <tr>
+                <td colspan="7" class="border p-2 text-center">
+                    Tidak ada data penjualan.
+                </td>
+            </tr>
             @endforelse
         </tbody>
-
-        <tfoot>
-            <tr>
-                <th colspan="5" class="border p-2 text-right">
-                    Total
-                </th>
-
-                <th class="border p-2 text-right">
-                    Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
-                </th>
-
-                <th class="border p-2 text-right">
-                    Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
-                </th>
-            </tr>
-        </tfoot>
     </table>
+
+    <div class="grand-total-print">
+        <div>
+            <span>Total Diskon</span>
+            <strong>
+                Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
+            </strong>
+        </div>
+
+        <div>
+            <span>Total Transaksi</span>
+            <strong>
+                Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
+            </strong>
+        </div>
+    </div>
 </div>
 
 
 {{-- Modal Detail Penjualan --}}
-    <div
+<div
     id="modalDetailPenjualan"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4 backdrop-blur-[2px]"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="judulDetailPenjualan"
-    >
-    
+    aria-labelledby="judulDetailPenjualan">
+
     <div
         class="flex w-full flex-col overflow-hidden rounded-xl border border-blue-100 bg-white shadow-2xl"
-        style="max-width: 448px; max-height: 80vh;"
-    >
+        style="width: min(900px, 96vw); max-width: 900px; height: 90dvh; max-height: 90dvh;">
 
         {{-- Header Modal --}}
         <div class="flex shrink-0 items-center justify-between border-b border-blue-100 px-5 py-4">
             <div class="flex items-center gap-4">
-                
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <x-heroicon-o-document-text class="h-6 w-6" />
-            </div>
+
+                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <x-heroicon-o-document-text class="h-6 w-6" />
+                </div>
                 <div>
                     <h2
                         id="judulDetailPenjualan"
-                        class="text-xl font-bold text-slate-800"
-                    >
+                        class="text-xl font-bold text-slate-800">
                         Detail Penjualan
                     </h2>
 
@@ -404,8 +408,7 @@
                 type="button"
                 onclick="tutupDetailPenjualan()"
                 class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Tutup modal"
-            >
+                aria-label="Tutup modal">
                 <x-heroicon-o-x-mark class="h-6 w-6" />
             </button>
         </div>
@@ -413,8 +416,7 @@
         {{-- Isi Modal --}}
         <div
             id="isiDetailPenjualan"
-            class="min-h-0 space-y-3 overflow-y-auto p-4"
-        >
+            class="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
             <div class="py-10 text-center text-sm text-slate-500">
                 Memuat detail penjualan...
             </div>
@@ -425,8 +427,7 @@
             <button
                 type="button"
                 onclick="tutupDetailPenjualan()"
-                class="rounded-lg border border-blue-300 px-7 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
-            >
+                class="rounded-lg border border-blue-300 px-7 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50">
                 Tutup
             </button>
         </div>
@@ -451,8 +452,7 @@
 
         try {
             const response = await fetch(
-                `/penjualan/${id}/detail`,
-                {
+                `/penjualan/${id}/detail`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
@@ -498,20 +498,20 @@
                 });
             };
 
-            const detailBarang = Array.isArray(penjualan.detail)
-                ? penjualan.detail
-                : [];
+            const detailBarang = Array.isArray(penjualan.detail) ?
+                penjualan.detail :
+                [];
 
             const totalDiskon = detailBarang.reduce(
                 (total, item) =>
-                    total + (Number(item.diskon) || 0),
+                total + (Number(item.diskon) || 0),
                 0
             );
 
             const barisBarang = detailBarang.map((item, index) => {
                 const namaBarang =
-                    item.detail_penerimaan?.barang?.nama
-                    || 'Barang tidak ditemukan';
+                    item.detail_penerimaan?.barang?.nama ||
+                    'Barang tidak ditemukan';
 
                 return `
                     <tr class="border-b border-blue-100 last:border-b-0">
@@ -542,60 +542,128 @@
                 `;
             }).join('');
 
+
             const pelanggan = penjualan.pelanggan?.nama || 'Umum';
+
+            const statusMember = penjualan.pelanggan?.status_member || '';
+
+            const isMember = Boolean(penjualan.pelanggan?.is_member);
+
+            const memberVariant = {
+                'Member Keluarga Nakes': 'info',
+                'Member Only': 'warning',
+            } [statusMember] || 'success';
+
+            const labelMember = statusMember || 'Member Pelanggan Tetap';
+
             const kasir = penjualan.user?.name || '-';
             const metode = penjualan.metode_pembayaran || '-';
+            const isPiutang = String(penjualan.metode_pembayaran || '').toLowerCase() === 'piutang';
 
             isiModal.innerHTML = `
                 {{-- Informasi Transaksi --}}
-                <div class="grid grid-cols-1 gap-5 rounded-xl bg-gradient-to-br from-blue-50 to-sky-50 p-6 sm:grid-cols-2">
-
-                    <div class="space-y-4">
-                        <div>
-                           <p class="text-xs text-slate-500">No. Invoice</p>
-                            <p class="mt-1 whitespace-nowrap text-sm font-bold text-slate-800">
-                                ${escapeHtml(penjualan.no_faktur)}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Tanggal</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(formatTanggal(penjualan.tanggal))}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Pelanggan</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(pelanggan)}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-slate-500">Kasir</p>
-                            <p class="mt-1 font-semibold text-slate-800">
-                                ${escapeHtml(kasir)}
-                            </p>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${isPiutang ? 'xl:grid-cols-6' : 'xl:grid-cols-5'} gap-3">
+                    
+                {{-- No. Invoice --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-document-text class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">No. Invoice</span>
                     </div>
 
-                    <div class="flex flex-col justify-start pt-2 sm:border-l sm:border-blue-200 sm:pl-6">
-                        <div>
-                            <p class="text-xs text-slate-500">Metode Pembayaran</p>
-                            <span class="mt-2 inline-flex rounded-lg bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-700">
-                                ${escapeHtml(metode)}
-                            </span>
-                        </div>
+                    <p class="font-bold text-sm text-slate-800 break-all">
+                        ${escapeHtml(penjualan.no_faktur)}
+                    </p>
+                </div>
 
-                        <div class="mt-8">
-                            <p class="text-xs text-slate-500">Total Transaksi</p>
-                           <p class="mt-1 text-xl font-bold text-blue-600">
-                                ${rupiah(penjualan.total)}
-                            </p>
-                        </div>
+                {{-- Tanggal --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-calendar class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Tanggal</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(formatTanggal(penjualan.tanggal))}
+                    </p>
+                </div>
+
+                {{-- Pelanggan --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-user class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Pelanggan</span>
+                    </div>
+
+                    <div class="flex flex-col items-start gap-2">
+                        <p class="font-bold text-sm text-slate-800">
+                            ${escapeHtml(pelanggan)}
+                        </p>
+
+                        ${
+                            isMember
+                                ? `<span class="inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-[10px] leading-tight font-medium uppercase tracking-normal text-center
+                                    ${
+                                        memberVariant === 'info'
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : memberVariant === 'warning'
+                                                ? 'bg-amber-50 text-amber-700'
+                                                : 'bg-green-50 text-green-700'
+                                    }">
+                                    ${escapeHtml(labelMember)}
+                                </span>`
+                                : ''
+                        }
+
+                        ${(() => {
+                            const discountPercent = penjualan.member_discount_percent_used;
+                            if (!isMember || discountPercent === null || discountPercent === undefined) return '';
+                            return `<span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-[10px] font-bold text-emerald-700 uppercase tracking-wide">
+                                DISKON MEMBER ${Number(discountPercent)}%
+                            </span>`;
+                        })()}
                     </div>
                 </div>
+
+                {{-- Kasir --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-user class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Kasir</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(kasir)}
+                    </p>
+                </div>
+
+                {{-- Metode Pembayaran --}}
+                <div class="min-w-0 rounded-xl border border-blue-100 bg-gradient-to-br from-white-50 to-white p-3">
+                    <div class="flex items-center gap-2 text-blue-600 mb-3">
+                        <x-heroicon-o-credit-card class="w-5 h-5" />
+                        <span class="text-xs text-blue-500">Metode Pembayaran</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800 uppercase">
+                        ${escapeHtml(metode)}
+                    </p>
+                </div>
+
+                ${isPiutang ? `
+                {{-- Jatuh Tempo --}}
+                <div class="min-w-0 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-white p-3">
+                    <div class="flex items-center gap-2 text-amber-600 mb-3">
+                        <x-heroicon-o-calendar-days class="w-5 h-5" />
+                        <span class="text-xs text-amber-600 font-semibold">Jatuh Tempo</span>
+                    </div>
+
+                    <p class="font-bold text-sm text-slate-800">
+                        ${escapeHtml(penjualan.due_date_formatted || '-')}
+                    </p>
+                </div>
+                ` : ''}
+
+            </div>
 
                 {{-- Rincian Barang: tanpa ikon --}}
                 <div class="rounded-xl border border-blue-100 p-3 sm:p-4">
@@ -604,7 +672,7 @@
                     </h3>
 
                     <div class="overflow-x-auto rounded-lg border border-blue-100">
-                        <table class="w-full min-w-[650px] text-xs">
+                        <table class="w-full min-w-[700px] text-sm">
                             <thead class="bg-blue-50 text-slate-700">
                                 <tr>
                                     <th class="px-3 py-4 text-center">No.</th>
@@ -630,7 +698,7 @@
                     </div>
 
                     {{-- Ringkasan --}}
-                    <div class="mt-3 rounded-lg bg-gradient-to-br from-blue-50 to-sky-50 p-5">
+                    <div class="mt-2 rounded-lg bg-white p-3">
                         <div class="ml-auto w-full space-y-4 sm:w-72">
                             <div class="flex items-center justify-between gap-4">
                                 <span class="text-sm text-slate-600">
@@ -676,13 +744,13 @@
     }
 
     document.getElementById('modalDetailPenjualan')
-        .addEventListener('click', function (event) {
+        .addEventListener('click', function(event) {
             if (event.target === this) {
                 tutupDetailPenjualan();
             }
         });
 
-    document.addEventListener('keydown', function (event) {
+    document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             tutupDetailPenjualan();
         }

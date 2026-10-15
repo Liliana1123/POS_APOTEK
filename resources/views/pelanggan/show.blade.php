@@ -30,13 +30,13 @@
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
                 @php
-                    $statusMember = trim((string) $pelanggan->status_member);
+                $statusMember = trim((string) $pelanggan->status_member);
                 @endphp
 
-                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
+                @if($pelanggan->status_member === 'Member Keluarga Nakes')
+                <span
+                    class="inline-flex items-center justify-center text-center"
+                    style=" 
                             font-size: 0.5625rem; 
                             font-weight: 600; 
                             text-transform: uppercase; 
@@ -46,15 +46,14 @@
                             border-radius: 0.25rem; 
                             background-color: #F3E8FF; 
                             color: #7E22CE; 
-                        " 
-                    > 
-                        Member Keluarga Nakes 
-                    </span> 
+                        ">
+                    Member Keluarga Nakes
+                </span>
 
-                @elseif($pelanggan->status_member === 'Member Only') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
+                @elseif($pelanggan->status_member === 'Member Only')
+                <span
+                    class="inline-flex items-center justify-center text-center"
+                    style=" 
                             font-size: 0.5625rem; 
                             font-weight: 600; 
                             text-transform: uppercase; 
@@ -64,15 +63,14 @@
                             border-radius: 0.25rem; 
                             background-color: #FEF9C3; 
                             color: #A16207; 
-                        " 
-                    > 
-                        Member Only 
-                    </span> 
+                        ">
+                    Member Only
+                </span>
 
-                @else 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
+                @else
+                <span
+                    class="inline-flex items-center justify-center text-center"
+                    style=" 
                             font-size: 0.5625rem; 
                             font-weight: 600; 
                             text-transform: uppercase; 
@@ -82,10 +80,9 @@
                             border-radius: 0.25rem; 
                             background-color: #DCFCE7; 
                             color: #15803D; 
-                        " 
-                    > 
-                        Member Pelanggan Tetap 
-                    </span> 
+                        ">
+                    Member Pelanggan Tetap
+                </span>
                 @endif
             </div>
         </div>
@@ -112,10 +109,16 @@
                 <span class="text-gray-800 whitespace-pre-line">{{ $pelanggan->keterangan ?? '—' }}</span>
             </div>
             @if ($pelanggan->is_member)
-                <div>
-                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
-                    <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
-                </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Benefit Diskon</span>
+                <span class="inline-flex items-center px-2 py-0.5 mt-0.5 rounded text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                    {{ $pelanggan->custom_discount_percentage !== null ? 'Diskon ' . (float)$pelanggan->custom_discount_percentage . '%' : 'Diskon Default ' . config('pos.diskon_member', 10) . '%' }}
+                </span>
+            </div>
+            <div>
+                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
+                <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
+            </div>
             @endif
         </div>
     </div>
@@ -156,7 +159,7 @@
     <div class="p-4 border-b bg-gray-50/50">
         <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Pelanggan / Member</h3>
     </div>
-    
+
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[45rem]">
             <thead class="table-custom-header">
@@ -170,27 +173,27 @@
             </thead>
             <tbody class="table-custom-body divide-y divide-gray-150">
                 @forelse ($penjualans as $penjualan)
-                    @php
-                        $totalDiskon = $penjualan->detail()->sum('diskon');
-                    @endphp
-                    <tr>
-                        <td class="text-gray-600">{{ $penjualan->tanggal->format('d M Y') }}</td>
-                        <td class="font-semibold text-gray-850 font-mono">{{ $penjualan->no_faktur }}</td>
-                        <td class="table-num font-semibold text-green-600">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</td>
-                        <td class="table-num font-bold text-gray-850">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</td>
-                        <td class="text-right">
-                            <a href="{{ route('penjualan.show', $penjualan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
-                        </td>
-                    </tr>
+                @php
+                $totalDiskon = $penjualan->detail()->sum('diskon');
+                @endphp
+                <tr>
+                    <td class="text-gray-600">{{ $penjualan->tanggal->format('d M Y') }}</td>
+                    <td class="font-semibold text-gray-850 font-mono">{{ $penjualan->no_faktur }}</td>
+                    <td class="table-num font-semibold text-green-600">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</td>
+                    <td class="table-num font-bold text-gray-850">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</td>
+                    <td class="text-right">
+                        <a href="{{ route('penjualan.show', $penjualan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
+                    </td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">Riwayat Transaksi Kosong</div>
-                                <div class="empty-state-desc">Membership ini belum pernah melakukan transaksi penjualan di apotek.</div>
-                            </div>
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="5" class="p-0">
+                        <div class="empty-state-container">
+                            <div class="empty-state-title">Riwayat Transaksi Kosong</div>
+                            <div class="empty-state-desc">Membership ini belum pernah melakukan transaksi penjualan di apotek.</div>
+                        </div>
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>

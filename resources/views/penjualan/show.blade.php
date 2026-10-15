@@ -9,43 +9,48 @@
     </div>
     <div class="flex gap-2">
         <button onclick="window.print()" class="btn-primary">Print Struk</button>
+
+        @if(request('from') === 'laporan_penjualan')
+        <a href="{{ route('laporan.penjualan', request()->except('from')) }}" class="btn-secondary">Kembali</a>
+        @else
         <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+        @endif
     </div>
 </div>
 
 @php
-    $apotek = \Illuminate\Support\Facades\Cache::remember(
-        'info_apotek',
-        now()->addHours(6),
-        fn () => \App\Models\InfoApotek::first()
-    );
+$apotek = \Illuminate\Support\Facades\Cache::remember(
+'info_apotek',
+now()->addHours(6),
+fn () => \App\Models\InfoApotek::first()
+);
 @endphp
 
 <div class="card-base max-w-sm mx-auto text-xs font-mono bg-white border border-gray-200" id="struk">
     <div class="text-center mb-3 pb-2.5 border-b border-dashed border-gray-300">
         @if($apotek?->logo)
-            <div class="flex justify-center mb-1">
-                <img src="{{ asset('storage/' . $apotek->logo) }}" alt="Logo" class="w-10 h-10 object-contain">
-            </div>
+        <div class="flex justify-center mb-1">
+            <img src="{{ asset('storage/' . $apotek->logo) }}" alt="Logo" class="w-10 h-10 object-contain">
+        </div>
         @endif
         <p class="font-bold text-sm uppercase tracking-wider text-gray-900">
             {{ $apotek?->nama_apotek ?? 'POS APOTEK' }}
         </p>
         @if($apotek?->alamat)
-            <p class="text-[10px] text-gray-500 mt-0.5 leading-tight">{{ $apotek->alamat }}</p>
+        <p class="text-[10px] text-gray-500 mt-0.5 leading-tight">{{ $apotek->alamat }}</p>
         @endif
         @if($apotek?->telepon)
-            <p class="text-[10px] text-gray-500">Telp: {{ $apotek->telepon }}</p>
+        <p class="text-[10px] text-gray-500">Telp: {{ $apotek->telepon }}</p>
         @endif
         @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-            <div class="text-[9px] text-gray-400 pt-0.5 leading-tight">
-                @if($apotek?->no_izin_sia)<span>SIA: {{ $apotek->no_izin_sia }}</span>@endif
-                @if($apotek?->no_izin_sia && $apotek?->no_sipa)<span class="mx-1">•</span>@endif
-                @if($apotek?->no_sipa)<span>SIPA: {{ $apotek->no_sipa }}</span>@endif
-            </div>
+        <div class="text-[9px] text-gray-400 pt-0.5 leading-tight">
+            @if($apotek?->no_izin_sia)<span>SIA: {{ $apotek->no_izin_sia }}</span>@endif
+            @if($apotek?->no_izin_sia && $apotek?->no_sipa)<span class="mx-1">•</span>@endif
+            @if($apotek?->no_sipa)<span>SIPA: {{ $apotek->no_sipa }}</span>@endif
+        </div>
         @endif
         @if($apotek?->nama_apoteker_pj)
-            <p class="text-[9px] text-gray-400">PJ: {{ $apotek->nama_apoteker_pj }}</p>
+        <p class="text-[9px] text-gray-400">PJ: {{ $apotek->nama_apoteker_pj }}</p>
         @endif
     </div>
 
@@ -58,7 +63,7 @@
             <span>
                 {{ $penjualan->pelanggan->nama ?? 'Umum' }}
                 @if (isset($penjualan->pelanggan) && $penjualan->pelanggan->is_member)
-                    <span class="font-mono text-blue-700 font-semibold">({{ $penjualan->pelanggan->member_id }})</span>
+                <span class="font-mono text-blue-700 font-semibold">({{ $penjualan->pelanggan->member_id }})</span>
                 @endif
             </span>
         </div>
@@ -68,65 +73,73 @@
                 {{ $penjualan->metode_pembayaran }}
             </span>
         </div>
+        @if (strtolower($penjualan->metode_pembayaran) === 'piutang' && $penjualan->due_date)
+        <div class="flex justify-between">
+            <span>Jatuh Tempo</span>
+            <span class="font-semibold">
+                {{ $penjualan->due_date->format('d M Y') }}
+            </span>
+        </div>
+        @endif
     </div>
 
     <div class="border-t border-dashed pt-2.5 space-y-2">
         @foreach ($penjualan->detail as $item)
-            <div>
-                <div class="flex justify-between font-semibold text-gray-800">
-                    <span>{{ $item->detailPenerimaan->barang->nama }}</span>
-                    <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-                </div>
-                <div class="text-[10px] text-gray-500 mt-0.5">
-                    {{ $item->jumlah }} x Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
-                    @if ($item->diskon > 0)
-                        <span class="text-red-500 font-medium ml-1">(Diskon -Rp {{ number_format($item->diskon, 0, ',', '.') }})</span>
-                    @endif
-                </div>
+        <div>
+            <div class="flex justify-between font-semibold text-gray-800">
+                <span>{{ $item->detailPenerimaan->barang->nama }}</span>
+                <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
             </div>
+            <div class="text-[10px] text-gray-500 mt-0.5">
+                {{ $item->jumlah }} x Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
+                @if ($item->diskon > 0)
+                <span class="text-red-500 font-medium ml-1">(Diskon -Rp {{ number_format($item->diskon, 0, ',', '.') }})</span>
+                @endif
+            </div>
+        </div>
         @endforeach
     </div>
 
     @php
-        $discountUsages = \App\Models\DiscountUsage::where('penjualan_id', $penjualan->id)->get();
-        $diskonMember = $discountUsages->where('jenis', 'member')->sum('nominal');
-        $diskonPromo = $discountUsages->where('jenis', 'custom')->sum('nominal');
-        $totalDiskon = $diskonMember + $diskonPromo;
-        
-        // Fallback for legacy invoices before Fase 3 audit logging
-        if ($totalDiskon == 0 && $penjualan->detail->sum('diskon') > 0) {
-            $totalDiskon = $penjualan->detail->sum('diskon');
-            if ($penjualan->pelanggan && $penjualan->pelanggan->is_member) {
-                $diskonMember = $totalDiskon;
-            } else {
-                $diskonPromo = $totalDiskon;
-            }
-        }
+    $discountUsages = \App\Models\DiscountUsage::where('penjualan_id', $penjualan->id)->get();
+    $diskonMember = $discountUsages->where('jenis', 'member')->sum('nominal');
+    $diskonPromo = $discountUsages->where('jenis', 'custom')->sum('nominal');
+    $totalDiskon = $diskonMember + $diskonPromo;
+
+    // Fallback for legacy invoices before Fase 3 audit logging
+    if ($totalDiskon == 0 && $penjualan->detail->sum('diskon') > 0) {
+    $totalDiskon = $penjualan->detail->sum('diskon');
+    if ($penjualan->pelanggan && $penjualan->pelanggan->is_member) {
+    $diskonMember = $totalDiskon;
+    } else {
+    $diskonPromo = $totalDiskon;
+    }
+    }
     @endphp
 
     @if ($totalDiskon > 0)
-        <div class="border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
-            <div class="flex justify-between">
-                <span>Subtotal Kotor</span>
-                <span>Rp {{ number_format($penjualan->total + $totalDiskon, 0, ',', '.') }}</span>
-            </div>
-            @if ($diskonMember > 0)
-                <div class="flex justify-between text-green-600">
-                    <span>Diskon Member</span>
-                    <span>-Rp {{ number_format($diskonMember, 0, ',', '.') }}</span>
-                </div>
-            @endif
-            @if ($diskonPromo > 0)
-                <div class="flex justify-between text-green-600">
-                    <span>Diskon Promo</span>
-                    <span>-Rp {{ number_format($diskonPromo, 0, ',', '.') }}</span>
-                </div>
-            @endif
-            <div class="flex justify-between font-bold text-gray-700">
-                <span>Total Diskon</span>
-                <span>-Rp {{ number_format($totalDiskon, 0, ',', '.') }}</span>
-            </div>
+    <div class="border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
+        <div class="flex justify-between">
+            <span>Subtotal Kotor</span>
+            <span>Rp {{ number_format($penjualan->total + $totalDiskon, 0, ',', '.') }}</span>
         </div>
+        @if ($diskonMember > 0)
+        <div class="flex justify-between text-green-600">
+            <span>Diskon Member</span>
+            <span>-Rp {{ number_format($diskonMember, 0, ',', '.') }}</span>
+        </div>
+        @endif
+        @if ($diskonPromo > 0)
+        <div class="flex justify-between text-green-600">
+            <span>Diskon Promo</span>
+            <span>-Rp {{ number_format($diskonPromo, 0, ',', '.') }}</span>
+        </div>
+        @endif
+        <div class="flex justify-between font-bold text-gray-700">
+            <span>Total Diskon</span>
+            <span>-Rp {{ number_format($totalDiskon, 0, ',', '.') }}</span>
+        </div>
+    </div>
     @endif
 
     <div class="border-t border-dashed mt-2.5 pt-2.5 flex justify-between font-bold text-sm text-gray-800">
@@ -142,15 +155,25 @@
         @page {
             margin: 0;
         }
+
         /* Hide layout structural elements */
-        aside, nav, .print\:hidden, #mobile-sidebar-toggle, form, button, a {
+        aside,
+        nav,
+        .print\:hidden,
+        #mobile-sidebar-toggle,
+        form,
+        button,
+        a {
             display: none !important;
         }
-        body, html {
+
+        body,
+        html {
             background-color: white !important;
             margin: 0 !important;
             padding: 0 !important;
         }
+
         /* Optimize wrapper for thermal receipt sizes (fit-content supports 58mm/80mm rolls automatically) */
         #struk {
             width: 72mm !important;
@@ -165,10 +188,12 @@
             font-size: 11px !important;
             line-height: 1.3 !important;
         }
+
         #struk * {
             color: black !important;
             background-color: transparent !important;
         }
+
         .border-dashed {
             border-top: 1px dashed black !important;
         }

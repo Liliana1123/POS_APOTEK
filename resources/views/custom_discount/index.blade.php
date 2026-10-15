@@ -11,24 +11,49 @@
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<x-card-filter :action="route('custom-discount.index')" :reset-url="route('custom-discount.index')" :has-filter="request()->anyFilled(['cari', 'status'])">
-    <div class="relative shrink-0 w-full sm:w-64">
-        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..." class="form-input pr-8">
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
+<div class="card-base p-4 mb-6">
+    <form method="GET" action="{{ route('custom-discount.index') }}" class="space-y-4" id="filter-form">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Nama Promo
+                </label>
+                <div class="relative">
+                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
+                        class="form-input pr-8">
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                </div>
+            </div>
 
-    <div class="w-full sm:w-48">
-        <select name="status" class="form-input">
-            <option value="">Semua Status</option>
-            <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
-            <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>
-            <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
-            <option value="nonaktif" @selected(request('status') === 'nonaktif')>Non-aktif</option>
-        </select>
-    </div>
-</x-card-filter>
+            <div>
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                    Status Promo
+                </label>
+                <select name="status" class="form-input">
+                    <option value="">Semua Status</option>
+                    <option value="aktif" @selected(request('status')==='aktif' )>Aktif</option>
+                    <option value="belum_mulai" @selected(request('status')==='belum_mulai' )>Belum Mulai</option>
+                    <option value="berakhir" @selected(request('status')==='berakhir' )>Berakhir</option>
+                    <option value="nonaktif" @selected(request('status')==='nonaktif' )>Non-aktif</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @if(request()->anyFilled(['cari', 'status']))
+            <a href="{{ route('custom-discount.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                Clear
+            </a>
+            @endif
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
+            </button>
+        </div>
+    </form>
+</div>
 
 <!-- Table Card -->
 <div class="table-custom-container">
@@ -47,31 +72,31 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($discounts as $index => $discount)
-                    @php
-                        $today = now()->format('Y-m-d');
-                        $startDate = $discount->tanggal_mulai->format('Y-m-d');
-                        $endDate = $discount->tanggal_selesai->format('Y-m-d');
-                        
-                        if (!$discount->aktif) {
-                            $statusText = 'Non-aktif';
-                            $statusType = 'secondary';
-                        } elseif ($startDate > $today) {
-                            $statusText = 'Belum Mulai';
-                            $statusType = 'warning';
-                        } elseif ($endDate < $today) {
-                            $statusText = 'Berakhir';
-                            $statusType = 'danger';
-                        } else {
-                            $statusText = 'Aktif';
-                            $statusType = 'success';
-                        }
+                @php
+                $today = now()->format('Y-m-d');
+                $startDate = $discount->tanggal_mulai->format('Y-m-d');
+                $endDate = $discount->tanggal_selesai->format('Y-m-d');
+
+                if (!$discount->aktif) {
+                $statusText = 'Non-aktif';
+                $statusType = 'secondary';
+                } elseif ($startDate > $today) {
+                $statusText = 'Belum Mulai';
+                $statusType = 'warning';
+                } elseif ($endDate < $today) {
+                    $statusText='Berakhir' ;
+                    $statusType='danger' ;
+                    } else {
+                    $statusText='Aktif' ;
+                    $statusType='success' ;
+                    }
                     @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
-                            <x-table-action
-                                edit-class="btn-edit-promo"
-                                :edit-id="$discount->id"
-                                :edit-data="[
+                    <td class="text-left">
+                        <x-table-action
+                            edit-class="btn-edit-promo"
+                            :edit-id="$discount->id"
+                            :edit-data="[
                                     'nama' => $discount->nama,
                                     'persentase' => $discount->persentase,
                                     'aktif' => $discount->aktif ? '1' : '0',
@@ -81,45 +106,44 @@
                                     'kategori_ids' => $discount->kategoris->pluck('id')->toArray(),
                                     'barang_ids' => $discount->barangs->pluck('id')->toArray(),
                                 ]"
-                                :delete-url="route('custom-discount.destroy', $discount)"
-                                delete-confirm="Yakin ingin menghapus promo diskon ini?"
-                            >
-                                <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">
-                                    @csrf
-                                    <button type="submit" 
-                                            class="btn-secondary !p-1.5 hover:bg-slate-100 transition-colors {{ $discount->aktif ? 'text-slate-500 hover:text-red-600' : 'text-slate-500 hover:text-emerald-600' }}"
-                                            title="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}"
-                                            aria-label="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}">
-                                        @if($discount->aktif)
-                                            <x-heroicon-o-pause-circle class="w-4 h-4 text-amber-600" />
-                                        @else
-                                            <x-heroicon-o-play-circle class="w-4 h-4 text-emerald-600" />
-                                        @endif
-                                    </button>
-                                </form>
-                            </x-table-action>
-                        </td>
-                        <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
-                        <td class="text-emerald-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_selesai->format('d M Y') }}</td>
-                        <td>
-                            <x-badge type="info">{{ $discount->cakupan }}</x-badge>
-                        </td>
-                        <td class="text-center">
-                            <x-badge :type="$statusType">{{ $statusText }}</x-badge>
-                        </td>
+                            :delete-url="route('custom-discount.destroy', $discount)"
+                            delete-confirm="Yakin ingin menghapus promo diskon ini?">
+                            <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">
+                                @csrf
+                                <button type="submit"
+                                    class="btn-secondary !p-1.5 hover:bg-slate-100 transition-colors {{ $discount->aktif ? 'text-slate-500 hover:text-red-600' : 'text-slate-500 hover:text-emerald-600' }}"
+                                    title="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}"
+                                    aria-label="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}">
+                                    @if($discount->aktif)
+                                    <x-heroicon-o-pause-circle class="w-4 h-4 text-amber-600" />
+                                    @else
+                                    <x-heroicon-o-play-circle class="w-4 h-4 text-emerald-600" />
+                                    @endif
+                                </button>
+                            </form>
+                        </x-table-action>
+                    </td>
+                    <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
+                    <td class="text-emerald-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
+                    <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
+                    <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_selesai->format('d M Y') }}</td>
+                    <td>
+                        <x-badge type="info">{{ $discount->cakupan }}</x-badge>
+                    </td>
+                    <td class="text-center">
+                        <x-badge :type="$statusType">{{ $statusText }}</x-badge>
+                    </td>
                     </tr>
-                @empty
+                    @empty
                     <x-empty-state colspan="7" title="Promo Kosong" description="Belum ada custom discount atau promo terdaftar di sistem." />
-                @endforelse
+                    @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
 <div class="mt-4">
-    {{ $discounts->links() }}
+    {{ $discounts->links('vendor.pagination.apotek') }}
 </div>
 
 <!-- Modal Form CRUD Promo -->
@@ -131,8 +155,7 @@
     update-base="{{ url('/custom-discount') }}"
     create-btn="#btn-tambah-promo"
     edit-btn=".btn-edit-promo"
-    width="max-w-2xl"
->
+    width="max-w-2xl">
     <div>
         <label class="block text-xs font-semibold text-gray-700 mb-1.5 font-sans">Nama Diskon / Promo <span class="text-red-500 font-bold">*</span></label>
         <input type="text" name="nama" required placeholder="Contoh: Promo Spesial Ulang Tahun Apotek" class="form-input">
@@ -196,11 +219,11 @@
         <label class="block text-xs font-semibold text-gray-700 mb-1.5 font-sans">Pilih Kategori</label>
         <div class="max-h-36 overflow-y-auto border border-gray-200 rounded-lg p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-50">
             @foreach ($kategoris as $k)
-                <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-white p-1.5 rounded transition-colors">
-                    <input type="checkbox" name="kategori_ids[]" value="{{ $k->id }}"
-                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="text-gray-700 font-medium">{{ $k->nama }}</span>
-                </label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer hover:bg-white p-1.5 rounded transition-colors">
+                <input type="checkbox" name="kategori_ids[]" value="{{ $k->id }}"
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <span class="text-gray-700 font-medium">{{ $k->nama }}</span>
+            </label>
             @endforeach
         </div>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kategori_ids"></p>
@@ -212,14 +235,14 @@
         <input type="text" id="modal-filter-barang" placeholder="Ketik nama obat untuk menyaring..." class="form-input py-1 px-2.5 text-xs">
         <div class="max-h-44 overflow-y-auto border border-gray-200 rounded-lg p-3 space-y-1.5 bg-gray-50" id="modal-barang-list-container">
             @foreach ($barangs as $b)
-                <label class="modal-barang-item flex items-center gap-2 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors" data-nama="{{ strtolower($b->nama) }}">
-                    <input type="checkbox" name="barang_ids[]" value="{{ $b->id }}"
-                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <div class="text-gray-700">
-                        <strong class="font-semibold">{{ $b->nama }}</strong>
-                        <span class="text-gray-400 font-mono text-[10px] ml-1">({{ $b->kategori->nama ?? 'Tanpa Kategori' }})</span>
-                    </div>
-                </label>
+            <label class="modal-barang-item flex items-center gap-2 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors" data-nama="{{ strtolower($b->nama) }}">
+                <input type="checkbox" name="barang_ids[]" value="{{ $b->id }}"
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <div class="text-gray-700">
+                    <strong class="font-semibold">{{ $b->nama }}</strong>
+                    <span class="text-gray-400 font-mono text-[10px] ml-1">({{ $b->kategori->nama ?? 'Tanpa Kategori' }})</span>
+                </div>
+            </label>
             @endforeach
         </div>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="barang_ids"></p>
@@ -227,74 +250,74 @@
 </x-modal-form>
 
 <script>
-function toggleModalCakupanFields(cakupanVal) {
-    const secKategori = document.getElementById('modal-section-kategori');
-    const secBarang = document.getElementById('modal-section-barang');
-    if (!secKategori || !secBarang) return;
+    function toggleModalCakupanFields(cakupanVal) {
+        const secKategori = document.getElementById('modal-section-kategori');
+        const secBarang = document.getElementById('modal-section-barang');
+        if (!secKategori || !secBarang) return;
 
-    if (cakupanVal === 'semua') {
-        secKategori.classList.add('hidden');
-        secBarang.classList.add('hidden');
-    } else if (cakupanVal === 'kategori') {
-        secKategori.classList.remove('hidden');
-        secBarang.classList.add('hidden');
-    } else if (cakupanVal === 'barang') {
-        secKategori.classList.add('hidden');
-        secBarang.classList.remove('hidden');
-    } else if (cakupanVal === 'kombinasi') {
-        secKategori.classList.remove('hidden');
-        secBarang.classList.remove('hidden');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Confirmation on toggle promo status
-    document.querySelectorAll('.toggle-promo-form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            if (!confirm('Yakin ingin mengubah status keaktifan promo ini?')) {
-                e.preventDefault();
-            }
-        });
-    });
-
-    // Reset cakupan view when Create button clicked
-    const btnTambah = document.getElementById('btn-tambah-promo');
-    if (btnTambah) {
-        btnTambah.addEventListener('click', () => {
-            toggleModalCakupanFields('semua');
-        });
+        if (cakupanVal === 'semua') {
+            secKategori.classList.add('hidden');
+            secBarang.classList.add('hidden');
+        } else if (cakupanVal === 'kategori') {
+            secKategori.classList.remove('hidden');
+            secBarang.classList.add('hidden');
+        } else if (cakupanVal === 'barang') {
+            secKategori.classList.add('hidden');
+            secBarang.classList.remove('hidden');
+        } else if (cakupanVal === 'kombinasi') {
+            secKategori.classList.remove('hidden');
+            secBarang.classList.remove('hidden');
+        }
     }
 
-    // Sync cakupan view when Edit button clicked
-    document.querySelectorAll('.btn-edit-promo').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.dataset.json) {
-                try {
-                    const data = JSON.parse(btn.dataset.json);
-                    toggleModalCakupanFields(data.cakupan || 'semua');
-                } catch(e) {}
-            }
-        });
-    });
-
-    // Filter barang search input inside modal
-    const filterBarangInput = document.getElementById('modal-filter-barang');
-    if (filterBarangInput) {
-        filterBarangInput.addEventListener('input', () => {
-            const term = filterBarangInput.value.toLowerCase().trim();
-            const items = document.querySelectorAll('.modal-barang-item');
-            items.forEach(item => {
-                const name = item.dataset.nama;
-                if (name.includes(term)) {
-                    item.classList.remove('hidden');
-                    item.classList.add('flex');
-                } else {
-                    item.classList.add('hidden');
-                    item.classList.remove('flex');
+    document.addEventListener('DOMContentLoaded', () => {
+        // Confirmation on toggle promo status
+        document.querySelectorAll('.toggle-promo-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Yakin ingin mengubah status keaktifan promo ini?')) {
+                    e.preventDefault();
                 }
             });
         });
-    }
-});
+
+        // Reset cakupan view when Create button clicked
+        const btnTambah = document.getElementById('btn-tambah-promo');
+        if (btnTambah) {
+            btnTambah.addEventListener('click', () => {
+                toggleModalCakupanFields('semua');
+            });
+        }
+
+        // Sync cakupan view when Edit button clicked
+        document.querySelectorAll('.btn-edit-promo').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.json) {
+                    try {
+                        const data = JSON.parse(btn.dataset.json);
+                        toggleModalCakupanFields(data.cakupan || 'semua');
+                    } catch (e) {}
+                }
+            });
+        });
+
+        // Filter barang search input inside modal
+        const filterBarangInput = document.getElementById('modal-filter-barang');
+        if (filterBarangInput) {
+            filterBarangInput.addEventListener('input', () => {
+                const term = filterBarangInput.value.toLowerCase().trim();
+                const items = document.querySelectorAll('.modal-barang-item');
+                items.forEach(item => {
+                    const name = item.dataset.nama;
+                    if (name.includes(term)) {
+                        item.classList.remove('hidden');
+                        item.classList.add('flex');
+                    } else {
+                        item.classList.add('hidden');
+                        item.classList.remove('flex');
+                    }
+                });
+            });
+        }
+    });
 </script>
 @endsection

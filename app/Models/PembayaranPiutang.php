@@ -14,6 +14,7 @@ class PembayaranPiutang extends Model
         'tanggal_bayar',
         'jumlah',
         'keterangan',
+        'metode_pembayaran',
     ];
 
     protected $casts = [

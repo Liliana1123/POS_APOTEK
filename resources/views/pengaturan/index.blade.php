@@ -18,9 +18,9 @@
                 <!-- Logo Display -->
                 <div class="w-20 h-20 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center p-2 mb-3 overflow-hidden">
                     <img id="preview-logo-img"
-                         src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
-                         alt="Logo Apotek"
-                         class="w-full h-full object-contain {{ $apotek->logo ? '' : 'hidden' }}">
+                        src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
+                        alt="Logo Apotek"
+                        class="w-full h-full object-contain {{ $apotek->logo ? '' : 'hidden' }}">
                     <div id="preview-logo-placeholder" class="text-gray-400 flex flex-col items-center justify-center {{ $apotek->logo ? 'hidden' : '' }}">
                         <x-heroicon-o-photo class="w-7 h-7 text-gray-300 mb-0.5" />
                         <span class="text-[10px] text-gray-400 font-medium">Tanpa Logo</span>
@@ -67,6 +67,10 @@
 
             <div class="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3.5 font-mono text-xs text-gray-700">
                 <div class="text-center pb-2.5 border-b border-dashed border-gray-300 space-y-0.5">
+                    <img id="receipt-logo"
+                        src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
+                        alt="Logo"
+                        class="w-10 h-10 object-contain mx-auto mb-1 {{ $apotek->logo ? '' : 'hidden' }}">
                     <p id="receipt-nama" class="font-bold text-gray-900 uppercase">
                         {{ $apotek->nama_apotek ?: 'NAMA APOTEK' }}
                     </p>
@@ -114,12 +118,12 @@
                             Nama Apotek <span class="text-red-500">*</span>
                         </label>
                         <input type="text"
-                                id="input-nama-apotek"
-                                name="nama_apotek"
-                                value="{{ old('nama_apotek', $apotek->nama_apotek) }}"
-                                required
-                                placeholder="Contoh: Apotek Sehat Sentosa"
-                                class="form-input @error('nama_apotek') error @enderror">
+                            id="input-nama-apotek"
+                            name="nama_apotek"
+                            value="{{ old('nama_apotek', $apotek->nama_apotek) }}"
+                            required
+                            placeholder="Contoh: Apotek Sehat Sentosa"
+                            class="form-input @error('nama_apotek') error @enderror">
                         @error('nama_apotek') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -128,11 +132,11 @@
                             Nama Pemilik / Owner (PSA)
                         </label>
                         <input type="text"
-                                id="input-nama-pemilik"
-                                name="nama_pemilik"
-                                value="{{ old('nama_pemilik', $apotek->nama_pemilik) }}"
-                                placeholder="Contoh: H. Hendra Wijaya, S.E."
-                                class="form-input @error('nama_pemilik') error @enderror">
+                            id="input-nama-pemilik"
+                            name="nama_pemilik"
+                            value="{{ old('nama_pemilik', $apotek->nama_pemilik) }}"
+                            placeholder="Contoh: H. Hendra Wijaya, S.E."
+                            class="form-input @error('nama_pemilik') error @enderror">
                         @error('nama_pemilik') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -141,11 +145,11 @@
                             Nomor Telepon / WhatsApp
                         </label>
                         <input type="text"
-                                id="input-telepon"
-                                name="telepon"
-                                value="{{ old('telepon', $apotek->telepon) }}"
-                                placeholder="Contoh: 08123456789 / (021) 555-0123"
-                                class="form-input @error('telepon') error @enderror">
+                            id="input-telepon"
+                            name="telepon"
+                            value="{{ old('telepon', $apotek->telepon) }}"
+                            placeholder="Contoh: 08123456789 / (021) 555-0123"
+                            class="form-input @error('telepon') error @enderror">
                         @error('telepon') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -154,11 +158,11 @@
                             Alamat Email
                         </label>
                         <input type="email"
-                                id="input-email"
-                                name="email"
-                                value="{{ old('email', $apotek->email) }}"
-                                placeholder="Contoh: info@apoteksehat.com"
-                                class="form-input @error('email') error @enderror">
+                            id="input-email"
+                            name="email"
+                            value="{{ old('email', $apotek->email) }}"
+                            placeholder="Contoh: info@apoteksehat.com"
+                            class="form-input @error('email') error @enderror">
                         @error('email') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -173,11 +177,11 @@
                                     Alamat Jalan / Gedung / RT-RW
                                 </label>
                                 <input type="text"
-                                       id="input-alamat-jalan"
-                                       name="alamat_jalan"
-                                       value="{{ old('alamat_jalan', $apotek->alamat_jalan) }}"
-                                       placeholder="Contoh: Jl. Jend. Sudirman No. 45"
-                                       class="form-input @error('alamat_jalan') error @enderror">
+                                    id="input-alamat-jalan"
+                                    name="alamat_jalan"
+                                    value="{{ old('alamat_jalan', $apotek->alamat_jalan) }}"
+                                    placeholder="Contoh: Jl. Jend. Sudirman No. 45"
+                                    class="form-input @error('alamat_jalan') error @enderror">
                                 @error('alamat_jalan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
@@ -186,11 +190,11 @@
                                     Kelurahan / Desa
                                 </label>
                                 <input type="text"
-                                       id="input-kelurahan"
-                                       name="kelurahan"
-                                       value="{{ old('kelurahan', $apotek->kelurahan) }}"
-                                       placeholder="Contoh: Menteng"
-                                       class="form-input @error('kelurahan') error @enderror">
+                                    id="input-kelurahan"
+                                    name="kelurahan"
+                                    value="{{ old('kelurahan', $apotek->kelurahan) }}"
+                                    placeholder="Contoh: Menteng"
+                                    class="form-input @error('kelurahan') error @enderror">
                                 @error('kelurahan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
@@ -199,11 +203,11 @@
                                     Kecamatan
                                 </label>
                                 <input type="text"
-                                       id="input-kecamatan"
-                                       name="kecamatan"
-                                       value="{{ old('kecamatan', $apotek->kecamatan) }}"
-                                       placeholder="Contoh: Menteng"
-                                       class="form-input @error('kecamatan') error @enderror">
+                                    id="input-kecamatan"
+                                    name="kecamatan"
+                                    value="{{ old('kecamatan', $apotek->kecamatan) }}"
+                                    placeholder="Contoh: Menteng"
+                                    class="form-input @error('kecamatan') error @enderror">
                                 @error('kecamatan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
@@ -212,11 +216,11 @@
                                     Kota / Kabupaten
                                 </label>
                                 <input type="text"
-                                       id="input-kota"
-                                       name="kota"
-                                       value="{{ old('kota', $apotek->kota) }}"
-                                       placeholder="Contoh: Jakarta Pusat"
-                                       class="form-input @error('kota') error @enderror">
+                                    id="input-kota"
+                                    name="kota"
+                                    value="{{ old('kota', $apotek->kota) }}"
+                                    placeholder="Contoh: Jakarta Pusat"
+                                    class="form-input @error('kota') error @enderror">
                                 @error('kota') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
@@ -225,11 +229,11 @@
                                     Provinsi
                                 </label>
                                 <input type="text"
-                                       id="input-provinsi"
-                                       name="provinsi"
-                                       value="{{ old('provinsi', $apotek->provinsi) }}"
-                                       placeholder="Contoh: DKI Jakarta"
-                                       class="form-input @error('provinsi') error @enderror">
+                                    id="input-provinsi"
+                                    name="provinsi"
+                                    value="{{ old('provinsi', $apotek->provinsi) }}"
+                                    placeholder="Contoh: DKI Jakarta"
+                                    class="form-input @error('provinsi') error @enderror">
                                 @error('provinsi') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
 
@@ -238,12 +242,51 @@
                                     Kode Pos
                                 </label>
                                 <input type="text"
-                                       id="input-kode-pos"
-                                       name="kode_pos"
-                                       value="{{ old('kode_pos', $apotek->kode_pos) }}"
-                                       placeholder="Contoh: 10310"
-                                       class="form-input @error('kode_pos') error @enderror">
+                                    id="input-kode-pos"
+                                    name="kode_pos"
+                                    value="{{ old('kode_pos', $apotek->kode_pos) }}"
+                                    placeholder="Contoh: 10310"
+                                    class="form-input @error('kode_pos') error @enderror">
                                 @error('kode_pos') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 pt-3 border-t border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1">Lokasi Apotek</h4>
+                        <p class="text-[11px] text-gray-500 mb-3">Koordinat lokasi apotek (Latitude dan Longitude) dalam format desimal.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="input-latitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Latitude
+                                </label>
+                                <input type="number"
+                                    id="input-latitude"
+                                    name="latitude"
+                                    value="{{ old('latitude', $apotek->latitude) }}"
+                                    placeholder="Contoh: -6.2088"
+                                    step="any"
+                                    min="-90"
+                                    max="90"
+                                    class="form-input @error('latitude') error @enderror">
+                                @error('latitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label for="input-longitude" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Longitude
+                                </label>
+                                <input type="number"
+                                    id="input-longitude"
+                                    name="longitude"
+                                    value="{{ old('longitude', $apotek->longitude) }}"
+                                    placeholder="Contoh: 106.8451"
+                                    step="any"
+                                    min="-180"
+                                    max="180"
+                                    class="form-input @error('longitude') error @enderror">
+                                @error('longitude') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
                     </div>
@@ -262,14 +305,14 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                         <label for="input-apoteker-pj" class="block text-xs font-semibold text-gray-700 mb-1.5">
-                            Nama Apoteker PJ (Apt.)
+                            Nama Apoteker Penaggungjawab
                         </label>
                         <input type="text"
-                                id="input-apoteker-pj"
-                                name="nama_apoteker_pj"
-                                value="{{ old('nama_apoteker_pj', $apotek->nama_apoteker_pj) }}"
-                                placeholder="Contoh: apt. Budi Santoso, S.Farm."
-                                class="form-input @error('nama_apoteker_pj') error @enderror">
+                            id="input-apoteker-pj"
+                            name="nama_apoteker_pj"
+                            value="{{ old('nama_apoteker_pj', $apotek->nama_apoteker_pj) }}"
+                            placeholder="Contoh: apt. Budi Santoso, S.Farm."
+                            class="form-input @error('nama_apoteker_pj') error @enderror">
                         @error('nama_apoteker_pj') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
@@ -277,14 +320,14 @@
                             Nomor Izin SIA (Surat Izin Apotek)
                         </label>
                         <input type="text"
-                                id="input-no-sia"
-                                name="no_izin_sia"
-                                value="{{ old('no_izin_sia', $apotek->no_izin_sia) }}"
-                                placeholder="Contoh: 503/012/SIA/DPMPTSP/2024"
-                                class="form-input @error('no_izin_sia') error @enderror">
+                            id="input-no-sia"
+                            name="no_izin_sia"
+                            value="{{ old('no_izin_sia', $apotek->no_izin_sia) }}"
+                            placeholder="Contoh: 503/012/SIA/DPMPTSP/2024"
+                            class="form-input @error('no_izin_sia') error @enderror">
                         @error('no_izin_sia') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
-                    
+
 
 
                     <div>
@@ -292,11 +335,11 @@
                             Nomor SIPA (Surat Izin Praktik Apoteker)
                         </label>
                         <input type="text"
-                                id="input-no-sipa"
-                                name="no_sipa"
-                                value="{{ old('no_sipa', $apotek->no_sipa) }}"
-                                placeholder="Contoh: 19850101/SIPA_32.73/2023/2001"
-                                class="form-input @error('no_sipa') error @enderror">
+                            id="input-no-sipa"
+                            name="no_sipa"
+                            value="{{ old('no_sipa', $apotek->no_sipa) }}"
+                            placeholder="Contoh: 19850101/SIPA_32.73/2023/2001"
+                            class="form-input @error('no_sipa') error @enderror">
                         @error('no_sipa') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -314,9 +357,9 @@
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <div class="w-16 h-16 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
                         <img id="form-logo-preview"
-                             src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
-                             alt="Logo"
-                             class="w-full h-full object-contain {{ $apotek->logo ? '' : 'hidden' }}">
+                            src="{{ $apotek->logo ? asset('storage/' . $apotek->logo) : '' }}"
+                            alt="Logo"
+                            class="w-full h-full object-contain {{ $apotek->logo ? '' : 'hidden' }}">
                         <div id="form-logo-placeholder" class="text-gray-300 {{ $apotek->logo ? 'hidden' : '' }}">
                             <x-heroicon-o-photo class="w-6 h-6" />
                         </div>
@@ -324,10 +367,10 @@
 
                     <div class="flex-1 w-full space-y-1">
                         <input type="file"
-                                id="input-logo-file"
-                                name="logo"
-                                accept="image/png,image/jpeg,image/webp,image/jpg"
-                                class="form-input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer">
+                            id="input-logo-file"
+                            name="logo"
+                            accept="image/png,image/jpeg,image/webp,image/jpg"
+                            class="form-input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer">
                         @error('logo') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                         <p class="text-[11px] text-gray-400">
                             Format: PNG, JPG, WEBP. Maksimal 2 MB. Kosongkan jika tidak ingin mengubah logo saat ini.
@@ -339,9 +382,8 @@
             <!-- Form Action Footer -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
                 <button type="button"
-                        id="btn-reset"
-                        class="btn-secondary"
-                        onclick="resetFormToInitial()">
+                    id="btn-reset"
+                    class="btn-secondary">
                     Clear
                 </button>
                 <button type="submit" class="btn-primary flex items-center gap-1.5">
@@ -355,156 +397,196 @@
 
 <!-- Real-time Synchronizer Script -->
 <script>
-const __INITIAL_FORM_STATE = {};
+    const __INITIAL_FORM_STATE = {};
+    let __INITIAL_LOGO_URL = '';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Capture initial values for reset functionality
-    document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
-        __INITIAL_FORM_STATE[el.name] = el.value;
-    });
-
-    const inputNama = document.getElementById('input-nama-apotek');
-    const inputPemilik = document.getElementById('input-nama-pemilik');
-    const inputTelepon = document.getElementById('input-telepon');
-    const inputEmail = document.getElementById('input-email');
-    const inputApotekerPj = document.getElementById('input-apoteker-pj');
-    const inputSia = document.getElementById('input-no-sia');
-    const inputSipa = document.getElementById('input-no-sipa');
-    const inputLogo = document.getElementById('input-logo-file');
-
-    const inputAlamatJalan = document.getElementById('input-alamat-jalan');
-    const inputKelurahan = document.getElementById('input-kelurahan');
-    const inputKecamatan = document.getElementById('input-kecamatan');
-    const inputKota = document.getElementById('input-kota');
-    const inputProvinsi = document.getElementById('input-provinsi');
-    const inputKodePos = document.getElementById('input-kode-pos');
-
-    const prevNama = document.getElementById('preview-nama-apotek');
-    const prevOwner = document.getElementById('preview-owner');
-    const prevAlamat = document.getElementById('preview-alamat');
-    const prevTelepon = document.getElementById('preview-telepon');
-    const prevEmail = document.getElementById('preview-email');
-    const prevPj = document.getElementById('preview-pj');
-    const prevLogoImg = document.getElementById('preview-logo-img');
-    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
-    const formLogoPreview = document.getElementById('form-logo-preview');
-    const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
-
-    const receiptNama = document.getElementById('receipt-nama');
-    const receiptAlamat = document.getElementById('receipt-alamat');
-    const receiptKontak = document.getElementById('receipt-kontak');
-    const receiptSia = document.getElementById('receipt-sia');
-    const receiptSipa = document.getElementById('receipt-sipa');
-
-    function compileAddress() {
-        const jalan = inputAlamatJalan ? inputAlamatJalan.value.trim() : '';
-        const kel = inputKelurahan ? inputKelurahan.value.trim() : '';
-        const kec = inputKecamatan ? inputKecamatan.value.trim() : '';
-        const kota = inputKota ? inputKota.value.trim() : '';
-        const prov = inputProvinsi ? inputProvinsi.value.trim() : '';
-        const pos = inputKodePos ? inputKodePos.value.trim() : '';
-
-        const parts = [];
-        if (jalan) parts.push(jalan);
-        if (kel) parts.push('Kel. ' + kel);
-        if (kec) parts.push('Kec. ' + kec);
-        if (kota) parts.push(kota);
-        if (prov) parts.push(prov);
-        if (pos) parts.push(pos);
-
-        const full = parts.join(', ');
-        if (prevAlamat) prevAlamat.textContent = full || 'Alamat belum diatur';
-        if (receiptAlamat) receiptAlamat.textContent = full || 'Alamat Apotek';
-    }
-
-    [inputAlamatJalan, inputKelurahan, inputKecamatan, inputKota, inputProvinsi, inputKodePos].forEach(el => {
-        if (el) {
-            el.addEventListener('input', compileAddress);
-        }
-    });
-
-    if (inputNama) {
-        inputNama.addEventListener('input', (e) => {
-            const val = e.target.value.trim() || 'Nama Apotek';
-            if (prevNama) prevNama.textContent = val;
-            if (receiptNama) receiptNama.textContent = val.toUpperCase();
-        });
-    }
-
-    if (inputPemilik) {
-        inputPemilik.addEventListener('input', (e) => {
-            const val = e.target.value.trim() || '-';
-            if (prevOwner) prevOwner.innerHTML = 'Owner: <span class="font-medium text-gray-700">' + val + '</span>';
-        });
-    }
-
-    if (inputTelepon) {
-        inputTelepon.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (prevTelepon) prevTelepon.textContent = val || 'Telepon belum diatur';
-            if (receiptKontak) receiptKontak.textContent = 'Telp: ' + (val || '-');
-        });
-    }
-
-    if (inputEmail) {
-        inputEmail.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (prevEmail) prevEmail.textContent = val || 'Email belum diatur';
-        });
-    }
-
-    if (inputApotekerPj) {
-        inputApotekerPj.addEventListener('input', (e) => {
-            const val = e.target.value.trim() || '-';
-            if (prevPj) prevPj.innerHTML = 'PJ: <span class="font-medium text-gray-700">' + val + '</span>';
-        });
-    }
-
-    if (inputSia) {
-        inputSia.addEventListener('input', (e) => {
-            if (receiptSia) receiptSia.textContent = e.target.value.trim() || '-';
-        });
-    }
-
-    if (inputSipa) {
-        inputSipa.addEventListener('input', (e) => {
-            if (receiptSipa) receiptSipa.textContent = e.target.value.trim() || '-';
-        });
-    }
-
-    if (inputLogo) {
-        inputLogo.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    if (prevLogoImg) {
-                        prevLogoImg.src = e.target.result;
-                        prevLogoImg.classList.remove('hidden');
-                    }
-                    if (prevLogoPlaceholder) prevLogoPlaceholder.classList.add('hidden');
-                    if (formLogoPreview) {
-                        formLogoPreview.src = e.target.result;
-                        formLogoPreview.classList.remove('hidden');
-                    }
-                    if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    window.resetFormToInitial = function () {
+    document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
-            const initial = __INITIAL_FORM_STATE[el.name];
-            if (initial !== undefined) {
-                el.value = initial;
-                el.dispatchEvent(new Event('input'));
+            __INITIAL_FORM_STATE[el.name] = el.value;
+        });
+
+        const prevLogoImg = document.getElementById('preview-logo-img');
+        if (prevLogoImg) __INITIAL_LOGO_URL = prevLogoImg.src;
+
+        const inputNama = document.getElementById('input-nama-apotek');
+        const inputPemilik = document.getElementById('input-nama-pemilik');
+        const inputTelepon = document.getElementById('input-telepon');
+        const inputEmail = document.getElementById('input-email');
+        const inputApotekerPj = document.getElementById('input-apoteker-pj');
+        const inputSia = document.getElementById('input-no-sia');
+        const inputSipa = document.getElementById('input-no-sipa');
+        const inputLogo = document.getElementById('input-logo-file');
+
+        const inputAlamatJalan = document.getElementById('input-alamat-jalan');
+        const inputKelurahan = document.getElementById('input-kelurahan');
+        const inputKecamatan = document.getElementById('input-kecamatan');
+        const inputKota = document.getElementById('input-kota');
+        const inputProvinsi = document.getElementById('input-provinsi');
+        const inputKodePos = document.getElementById('input-kode-pos');
+
+        const prevNama = document.getElementById('preview-nama-apotek');
+        const prevOwner = document.getElementById('preview-owner');
+        const prevAlamat = document.getElementById('preview-alamat');
+        const prevTelepon = document.getElementById('preview-telepon');
+        const prevEmail = document.getElementById('preview-email');
+        const prevPj = document.getElementById('preview-pj');
+        const formLogoPreview = document.getElementById('form-logo-preview');
+        const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
+
+        const receiptNama = document.getElementById('receipt-nama');
+        const receiptAlamat = document.getElementById('receipt-alamat');
+        const receiptKontak = document.getElementById('receipt-kontak');
+        const receiptSia = document.getElementById('receipt-sia');
+        const receiptSipa = document.getElementById('receipt-sipa');
+        const receiptLogo = document.getElementById('receipt-logo');
+
+        function compileAddress() {
+            const jalan = inputAlamatJalan ? inputAlamatJalan.value.trim() : '';
+            const kel = inputKelurahan ? inputKelurahan.value.trim() : '';
+            const kec = inputKecamatan ? inputKecamatan.value.trim() : '';
+            const kota = inputKota ? inputKota.value.trim() : '';
+            const prov = inputProvinsi ? inputProvinsi.value.trim() : '';
+            const pos = inputKodePos ? inputKodePos.value.trim() : '';
+
+            const parts = [];
+            if (jalan) parts.push(jalan);
+            if (kel) parts.push('Kel. ' + kel);
+            if (kec) parts.push('Kec. ' + kec);
+            if (kota) parts.push(kota);
+            if (prov) parts.push(prov);
+            if (pos) parts.push(pos);
+
+            const full = parts.join(', ');
+            if (prevAlamat) prevAlamat.textContent = full || 'Alamat belum diatur';
+            if (receiptAlamat) receiptAlamat.textContent = full || 'Alamat Apotek';
+        }
+
+        [inputAlamatJalan, inputKelurahan, inputKecamatan, inputKota, inputProvinsi, inputKodePos].forEach(el => {
+            if (el) {
+                el.addEventListener('input', compileAddress);
             }
         });
 
-        if (inputLogo) inputLogo.value = '';
-    };
-});
+        if (inputNama) {
+            inputNama.addEventListener('input', (e) => {
+                const val = e.target.value.trim() || 'Nama Apotek';
+                if (prevNama) prevNama.textContent = val;
+                if (receiptNama) receiptNama.textContent = val.toUpperCase();
+            });
+        }
+
+        if (inputPemilik) {
+            inputPemilik.addEventListener('input', (e) => {
+                const val = e.target.value.trim() || '-';
+                if (prevOwner) prevOwner.innerHTML = 'Owner: <span class="font-medium text-gray-700">' + val + '</span>';
+            });
+        }
+
+        if (inputTelepon) {
+            inputTelepon.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                if (prevTelepon) prevTelepon.textContent = val || 'Telepon belum diatur';
+                if (receiptKontak) receiptKontak.textContent = 'Telp: ' + (val || '-');
+            });
+        }
+
+        if (inputEmail) {
+            inputEmail.addEventListener('input', (e) => {
+                const val = e.target.value.trim();
+                if (prevEmail) prevEmail.textContent = val || 'Email belum diatur';
+            });
+        }
+
+        if (inputApotekerPj) {
+            inputApotekerPj.addEventListener('input', (e) => {
+                const val = e.target.value.trim() || '-';
+                if (prevPj) prevPj.innerHTML = 'PJ: <span class="font-medium text-gray-700">' + val + '</span>';
+            });
+        }
+
+        if (inputSia) {
+            inputSia.addEventListener('input', (e) => {
+                if (receiptSia) receiptSia.textContent = e.target.value.trim() || '-';
+            });
+        }
+
+        if (inputSipa) {
+            inputSipa.addEventListener('input', (e) => {
+                if (receiptSipa) receiptSipa.textContent = e.target.value.trim() || '-';
+            });
+        }
+
+        if (inputLogo) {
+            inputLogo.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (prevLogoImg) {
+                            prevLogoImg.src = e.target.result;
+                            prevLogoImg.classList.remove('hidden');
+                        }
+                        if (prevLogoPlaceholder) prevLogoPlaceholder.classList.add('hidden');
+                        if (formLogoPreview) {
+                            formLogoPreview.src = e.target.result;
+                            formLogoPreview.classList.remove('hidden');
+                        }
+                        if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
+                        if (receiptLogo) {
+                            receiptLogo.src = e.target.result;
+                            receiptLogo.classList.remove('hidden');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
+
+        const btnReset = document.getElementById('btn-reset');
+        if (btnReset) {
+            btnReset.addEventListener('click', (e) => {
+                e.preventDefault();
+                const konfirmasi = confirm('Apakah Anda yakin ingin mengosongkan seluruh kolom form pengaturan ini?');
+                if (konfirmasi) {
+                    window.clearForm();
+                }
+            });
+        }
+
+        window.clearForm = function() {
+            // Kosongkan semua input teks dan textarea
+            document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
+                el.value = '';
+                el.dispatchEvent(new Event('input'));
+            });
+
+            // Kosongkan input file logo
+            if (inputLogo) {
+                inputLogo.value = '';
+            }
+
+            // Reset pratinjau logo ke keadaan kosong
+            if (prevLogoImg) {
+                prevLogoImg.src = '';
+                prevLogoImg.classList.add('hidden');
+            }
+            if (prevLogoPlaceholder) {
+                prevLogoPlaceholder.classList.remove('hidden');
+            }
+            if (formLogoPreview) {
+                formLogoPreview.src = '';
+                formLogoPreview.classList.add('hidden');
+            }
+            if (formLogoPlaceholder) {
+                formLogoPlaceholder.classList.remove('hidden');
+            }
+            if (receiptLogo) {
+                receiptLogo.src = '';
+                receiptLogo.classList.add('hidden');
+            }
+        };
+    });
 </script>
 @endsection

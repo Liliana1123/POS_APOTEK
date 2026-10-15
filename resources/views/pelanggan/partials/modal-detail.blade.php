@@ -2,7 +2,7 @@
 <div id="modal-detail-pelanggan"
     class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
 
-    <div class="modal-container-custom w-full max-w-3xl mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden">
+    <div class="modal-container-custom w-full mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden" style="width: 50vw; max-width: 900px;">
 
         <!-- HEADER -->
         <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
@@ -26,8 +26,7 @@
                 onclick="closeDetailModal()"
                 class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
                 title="Tutup"
-                aria-label="Tutup"
-            >
+                aria-label="Tutup">
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
         </div>
@@ -36,23 +35,23 @@
         <div class="overflow-y-auto max-h-[calc(92vh-128px)]">
 
             <!-- INFORMASI PELANGGAN + RINGKASAN -->
-            <div class="grid grid-cols-1 gap-5 px-5 py-5 md:grid-cols-2">
+            <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 px-5 py-5">
 
                 <!-- KIRI -->
                 <div class="space-y-4">
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-user class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
                             <div class="text-[10px] font-medium text-gray-400">Nama</div>
-                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-gray-800 break-words">-</div>
+                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-blue-600 break-words">-</div>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-identification class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -62,7 +61,7 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-phone class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -72,7 +71,7 @@
                     </div>
 
                     <div class="flex items-start gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-map-pin class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -81,49 +80,107 @@
                         </div>
                     </div>
 
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <x-heroicon-o-tag class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-medium text-gray-400">Benefit Diskon</div>
+                            <div class="mt-0.5">
+                                <span id="detail-benefit-diskon" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                    Diskon Default 10%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- KANAN -->
-                <div class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                    <!-- TOTAL BELANJA -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
                         <div class="flex items-center gap-3">
                             <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
                                 <x-heroicon-o-shopping-cart class="w-4 h-4" />
                             </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Belanja</div>
-                                <div id="detail-total-belanja" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Belanja
+                                </div>
+
+                                <div id="detail-total-belanja" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
-                                <x-heroicon-o-banknotes class="w-4 h-4" />
-                            </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Piutang</div>
-                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="rounded-lg bg-blue-50 px-3.5 py-3">
+                    <!-- TOTAL DISKON -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
                         <div class="flex items-center gap-3">
                             <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
                                 <x-heroicon-o-tag class="w-4 h-4" />
                             </div>
-                            <div>
-                                <div class="text-[10px] font-medium text-gray-500">Total Diskon</div>
-                                <div id="detail-total-diskon" class="mt-0.5 text-sm font-bold text-gray-800">Rp 0</div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Diskon
+                                </div>
+
+                                <div id="detail-total-diskon" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- TOTAL PIUTANG -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Total Piutang
+                                </div>
+
+                                <div id="detail-saldo-piutang" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    Rp 0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- JATUH TEMPO -->
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                                <x-heroicon-o-calendar-days class="w-4 h-4" />
+                            </div>
+
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-medium text-gray-500">
+                                    Jatuh Tempo
+                                </div>
+
+                                <div id="detail-jatuh-tempo" class="mt-0.5 text-sm font-bold text-gray-800">
+                                    -
+                                </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
             </div>
+
 
             <!-- RIWAYAT TRANSAKSI -->
             <div class="border-t border-gray-100 px-5 py-4">
@@ -144,16 +201,19 @@
                     <table class="min-w-full text-xs">
                         <thead class="bg-blue-50">
                             <tr class="border-b border-gray-200">
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Tanggal
                                 </th>
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     No. Faktur
                                 </th>
-                                <th class="px-3 py-2 text-left font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Metode
                                 </th>
-                                <th class="px-3 py-2 text-right font-semibold text-gray-800 whitespace-nowrap">
+
+                                <th class="px-3 py-2 text-center font-semibold text-gray-800 whitespace-nowrap">
                                     Total
                                 </th>
                             </tr>
@@ -177,8 +237,7 @@
             <button
                 type="button"
                 onclick="closeDetailModal()"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
-            >
+                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition">
                 Tutup
             </button>
         </div>
@@ -187,47 +246,50 @@
 </div>
 
 <script>
-function formatDetailRupiah(angka) {
-    return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
-}
-
-function formatDetailTanggal(tanggal) {
-    if (!tanggal) return '-';
-
-    const parts = String(tanggal).split('-');
-
-    if (parts.length !== 3) {
-        return tanggal;
+    function formatDetailRupiah(angka) {
+        return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
     }
 
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-}
+    function formatDetailTanggal(tanggal) {
 
-function labelMetodePembayaran(metode) {
-    const labels = {
-        cash: 'Cash',
-        qris: 'QRIS',
-        debit: 'Debit',
-        piutang: 'Piutang'
-    };
+        if (!tanggal) return '-';
 
-    return labels[String(metode || '').toLowerCase()] || (metode || '-');
-}
+        const parts = String(tanggal).split('-');
 
-function openDetailModal(pelangganId) {
-    const modal = document.getElementById('modal-detail-pelanggan');
-    const historyBody = document.getElementById('detail-riwayat-body');
+        if (parts.length !== 3) {
+            return tanggal;
+        }
 
-    document.getElementById('detail-nama').textContent = '-';
-    document.getElementById('detail-member-id').textContent = '-';
-    document.getElementById('detail-telepon').textContent = '-';
-    document.getElementById('detail-alamat').textContent = 'Memuat...';
-    document.getElementById('detail-total-belanja').textContent = 'Rp 0';
-    document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
-    document.getElementById('detail-total-diskon').textContent = 'Rp 0';
-    document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
 
-    historyBody.innerHTML = `
+    function labelMetodePembayaran(metode) {
+        const labels = {
+            cash: 'Cash',
+            qris: 'QRIS',
+            debit: 'Debit',
+            piutang: 'Piutang'
+        };
+
+        return labels[String(metode || '').toLowerCase()] || (metode || '-');
+    }
+
+    function openDetailModal(pelangganId) {
+        const modal = document.getElementById('modal-detail-pelanggan');
+        const historyBody = document.getElementById('detail-riwayat-body');
+
+        document.getElementById('detail-nama').textContent = '-';
+        document.getElementById('detail-member-id').textContent = '-';
+        document.getElementById('detail-telepon').textContent = '-';
+        document.getElementById('detail-alamat').textContent = 'Memuat...';
+        document.getElementById('detail-benefit-diskon').textContent = 'Diskon Default 10%';
+        document.getElementById('detail-total-belanja').textContent = 'Rp 0';
+        document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
+        document.getElementById('detail-jatuh-tempo').textContent = '-';
+        document.getElementById('detail-total-diskon').textContent = 'Rp 0';
+        document.getElementById('detail-jumlah-transaksi').textContent = '0 transaksi';
+
+        historyBody.innerHTML = `
         <tr>
             <td colspan="4" class="px-3 py-6 text-center text-gray-400">
                 Memuat riwayat transaksi...
@@ -235,94 +297,112 @@ function openDetailModal(pelangganId) {
         </tr>
     `;
 
-    modal.classList.remove('hidden');
 
-    fetch(`{{ url('pelanggan') }}/${pelangganId}`, {
-        headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+
+        modal.classList.remove('hidden');
+        const modalContent = modal.querySelector('.overflow-y-auto');
+        if (modalContent) {
+            modalContent.scrollTop = 0;
         }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Gagal memuat detail pelanggan');
-        }
-        return response.json();
-    })
-    .then(data => {
-        const pelanggan = data.pelanggan || {};
-        const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
 
-        document.getElementById('detail-nama').textContent = pelanggan.nama || '-';
-        document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
-        document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
-        document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
-        document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
-        document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
-        document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
-        document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
+        fetch(`{{ url('pelanggan') }}/${pelangganId}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal memuat detail pelanggan');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const pelanggan = data.pelanggan || {};
+                const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
 
-        historyBody.innerHTML = '';
+                document.getElementById('detail-nama').textContent = pelanggan.nama || '-';
+                document.getElementById('detail-member-id').textContent = pelanggan.member_id || '-';
+                document.getElementById('detail-telepon').textContent = pelanggan.telepon || '-';
+                document.getElementById('detail-alamat').textContent = pelanggan.alamat || '-';
 
-        if (transaksi.length === 0) {
-            historyBody.innerHTML = `
+                const customDiscount = pelanggan.custom_discount_percentage;
+                const benefitLabel =
+                    customDiscount !== null &&
+                    customDiscount !== undefined &&
+                    customDiscount !== '' ?
+                    `Diskon ${parseFloat(customDiscount)}%` :
+                    'Diskon 10%';
+
+                document.getElementById('detail-benefit-diskon').textContent = benefitLabel;
+
+                document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);
+                document.getElementById('detail-saldo-piutang').textContent = formatDetailRupiah(pelanggan.saldo_piutang);
+                document.getElementById('detail-jatuh-tempo').textContent = pelanggan.jatuh_tempo || '-';
+                document.getElementById('detail-total-diskon').textContent = formatDetailRupiah(pelanggan.total_diskon);
+                document.getElementById('detail-jumlah-transaksi').textContent = `${transaksi.length} transaksi`;
+
+                historyBody.innerHTML = '';
+
+                if (transaksi.length === 0) {
+                    historyBody.innerHTML = `
                 <tr>
                     <td colspan="4" class="px-3 py-6 text-center text-gray-400">
                         Belum ada transaksi.
                     </td>
                 </tr>
             `;
-            return;
-        }
+                    return;
+                }
 
-        transaksi.forEach(item => {
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50 transition border-b border-gray-100';
+                transaksi.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition border-b border-gray-100';
 
-            const tanggal = document.createElement('td');
-            tanggal.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
-            tanggal.textContent = formatDetailTanggal(item.tanggal);
+                    const tanggal = document.createElement('td');
+                    tanggal.className = 'px-3 py-2.5 whitespace-nowrap text-center text-gray-600';
+                    tanggal.textContent = formatDetailTanggal(item.tanggal);
 
-            const faktur = document.createElement('td');
-            faktur.className = 'px-3 py-2.5 whitespace-nowrap font-mono text-[10px] text-blue-600';
-            faktur.textContent = item.no_faktur || '-';
+                    const faktur = document.createElement('td');
+                    faktur.className = 'px-3 py-2.5 whitespace-nowrap text-center font-mono text-[10px] text-blue-600';
+                    faktur.textContent = item.no_faktur || '-';
 
-            const metode = document.createElement('td');
-            metode.className = 'px-3 py-2.5 whitespace-nowrap text-gray-600';
-            metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
+                    const metode = document.createElement('td');
+                    metode.className = 'px-3 py-2.5 whitespace-nowrap text-center text-gray-600';
+                    metode.textContent = labelMetodePembayaran(item.metode_pembayaran);
 
-            const total = document.createElement('td');
-            total.className = 'px-3 py-2.5 whitespace-nowrap text-right font-semibold text-gray-800';
-            total.textContent = formatDetailRupiah(item.total);
+                    const total = document.createElement('td');
+                    total.className = 'px-3 py-2.5 whitespace-nowrap text-center font-semibold text-gray-800';
+                    total.textContent = formatDetailRupiah(item.total);
 
-            row.appendChild(tanggal);
-            row.appendChild(faktur);
-            row.appendChild(metode);
-            row.appendChild(total);
+                    row.appendChild(tanggal);
+                    row.appendChild(faktur);
+                    row.appendChild(metode);
+                    row.appendChild(total);
 
-            historyBody.appendChild(row);
-        });
-    })
-    .catch(error => {
-        console.error(error);
+                    historyBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error(error);
 
-        document.getElementById('detail-alamat').textContent = 'Gagal memuat data';
+                document.getElementById('detail-alamat').textContent = 'Gagal memuat data';
 
-        historyBody.innerHTML = `
+                historyBody.innerHTML = `
             <tr>
                 <td colspan="4" class="px-3 py-6 text-center text-red-500">
                     Riwayat transaksi gagal dimuat.
                 </td>
             </tr>
         `;
-    });
-}
-
-function closeDetailModal() {
-    const modal = document.getElementById('modal-detail-pelanggan');
-
-    if (modal) {
-        modal.classList.add('hidden');
+            });
     }
-}
+
+    function closeDetailModal() {
+        const modal = document.getElementById('modal-detail-pelanggan');
+
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
 </script>

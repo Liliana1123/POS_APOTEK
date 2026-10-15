@@ -14,15 +14,17 @@ class BarangController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Barang::with(['kategori', 'satuan', 'pabrik']);
+        $query = Barang::with(['kategori', 'satuan', 'pabrik'])
+            ->withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
+            ->with('latestDetailPenerimaan.penerimaan.supplier');
 
         if ($request->filled('cari')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->cari . '%')
-                  ->orWhere('kode_apotek', 'like', '%' . $request->cari . '%')
-                  ->orWhere('kode_kfa', 'like', '%' . $request->cari . '%')
-                  ->orWhere('merk', 'like', '%' . $request->cari . '%')
-                  ->orWhere('barcode', 'like', '%' . $request->cari . '%');
+                    ->orWhere('kode_apotek', 'like', '%' . $request->cari . '%')
+                    ->orWhere('kode_kfa', 'like', '%' . $request->cari . '%')
+                    ->orWhere('merk', 'like', '%' . $request->cari . '%')
+                    ->orWhere('barcode', 'like', '%' . $request->cari . '%');
             });
         }
 
@@ -223,10 +225,10 @@ class BarangController extends Controller
         if ($request->filled('cari')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->cari . '%')
-                  ->orWhere('kode_apotek', 'like', '%' . $request->cari . '%')
-                  ->orWhere('kode_kfa', 'like', '%' . $request->cari . '%')
-                  ->orWhere('merk', 'like', '%' . $request->cari . '%')
-                  ->orWhere('barcode', 'like', '%' . $request->cari . '%');
+                    ->orWhere('kode_apotek', 'like', '%' . $request->cari . '%')
+                    ->orWhere('kode_kfa', 'like', '%' . $request->cari . '%')
+                    ->orWhere('merk', 'like', '%' . $request->cari . '%')
+                    ->orWhere('barcode', 'like', '%' . $request->cari . '%');
             });
         }
 
@@ -364,7 +366,7 @@ class BarangController extends Controller
             while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
                 $rowNum++;
                 // Lewati baris kosong
-                if (empty(array_filter($row, fn ($v) => trim((string) $v) !== ''))) {
+                if (empty(array_filter($row, fn($v) => trim((string) $v) !== ''))) {
                     continue;
                 }
 

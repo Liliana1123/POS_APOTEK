@@ -13,8 +13,16 @@ class DetailPenerimaan extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'penerimaan_id', 'barang_id', 'no_batch', 'harga_beli', 'harga_jual',
-        'expired_date', 'no_rak', 'jumlah', 'stok', 'aktif',
+        'penerimaan_id',
+        'barang_id',
+        'no_batch',
+        'harga_beli',
+        'harga_jual',
+        'expired_date',
+        'no_rak',
+        'jumlah',
+        'stok',
+        'aktif',
     ];
 
     protected $casts = [
@@ -42,10 +50,13 @@ class DetailPenerimaan extends Model
         return $this->hasMany(Rusak::class);
     }
 
-    // Batch yang expired_date-nya <= $hari dari sekarang
+    // Batch yang expired_date-nya <= $hari dari hari ini (termasuk yang sudah kadaluarsa)
     public function scopeMendekatiExpired(Builder $query, int $hari = 90): Builder
     {
-        return $query->where('expired_date', '<=', now()->addDays($hari));
+        $today = now()->startOfDay();
+
+        return $query->whereNotNull('expired_date')
+            ->whereDate('expired_date', '<=', $today->copy()->addDays($hari));
     }
 
     public function sudahExpired(): bool

@@ -9,7 +9,11 @@
     </button>
 </x-page-header>
 
-<x-card-filter :action="route('kategori.index')" :reset-url="route('kategori.index')">
+<x-card-filter
+    :action="route('kategori.index')"
+    :reset-url="route('kategori.index')"
+    :grid="true"
+    :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama kategori..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -30,28 +34,27 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($kategoris as $index => $kategori)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
-                            <x-table-action
-                                edit-class="btn-edit-kategori"
-                                :edit-id="$kategori->id"
-                                :edit-data="['nama' => $kategori->nama]"
-                                :delete-url="route('kategori.destroy', $kategori)"
-                                delete-confirm="Yakin ingin menghapus kategori ini?"
-                            />
-                        </td>
-                        <td class="table-num">{{ $kategori->id }}</td>
-                        <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
-                    </tr>
+                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                    <td class="text-left">
+                        <x-table-action
+                            edit-class="btn-edit-kategori"
+                            :edit-id="$kategori->id"
+                            :edit-data="['nama' => $kategori->nama]"
+                            :delete-url="route('kategori.destroy', $kategori)"
+                            delete-confirm="Yakin ingin menghapus kategori ini?" />
+                    </td>
+                    <td class="table-num">{{ sprintf('%02d', $kategori->id) }}</td>
+                    <td class="font-medium text-gray-800">{{ $kategori->nama }}</td>
+                </tr>
                 @empty
-                    <x-empty-state colspan="3" />
+                <x-empty-state colspan="3" />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4">{{ $kategoris->links() }}</div>
+<div class="mt-4">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-kategori"

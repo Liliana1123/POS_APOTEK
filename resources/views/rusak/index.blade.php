@@ -16,6 +16,9 @@
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+        <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
@@ -27,8 +30,7 @@
                         name="cari"
                         value="{{ request('cari') }}"
                         placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
+                        class="form-input pr-8">
                     <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
                         <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                     </span>
@@ -45,8 +47,7 @@
                         name="no_batch"
                         value="{{ request('no_batch') }}"
                         placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono"
-                    >
+                        class="form-input pr-8 font-mono">
                     <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
                         <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                     </span>
@@ -54,39 +55,44 @@
             </div>
 
             <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Pencatatan
-                </label>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Awal
+                    </label>
+                    <span class="text-sm invisible select-none">-</span>
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Akhir
+                    </label>
+                </div>
 
                 <div class="flex items-center gap-2">
                     <input
                         type="date"
                         name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
-                        class="form-input min-w-0"
-                    >
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+                        class="form-input min-w-0">
 
                     <span class="text-sm text-gray-400">-</span>
 
                     <input
                         type="date"
                         name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
-                        class="form-input min-w-0"
-                    >
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+                        class="form-input min-w-0">
                 </div>
             </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
             @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
+            <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
+                Clear
+            </a>
             @endif
 
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -101,7 +107,7 @@
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">Tanggal Lapor</th>
-                    <th scope="col">Barang / Obat</th>
+                    <th scope="col">Barang atau Obat</th>
                     <th scope="col">No. Batch</th>
                     <th scope="col" class="text-right">Jumlah</th>
                     <th scope="col">Keterangan</th>
@@ -125,8 +131,7 @@
                                 class="btn-secondary !p-1.5"
                                 style="color: #2563EB;"
                                 title="Lihat Detail"
-                                onclick="openDetailRusak({{ $rusak->id }})"
-                            >
+                                onclick="openDetailRusak({{ $rusak->id }})">
                                 <x-heroicon-o-eye class="w-4 h-4" />
                             </button>
 
@@ -135,8 +140,7 @@
                                 class="btn-secondary !p-1.5"
                                 style="color: #F59E0B;"
                                 title="Edit"
-                                onclick="openEditRusak({{ $rusak->id }})"
-                            >
+                                onclick="openEditRusak({{ $rusak->id }})">
                                 <x-heroicon-o-pencil-square class="w-4 h-4" />
                             </button>
 
@@ -144,8 +148,7 @@
                                 href="{{ route('rusak.print', $rusak) }}"
                                 class="btn-secondary !p-1.5"
                                 title="Print"
-                                target="_blank"
-                            >
+                                target="_blank">
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
@@ -153,8 +156,7 @@
                                 action="{{ route('rusak.destroy', $rusak) }}"
                                 method="POST"
                                 class="inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')"
-                            >
+                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')">
                                 @csrf
                                 @method('DELETE')
 
@@ -162,8 +164,7 @@
                                     type="submit"
                                     class="btn-secondary !p-1.5"
                                     style="color: #DC2626;"
-                                    title="Hapus"
-                                >
+                                    title="Hapus">
                                     <x-heroicon-o-trash class="w-4 h-4" />
                                 </button>
                             </form>
@@ -173,7 +174,7 @@
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->format('d M Y') }}
+                        {{ $rusak->tanggal->translatedFormat('d F Y') }}
                     </td>
 
                     {{-- Barang / Obat --}}
@@ -202,16 +203,16 @@
                         <div class="empty-state-container">
                             <div class="empty-state-title">
                                 @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Barang Rusak Tidak Ditemukan
+                                Barang Rusak Tidak Ditemukan
                                 @else
-                                    Barang Rusak Kosong
+                                Barang Rusak Kosong
                                 @endif
                             </div>
                             <div class="empty-state-desc">
                                 @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
+                                Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
                                 @else
-                                    Belum ada data pelaporan obat atau barang rusak.
+                                Belum ada data pelaporan obat atau barang rusak.
                                 @endif
                             </div>
                         </div>
@@ -223,312 +224,278 @@
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            form="filter-form"
-            onchange="this.form.submit()"
-        >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $rusaks->links() }}
-    </div>
+<div class="mt-4">
+    {{ $rusaks->links('vendor.pagination.apotek') }}
 </div>
 
-    @php
-        $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
-            ->where('aktif', true)
-            ->where('stok', '>', 0)
-            ->orderBy('expired_date')
-            ->get();
-    @endphp
+@php
+$batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
+->where('aktif', true)
+->where('stok', '>', 0)
+->orderBy('expired_date')
+->get();
+@endphp
 
-    <!-- Modal Tambah Barang Rusak -->
-    <div id="modal-tambah-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+<!-- Modal Tambah Barang Rusak -->
+<div id="modal-tambah-rusak"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
 
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
 
-            <div class="flex justify-between items-center px-6 py-4 border-b">
+        <div class="flex justify-between items-center px-6 py-4 border-b">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">
+                    Catat Barang Rusak Baru
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Laporkan obat yang rusak, pecah, atau kadaluarsa untuk dikurangi dari stok batch.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                onclick="closeTambahRusak()"
+                class="text-gray-400 hover:text-gray-600 text-xl">
+                &times;
+            </button>
+        </div>
+
+        <form action="{{ route('rusak.store') }}" method="POST" class="p-6 space-y-4 overflow-y-auto">
+            @csrf
+
+            @if ($errors->any())
+            <div class="p-3 mb-2 text-xs text-red-700 bg-red-100 rounded-lg">
+                <strong class="block font-bold mb-1">Perbaiki kesalahan berikut:</strong>
+                <ul class="list-disc pl-4 space-y-0.5">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang atau Obat <span class="text-red-500">*</span></label>
+                <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
+                    <option value="">Pilih Batch</option>
+                    @foreach ($batches as $batch)
+                    <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id')==$batch->id)>
+                        {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->translatedFormat('d F Y') : '-' }})
+                    </option>
+                    @endforeach
+                </select>
+                @error('detail_penerimaan_id') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Catat Barang Rusak Baru
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Laporkan obat yang rusak, pecah, atau kadaluarsa untuk dikurangi dari stok batch.
-                    </p>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Lapor <span class="text-red-500">*</span></label>
+                    <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
+                    @error('tanggal') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jumlah Rusak <span class="text-red-500">*</span></label>
+                    <input type="number" name="jumlah" min="1" value="{{ old('jumlah') }}" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Masukkan jumlah...">
+                    @error('jumlah') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Keterangan (Opsional)</label>
+                <textarea name="keterangan" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Keterangan kerusakan...">{{ old('keterangan') }}</textarea>
+                @error('keterangan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t">
                 <button
                     type="button"
                     onclick="closeTambahRusak()"
-                    class="text-gray-400 hover:text-gray-600 text-xl"
-                >
-                    &times;
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold transition-colors">
+                    Batal
+                </button>
+                <button
+                    type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors">
+                    Simpan
                 </button>
             </div>
+        </form>
 
-            <form action="{{ route('rusak.store') }}" method="POST" class="p-6 space-y-4 overflow-y-auto">
-                @csrf
-
-                @if ($errors->any())
-                    <div class="p-3 mb-2 text-xs text-red-700 bg-red-100 rounded-lg">
-                        <strong class="block font-bold mb-1">Perbaiki kesalahan berikut:</strong>
-                        <ul class="list-disc pl-4 space-y-0.5">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang / Obat <span class="text-red-500">*</span></label>
-                    <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
-                        <option value="">Pilih Batch</option>
-                        @foreach ($batches as $batch)
-                            <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
-                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->format('d M Y') : '-' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('detail_penerimaan_id') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Lapor <span class="text-red-500">*</span></label>
-                        <input type="date" name="tanggal" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
-                        @error('tanggal') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jumlah Rusak <span class="text-red-500">*</span></label>
-                        <input type="number" name="jumlah" min="1" value="{{ old('jumlah') }}" required
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Masukkan jumlah...">
-                        @error('jumlah') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Keterangan (Opsional)</label>
-                    <textarea name="keterangan" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500" placeholder="Keterangan kerusakan...">{{ old('keterangan') }}</textarea>
-                    @error('keterangan') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2 border-t">
-                    <button
-                        type="button"
-                        onclick="closeTambahRusak()"
-                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold transition-colors"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold shadow-sm transition-colors"
-                    >
-                        Simpan
-                    </button>
-                </div>
-            </form>
-
-        </div>
     </div>
+</div>
 
-    <!-- Modal Detail Barang Rusak -->
-    <div id="modal-detail-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+<!-- Modal Detail Barang Rusak -->
+<div id="modal-detail-rusak"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
 
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
 
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Detail Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Informasi pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button type="button"
-                        onclick="closeDetailRusak()"
-                        class="text-gray-400 hover:text-gray-600 text-xl">
-                    &times;
-                </button>
+        <div class="flex justify-between items-center px-6 py-4 border-b">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">
+                    Detail Barang Rusak
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Informasi pencatatan barang rusak.
+                </p>
             </div>
 
-            <div id="detail-rusak-content" class="p-6">
+            <button type="button"
+                onclick="closeDetailRusak()"
+                class="text-gray-400 hover:text-gray-600 text-xl">
+                &times;
+            </button>
+        </div>
+
+        <div id="detail-rusak-content" class="p-6">
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Edit Barang Rusak -->
+<div id="modal-edit-rusak"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+
+        <div class="flex justify-between items-center px-6 py-4 border-b">
+            <div>
+                <h2 class="text-lg font-bold text-gray-800">
+                    Edit Barang Rusak
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Koreksi data pencatatan barang rusak.
+                </p>
             </div>
 
+            <button
+                type="button"
+                onclick="closeEditRusak()"
+                class="text-gray-400 hover:text-gray-600 text-xl">
+                &times;
+            </button>
         </div>
-    </div>
 
-    <!-- Modal Edit Barang Rusak -->
-    <div id="modal-edit-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+        <form id="form-edit-rusak" class="p-6">
 
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-            <div class="flex justify-between items-center px-6 py-4 border-b">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Edit Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Koreksi data pencatatan barang rusak.
-                    </p>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        Tanggal Lapor
+                    </label>
+
+                    <input
+                        type="date"
+                        id="edit-tanggal-rusak"
+                        name="tanggal"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
+                        required>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        Nama Barang
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edit-barang-rusak"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                        readonly>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        No. Batch
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edit-batch-rusak"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100 font-mono"
+                        readonly>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        No. Rak
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edit-rak-rusak"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                        readonly>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        Jumlah Rusak
+                    </label>
+
+                    <input
+                        type="number"
+                        id="edit-jumlah-rusak"
+                        name="jumlah"
+                        min="1"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
+                        required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">
+                        Expired Date
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edit-expired-rusak"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                        readonly>
+                </div>
+
+            </div>
+
+            <div class="mt-5">
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Keterangan
+                </label>
+
+                <textarea
+                    id="edit-keterangan-rusak"
+                    name="keterangan"
+                    rows="3"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6">
                 <button
                     type="button"
                     onclick="closeEditRusak()"
-                    class="text-gray-400 hover:text-gray-600 text-xl"
-                >
-                    &times;
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold">
+                    Batal
+                </button>
+
+                <button
+                    type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold">
+                    Simpan Perubahan
                 </button>
             </div>
 
-            <form id="form-edit-rusak" class="p-6">
+        </form>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            Tanggal Lapor
-                        </label>
-
-                        <input
-                            type="date"
-                            id="edit-tanggal-rusak"
-                            name="tanggal"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
-                            required
-                        >
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            Nama Barang
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit-barang-rusak"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                            readonly
-                        >
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            No. Batch
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit-batch-rusak"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100 font-mono"
-                            readonly
-                        >
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            No. Rak
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit-rak-rusak"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                            readonly
-                        >
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            Jumlah Rusak
-                        </label>
-
-                        <input
-                            type="number"
-                            id="edit-jumlah-rusak"
-                            name="jumlah"
-                            min="1"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
-                            required
-                        >
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">
-                            Expired Date
-                        </label>
-
-                        <input
-                            type="text"
-                            id="edit-expired-rusak"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                            readonly
-                        >
-                    </div>
-
-                </div>
-
-                <div class="mt-5">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Keterangan
-                    </label>
-
-                    <textarea
-                        id="edit-keterangan-rusak"
-                        name="keterangan"
-                        rows="3"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
-                    ></textarea>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-6">
-                    <button
-                        type="button"
-                        onclick="closeEditRusak()"
-                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold"
-                    >
-                        Batal
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold"
-                    >
-                        Simpan Perubahan
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
     </div>
+</div>
 
 
 <script>
-    const dataRusak = @json($rusaks->items());
+    const dataRusak = @json($rusaks - > items());
 
     function formatTanggalRusak(tanggal) {
         if (!tanggal) {
@@ -639,46 +606,46 @@
     function openEditRusak(id) {
         window.editRusakId = id;
         fetch(`/rusak/${id}/edit`, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Gagal mengambil data barang rusak.');
-            }
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data barang rusak.');
+                }
 
-            return response.json();
-        })
-        .then(rusak => {
-            document.getElementById('edit-tanggal-rusak').value =
-                rusak.tanggal ? rusak.tanggal.substring(0, 10) : '';
+                return response.json();
+            })
+            .then(rusak => {
+                document.getElementById('edit-tanggal-rusak').value =
+                    rusak.tanggal ? rusak.tanggal.substring(0, 10) : '';
 
-            document.getElementById('edit-barang-rusak').value =
-                rusak.detail_penerimaan?.barang?.nama ?? '';
+                document.getElementById('edit-barang-rusak').value =
+                    rusak.detail_penerimaan?.barang?.nama ?? '';
 
-            document.getElementById('edit-batch-rusak').value =
-                rusak.detail_penerimaan?.no_batch ?? '';
+                document.getElementById('edit-batch-rusak').value =
+                    rusak.detail_penerimaan?.no_batch ?? '';
 
-            document.getElementById('edit-rak-rusak').value =
-                rusak.detail_penerimaan?.no_rak ?? '';
+                document.getElementById('edit-rak-rusak').value =
+                    rusak.detail_penerimaan?.no_rak ?? '';
 
-            document.getElementById('edit-expired-rusak').value =
-                formatTanggalRusak(rusak.detail_penerimaan?.expired_date);
+                document.getElementById('edit-expired-rusak').value =
+                    formatTanggalRusak(rusak.detail_penerimaan?.expired_date);
 
-            document.getElementById('edit-jumlah-rusak').value =
-                rusak.jumlah ?? '';
+                document.getElementById('edit-jumlah-rusak').value =
+                    rusak.jumlah ?? '';
 
-            document.getElementById('edit-keterangan-rusak').value =
-                rusak.keterangan ?? '';
+                document.getElementById('edit-keterangan-rusak').value =
+                    rusak.keterangan ?? '';
 
-            document.getElementById('modal-edit-rusak').classList.remove('hidden');
-            document.getElementById('modal-edit-rusak').classList.add('flex');
-        })
-        .catch(error => {
-            console.error(error);
-            alert('Gagal mengambil data barang rusak.');
-        });
+                document.getElementById('modal-edit-rusak').classList.remove('hidden');
+                document.getElementById('modal-edit-rusak').classList.add('flex');
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Gagal mengambil data barang rusak.');
+            });
     }
 
     function closeEditRusak() {
@@ -688,65 +655,74 @@
         modal.classList.remove('flex');
     }
 
-    document.getElementById('form-edit-rusak').addEventListener('submit', function (event) {
-    event.preventDefault();
+    document.getElementById('form-edit-rusak').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-    const form = this;
+        const form = this;
 
-    fetch(`/rusak/${window.editRusakId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            _method: 'PUT',
-            tanggal: document.getElementById('edit-tanggal-rusak').value,
-            jumlah: document.getElementById('edit-jumlah-rusak').value,
-            keterangan: document.getElementById('edit-keterangan-rusak').value
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Gagal menyimpan perubahan.');
-        }
+        fetch(`/rusak/${window.editRusakId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    _method: 'PUT',
+                    tanggal: document.getElementById('edit-tanggal-rusak').value,
+                    jumlah: document.getElementById('edit-jumlah-rusak').value,
+                    keterangan: document.getElementById('edit-keterangan-rusak').value
+                })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let errorMsg = 'Gagal menyimpan perubahan.';
+                    try {
+                        const errData = await response.json();
+                        if (errData?.errors) {
+                            const firstErr = Object.values(errData.errors).flat()[0];
+                            if (firstErr) errorMsg = firstErr;
+                        } else if (errData?.message) {
+                            errorMsg = errData.message;
+                        }
+                    } catch (e) {}
+                    throw new Error(errorMsg);
+                }
 
-        closeEditRusak();
-        window.location.reload();
-    })
-    .catch(error => {
-        console.error(error);
-        alert('Gagal menyimpan perubahan.');
+                closeEditRusak();
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error(error);
+                alert(error.message || 'Gagal menyimpan perubahan.');
+            });
     });
-});
 
-function openTambahRusak() {
-    const modal = document.getElementById('modal-tambah-rusak');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+    function openTambahRusak() {
+        const modal = document.getElementById('modal-tambah-rusak');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
     }
-}
 
-function closeTambahRusak() {
-    const modal = document.getElementById('modal-tambah-rusak');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+    function closeTambahRusak() {
+        const modal = document.getElementById('modal-tambah-rusak');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
-}
 
-document.getElementById('modal-tambah-rusak')?.addEventListener('click', function (e) {
-    if (e.target === this) {
-        closeTambahRusak();
-    }
-});
+    document.getElementById('modal-tambah-rusak')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeTambahRusak();
+        }
+    });
 
-@if ($errors->any())
+    @if($errors - > any())
     openTambahRusak();
-@endif
-
+    @endif
 </script>
 
 @endsection
