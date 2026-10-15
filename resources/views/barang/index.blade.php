@@ -3,7 +3,7 @@
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Daftar Barang & Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
+<x-page-header title="Daftar Barang dan Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
     <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
         <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
         <span>Import Data</span>
@@ -130,14 +130,14 @@
                                     aria-label="Lihat Detail"
                                     data-json="{{ json_encode([
                                         'id' => $barang->id,
-                                        'kode_apotek' => $barang->kode_apotek ?? 'â€”',
-                                        'kode_kfa' => $barang->kode_kfa ?? 'â€”',
+                                        'kode_apotek' => $barang->kode_apotek ?? '—',
+                                        'kode_kfa' => $barang->kode_kfa ?? '—',
                                         'nama' => $barang->nama,
-                                        'merk' => $barang->merk ?? 'â€”',
-                                        'barcode' => $barang->barcode ?? 'â€”',
-                                        'kategori' => $barang->kategori->nama ?? 'â€”',
-                                        'satuan' => $barang->satuan->nama ?? 'â€”',
-                                        'pabrik' => $barang->pabrik->nama ?? 'â€”',
+                                        'merk' => $barang->merk ?? '—',
+                                        'barcode' => $barang->barcode ?? '—',
+                                        'kategori' => $barang->kategori->nama ?? '—',
+                                        'satuan' => $barang->satuan->nama ?? '—',
+                                        'pabrik' => $barang->pabrik->nama ?? '—',
                                         'supplier' => $barang->supplierNama(),
                                         'stok' => $stok,
                                         'stok_minimum' => $barang->stok_minimum,
@@ -151,11 +151,11 @@
                                 </button>
                             </x-table-action>
                         </td>
-                        <td class="font-mono">{{ $barang->kode_apotek ?? 'â€”' }}</td>
-                        <td class="font-mono">{{ $barang->kode_kfa ?? 'â€”' }}</td>
+                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
+                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
-                        <td>{{ $barang->merk ?: 'â€”' }}</td>
-                        <td>{{ $barang->satuan->nama ?? 'â€”' }}</td>
+                        <td>{{ $barang->merk ?: '—' }}</td>
+                        <td>{{ $barang->satuan->nama ?? '—' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
                             <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
