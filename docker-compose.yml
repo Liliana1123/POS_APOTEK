@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: posapotek-app:latest
+    container_name: posapotek-app
+    restart: unless-stopped
+    ports:
+      - "8888:80"
+    volumes:
+      - posapotek-storage:/var/www/html/storage/app/public
+    # Menghubungkan container ke service/database di luar Docker (Host / XAMPP)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  posapotek-storage:
