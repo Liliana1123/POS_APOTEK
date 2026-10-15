@@ -65,7 +65,7 @@
     <div class="table-pelanggan-wrapper">
         <table class="table-custom table-pelanggan">
             <colgroup>
-                <col style="width: 190px;">
+                <col style="width: 220px;">
                 <col style="width: 120px;">
                 <col style="width: auto; min-width: 180px;">
                 <col style="width: 165px;">
@@ -76,7 +76,7 @@
             </colgroup>
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center whitespace-nowrap" style="width: 190px;">
+                    <th scope="col" class="text-center whitespace-nowrap" style="width: 220px;">
                         Aksi
                     </th>
 
@@ -113,17 +113,13 @@
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($pelanggans as $index => $pelanggan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-center whitespace-nowrap">
-                            <x-table-action
-                                align="justify-center flex-nowrap"
-                                :delete-url="route('pelanggan.destroy', $pelanggan)"
-                                delete-confirm="Hapus data pelanggan ini?">
-                                
+                        <td class="text-left space-x-1.5 whitespace-nowrap">
+                            <div class="flex items-center justify-start gap-1">
                                 <!-- 1. Detail Modal Button -->
                                 <button
                                     type="button"
                                     onclick="openDetailModal({{ $pelanggan->id }})"
-                                    class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors shrink-0"
+                                    class="btn-secondary !p-1.5"
                                     style="color: #2563EB;"
                                     title="Lihat Detail"
                                     aria-label="Lihat Detail">
@@ -133,7 +129,7 @@
                                 <!-- 2. Edit Modal Button -->
                                 <button
                                     type="button"
-                                    class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transition-colors btn-edit-pelanggan shrink-0"
+                                    class="btn-secondary !p-1.5 btn-edit-pelanggan"
                                     style="color: #F59E0B;"
                                     title="Edit"
                                     aria-label="Edit"
@@ -150,7 +146,7 @@
                                 <!-- 3. Print Card Button -->
                                 <button
                                     type="button"
-                                    class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors shrink-0"
+                                    class="btn-secondary !p-1.5"
                                     style="color: #000000;"
                                     title="Cetak Kartu Member"
                                     aria-label="Cetak Kartu Member"
@@ -162,7 +158,7 @@
                                 @if($pelanggan->is_member && $pelanggan->member_aktif && ($pelanggan->saldo_piutang ?? 0) > 0)
                                     <button
                                         type="button"
-                                        class="btn-secondary !p-1.5 hover:bg-green-50 hover:border-green-300 transition-colors shrink-0"
+                                        class="btn-secondary !p-1.5"
                                         style="color: #16A34A;"
                                         title="Pembayaran Piutang"
                                         aria-label="Pembayaran Piutang"
@@ -170,7 +166,36 @@
                                         <x-heroicon-o-banknotes class="w-4 h-4" />
                                     </button>
                                 @endif
-                            </x-table-action>
+
+                                <!-- 5. WhatsApp Piutang Button -->
+                                @if($pelanggan->is_member && $pelanggan->member_aktif && ($pelanggan->saldo_piutang ?? 0) > 0)
+                                    <button
+                                        type="button"
+                                        class="btn-secondary !p-1.5"
+                                        style="color: #16A34A;"
+                                        title="Pratinjau Pengingat WhatsApp"
+                                        aria-label="Pratinjau Pengingat WhatsApp"
+                                        onclick="openWhatsAppPiutangPreview({{ $pelanggan->id }})">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.45 3.55A11.9 11.9 0 0012.01 0C5.39 0 .02 5.37.02 12c0 2.11.55 4.18 1.6 6L0 24l6.19-1.62a11.97 11.97 0 005.82 1.5h.01c6.62 0 12-5.37 12-12 0-3.21-1.25-6.23-3.57-8.38zM12.02 21.88h-.01a9.92 9.92 0 01-5.06-1.39l-.36-.21-3.76.99 1-3.66-.23-.38a9.93 9.93 0 01-1.52-5.23c0-5.48 4.46-9.94 9.95-9.94 2.65 0 5.15 1.03 7.03 2.91a9.88 9.88 0 012.91 7.03c0 5.48-4.46 9.94-9.94 9.94zm5.45-7.44c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.95 1.17-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5a9.05 9.05 0 01-1.68-2.08c-.18-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.24-.24-.58-.49-.5-.67-.51h-.58c-.2 0-.52.07-.79.37-.28.3-1.05 1.03-1.05 2.51s1.08 2.91 1.23 3.12c.15.2 2.12 3.24 5.14 4.54.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"/>
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                <!-- 6. Delete Button -->
+                                <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" onsubmit="return confirm('Hapus data pelanggan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button
+                                        type="submit"
+                                        class="btn-secondary !p-1.5"
+                                        style="color: #DC2626;"
+                                        title="Hapus"
+                                        aria-label="Hapus">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                         <td class="text-center whitespace-nowrap">
                             <div class="font-mono text-gray-700 font-semibold text-xs">{{ $pelanggan->member_id ?? '-' }}</div>
@@ -296,4 +321,5 @@
 @include('pelanggan.partials.modal-detail')
 @include('pelanggan.partials.modal-card')
 @include('pelanggan.partials.modal-piutang')
+@include('pelanggan.partials.modal-whatsapp-piutang')
 @endsection

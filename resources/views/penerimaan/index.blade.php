@@ -128,7 +128,6 @@
             <thead class="table-custom-header">
                 <tr>
                     <tr>
-                    <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
@@ -143,11 +142,6 @@
             <tbody class="table-custom-body ">
                 @forelse ($penerimaans as $index => $penerimaan)
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-
-                    {{-- No --}}
-                    <td class="text-center">
-                        {{ $penerimaans->firstItem() + $index }}
-                    </td>
 
                     {{-- Aksi --}}
                     <td class="text-left space-x-1.5">
