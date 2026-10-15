@@ -1590,7 +1590,9 @@ h3,
 .table-penerimaan th,
 .table-penerimaan td,
 .table-rusak th,
-.table-rusak td {
+.table-rusak td,
+.table-diskon th,
+.table-diskon td {
     vertical-align: middle;
 }
 
@@ -1905,6 +1907,106 @@ h3,
         color: #374151 !important;
         background: #f3f4f6 !important;
         border: 1px solid #d1d5db !important;
+    }
+
+    .print-table .badge-info {
+        color: #0369a1 !important;
+        background: #e0f2fe !important;
+        border: 1px solid #bae6fd !important;
+    }
+
+    /* ============================================================
+       Tabel Laporan Diskon & Promo (Print)
+       ============================================================ */
+    .table-diskon {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    .table-diskon th,
+    .table-diskon td {
+        box-sizing: border-box !important;
+        vertical-align: middle !important;
+    }
+
+    .table-diskon th {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.2 !important;
+    }
+
+    .table-diskon td {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Proporsi Kolom Laporan Diskon (Total 100%) */
+    .table-diskon .col-diskon-tanggal { width: 11% !important; }
+    .table-diskon .col-diskon-faktur { width: 11% !important; }
+    .table-diskon .col-diskon-barang { width: 20% !important; }
+    .table-diskon .col-diskon-pelanggan { width: 10% !important; }
+    .table-diskon .col-diskon-jenis { width: 12% !important; }
+    .table-diskon .col-diskon-nama { width: 18% !important; }
+    .table-diskon .col-diskon-persentase { width: 6% !important; }
+    .table-diskon .col-diskon-hemat { width: 12% !important; }
+
+    /* Kolom Tanggal, Persentase, dan Nominal Tetap Rapi */
+    .table-diskon td.col-diskon-tanggal,
+    .table-diskon td.col-diskon-persentase,
+    .table-diskon td.col-diskon-hemat {
+        white-space: nowrap !important;
+    }
+
+    /* Text Wrapping & Batas Sel Kolom Jenis Diskon & Badge */
+    .table-diskon td.col-diskon-jenis {
+        white-space: normal !important;
+        text-align: center !important;
+        padding: 4px 2px !important;
+    }
+
+    .table-diskon td.col-diskon-jenis .badge-info,
+    .table-diskon td.col-diskon-jenis .badge-neutral {
+        display: inline-block !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+        line-height: 1.15 !important;
+        padding: 2.5px 4px !important;
+        font-size: 7.5px !important;
+    }
+
+    /* Kolom Nama Promo & Kolom Teks Panjang */
+    .table-diskon td.col-diskon-nama {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.25 !important;
+    }
+
+    .table-diskon td.col-diskon-barang {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.25 !important;
+    }
+
+    .table-diskon td.col-diskon-pelanggan {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.25 !important;
+    }
+
+    .table-diskon td.col-diskon-faktur {
+        white-space: normal !important;
+        word-break: break-all !important;
+        line-height: 1.25 !important;
     }
 
     .print-hide {

@@ -184,45 +184,45 @@
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
     <div class="overflow-x-auto print-table-wrapper">
-        <table class="table-custom print-table w-full min-w-[55rem]">
+        <table class="table-custom table-diskon print-table w-full min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-[14%] min-w-[7.5rem] text-center !px-2.5 py-3 whitespace-nowrap">Tanggal</th>
-                    <th scope="col" class="w-[13%] min-w-[7rem] !px-2.5 py-3 break-words">No. Faktur</th>
-                    <th scope="col" class="w-[24%] min-w-[10rem] !px-3 py-3 break-words">Barang / Obat</th>
-                    <th scope="col" class="w-[14%] min-w-[7rem] !px-2.5 py-3 break-words">Pelanggan</th>
-                    <th scope="col" class="w-[11%] min-w-[6rem] text-center !px-2 py-3 whitespace-nowrap">Jenis Diskon</th>
-                    <th scope="col" class="w-[13%] min-w-[6.5rem] !px-2.5 py-3 break-words">Nama Promo</th>
-                    <th scope="col" class="w-[8%] min-w-[4rem] text-center !px-2 py-3 whitespace-nowrap">Persentase</th>
-                    <th scope="col" class="w-[13%] min-w-[7rem] text-right !px-2.5 py-3 whitespace-nowrap">Hemat Rupiah</th>
+                    <th scope="col" class="w-[11%] min-w-[6.5rem] col-diskon-tanggal text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
+                    <th scope="col" class="w-[11%] min-w-[6.5rem] col-diskon-faktur !px-2.5 py-3 break-words">No. Faktur</th>
+                    <th scope="col" class="w-[20%] min-w-[10rem] col-diskon-barang !px-3 py-3 break-words">Barang / Obat</th>
+                    <th scope="col" class="w-[10%] min-w-[5.5rem] col-diskon-pelanggan !px-2.5 py-3 break-words">Pelanggan</th>
+                    <th scope="col" class="w-[12%] min-w-[6.5rem] col-diskon-jenis text-center !px-2 py-3 break-words">Jenis Diskon</th>
+                    <th scope="col" class="w-[18%] min-w-[8.5rem] col-diskon-nama !px-2.5 py-3 break-words">Nama Promo</th>
+                    <th scope="col" class="w-[6%] min-w-[3.5rem] col-diskon-persentase text-center !px-1.5 py-3 whitespace-nowrap">Persentase</th>
+                    <th scope="col" class="w-[12%] min-w-[6.5rem] col-diskon-hemat text-right !px-2.5 py-3 whitespace-nowrap">Hemat Rupiah</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
                 @forelse ($usages as $index => $usage)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-center font-mono text-gray-600 text-xs !px-2.5 py-3 whitespace-nowrap">{{ $usage->created_at->format('d M Y H:i') }}</td>
-                        <td class="font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
+                        <td class="col-diskon-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $usage->created_at->format('d M Y H:i') }}</td>
+                        <td class="col-diskon-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
                             <a href="{{ route('penjualan.show', $usage->penjualan_id) }}" class="text-blue-600 hover:underline print:text-gray-800">
                                 {{ $usage->penjualan->no_faktur ?? 'Faktur Terhapus' }}
                             </a>
                         </td>
-                        <td class="font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $usage->barang_nama }}</td>
-                        <td class="text-gray-700 font-medium text-xs !px-2.5 py-3 break-words leading-snug">
+                        <td class="col-diskon-barang font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $usage->barang_nama }}</td>
+                        <td class="col-diskon-pelanggan text-gray-700 font-medium text-xs !px-2.5 py-3 break-words leading-snug">
                             {{ $usage->penjualan->pelanggan->nama ?? 'Umum' }}
                             @if (isset($usage->penjualan->pelanggan) && $usage->penjualan->pelanggan->is_member)
                                 <span class="badge-success ml-1.5 py-0.5 px-1 text-[8px] print:hidden">Member</span>
                             @endif
                         </td>
-                        <td class="text-center text-xs !px-2 py-3 whitespace-nowrap">
+                        <td class="col-diskon-jenis text-center text-xs !px-1.5 py-3 break-words">
                             @if ($usage->jenis === 'member')
                                 <span class="badge-info">Member</span>
                             @else
                                 <span class="badge-neutral">Custom Promo</span>
                             @endif
                         </td>
-                        <td class="text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
-                        <td class="text-center font-bold text-gray-800 text-xs !px-2 py-3 whitespace-nowrap">{{ $usage->persentase }}%</td>
-                        <td class="table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
+                        <td class="col-diskon-nama text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
+                        <td class="col-diskon-persentase text-center font-bold text-gray-800 text-xs !px-1.5 py-3 whitespace-nowrap">{{ $usage->persentase }}%</td>
+                        <td class="col-diskon-hemat table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -250,7 +250,7 @@
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
                     <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Hemat:</td>
-                    <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
+                    <td class="col-diskon-hemat table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
