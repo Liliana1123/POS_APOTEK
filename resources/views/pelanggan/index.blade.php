@@ -60,12 +60,47 @@
     </div>
 </x-card-filter>
 
+<!-- Bar Aksi Pilihan WhatsApp Massal -->
+<div id="bulkWhatsAppActionBar" class="hidden mb-3 items-center justify-between bg-blue-50 border border-blue-200 shadow-sm rounded-xl px-4 py-2.5 transition-all">
+    <div class="flex items-center gap-3">
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+            <x-heroicon-s-check class="w-4 h-4" />
+        </div>
+        <div>
+            <span class="font-bold text-gray-800 text-xs sm:text-sm">
+                <span id="bulkSelectedCount">0</span> member dipilih
+            </span>
+            <span class="text-xs text-gray-500 ml-2 border-l border-gray-300 pl-2">
+                Total piutang <strong id="bulkSelectedTotalPiutang" class="text-red-600 font-bold">Rp 0</strong>
+            </span>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="button"
+            onclick="openBulkWhatsAppConfirmModal()"
+            id="btnOpenBulkWhatsAppModal"
+            class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-sm transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M20.45 3.55A11.9 11.9 0 0012.01 0C5.39 0 .02 5.37.02 12c0 2.11.55 4.18 1.6 6L0 24l6.19-1.62a11.97 11.97 0 005.82 1.5h.01c6.62 0 12-5.37 12-12 0-3.21-1.25-6.23-3.57-8.38zM12.02 21.88h-.01a9.92 9.92 0 01-5.06-1.39l-.36-.21-3.76.99 1-3.66-.23-.38a9.93 9.93 0 01-1.52-5.23c0-5.48 4.46-9.94 9.95-9.94 2.65 0 5.15 1.03 7.03 2.91a9.88 9.88 0 012.91 7.03c0 5.48-4.46 9.94-9.94 9.94zm5.45-7.44c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.95 1.17-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5a9.05 9.05 0 01-1.68-2.08c-.18-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.24-.24-.58-.49-.5-.67-.51h-.58c-.2 0-.52.07-.79.37-.28.3-1.05 1.03-1.05 2.51s1.08 2.91 1.23 3.12c.15.2 2.12 3.24 5.14 4.54.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"/>
+            </svg>
+            <span>Kirim Pengingat WhatsApp (<span id="bulkBtnCountText">0</span>)</span>
+        </button>
+
+        <button type="button"
+            onclick="deselectAllMember()"
+            class="text-xs font-semibold text-gray-500 hover:text-gray-700 underline transition">
+            Hapus Pilihan
+        </button>
+    </div>
+</div>
+
 <!-- Table Custom Wrapper --> 
 <div class="table-custom-container w-full min-w-0 max-w-full">
     <div class="table-pelanggan-wrapper">
         <table class="table-custom table-pelanggan">
             <colgroup>
-                <col style="width: 220px;">
+                <col style="width: 250px;">
                 <col style="width: 120px;">
                 <col style="width: auto; min-width: 180px;">
                 <col style="width: 165px;">
@@ -76,8 +111,15 @@
             </colgroup>
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center whitespace-nowrap" style="width: 220px;">
-                        Aksi
+                    <th scope="col" class="text-left whitespace-nowrap pl-3" style="width: 250px;">
+                        <div class="flex items-center justify-start gap-2">
+                            <input type="checkbox"
+                                id="checkAllMember"
+                                class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                                title="Pilih semua member yang memenuhi syarat di halaman ini"
+                                onchange="toggleSelectAllMember(this)">
+                            <span class="uppercase tracking-wider">Aksi</span>
+                        </div>
                     </th>
 
                     <th scope="col" class="text-center whitespace-nowrap" style="width: 120px;">
@@ -113,8 +155,41 @@
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($pelanggans as $index => $pelanggan)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left space-x-1.5 whitespace-nowrap">
+                        <td class="text-left space-x-1.5 whitespace-nowrap pl-3">
                             <div class="flex items-center justify-start gap-1">
+                                @php
+                                    $pengingat = $pelanggan->pengingat_piutang;
+                                    $isEligible = ($pengingat !== null);
+                                @endphp
+
+                                {{-- Checkbox Pemilihan Massal --}}
+                                @if($isEligible)
+                                    <input type="checkbox"
+                                        class="member-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer mr-1"
+                                        value="{{ $pelanggan->id }}"
+                                        data-id="{{ $pelanggan->id }}"
+                                        data-nama="{{ $pelanggan->nama }}"
+                                        data-telepon="{{ $pelanggan->telepon }}"
+                                        data-sisa="{{ $pengingat['total_sisa'] }}"
+                                        data-sisa-formatted="Rp {{ number_format($pengingat['total_sisa'], 0, ',', '.') }}"
+                                        data-jatuh-tempo="{{ $pengingat['jatuh_tempo_pesan'] }}"
+                                        title="Pilih member ini untuk pengingat WhatsApp"
+                                        onchange="handleMemberCheckboxChange()">
+                                @else
+                                    @php
+                                        $disabledReason = 'Tidak memiliki sisa piutang aktif.';
+                                        if (empty(trim((string) $pelanggan->telepon))) {
+                                            $disabledReason = 'Nomor WhatsApp belum terdaftar.';
+                                        } elseif (($pelanggan->saldo_piutang ?? 0) > 0) {
+                                            $disabledReason = 'Belum memenuhi batas pengingat (minimal H-3 atau sudah jatuh tempo).';
+                                        }
+                                    @endphp
+                                    <input type="checkbox"
+                                        disabled
+                                        class="w-4 h-4 rounded text-gray-300 border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed mr-1"
+                                        title="{{ $disabledReason }}">
+                                @endif
+
                                 <!-- 1. Detail Modal Button -->
                                 <button
                                     type="button"

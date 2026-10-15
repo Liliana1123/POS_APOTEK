@@ -80,6 +80,8 @@ Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
     Route::get('pelanggan/{pelanggan}', [PelangganController::class, 'show'])->name('pelanggan.show');
     Route::get('pelanggan/{pelanggan}/whatsapp-piutang/preview',[\App\Http\Controllers\WhatsAppPiutangController::class, 'preview'])->name('pelanggan.whatsapp-piutang.preview');
     Route::post('pelanggan/{pelanggan}/whatsapp-piutang/send', [\App\Http\Controllers\WhatsAppPiutangController::class, 'send'])->name('pelanggan.whatsapp-piutang.send');
+    Route::post('pelanggan/whatsapp-piutang/bulk-preview', [\App\Http\Controllers\WhatsAppPiutangController::class, 'bulkPreview'])->name('pelanggan.whatsapp-piutang.bulk-preview');
+    Route::post('pelanggan/{pelanggan}/whatsapp-piutang/bulk-send', [\App\Http\Controllers\WhatsAppPiutangController::class, 'sendBulkItem'])->name('pelanggan.whatsapp-piutang.bulk-send');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {

@@ -250,4 +250,183 @@ class WhatsAppPiutangController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Memvalidasi dan menyiapkan pratinjau daftar member untuk pengiriman massal.
+     */
+    public function bulkPreview(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pelanggan_ids' => ['required', 'array', 'min:1'],
+            'pelanggan_ids.*' => ['integer'],
+        ], [
+            'pelanggan_ids.required' => 'Pilih minimal satu member untuk pengiriman.',
+            'pelanggan_ids.array' => 'Data pilihan member tidak valid.',
+        ]);
+
+        $pelangganIds = array_values(array_unique($validated['pelanggan_ids']));
+
+        // Ambil data pelanggan dengan relasi penjualan piutang
+        $pelanggans = Pelanggan::whereIn('id', $pelangganIds)
+            ->where('is_member', true)
+            ->where('member_aktif', true)
+            ->with(['penjualan' => function ($q) {
+                $q->where('metode_pembayaran', 'piutang')
+                  ->with('pembayaranPiutang');
+            }])
+            ->get();
+
+        $namaApotek = InfoApotek::first()?->nama_apotek ?: (config('app.name') ?: 'Apotek');
+
+        $penerima = [];
+        $dikeluarkan = [];
+
+        foreach ($pelangganIds as $id) {
+            $pelanggan = $pelanggans->firstWhere('id', $id);
+
+            if (!$pelanggan) {
+                $dikeluarkan[] = [
+                    'id' => $id,
+                    'nama' => 'ID #' . $id,
+                    'alasan' => 'Data member tidak ditemukan atau bukan member aktif.',
+                ];
+                continue;
+            }
+
+            $pengingat = $pelanggan->pengingat_piutang;
+
+            if (!$pengingat) {
+                $alasan = 'Tidak memiliki sisa piutang aktif atau belum masuk periode jatuh tempo.';
+                if (empty(trim((string) $pelanggan->telepon))) {
+                    $alasan = 'Nomor telepon WhatsApp belum terdaftar.';
+                } elseif (($pelanggan->saldo_piutang ?? 0) <= 0) {
+                    $alasan = 'Tagihan piutang sudah lunas.';
+                }
+
+                $dikeluarkan[] = [
+                    'id' => $pelanggan->id,
+                    'nama' => $pelanggan->nama,
+                    'alasan' => $alasan,
+                ];
+                continue;
+            }
+
+            $sisaFormatted = 'Rp ' . number_format($pengingat['total_sisa'], 0, ',', '.');
+            $jatuhTempoFormatted = $pengingat['jatuh_tempo_pesan'];
+
+            $pesan = "Yth. Bapak/Ibu {$pelanggan->nama},\n\n"
+                . "Kami dari {$namaApotek} ingin mengingatkan bahwa masih terdapat piutang sebesar {$sisaFormatted} dengan tanggal jatuh tempo {$jatuhTempoFormatted}.\n\n"
+                . "Mohon kesediaannya untuk melakukan pembayaran sesuai ketentuan yang berlaku.\n\n"
+                . "Jika pembayaran telah dilakukan, silakan abaikan pesan ini atau hubungi petugas apotek untuk konfirmasi.\n\n"
+                . "Terima kasih atas perhatian dan kerja samanya.\n\n"
+                . "Salam,\n"
+                . "{$namaApotek}";
+
+            $penerima[] = [
+                'id' => $pelanggan->id,
+                'nama' => $pelanggan->nama,
+                'telepon' => $pelanggan->telepon,
+                'sisa_piutang' => $pengingat['total_sisa'],
+                'sisa_piutang_formatted' => $sisaFormatted,
+                'jatuh_tempo' => $pengingat['jatuh_tempo_formatted'],
+                'jatuh_tempo_raw' => $jatuhTempoFormatted,
+                'pesan' => $pesan,
+                'primary_penjualan_id' => $pengingat['primary_penjualan_id'],
+            ];
+        }
+
+        if (empty($penerima)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada member terpilih yang memenuhi syarat pengingat piutang.',
+                'dikeluarkan' => $dikeluarkan,
+            ], 422);
+        }
+
+        $totalPiutang = array_sum(array_column($penerima, 'sisa_piutang'));
+
+        return response()->json([
+            'status' => true,
+            'nama_apotek' => $namaApotek,
+            'total_penerima' => count($penerima),
+            'total_piutang' => $totalPiutang,
+            'total_piutang_formatted' => 'Rp ' . number_format($totalPiutang, 0, ',', '.'),
+            'penerima' => $penerima,
+            'dikeluarkan' => $dikeluarkan,
+        ]);
+    }
+
+    /**
+     * Mengirim pesan pengingat massal untuk satu member terpilih.
+     */
+    public function sendBulkItem(Request $request, Pelanggan $pelanggan, WhatsAppService $whatsAppService): JsonResponse
+    {
+        // 1. Pastikan pelanggan adalah member aktif
+        if (!$pelanggan->is_member || !$pelanggan->member_aktif) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pelanggan bukan member aktif.',
+            ], 422);
+        }
+
+        // 2. Cek kelayakan dan hitung ulang piutang dari database
+        $pengingat = $pelanggan->pengingat_piutang;
+
+        if (!$pengingat) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Member sudah tidak memiliki tagihan yang memenuhi syarat pengingat.',
+            ], 422);
+        }
+
+        // 3. Lock idempotensi selama 10 detik untuk mencegah double send
+        $lockKey = "wa_bulk_send_lock_{$pelanggan->id}";
+        $lock = Cache::lock($lockKey, 10);
+
+        if (!$lock->get()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengiriman pesan untuk member ini sedang diproses. Mohon tunggu.',
+            ], 429);
+        }
+
+        try {
+            $namaApotek = InfoApotek::first()?->nama_apotek ?: (config('app.name') ?: 'Apotek');
+            $sisaFormatted = 'Rp ' . number_format($pengingat['total_sisa'], 0, ',', '.');
+            $jatuhTempoFormatted = $pengingat['jatuh_tempo_pesan'];
+
+            $pesan = "Yth. Bapak/Ibu {$pelanggan->nama},\n\n"
+                . "Kami dari {$namaApotek} ingin mengingatkan bahwa masih terdapat piutang sebesar {$sisaFormatted} dengan tanggal jatuh tempo {$jatuhTempoFormatted}.\n\n"
+                . "Mohon kesediaannya untuk melakukan pembayaran sesuai ketentuan yang berlaku.\n\n"
+                . "Jika pembayaran telah dilakukan, silakan abaikan pesan ini atau hubungi petugas apotek untuk konfirmasi.\n\n"
+                . "Terima kasih atas perhatian dan kerja samanya.\n\n"
+                . "Salam,\n"
+                . "{$namaApotek}";
+
+            $result = $whatsAppService->sendMessage($pelanggan->telepon, $pesan);
+
+            if (!$result['status']) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $result['msg'] ?? 'Gagal mengirim pesan WhatsApp.',
+                ], 502);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => $result['msg'] ?? 'Pesan WhatsApp berhasil dikirim.',
+                'data' => [
+                    'pelanggan_id' => $pelanggan->id,
+                    'nama' => $pelanggan->nama,
+                    'telepon' => $pelanggan->telepon,
+                    'sisa_piutang' => $pengingat['total_sisa'],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan sistem saat memproses pengiriman WhatsApp.',
+            ], 500);
+        }
+    }
 }
