@@ -8,6 +8,14 @@ use App\Models\Supplier;
 use App\Models\DetailPenerimaan;
 use App\Models\DetailPenjualan;
 use App\Models\Rusak;
+use App\Models\Beban;
+use App\Models\Penjualan;
+use App\Models\Penerimaan;
+use App\Models\Pelanggan;
+use App\Models\ActivityLog;
+use App\Services\DashboardCacheService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
@@ -92,16 +100,16 @@ class LaporanController extends Controller
 
                 if ($request->status_expired === '1_bulan') {
                     $query->whereDate('expired_date', '>', $today)
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonth());
+                        ->whereDate('expired_date', '<', $today->copy()->addMonth());
                 }
 
                 if ($request->status_expired === '3_bulan') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonth())
-                        ->whereDate('expired_date', '<=', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonth())
+                        ->whereDate('expired_date', '<', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'normal') {
-                    $query->whereDate('expired_date', '>', $today->copy()->addMonths(3));
+                    $query->whereDate('expired_date', '>=', $today->copy()->addMonths(3));
                 }
 
                 if ($request->status_expired === 'tidak_ada') {
@@ -165,10 +173,10 @@ class LaporanController extends Controller
                     $statusExpired = 'Tidak Ada Tanggal';
                 } elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today)) {
                     $statusExpired = 'Kadaluarsa';
-                } elseif ($expiredDate->lte($today->copy()->addMonth())) {
-                    $statusExpired = '≤ 1 Bulan';
-                } elseif ($expiredDate->lte($today->copy()->addMonths(3))) {
-                    $statusExpired = '≤ 3 Bulan';
+                } elseif ($expiredDate->lt($today->copy()->addMonth())) {
+                    $statusExpired = '< 1 Bulan';
+                } elseif ($expiredDate->lt($today->copy()->addMonths(3))) {
+                    $statusExpired = '< 3 Bulan';
                 } else {
                     $statusExpired = 'Normal';
                 }
@@ -230,23 +238,19 @@ class LaporanController extends Controller
     // Laporan penerimaan barang dalam rentang tanggal
     public function penerimaan(Request $request)
     {
-        $hasFilterTanggal = $request->filled('dari') || $request->filled('sampai');
-        $dari = $request->query('dari');
-        $sampai = $request->query('sampai');
+        [$dari, $sampai] = $this->rentangTanggal($request);
 
         $query = DetailPenerimaan::with(['barang', 'penerimaan.supplier']);
 
-        if ($hasFilterTanggal) {
-            $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
-                if ($dari && $sampai) {
-                    $q->whereBetween('tanggal', [$dari, $sampai]);
-                } elseif ($dari) {
-                    $q->where('tanggal', '>=', $dari);
-                } elseif ($sampai) {
-                    $q->where('tanggal', '<=', $sampai);
-                }
-            });
-        }
+        $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
+            if ($dari && $sampai) {
+                $q->whereBetween('tanggal', [$dari, $sampai]);
+            } elseif ($dari) {
+                $q->where('tanggal', '>=', $dari);
+            } elseif ($sampai) {
+                $q->where('tanggal', '<=', $sampai);
+            }
+        });
 
         if ($request->filled('no_faktur')) {
             $query->whereHas('penerimaan', function ($q) use ($request) {
@@ -320,95 +324,298 @@ class LaporanController extends Controller
 
     // Laporan penjualan barang dalam rentang tanggal
     public function penjualan(Request $request)
-    {
-        [$dari, $sampai] = $this->rentangTanggal($request);
+{
+    [$dari, $sampai] = $this->rentangTanggal($request);
 
-        $query = \App\Models\Penjualan::with(['pelanggan', 'detail'])
-            ->whereBetween('tanggal', [$dari, $sampai]);
+    $query = \App\Models\Penjualan::with([
+        'pelanggan',
+        'detail.detailPenerimaan.barang.satuan',
+        'user',
+        'pembayaranPiutang',
+    ])->whereBetween('tanggal', [$dari, $sampai]);
 
-        // Filter: member / non-member
-        if ($request->filled('status_pelanggan')) {
-            $status = $request->status_pelanggan;
-            if ($status === 'member') {
-                $query->whereHas('pelanggan', function ($q) {
-                    $q->where('is_member', true);
-                });
-            } elseif ($status === 'non-member') {
-                $query->where(function ($q) {
-                    $q->whereHas('pelanggan', function ($q2) {
-                        $q2->where('is_member', false);
-                    })->orWhereNull('pelanggan_id');
-                });
-            }
-        }
-
-        $penjualans = $query->orderByDesc('tanggal')->orderByDesc('id')->get();
-
-        // Calculate stats
-        $jumlahTransaksi = $penjualans->count();
-        
-        $totalDiskon = $penjualans->sum(function ($p) {
-            return $p->detail->sum('diskon');
-        });
-        
-        $totalPenjualanBersih = $penjualans->sum('total');
-        $omzet = $totalPenjualanBersih + $totalDiskon; // total kotor
-
-        $transaksiMember = $penjualans->filter(function ($p) {
-            return $p->pelanggan && $p->pelanggan->is_member;
-        })->count();
-        
-        $transaksiNonMember = $jumlahTransaksi - $transaksiMember;
-
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Pelanggan', 'Status Pelanggan', 'Kasir', 'Subtotal Kotor', 'Diskon', 'Total'];
-            $data = [];
-            foreach ($penjualans as $p) {
-                $subtotalKotor = $p->total + $p->detail->sum('diskon');
-                $data[] = [
-                    $p->tanggal->format('d M Y'),
-                    $p->no_faktur,
-                    $p->pelanggan->nama ?? 'Umum',
-                    $p->pelanggan ? ($p->pelanggan->is_member ? 'Member' : 'Umum') : 'Umum',
-                    $p->user->name,
-                    $subtotalKotor,
-                    $p->detail->sum('diskon'),
-                    $p->total
-                ];
-            }
-            return $this->exportCsv('laporan-penjualan-' . $dari . '-' . $sampai . '.csv', $headers, $data);
-        }
-
-        return view('laporan.penjualan', compact(
-            'penjualans',
-            'jumlahTransaksi',
-            'omzet',
-            'totalDiskon',
-            'totalPenjualanBersih',
-            'transaksiMember',
-            'transaksiNonMember',
-            'dari',
-            'sampai'
-        ));
+    // =========================================================
+    // FILTER METODE PEMBAYARAN
+    // =========================================================
+    if ($request->filled('metode_pembayaran')) {
+        $query->where(
+            'metode_pembayaran',
+            $request->input('metode_pembayaran')
+        );
     }
+
+    // =========================================================
+    // FILTER PELANGGAN / MEMBER
+    // =========================================================
+    if ($request->filled('pelanggan')) {
+        $pelanggan = $request->input('pelanggan');
+
+        if ($pelanggan === 'pelanggan_umum') {
+            $query->where(function ($q) {
+                $q->whereNull('pelanggan_id')
+                    ->orWhereHas('pelanggan', function ($q2) {
+                        $q2->where('is_member', false);
+                    });
+            });
+        }
+
+        if ($pelanggan === 'pelanggan_tetap') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Pelanggan Tetap'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'keluarga_nakes') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Keluarga Nakes'
+                    );
+            });
+        }
+
+        if ($pelanggan === 'member_only') {
+            $query->whereHas('pelanggan', function ($q) {
+                $q->where('is_member', true)
+                    ->where(
+                        'status_member',
+                        'Member Only'
+                    );
+            });
+        }
+    }
+
+    // =========================================================
+    // FILTER JENIS TRANSAKSI
+    // =========================================================
+    if ($request->filled('jenis_transaksi')) {
+        $query->where(
+            'jenis_transaksi',
+            $request->input('jenis_transaksi')
+        );
+    }
+
+    // =========================================================
+    // FILTER STATUS PIUTANG
+    // =========================================================
+    if ($request->filled('status_piutang')) {
+
+        // Status piutang hanya berlaku untuk transaksi piutang
+        $query->where('metode_pembayaran', 'piutang');
+
+        $statusPiutang = $request->input('status_piutang');
+
+        if ($statusPiutang === 'lunas') {
+
+            $query->whereRaw('
+                penjualans.total <= (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'belum_lunas') {
+
+            $query->whereRaw('
+                penjualans.total > (
+                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                    FROM pembayaran_piutangs pp
+                    WHERE pp.penjualan_id = penjualans.id
+                )
+            ');
+
+        } elseif ($statusPiutang === 'terlambat') {
+
+            $query->whereNotNull('due_date')
+                ->whereDate('due_date', '<', now()->toDateString())
+                ->whereRaw('
+                    penjualans.total > (
+                        SELECT COALESCE(SUM(pp.jumlah), 0)
+                        FROM pembayaran_piutangs pp
+                        WHERE pp.penjualan_id = penjualans.id
+                    )
+                ');
+        }
+    }
+
+    // =========================================================
+    // SORTING & AMBIL DATA
+    // =========================================================
+    $sort = $request->input('sort', 'tanggal');
+    $direction = strtolower($request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+    $allowedSorts = ['tanggal', 'no_faktur', 'invoice'];
+    if (!in_array($sort, $allowedSorts, true)) {
+        $sort = 'tanggal';
+    }
+
+    if ($sort === 'invoice' || $sort === 'no_faktur') {
+        $query->orderBy('no_faktur', $direction)
+            ->orderBy('tanggal', $direction);
+    } else {
+        $query->orderBy('tanggal', $direction)
+            ->orderBy('no_faktur', $direction);
+    }
+
+    $penjualans = $query->get();
+
+    // =========================================================
+    // RINGKASAN
+    // =========================================================
+    $jumlahTransaksi = $penjualans->count();
+
+    $totalDiskon = $penjualans->sum(function ($p) {
+        return $p->detail->sum('diskon');
+    });
+
+    $totalPenjualanBersih = $penjualans->sum('total');
+
+    $omzet = $totalPenjualanBersih + $totalDiskon;
+
+    $transaksiMember = $penjualans->filter(function ($p) {
+        return $p->pelanggan
+            && $p->pelanggan->is_member;
+    })->count();
+
+    $transaksiNonMember =
+        $jumlahTransaksi - $transaksiMember;
+
+    // =========================================================
+    // EXPORT EXCEL (XLSX)
+    // =========================================================
+    if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+
+        $headers = [
+            'Tanggal',
+            'No. Invoice',
+            'Nama Pelanggan',
+            'Jenis Pelanggan',
+            'Kasir',
+            'Jenis Transaksi',
+            'Metode Pembayaran',
+            'Status Piutang',
+            'Total Kotor',
+            'Total Transaksi',
+        ];
+
+        $data = [];
+        $totalKotor = 0;
+        $totalTransaksi = 0;
+
+        foreach ($penjualans as $p) {
+
+            $diskon = $p->detail->sum('diskon');
+            $kotor   = $p->total + $diskon;
+            $totalKotor      += $kotor;
+            $totalTransaksi  += $p->total;
+
+            // Jenis pelanggan
+            if ($p->pelanggan && $p->pelanggan->is_member) {
+                $jenisPelanggan = $p->pelanggan->status_member ?: 'Member Pelanggan Tetap';
+            } else {
+                $jenisPelanggan = 'Pelanggan Umum';
+            }
+
+            // Jenis transaksi
+            $jenisTransaksi = match($p->jenis_transaksi) {
+                'resep'     => 'Resep',
+                'non_resep' => 'Non Resep',
+                default     => '—',
+            };
+
+            // Metode pembayaran
+            $metode = match(strtolower((string) $p->metode_pembayaran)) {
+                'cash'    => 'Cash',
+                'qris'    => 'QRIS',
+                'debit'   => 'Debit',
+                'piutang' => 'Piutang',
+                default   => ucfirst((string) ($p->metode_pembayaran ?? '—')),
+            };
+
+            // Status piutang
+            if ($p->metode_pembayaran !== 'piutang') {
+                $statusPiutang = '—';
+            } else {
+                $totalDibayar = $p->pembayaranPiutang->sum('jumlah');
+                $sisa = max(0, $p->total - $totalDibayar);
+                if ($sisa <= 0) {
+                    $statusPiutang = 'Lunas';
+                } elseif ($p->due_date && $p->due_date->isPast()) {
+                    $statusPiutang = 'Terlambat';
+                } else {
+                    $statusPiutang = 'Belum Lunas';
+                }
+            }
+
+            $data[] = [
+                $p->tanggal ? $p->tanggal->format('d M Y') : '—',
+                $p->no_faktur,
+                $p->pelanggan->nama ?? 'Umum',
+                $jenisPelanggan,
+                $p->user->name ?? 'Admin',
+                $jenisTransaksi,
+                $metode,
+                $statusPiutang,
+                $kotor,
+                $p->total,
+            ];
+        }
+
+        $totalRow = [
+            '',
+            'Total',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $totalKotor,
+            $totalTransaksi,
+        ];
+
+        return $this->exportXlsx(
+            'laporan_penjualan_' . $dari . '_' . $sampai . '.xlsx',
+            $headers,
+            $data,
+            $totalRow
+        );
+    }
+
+    return view('laporan.penjualan', compact(
+        'penjualans',
+        'jumlahTransaksi',
+        'omzet',
+        'totalDiskon',
+        'totalPenjualanBersih',
+        'transaksiMember',
+        'transaksiNonMember',
+        'dari',
+        'sampai',
+        'sort',
+        'direction'
+    ));
+}
 
     // Laporan barang rusak dalam rentang tanggal
     public function rusak(Request $request)
     {
-        $hasFilterTanggal = $request->filled('dari') || $request->filled('sampai');
-        $dari = $request->query('dari');
-        $sampai = $request->query('sampai');
+        [$dari, $sampai] = $this->rentangTanggal($request);
 
         $query = Rusak::with('detailPenerimaan.barang');
 
-        if ($hasFilterTanggal) {
-            if ($dari && $sampai) {
-                $query->whereBetween('tanggal', [$dari, $sampai]);
-            } elseif ($dari) {
-                $query->where('tanggal', '>=', $dari);
-            } elseif ($sampai) {
-                $query->where('tanggal', '<=', $sampai);
-            }
+        if ($dari && $sampai) {
+            $query->whereBetween('tanggal', [$dari, $sampai]);
+        } elseif ($dari) {
+            $query->where('tanggal', '>=', $dari);
+        } elseif ($sampai) {
+            $query->where('tanggal', '<=', $sampai);
         }
 
         if ($request->filled('nama_barang')) {
@@ -484,22 +691,340 @@ class LaporanController extends Controller
         return view('laporan.rusak', compact('items', 'totalKerugian', 'dari', 'sampai'));
     }
 
-    // Laporan laba-rugi: pendapatan penjualan dikurangi harga pokok (harga beli) barang terjual
+    // Laporan laba-rugi: Redesign komprehensif (Omzet, Diskon, Penjualan Bersih, HPP Perpetual, Laba Kotor, Beban Operasional, Laba Bersih, Piutang & Utang)
     public function labaRugi(Request $request)
     {
-        [$dari, $sampai] = $this->rentangTanggal($request);
+        // 1. Filter rentang tanggal
+        $periode = $request->input('periode', 'bulan_ini');
 
-        $items = DetailPenjualan::with(['detailPenerimaan.barang', 'penjualan'])
-            ->whereHas('penjualan', function ($q) use ($dari, $sampai) {
-                $q->whereBetween('tanggal', [$dari, $sampai]);
-            })
+        // Validasi Custom: tanggal awal tidak boleh melebihi tanggal akhir
+        if ($request->filled('dari') && $request->filled('sampai') && $request->input('dari') > $request->input('sampai')) {
+            return redirect()->route('laporan.laba-rugi', [
+                'periode' => 'custom',
+                'dari' => $request->input('sampai'),
+                'sampai' => $request->input('dari'),
+            ])->withErrors(['Tanggal awal tidak boleh melebihi tanggal akhir.']);
+        }
+
+        switch ($periode) {
+            case 'hari_ini':
+                $dari = now()->startOfDay()->format('Y-m-d');
+                $sampai = now()->endOfDay()->format('Y-m-d');
+                break;
+            case 'minggu_ini':
+                $dari = now()->startOfWeek()->format('Y-m-d');
+                $sampai = now()->endOfWeek()->format('Y-m-d');
+                break;
+            case 'tahun_ini':
+                $dari = now()->startOfYear()->format('Y-m-d');
+                $sampai = now()->endOfYear()->format('Y-m-d');
+                break;
+            case 'custom':
+                $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+                $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+                if ($dari > $sampai) {
+                    [$dari, $sampai] = [$sampai, $dari];
+                }
+                break;
+            case 'bulan_lalu':
+                $dari = now()->subMonth()->startOfMonth()->format('Y-m-d');
+                $sampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
+                break;
+            case 'semua':
+                $minTanggal = Penjualan::min('tanggal') ?? now()->startOfYear()->format('Y-m-d');
+                $dari = Carbon::parse($minTanggal)->format('Y-m-d');
+                $sampai = now()->endOfDay()->format('Y-m-d');
+                break;
+            case 'bulan_ini':
+            default:
+                if ($request->filled('dari') || $request->filled('sampai')) {
+                    $periode = 'custom';
+                    $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
+                    $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+                    if ($dari > $sampai) {
+                        [$dari, $sampai] = [$sampai, $dari];
+                    }
+                } else {
+                    $periode = 'bulan_ini';
+                    $dari = now()->startOfMonth()->format('Y-m-d');
+                    $sampai = now()->endOfMonth()->format('Y-m-d');
+                }
+                break;
+        }
+
+        // 2. Hitung metrik Penjualan & HPP Perpetual (berdasarkan relasi detail penjualan & penerimaan)
+        $salesData = DB::table('detail_penjualans as dp')
+            ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$dari, $sampai])
+            ->selectRaw('
+                COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as omzet_kotor,
+                COALESCE(SUM(dp.diskon), 0) as total_diskon,
+                COALESCE(SUM(dp.subtotal), 0) as penjualan_bersih,
+                COALESCE(SUM(dr.harga_beli * dp.jumlah), 0) as total_hpp,
+                COUNT(DISTINCT p.id) as jumlah_transaksi,
+                COALESCE(SUM(dp.jumlah), 0) as total_item_terjual
+            ')
+            ->first();
+
+        $omzetKotor = (float) ($salesData->omzet_kotor ?? 0);
+        $totalDiskon = (float) ($salesData->total_diskon ?? 0);
+        $penjualanBersih = max(0, $omzetKotor - $totalDiskon);
+        $hpp = (float) ($salesData->total_hpp ?? 0);
+        $labaKotor = $penjualanBersih - $hpp;
+        $jumlahTransaksi = (int) ($salesData->jumlah_transaksi ?? 0);
+        $totalItemTerjual = (int) ($salesData->total_item_terjual ?? 0);
+
+        // 3. Beban Operasional dalam rentang tanggal
+        $totalBeban = (float) Beban::whereBetween('tanggal', [$dari, $sampai])->sum('nominal');
+        $labaBersih = $labaKotor - $totalBeban;
+
+        $bebanPerKategori = Beban::whereBetween('tanggal', [$dari, $sampai])
+            ->selectRaw('kategori, SUM(nominal) as total, COUNT(*) as jumlah_transaksi')
+            ->groupBy('kategori')
+            ->orderByDesc('total')
             ->get();
 
-        $pendapatan = $items->sum('subtotal');
-        $hpp = $items->sum(fn ($i) => $i->detailPenerimaan->harga_beli * $i->jumlah);
-        $labaKotor = $pendapatan - $hpp;
+        $daftarBeban = Beban::with('user')
+            ->whereBetween('tanggal', [$dari, $sampai])
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id')
+            ->get();
 
-        return view('laporan.laba_rugi', compact('pendapatan', 'hpp', 'labaKotor', 'dari', 'sampai'));
+        // 4. Financial Control: Piutang Member & Hutang Supplier (sumber data riil, selaras dengan Dashboard)
+        $today = now()->startOfDay();
+
+        // Hutang Supplier (Penerimaan belum lunas)
+        $unpaidPenerimaans = Penerimaan::with(['detail', 'pembayaran'])
+            ->where('lunas', false)
+            ->get();
+
+        $totalHutangSupplier = 0;
+        $hutangOverdue = 0;
+        $countHutangBelumLunas = 0;
+
+        foreach ($unpaidPenerimaans as $p) {
+            $sisa = $p->sisaTagihan();
+            if ($sisa <= 0) {
+                continue;
+            }
+            $totalHutangSupplier += $sisa;
+            $countHutangBelumLunas++;
+            if ($p->jatuh_tempo && $p->jatuh_tempo->lt($today)) {
+                $hutangOverdue += $sisa;
+            }
+        }
+
+        // Piutang Member
+        $totalPiutangMember = (float) DB::table('pelanggans')->where('is_member', true)->sum('saldo_piutang');
+        $memberBerpiutangCount = (int) DB::table('pelanggans')->where('is_member', true)->where('saldo_piutang', '>', 0)->count();
+
+        $unpaidPiutangPenjualans = Penjualan::with('pembayaranPiutang')
+            ->where('metode_pembayaran', 'piutang')
+            ->get()
+            ->map(function ($pj) {
+                $dibayar = (float) $pj->pembayaranPiutang->sum('jumlah');
+                $sisa = max(0, (float) $pj->total - $dibayar);
+                return [
+                    'sisa' => $sisa,
+                    'tanggal' => $pj->tanggal,
+                    'due_date' => $pj->due_date,
+                ];
+            })
+            ->filter(fn ($pj) => $pj['sisa'] > 0);
+
+        $piutangOverdue = 0;
+        $countPiutangBelumLunas = $unpaidPiutangPenjualans->count();
+
+        foreach ($unpaidPiutangPenjualans as $item) {
+            $dueDate = $item['due_date'] ? Carbon::parse($item['due_date']) : ($item['tanggal'] ? Carbon::parse($item['tanggal'])->addDays(30) : null);
+            if ($dueDate && $dueDate->lt($today)) {
+                $piutangOverdue += $item['sisa'];
+            }
+        }
+
+        // 5. Margin persentase
+        $marginKotorPersen = $penjualanBersih > 0 ? round(($labaKotor / $penjualanBersih) * 100, 1) : 0;
+        $marginBersihPersen = $penjualanBersih > 0 ? round(($labaBersih / $penjualanBersih) * 100, 1) : 0;
+        $hppPersen = $penjualanBersih > 0 ? round(($hpp / $penjualanBersih) * 100, 1) : 0;
+        $diskonPersen = $omzetKotor > 0 ? round(($totalDiskon / $omzetKotor) * 100, 1) : 0;
+        $bebanPersen = $penjualanBersih > 0 ? round(($totalBeban / $penjualanBersih) * 100, 1) : 0;
+
+        // 6. Rincian Tren Harian Penjualan & Laba
+        $rincianHarian = DB::table('penjualans as p')
+            ->join('detail_penjualans as dp', 'p.id', '=', 'dp.penjualan_id')
+            ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+            ->whereBetween('p.tanggal', [$dari, $sampai])
+            ->selectRaw('
+                DATE(p.tanggal) as tanggal,
+                SUM(dp.harga_jual * dp.jumlah) as omzet_kotor,
+                SUM(dp.diskon) as total_diskon,
+                SUM(dp.subtotal) as penjualan_bersih,
+                SUM(dr.harga_beli * dp.jumlah) as hpp,
+                SUM(dp.subtotal) - SUM(dr.harga_beli * dp.jumlah) as laba_kotor,
+                COUNT(DISTINCT p.id) as transaksi_count
+            ')
+            ->groupBy(DB::raw('DATE(p.tanggal)'))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        $bebanHarian = Beban::whereBetween('tanggal', [$dari, $sampai])
+            ->selectRaw('DATE(tanggal) as tanggal, SUM(nominal) as total_beban')
+            ->groupBy(DB::raw('DATE(tanggal)'))
+            ->pluck('total_beban', 'tanggal');
+
+        // 7. Ekspor Excel (.xlsx) menggunakan OpenSpout
+        if (in_array($request->query('export'), ['excel', 'xlsx'])) {
+            $filename = 'laporan_laba_rugi_' . $dari . '_' . $sampai . '.xlsx';
+            $headers = ['Komponen Laporan', 'Keterangan', 'Persentase', 'Nominal (Rp)'];
+            $data = [
+                ['I. PENDAPATAN PENJUALAN', '', '', ''],
+                ['  Omzet Kotor (Gross Sales)', 'Total nilai penjualan sebelum potongan diskon', ($omzetKotor > 0 ? '100.0%' : '0%'), $omzetKotor],
+                ['  Total Diskon', 'Potongan diskon member dan promosi khusus', ($omzetKotor > 0 ? $diskonPersen . '%' : '0%'), -$totalDiskon],
+                ['PENJUALAN BERSIH (NET SALES)', 'Omzet Kotor dikurangi Total Diskon', '100.0%', $penjualanBersih],
+                ['', '', '', ''],
+                ['II. HARGA POKOK PENJUALAN (HPP)', '', '', ''],
+                ['  HPP Barang Terjual (Perpetual)', 'Total akumulasi harga beli batch barang terjual', ($penjualanBersih > 0 ? $hppPersen . '%' : '0%'), -$hpp],
+                ['', '', '', ''],
+                ['III. LABA KOTOR (GROSS PROFIT)', 'Penjualan Bersih dikurangi HPP', ($penjualanBersih > 0 ? $marginKotorPersen . '%' : '0%'), $labaKotor],
+                ['', '', '', ''],
+                ['IV. BEBAN OPERASIONAL', '', '', ''],
+            ];
+
+            foreach ($bebanPerKategori as $bpk) {
+                $pct = $penjualanBersih > 0 ? round(($bpk->total / $penjualanBersih) * 100, 1) . '%' : '0%';
+                $data[] = [
+                    '  Beban ' . $bpk->kategori,
+                    $bpk->jumlah_transaksi . ' transaksi pengeluaran tercatat',
+                    $pct,
+                    -$bpk->total
+                ];
+            }
+            if ($bebanPerKategori->isEmpty()) {
+                $data[] = ['  Beban Operasional', 'Belum ada catatan beban operasional pada periode ini', '0%', 0];
+            }
+
+            $data[] = ['TOTAL BEBAN OPERASIONAL', 'Akumulasi beban operasional periode ini', ($penjualanBersih > 0 ? $bebanPersen . '%' : '0%'), -$totalBeban];
+            $data[] = ['', '', '', ''];
+            $data[] = ['V. LABA BERSIH OPERASIONAL (NET PROFIT)', 'Laba Kotor dikurangi Total Beban Operasional', ($penjualanBersih > 0 ? $marginBersihPersen . '%' : '0%'), $labaBersih];
+            $data[] = ['', '', '', ''];
+            $data[] = ['VI. POSISI KEUANGAN OUTSTANDING (TERKINI)', '', '', ''];
+            $data[] = ['  Total Piutang Member', $memberBerpiutangCount . ' member memiliki tagihan aktif', '', $totalPiutangMember];
+            $data[] = ['  Total Utang Supplier', $countHutangBelumLunas . ' penerimaan barang belum lunas', '', $totalHutangSupplier];
+
+            $totalRow = [
+                'LABA BERSIH AKHIR PERIODE',
+                'Periode: ' . $dari . ' s/d ' . $sampai,
+                ($penjualanBersih > 0 ? $marginBersihPersen . '%' : '0%'),
+                $labaBersih
+            ];
+
+            return $this->exportXlsx($filename, $headers, $data, $totalRow);
+        }
+
+        return view('laporan.laba_rugi', compact(
+            'dari',
+            'sampai',
+            'periode',
+            'omzetKotor',
+            'totalDiskon',
+            'penjualanBersih',
+            'hpp',
+            'labaKotor',
+            'totalBeban',
+            'labaBersih',
+            'marginKotorPersen',
+            'marginBersihPersen',
+            'hppPersen',
+            'diskonPersen',
+            'bebanPersen',
+            'jumlahTransaksi',
+            'totalItemTerjual',
+            'totalPiutangMember',
+            'memberBerpiutangCount',
+            'piutangOverdue',
+            'countPiutangBelumLunas',
+            'totalHutangSupplier',
+            'hutangOverdue',
+            'countHutangBelumLunas',
+            'bebanPerKategori',
+            'daftarBeban',
+            'rincianHarian',
+            'bebanHarian'
+        ));
+    }
+
+    // Simpan beban operasional baru
+    public function storeBeban(Request $request)
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'kategori' => 'required|string|max:100',
+            'keterangan' => 'nullable|string|max:255',
+            'nominal' => 'required|numeric|min:1',
+        ], [
+            'tanggal.required' => 'Tanggal pengeluaran wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'kategori.required' => 'Kategori pengeluaran wajib dipilih/diisi.',
+            'nominal.required' => 'Nominal pengeluaran wajib diisi.',
+            'nominal.numeric' => 'Nominal harus berupa angka numerik valid.',
+            'nominal.min' => 'Nominal pengeluaran minimal Rp 1.',
+        ]);
+
+        $beban = Beban::create([
+            'user_id' => $request->user()?->id,
+            'tanggal' => $validated['tanggal'],
+            'kategori' => $validated['kategori'],
+            'keterangan' => $validated['keterangan'] ?? null,
+            'nominal' => $validated['nominal'],
+        ]);
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::log(
+                'Tambah Beban Operasional',
+                "Kategori: {$beban->kategori}, Nominal: Rp " . number_format($beban->nominal, 0, ',', '.') . ($beban->keterangan ? " ({$beban->keterangan})" : ''),
+                ActivityLog::CATEGORY_KEUANGAN
+            );
+        }
+
+        DashboardCacheService::clear();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Beban operasional sebesar Rp ' . number_format($beban->nominal, 0, ',', '.') . ' berhasil disimpan.',
+                'data' => $beban,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Beban operasional sebesar Rp ' . number_format($beban->nominal, 0, ',', '.') . ' berhasil ditambahkan.');
+    }
+
+    // Hapus data beban operasional
+    public function destroyBeban(Request $request, Beban $beban)
+    {
+        $nominal = $beban->nominal;
+        $kategori = $beban->kategori;
+        $beban->delete();
+
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::log(
+                'Hapus Beban Operasional',
+                "Hapus beban kategori: {$kategori}, Nominal: Rp " . number_format($nominal, 0, ',', '.'),
+                ActivityLog::CATEGORY_KEUANGAN
+            );
+        }
+
+        DashboardCacheService::clear();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Beban operasional berhasil dihapus.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Beban operasional berhasil dihapus.');
     }
 
     // Laporan penggunaan diskon (Fase 3)
@@ -543,22 +1068,52 @@ class LaporanController extends Controller
         // Untuk dropdown filter promo
         $promos = \App\Models\CustomDiscount::orderBy('nama')->get();
 
-        if ($request->query('export') === 'csv') {
-            $headers = ['Tanggal', 'No. Faktur', 'Barang', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase', 'Nominal'];
+        if ($request->query('export') === 'excel' || $request->query('export') === 'xlsx' || $request->query('export') === 'csv') {
+            if ($request->query('export') === 'csv') {
+                $headers = ['Tanggal', 'No. Faktur', 'Barang', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase', 'Nominal'];
+                $data = [];
+                foreach ($usages as $usage) {
+                    $data[] = [
+                        $usage->created_at->format('d M Y H:i'),
+                        $usage->penjualan->no_faktur ?? '',
+                        $usage->barang_nama,
+                        $usage->penjualan->pelanggan->nama ?? 'Umum',
+                        $usage->jenis,
+                        $usage->custom_discount_nama ?? '-',
+                        $usage->persentase,
+                        $usage->nominal
+                    ];
+                }
+                return $this->exportCsv('laporan-diskon-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+            }
+
+            $headers = ['Tanggal', 'No. Faktur', 'Barang / Obat', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase (%)', 'Hemat Rupiah'];
             $data = [];
             foreach ($usages as $usage) {
                 $data[] = [
-                    $usage->created_at->format('d M Y H:i'),
-                    $usage->penjualan->no_faktur ?? '',
-                    $usage->barang_nama,
+                    $usage->created_at ? $usage->created_at->format('d M Y H:i') : '—',
+                    $usage->penjualan->no_faktur ?? '—',
+                    $usage->barang_nama ?? '—',
                     $usage->penjualan->pelanggan->nama ?? 'Umum',
-                    $usage->jenis,
+                    $usage->jenis === 'member' ? 'Member' : 'Custom Promo',
                     $usage->custom_discount_nama ?? '-',
-                    $usage->persentase,
+                    $usage->persentase . '%',
                     $usage->nominal
                 ];
             }
-            return $this->exportCsv('laporan-diskon-' . $dari . '-' . $sampai . '.csv', $headers, $data);
+
+            $totalRow = [
+                'Total Hemat',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                $totalNominal,
+            ];
+
+            return $this->exportXlsx('laporan_penggunaan_diskon_dan_promo.xlsx', $headers, $data, $totalRow);
         }
 
         return view('laporan.diskon', compact('usages', 'totalNominal', 'promos', 'dari', 'sampai'));

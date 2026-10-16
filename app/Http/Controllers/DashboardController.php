@@ -2,21 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
-use App\Models\DiscountUsage;
-use App\Models\CustomDiscount;
 use App\Models\Penjualan;
-use App\Models\DetailPenjualan;
 use App\Models\Barang;
 use App\Models\DetailPenerimaan;
 use App\Models\Penerimaan;
-use App\Models\PembayaranPenerimaan;
 use App\Models\ActivityLog;
 use App\Services\DashboardCacheService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
 
 class DashboardController extends Controller
 {
@@ -436,9 +434,9 @@ class DashboardController extends Controller
                 ->selectRaw('
                     COUNT(*) as total_batches,
                     COUNT(CASE WHEN expired_date <= ? THEN 1 END) as kadaluarsa,
-                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as critical,
-                    COUNT(CASE WHEN expired_date > ? AND expired_date <= ? THEN 1 END) as warning,
-                    COUNT(CASE WHEN expired_date > ? OR expired_date IS NULL THEN 1 END) as aman
+                    COUNT(CASE WHEN expired_date > ? AND expired_date < ? THEN 1 END) as critical,
+                    COUNT(CASE WHEN expired_date >= ? AND expired_date < ? THEN 1 END) as warning,
+                    COUNT(CASE WHEN expired_date >= ? OR expired_date IS NULL THEN 1 END) as aman
                 ', [
                     $today->format('Y-m-d'),
                     $today->format('Y-m-d'), $oneMonth->format('Y-m-d'),
@@ -466,35 +464,35 @@ class DashboardController extends Controller
         $actionCenter = [
             'critical' => [
                 'count' => $stokHabisCount,
-                'title' => 'CRITICAL',
+                'title' => 'Kritis',
                 'label' => 'Barang stok habis',
                 'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_stok' => 'habis']),
             ],
             'attention' => [
                 'count' => $stokMenipisCount,
-                'title' => 'ATTENTION',
+                'title' => 'Perlu Perhatian',
                 'label' => 'Barang stok menipis',
                 'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_stok' => 'menipis']),
             ],
             'monitoring' => [
                 'count' => $expiryCritical,
-                'title' => 'MONITORING',
+                'title' => 'Dalam Pemantauan',
                 'label' => 'Mendekati expired (< 30 hari)',
                 'izin' => 'laporan.stok',
                 'route' => route('laporan.stok', ['status_expired' => '1_bulan']),
             ],
             'overdue' => [
                 'count' => $countHutangOverdue,
-                'title' => 'OVERDUE',
+                'title' => 'Terlambat',
                 'label' => 'Hutang supplier jatuh tempo',
                 'izin' => 'transaksi.penerimaan',
                 'route' => route('penerimaan.index', ['status_pembayaran' => 'belum_lunas']),
             ],
             'piutang' => [
                 'count' => $memberBerpiutangCount,
-                'title' => 'PIUTANG',
+                'title' => 'Piutang',
                 'label' => 'Member memiliki piutang',
                 'izin' => 'master.pelanggan',
                 'route' => route('pelanggan.index', ['status_piutang' => 'belum_lunas']),
@@ -682,35 +680,48 @@ class DashboardController extends Controller
 
         $query = $baseQuery->with('user');
 
-        if ($request->query('export') === 'csv') {
-            $allLogs = $query->orderByDesc('created_at')->get();
+        if (in_array($request->query('export'), ['excel', 'xlsx', 'csv'])) {
+            $allLogs = (clone $query)->orderByDesc('created_at')->get();
             $headers = ['Tanggal & Waktu', 'Kategori', 'User', 'Role', 'Tindakan / Aksi', 'Rincian Target'];
-            $callback = function() use ($headers, $allLogs) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $headers);
-                foreach ($allLogs as $log) {
-                    fputcsv($file, [
-                        $log->created_at->format('d M Y H:i:s'),
-                        strtoupper($log->kategori ?? 'SISTEM'),
-                        $log->user->name ?? $log->user_name,
-                        $log->user->role ?? '-',
-                        $log->action,
-                        $log->target ?? '-'
-                    ]);
-                }
-                fclose($file);
-            };
+            $data = [];
+            foreach ($allLogs as $log) {
+                $data[] = [
+                    $log->created_at ? $log->created_at->format('d M Y H:i:s') : '-',
+                    strtoupper($log->kategori ?? 'SISTEM'),
+                    $log->user->name ?? $log->user_name ?? '-',
+                    $log->user->role ?? '-',
+                    $log->action,
+                    $log->target ?? '-'
+                ];
+            }
 
-            return response()->stream($callback, 200, [
-                "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=laporan-activity-log-" . now()->format('Ymd-His') . ".csv",
-                "Pragma"              => "no-cache",
-                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                "Expires"             => "0"
+            $filename = 'laporan-activity-log-' . now()->format('Ymd-His') . '.xlsx';
+
+            return response()->streamDownload(function () use ($headers, $data) {
+                $writer = new Writer();
+                $writer->openToFile('php://output');
+
+                $headerStyle = (new Style())
+                    ->setFontBold()
+                    ->setFontColor('FFFFFF')
+                    ->setBackgroundColor('1E40AF');
+
+                $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+                foreach ($data as $row) {
+                    $writer->addRow(Row::fromValues($row));
+                }
+
+                $writer->close();
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
             ]);
         }
 
-        $logs = $query->orderByDesc('created_at')->paginate(25)->withQueryString();
+        $logs = (clone $query)->orderByDesc('created_at')->paginate(25)->withQueryString();
+        $printLogs = (clone $query)->orderByDesc('created_at')->get();
         $users = \App\Models\User::orderBy('name')->get();
 
         $categories = [
@@ -725,6 +736,7 @@ class DashboardController extends Controller
 
         return view('activity_log.index', compact(
             'logs',
+            'printLogs',
             'dari',
             'sampai',
             'users',

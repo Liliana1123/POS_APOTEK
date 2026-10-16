@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Penerimaan Barang')
 
 @section('content')
@@ -16,7 +16,10 @@
 
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4">
+    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">No. Faktur</label>
@@ -28,6 +31,37 @@
                     </span>
                 </div>
             </div>
+
+            <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Awal
+                    </label>
+                    <span class="text-sm invisible select-none">-</span>
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Akhir
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input
+                        type="date"
+                        name="tanggal_mulai"
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+                        class="form-input min-w-0"
+                    >
+
+                    <span class="text-sm text-gray-400">-</span>
+
+                    <input
+                        type="date"
+                        name="tanggal_akhir"
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+                        class="form-input min-w-0"
+                    >
+                </div>
+            </div>
+
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Supplier</label>
                 <select name="supplier_id" class="form-input">
@@ -37,29 +71,7 @@
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Penerimaan
-                </label>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
+            
 
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
@@ -96,13 +108,14 @@
         </div>
         
         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran']))
+            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal']))
                 <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
             @endif
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -117,7 +130,7 @@
                     <tr>
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
-                    <th scope="col">No. Faktur & Tanggal Terima</th>
+                    <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
                     <th scope="col" class="text-center">Status Penerimaan</th>
                     <th scope="col" class="text-right">Total Transaksi</th>
@@ -155,7 +168,7 @@
                                     type="button"
                                     class="btn-secondary !p-1.5 btn-edit-penerimaan"
                                     style="color: #F59E0B;"
-                                    title="Edit Faktur & Detail"
+                                    title="Edit Faktur dan Detail"
                                     data-url="{{ route('penerimaan.edit', $penerimaan) }}"
                                 >
                                     <x-heroicon-o-pencil-square class="w-4 h-4" />
@@ -230,14 +243,14 @@
                         <div class="font-semibold text-gray-800 font-mono">
                             {{ $penerimaan->no_faktur }}
                         </div>
-                        <div class="text-sm text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? 'â€”' }}
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
                         </div>
                     </td>
 
                     {{-- Supplier --}}
                     <td class="font-medium text-gray-800">
-                        {{ $penerimaan->supplier->nama ?? 'â€”' }}
+                        {{ $penerimaan->supplier->nama ?? '-' }}
                     </td>
 
                     {{-- Status Penerimaan --}}
@@ -260,8 +273,8 @@
                     </td>
 
                     {{-- Tanggal Jatuh Tempo --}}
-                    <td class="text-center text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? 'â€”' }}
+                    <td class="text-center text-xs text-gray-600">
+                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -279,14 +292,14 @@
                         <td colspan="9" class="p-0">
                             <div class="empty-state-container">
                                 <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Penerimaan Tidak Ditemukan
                                     @else
                                         Penerimaan Kosong
                                     @endif
                                 </div>
                                 <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'status_pembayaran']))
+                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
                                         Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
                                     @else
                                         Belum ada data faktur masuk terdaftar di sistem.
@@ -301,28 +314,8 @@
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            onchange="this.form.submit()"
-        >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $penerimaans->links() }}
-    </div>
+<div class="mt-4">
+    {{ $penerimaans->links('vendor.pagination.apotek') }}
 </div>
 
 <!-- Modal Detail Penerimaan -->
@@ -330,8 +323,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -344,15 +336,15 @@
             <button type="button"
                 id="btn-tutup-detail"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                âœ•
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="detail-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat detail...
@@ -368,8 +360,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true">
 
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
 
         <div class="modal-header-custom">
             <div>
@@ -382,14 +373,14 @@
             <button type="button"
                 id="btn-tutup-payment"
                 class="btn-secondary !p-1.5"
-                title="Tutup">
-                âœ•
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div id="payment-penerimaan-content"
-             class="modal-body-custom overflow-y-auto"
-             style="max-height: calc(100vh - 180px);">
+             class="modal-body-custom overflow-y-auto modal-body-scroll">
             <div class="text-center py-8 text-gray-500">
                 Memuat pembayaran...
             </div>
@@ -405,8 +396,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Penerimaan Susulan</h2>
@@ -420,15 +410,15 @@
                 id="close-susulan-penerimaan"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                âœ•
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="susulan-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat formulir penerimaan susulan...
@@ -442,8 +432,7 @@
     class="modal-backdrop-custom hidden"
     aria-hidden="true"
 >
-    <div class="modal-container-custom max-w-15xl"
-         style="width: 95vw; max-width: 1100px;">
+    <div class="modal-container-custom max-w-15xl modal-dialog-large">
         <div class="modal-header-custom">
             <div>
                 <h2>Edit Penerimaan</h2>
@@ -457,15 +446,15 @@
                 id="btn-tutup-edit"
                 class="btn-secondary !p-1.5"
                 title="Tutup"
+                aria-label="Tutup"
             >
-                âœ•
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
         <div
             id="edit-penerimaan-content"
-            class="modal-body-custom overflow-y-auto"
-            style="max-height: calc(100vh - 180px);"
+            class="modal-body-custom overflow-y-auto modal-body-scroll"
         >
             <div class="text-center py-8 text-gray-500">
                 Memuat form edit...
@@ -476,7 +465,7 @@
 
 <!-- Modal Tambah Faktur Penerimaan Baru -->
 <div id="modal-tambah-penerimaan" class="modal-backdrop-custom hidden" aria-hidden="true">
-    <div class="modal-container-custom max-w-15xl flex flex-col" style="width: 95vw; max-width: 1100px; max-height: calc(100vh - 60px);">
+    <div class="modal-container-custom max-w-15xl flex flex-col modal-dialog-large" style="max-height: calc(100vh - 60px);">
         <div class="modal-header-custom">
             <div>
                 <h2>Faktur Penerimaan Barang Baru</h2>
@@ -485,12 +474,12 @@
                 </p>
             </div>
 
-            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup">
-                âœ•
+            <button type="button" id="btn-tutup-tambah" class="btn-secondary !p-1.5" title="Tutup" aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
-        <div class="modal-body-custom overflow-y-auto" style="max-height: calc(100vh - 180px);">
+        <div class="modal-body-custom overflow-y-auto modal-body-scroll">
             <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
                 @csrf
 
@@ -614,7 +603,7 @@
             <select name="items[__i__][barang_id]" required class="form-input py-1 px-2 barang-select">
                 <option value="">Pilih barang</option>
                 @foreach ($barangs as $barang)
-                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' â€” ' . $barang->barcode : '' }}</option>
+                    <option value="{{ $barang->id }}" data-pabrik="{{ $barang->pabrik->nama ?? '' }}" data-satuan="{{ $barang->satuan->nama ?? '' }}" data-barcode="{{ $barang->barcode }}">{{ $barang->nama }}{{ $barang->pabrik ? ' (' . $barang->pabrik->nama . ')' : '' }}{{ $barang->barcode ? ' - ' . $barang->barcode : '' }}</option>
                 @endforeach
             </select>
         </td>

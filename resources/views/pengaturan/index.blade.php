@@ -381,12 +381,11 @@
 
             <!-- Form Action Footer -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-                <button type="button"
-                        id="btn-reset"
-                        class="btn-secondary"
-                        onclick="resetFormToInitial()">
-                    Clear
-                </button>
+                    <button type="button"
+                            id="btn-reset"
+                            class="btn-secondary">
+                        Clear
+                    </button>
                 <button type="submit" class="btn-primary flex items-center gap-1.5">
                     <x-heroicon-o-check class="w-4 h-4" />
                     <span>Simpan Pengaturan</span>
@@ -399,12 +398,15 @@
 <!-- Real-time Synchronizer Script -->
 <script>
 const __INITIAL_FORM_STATE = {};
+let __INITIAL_LOGO_URL = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Capture initial values for reset functionality
     document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
         __INITIAL_FORM_STATE[el.name] = el.value;
     });
+
+    const prevLogoImg = document.getElementById('preview-logo-img');
+    if (prevLogoImg) __INITIAL_LOGO_URL = prevLogoImg.src;
 
     const inputNama = document.getElementById('input-nama-apotek');
     const inputPemilik = document.getElementById('input-nama-pemilik');
@@ -428,8 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevTelepon = document.getElementById('preview-telepon');
     const prevEmail = document.getElementById('preview-email');
     const prevPj = document.getElementById('preview-pj');
-    const prevLogoImg = document.getElementById('preview-logo-img');
-    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
     const formLogoPreview = document.getElementById('form-logo-preview');
     const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
 
@@ -542,16 +542,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    window.resetFormToInitial = function () {
-        document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
-            const initial = __INITIAL_FORM_STATE[el.name];
-            if (initial !== undefined) {
-                el.value = initial;
-                el.dispatchEvent(new Event('input'));
+    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
+
+    const btnReset = document.getElementById('btn-reset');
+    if (btnReset) {
+        btnReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            const konfirmasi = confirm('Apakah Anda yakin ingin mengosongkan seluruh kolom form pengaturan ini?');
+            if (konfirmasi) {
+                window.clearForm();
             }
         });
+    }
 
-        if (inputLogo) inputLogo.value = '';
+    window.clearForm = function () {
+        // Kosongkan semua input teks dan textarea
+        document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
+            el.value = '';
+            el.dispatchEvent(new Event('input'));
+        });
+
+        // Kosongkan input file logo
+        if (inputLogo) {
+            inputLogo.value = '';
+        }
+
+        // Reset pratinjau logo ke keadaan kosong
+        if (prevLogoImg) {
+            prevLogoImg.src = '';
+            prevLogoImg.classList.add('hidden');
+        }
+        if (prevLogoPlaceholder) {
+            prevLogoPlaceholder.classList.remove('hidden');
+        }
+        if (formLogoPreview) {
+            formLogoPreview.src = '';
+            formLogoPreview.classList.add('hidden');
+        }
+        if (formLogoPlaceholder) {
+            formLogoPlaceholder.classList.remove('hidden');
+        }
+        if (receiptLogo) {
+            receiptLogo.src = '';
+            receiptLogo.classList.add('hidden');
+        }
     };
 });
 </script>

@@ -11,312 +11,6 @@
     );
 @endphp
 
-<style>
-    /* =========================
-       PRINT TEMPLATE (A4 LANDSCAPE)
-    ========================= */
-    @media print {
-        @page {
-            size: A4 landscape;
-            margin: 0;
-        }
-
-        /* Sembunyikan elemen navigasi, filter, dan tombol web */
-        #sidebar-backdrop,
-        #toast-success,
-        #toast-error,
-        aside,
-        #app-sidebar,
-        nav,
-        header,
-        [role="navigation"],
-        .print\:hidden,
-        .no-print,
-        .page-header-web,
-        .filter-card-web,
-        .card-base,
-        button,
-        .btn-primary,
-        .btn-secondary {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            min-height: 0 !important;
-            max-height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            top: -9999px !important;
-            left: -9999px !important;
-        }
-
-        /* Reset html & body: nolkan margin browser agar kop surat menempel rapi di atas */
-        html,
-        body {
-            width: 100% !important;
-            height: auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow: visible !important;
-            display: block !important;
-            position: static !important;
-            margin: 0 !important;
-            padding: 5mm 10mm 10mm 10mm !important;
-            background: #fff !important;
-            color: #000 !important;
-            font-family: Arial, Helvetica, sans-serif !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
-        /* Override wrapper layouts/app yang menggunakan h-screen overflow-y-auto */
-        body > div.flex-1,
-        div.flex-1.flex.flex-col,
-        main {
-            position: static !important;
-            display: block !important;
-            width: 100% !important;
-            max-width: none !important;
-            height: auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-            float: none !important;
-            flex: none !important;
-        }
-
-        .table-custom-container,
-        .print-table-wrapper {
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-            display: block !important;
-        }
-
-        /* =========================
-           KOP APOTEK
-        ========================= */
-        .print-kop {
-            display: block !important;
-            position: relative;
-            text-align: center;
-            min-height: 50px;
-            margin: 0 0 6px 0 !important;
-            padding: 0 0 5px 0 !important;
-            border-bottom: 1.5px solid #222;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        .print-kop-logo {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            object-position: center;
-        }
-
-        .print-kop-info {
-            width: 100%;
-            text-align: center;
-            box-sizing: border-box;
-            padding: 0 54px;
-        }
-
-        .print-kop-info h1 {
-            margin: 0 0 2px !important;
-            padding: 0 !important;
-            font-size: 15px;
-            line-height: 1.2;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #111;
-        }
-
-        .print-kop-info p {
-            margin: 1px 0 !important;
-            padding: 0 !important;
-            font-size: 8.5px;
-            line-height: 1.25;
-            color: #333;
-        }
-
-        /* =========================
-           JUDUL LAPORAN
-        ========================= */
-        .print-report-title {
-            display: block !important;
-            text-align: center;
-            margin: 4px 0 8px;
-        }
-
-        .print-report-title h2 {
-            margin: 0;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #111;
-        }
-
-        .print-report-title p {
-            margin: 2px 0 0;
-            font-size: 8px;
-            color: #555;
-        }
-
-        /* =========================
-           TABEL PRINT
-        ========================= */
-        .print-table {
-            width: 100% !important;
-            min-width: 0 !important;
-            max-width: none !important;
-            table-layout: fixed !important;
-            border-collapse: collapse !important;
-            font-size: 8px !important;
-        }
-
-        .print-table th {
-            padding: 6px 4px !important;
-            background: #2563eb !important;
-            color: #fff !important;
-            border: 1px solid #1d4ed8 !important;
-            font-size: 7.5px !important;
-            font-weight: 700 !important;
-            text-align: center !important;
-            vertical-align: middle !important;
-        }
-
-        .print-table td {
-            padding: 5px 4px !important;
-            border: 1px solid #bbb !important;
-            font-size: 8px !important;
-            vertical-align: middle !important;
-            word-break: normal !important;
-            overflow-wrap: break-word !important;
-        }
-
-        .print-table tbody tr {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        .print-table thead {
-            display: table-header-group !important;
-        }
-
-        .print-table tfoot {
-            display: table-row-group !important;
-        }
-
-        .print-table tfoot td {
-            padding: 6px 4px !important;
-            font-weight: 700 !important;
-            border-top: 2px solid #222 !important;
-        }
-    }
-
-    /* Jangan tampil di layar biasa */
-    .print-only {
-        display: none !important;
-    }
-
-    @media print {
-        .print-only {
-            display: block !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-        }
-    }
-
-    /* Penyelarasan Vertikal Web */
-    .table-rusak th,
-    .table-rusak td {
-        vertical-align: middle;
-    }
-
-    /* =========================
-       TANDA TANGAN (HANYA CETAK)
-    ========================= */
-    .print-signature {
-        display: none !important;
-    }
-
-    @media print {
-        .no-break {
-            -webkit-column-break-inside: avoid;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .print-signature {
-            display: block !important;
-            margin-top: 35px;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        .print-signature-grid {
-            display: flex !important;
-            justify-content: space-between !important;
-            width: 100% !important;
-            padding: 0 40px !important;
-            box-sizing: border-box !important;
-        }
-
-        .print-signature-box {
-            width: 250px;
-            text-align: center;
-            font-size: 10px;
-            color: #111;
-        }
-
-        .print-signature-title {
-            margin: 0 !important;
-            font-size: 10px !important;
-            font-weight: normal !important;
-        }
-
-        .print-signature-role {
-            margin: 2px 0 0 !important;
-            font-size: 10px !important;
-            font-weight: 700 !important;
-        }
-
-        .print-signature-space {
-            height: 60px !important;
-        }
-
-        .print-signature-name {
-            margin: 0 !important;
-            font-size: 11px !important;
-            font-weight: 700 !important;
-            text-decoration: underline !important;
-        }
-
-        .print-signature-sipa {
-            margin: 3px 0 0 !important;
-            font-size: 9px !important;
-            color: #333 !important;
-        }
-    }
-</style>
-
 {{-- ========================================================= --}}
 {{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
 {{-- ========================================================= --}}
@@ -386,7 +80,7 @@
     {{-- JUDUL LAPORAN --}}
     <div class="print-report-title">
         <h2>
-            Laporan Kerugian Barang Rusak & Kadaluarsa
+            Laporan Kerugian Barang Rusak atau Kadaluarsa
         </h2>
         <p>
             Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
@@ -405,7 +99,7 @@
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
     <div>
-        <h1>Laporan Barang Rusak / Kadaluarsa</h1>
+        <h1>Laporan Barang Rusak atau Kadaluarsa</h1>
         <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -460,9 +154,15 @@
             </div>
 
             <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Lapor
-                </label>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Awal
+                    </label>
+                    <span class="text-sm invisible select-none">-</span>
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Akhir
+                    </label>
+                </div>
 
                 <div class="flex items-center gap-2">
                     <input
@@ -490,12 +190,13 @@
                     href="{{ route('laporan.rusak') }}"
                     class="btn-secondary py-1.5 px-4 flex items-center justify-center"
                 >
-                    Reset
+                    Clear
                 </a>
             @endif
 
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -550,7 +251,7 @@
                     </tr>
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
                     <td colspan="5" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Kerugian Finansial:</td>
                     <td class="table-num !px-2.5 py-3.5 text-right text-red-650 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>

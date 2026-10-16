@@ -11,7 +11,11 @@
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<x-card-filter :action="route('user.index')" :reset-url="route('user.index')">
+<x-card-filter
+    :action="route('user.index')"
+    :reset-url="route('user.index')"
+    :grid="true"
+    :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -66,7 +70,7 @@
                                 @endif
                             </x-table-action>
                         </td>
-                        <td class="table-num">{{ $user->id }}</td>
+                         <td class="table-num">{{ sprintf('%02d', $user->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
@@ -98,7 +102,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $users->links() }}</div>
+<div class="mt-4">{{ $users->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-user"

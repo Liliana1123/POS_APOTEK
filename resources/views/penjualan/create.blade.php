@@ -17,7 +17,7 @@
     </div>
 @endif
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
     <!-- ===================================================== -->
     <!-- KOLOM KIRI: PENCARIAN OBAT / BARANG -->
@@ -25,7 +25,7 @@
     <div class="lg:col-span-1 card-base p-4 transaksi-card">
         <div class="border-b border-blue-100 pb-3 mb-3">
            <h2 class="text-sm font-bold text-slate-800">
-                Pencarian Obat / Barang
+                Pencarian Obat atau Barang
             </h2>
             <p class="text-[10px] text-slate-500 mt-0.5">
                 Pilih jenis transaksi, lalu cari dan pilih barang.
@@ -83,7 +83,7 @@
         {{-- Hasil pencarian --}}
         <div
             id="daftar-barang"
-            class="space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto pr-1"
+            class="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-1"
         ></div>
     </div>
 

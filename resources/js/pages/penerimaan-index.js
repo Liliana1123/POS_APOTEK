@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 try {
                     const errData = await response.json();
                     if (errData && errData.message) errorMsg = errData.message;
-                } catch (e) {}
+                } catch (e) { }
                 throw new Error(errorMsg);
             }
 
@@ -242,11 +242,14 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(async response => {
                 const data = await response.json();
                 if (!response.ok) {
-                    throw new Error(
-                        data.message ||
-                        data.errors?.jumlah_susulan?.[0] ||
-                        'Gagal menyimpan penerimaan susulan.'
-                    );
+                    let errorMsg = 'Gagal menyimpan penerimaan susulan.';
+                    if (data.errors) {
+                        const firstErr = Object.values(data.errors).flat()[0];
+                        if (firstErr) errorMsg = firstErr;
+                    } else if (data.message) {
+                        errorMsg = data.message;
+                    }
+                    throw new Error(errorMsg);
                 }
                 return data;
             })
@@ -456,6 +459,178 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        const tglTambahInput = document.getElementById('tanggal_tambah');
+        if (tglTambahInput && tbodyTambah) {
+            tglTambahInput.addEventListener('change', function () {
+                const tgl = this.value;
+                tbodyTambah.querySelectorAll('tr').forEach(row => {
+                    validateRowExpiredTambah(row, tgl);
+                });
+            });
+        }
+
+        function setFieldErrorTambah(input, message) {
+            if (!input) return;
+            input.classList.remove('border-gray-300');
+            input.classList.add('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            let errEl = container.querySelector('.field-error-msg');
+            if (!errEl) {
+                errEl = document.createElement('span');
+                errEl.className = 'field-error-msg text-[11px] text-red-600 font-semibold block mt-1 leading-tight whitespace-normal';
+                container.appendChild(errEl);
+            }
+            errEl.textContent = message;
+        }
+
+        function clearFieldErrorTambah(input) {
+            if (!input) return;
+            input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+            input.classList.add('border-gray-300');
+
+            const container = input.closest('td') || input.parentElement;
+            if (!container) return;
+
+            const errEl = container.querySelector('.field-error-msg');
+            if (errEl) {
+                errEl.remove();
+            }
+        }
+
+        function clearAllErrorsTambah() {
+            if (!formTambah) return;
+            formTambah.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+            formTambah.querySelectorAll('.\\!border-red-500').forEach(input => {
+                input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
+                input.classList.add('border-gray-300');
+            });
+        }
+
+        function validateRowExpiredTambah(row, tanggalPenerimaan) {
+            if (!row) return true;
+            const input = row.querySelector('[name$="[expired_date]"]');
+            if (!input) return true;
+
+            if (input.value && tanggalPenerimaan) {
+                if (input.value < tanggalPenerimaan) {
+                    setFieldErrorTambah(input, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(input);
+            return true;
+        }
+
+        function validateRowHargaTambah(row) {
+            if (!row) return true;
+            const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+            const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+            if (!hbInput || !hjInput) return true;
+
+            const hb = parseFloat(hbInput.value);
+            const hj = parseFloat(hjInput.value);
+
+            if (!isNaN(hb) && !isNaN(hj)) {
+                if (hj < hb) {
+                    setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                    return false;
+                }
+            }
+            clearFieldErrorTambah(hjInput);
+            return true;
+        }
+
+        function validateFormTambah() {
+            clearAllErrorsTambah();
+            let isValid = true;
+            let firstErrorField = null;
+
+            const tglPenerimaan = document.getElementById('tanggal_tambah')?.value || '';
+
+            if (tbodyTambah) {
+                tbodyTambah.querySelectorAll('tr').forEach(row => {
+                    const expInput = row.querySelector('[name$="[expired_date]"]');
+                    if (expInput) {
+                        if (!expInput.value) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        } else if (tglPenerimaan && expInput.value < tglPenerimaan) {
+                            setFieldErrorTambah(expInput, 'Tanggal expired tidak boleh sebelum tanggal penerimaan.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = expInput;
+                        }
+                    }
+
+                    const hbInput = row.querySelector('.harga-beli') || row.querySelector('[name$="[harga_beli]"]');
+                    const hjInput = row.querySelector('.harga-jual') || row.querySelector('[name$="[harga_jual]"]');
+                    if (hbInput && hjInput) {
+                        const hb = parseFloat(hbInput.value);
+                        const hj = parseFloat(hjInput.value);
+
+                        if (isNaN(hj) || hj < 0) {
+                            setFieldErrorTambah(hjInput, 'Harga jual wajib diisi.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        } else if (!isNaN(hb) && hj < hb) {
+                            setFieldErrorTambah(hjInput, 'Harga jual tidak boleh lebih kecil dari harga beli.');
+                            isValid = false;
+                            if (!firstErrorField) firstErrorField = hjInput;
+                        }
+                    }
+                });
+            }
+
+            if (!isValid && firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            return isValid;
+        }
+
+        function applyServerErrorsTambah(errors) {
+            clearAllErrorsTambah();
+            if (!formTambah) return;
+            let firstErrorField = null;
+
+            for (const key in errors) {
+                const msgs = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+                const msg = msgs[0];
+
+                const match = key.match(/^items\.(\d+)\.([a-z_]+)$/);
+                if (match && tbodyTambah) {
+                    const rowIndex = parseInt(match[1], 10);
+                    const fieldName = match[2];
+                    const rows = tbodyTambah.querySelectorAll('tr');
+                    const row = rows[rowIndex];
+                    if (row) {
+                        const input = row.querySelector(`[name$="[${fieldName}]"]`);
+                        if (input) {
+                            setFieldErrorTambah(input, msg);
+                            if (!firstErrorField) firstErrorField = input;
+                            continue;
+                        }
+                    }
+                }
+
+                const topInput = formTambah.querySelector(`[name="${key}"]`);
+                if (topInput) {
+                    setFieldErrorTambah(topInput, msg);
+                    if (!firstErrorField) firstErrorField = topInput;
+                    continue;
+                }
+            }
+
+            if (firstErrorField) {
+                firstErrorField.focus();
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
         const formTambah = document.getElementById('form-tambah-penerimaan');
         if (formTambah) {
             formTambah.addEventListener('submit', function (e) {
@@ -463,6 +638,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     e.preventDefault();
                     alert('Tambahkan minimal 1 baris barang.');
                     return;
+                }
+                if (!validateFormTambah()) {
+                    e.preventDefault();
                 }
             });
         }

@@ -463,7 +463,7 @@ function clearAllErrorsCreate() {
     const form = document.getElementById('form-penerimaan');
     if (!form) return;
     form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
-    form.querySelectorAll('.!border-red-500').forEach(input => {
+    form.querySelectorAll('.\\!border-red-500').forEach(input => {
         input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
         input.classList.add('border-gray-300');
     });

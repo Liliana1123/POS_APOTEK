@@ -1,36 +1,3 @@
-<style>
-    .table-detail-penerimaan {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-    .table-detail-penerimaan th {
-        padding: 0.5rem 0.65rem !important;
-        font-size: 0.6875rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-    }
-    .table-detail-penerimaan td {
-        padding: 0.4rem 0.65rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-
-    /* Kolom jumlah pada baris induk dan seluruh baris detail */
-    .table-detail-penerimaan tbody td:nth-child(6),
-    .table-detail-penerimaan tbody td:nth-child(7),
-    .table-detail-penerimaan tbody td:nth-child(8),
-    .table-detail-penerimaan tbody td:nth-child(9) {
-        text-align: center !important;
-    }
-</style>
-
 <!-- Info Cards Grid -->
 <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
     <div>

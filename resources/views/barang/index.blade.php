@@ -171,7 +171,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $barangs->links() }}</div>
+<div class="mt-4">{{ $barangs->links('vendor.pagination.apotek') }}</div>
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form

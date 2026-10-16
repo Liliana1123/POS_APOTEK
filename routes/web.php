@@ -156,6 +156,8 @@ Route::middleware(['auth', 'permission:laporan.rusak'])->prefix('laporan')->name
 
 Route::middleware(['auth', 'permission:laporan.laba-rugi'])->prefix('laporan')->name('laporan.')->group(function () {
     Route::get('/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laba-rugi');
+    Route::post('/laba-rugi/beban', [LaporanController::class, 'storeBeban'])->name('laba-rugi.beban.store');
+    Route::delete('/laba-rugi/beban/{beban}', [LaporanController::class, 'destroyBeban'])->name('laba-rugi.beban.destroy');
 });
 
 Route::middleware(['auth', 'permission:laporan.diskon'])->prefix('laporan')->name('laporan.')->group(function () {

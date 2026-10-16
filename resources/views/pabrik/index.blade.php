@@ -9,7 +9,11 @@
     </button>
 </x-page-header>
 
-<x-card-filter :action="route('pabrik.index')" :reset-url="route('pabrik.index')">
+<x-card-filter
+    :action="route('pabrik.index')"
+    :reset-url="route('pabrik.index')"
+    :grid="true"
+    :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -42,7 +46,7 @@
                                 delete-confirm="Yakin ingin menghapus pabrik ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $pabrik->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $pabrik->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $pabrik->nama }}</td>
                         <td class="text-gray-600">{{ $pabrik->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $pabrik->alamat }}">{{ $pabrik->alamat ?? '—' }}</td>
@@ -55,7 +59,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $pabriks->links() }}</div>
+<div class="mt-4">{{ $pabriks->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-pabrik"

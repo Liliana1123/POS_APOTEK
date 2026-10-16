@@ -7,6 +7,13 @@
     @csrf
     @method('PUT')
 
+    <div
+        id="edit-general-error"
+        class="hidden rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        role="alert"
+        aria-live="assertive"
+    ></div>
+
     <!-- Form Header Card -->
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
 
@@ -804,7 +811,7 @@ function initEditPenerimaanForm() {
 
     function clearAllErrors() {
         form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
-        form.querySelectorAll('.!border-red-500').forEach(input => {
+        form.querySelectorAll('.\\!border-red-500').forEach(input => {
             input.classList.remove('!border-red-500', '!ring-1', '!ring-red-500', 'bg-red-50/30');
             input.classList.add('border-gray-300');
         });
@@ -984,9 +991,24 @@ function initEditPenerimaanForm() {
         });
     }
 
+    let isSubmitting = false;
+
+    function showGeneralError(message) {
+        const generalBox = document.getElementById('edit-general-error');
+        if (generalBox) {
+            generalBox.textContent = message;
+            generalBox.classList.remove('hidden');
+            generalBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        alert(message);
+    }
+
     // Submit Edit Form via AJAX
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        if (isSubmitting) return;
 
         if (tbody.children.length === 0) {
             alert('Tambahkan minimal 1 baris barang.');
@@ -998,47 +1020,50 @@ function initEditPenerimaanForm() {
             return;
         }
 
+        isSubmitting = true;
         const submitBtn = document.getElementById('btn-simpan-edit');
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Menyimpan Perubahan...';
         }
 
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+        let saved = false;
+
         try {
             const formData = new FormData(form);
             const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData,
+                signal: controller.signal,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 }
             });
 
-            const result = await response.json().catch(() => null);
+            let result = null;
+            try {
+                result = await response.json();
+            } catch (error) {
+                // Surface non-JSON server responses below instead of treating them as success.
+            }
 
-            if (!response.ok) {
+            if (!response.ok || !result || result.success !== true) {
                 if (result && result.errors) {
                     applyServerErrors(result.errors);
                 } else if (result && result.message) {
-                    const generalBox = document.getElementById('edit-general-error');
-                    if (generalBox) {
-                        generalBox.textContent = result.message;
-                        generalBox.classList.remove('hidden');
-                    } else {
-                        alert(result.message);
-                    }
+                    showGeneralError(result.message);
                 } else {
-                    alert('Terjadi kesalahan saat menyimpan perubahan faktur.');
-                }
-
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Simpan Perubahan';
+                    showGeneralError(
+                        `Gagal menyimpan perubahan penerimaan (HTTP ${response.status}). Respons server tidak valid.`
+                    );
                 }
                 return;
             }
 
+            saved = true;
             // Sukses disimpan
             const modalEdit = document.getElementById('modal-edit-penerimaan');
             if (modalEdit) {
@@ -1053,8 +1078,15 @@ function initEditPenerimaanForm() {
 
         } catch (err) {
             console.error('Error saat submit edit penerimaan:', err);
-            alert('Terjadi kesalahan jaringan/sistem saat menyimpan perubahan.');
-            if (submitBtn) {
+            showGeneralError(
+                err.name === 'AbortError'
+                    ? 'Waktu penyimpanan melebihi 60 detik. Periksa kembali data penerimaan sebelum mencoba lagi.'
+                    : 'Terjadi kesalahan jaringan atau sistem saat menyimpan perubahan.'
+            );
+        } finally {
+            window.clearTimeout(timeoutId);
+            isSubmitting = false;
+            if (!saved && submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Simpan Perubahan';
             }

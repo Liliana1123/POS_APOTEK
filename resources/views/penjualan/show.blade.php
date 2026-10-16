@@ -9,7 +9,12 @@
     </div>
     <div class="flex gap-2">
         <button onclick="window.print()" class="btn-primary">Print Struk</button>
-        <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+
+        @if(request('from') === 'laporan_penjualan')
+            <a href="{{ route('laporan.penjualan', request()->except('from')) }}" class="btn-secondary">Kembali</a>
+        @else
+            <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+        @endif
     </div>
 </div>
 
