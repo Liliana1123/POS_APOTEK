@@ -115,9 +115,9 @@ class PenjualanController extends Controller
             });
 
         // Cuma barang yang aktif & masih ada stok yang bisa dijual
-        // eager-load stok aggregate (withSum) dan batch FEFO pertama agar tidak terjadi N+1 per baris
+        // eager-load stok aggregate (withSum) dan batch FEFO pertama, satuan, serta kategori
         $barangs = Barang::withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
-            ->with('batchFefoFirst')
+            ->with(['batchFefoFirst', 'satuan', 'kategori'])
             ->where('aktif', true)
             ->get();
 
@@ -160,13 +160,16 @@ class PenjualanController extends Controller
             }
         }
 
-        $barangs = $barangs->filter(fn($b) => $b->detail_penerimaan_sum_stok > 0)
-            ->map(fn($b) => [
+        $barangs = $barangs->map(fn($b) => [
                 'id'                  => $b->id,
                 'kode_apotek'         => $b->kode_apotek,
                 'nama'                => $b->nama,
-                'stok'                => (int) $b->detail_penerimaan_sum_stok,
+                'satuan'              => $b->satuan?->nama,
+                'stok'                => (int) ($b->detail_penerimaan_sum_stok ?? 0),
                 'harga'               => $b->batchFefoFirst->first()?->harga_jual,
+                'no_batch'            => $b->batchFefoFirst->first()?->no_batch ?? ($b->kode_apotek ? 'B-' . $b->kode_apotek : 'B-001'),
+                'barcode'             => $b->barcode,
+                'kategori'            => $b->kategori?->nama,
                 'butuh_resep'         => $b->butuh_resep,
                 'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
             ])
@@ -601,7 +604,7 @@ class PenjualanController extends Controller
 
     public function show(Penjualan $penjualan)
     {
-        $penjualan->load(['user', 'pelanggan', 'detail.detailPenerimaan.barang']);
+        $penjualan->load(['user', 'pelanggan', 'detail.detailPenerimaan.barang.satuan']);
 
         return view('penjualan.show', compact('penjualan'));
     }
@@ -611,7 +614,7 @@ class PenjualanController extends Controller
         $penjualan->load([
             'user',
             'pelanggan',
-            'detail.detailPenerimaan.barang',
+            'detail.detailPenerimaan.barang.satuan',
             'discountUsages',
         ]);
 

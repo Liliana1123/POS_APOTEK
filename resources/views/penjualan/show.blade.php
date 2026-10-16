@@ -85,13 +85,16 @@
 
     <div class="border-t border-dashed pt-2.5 space-y-2">
         @foreach ($penjualan->detail as $item)
+            @php
+                $satuan = $item->detailPenerimaan?->barang?->satuan?->nama;
+            @endphp
             <div>
                 <div class="flex justify-between font-semibold text-gray-800">
                     <span>{{ $item->detailPenerimaan->barang->nama }}</span>
                     <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
                 </div>
                 <div class="text-[10px] text-gray-500 mt-0.5">
-                    {{ $item->jumlah }} x Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
+                    {{ $item->jumlah }}{{ $satuan ? ' ' . $satuan : '' }} × Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
                     @if ($item->diskon > 0)
                         <span class="text-red-500 font-medium ml-1">(Diskon -Rp {{ number_format($item->diskon, 0, ',', '.') }})</span>
                     @endif
