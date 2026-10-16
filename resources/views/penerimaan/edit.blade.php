@@ -603,11 +603,7 @@
 
 <script>
     function initEditPenerimaanForm() {
-        let rowIndex = {
-            {
-                $penerimaan - > detail - > count() + 10
-            }
-        };
+        let rowIndex = {{ $penerimaan->detail->count() + 10 }};
 
         const form = document.getElementById('form-edit-penerimaan');
         const tbody = document.getElementById('item-rows-edit');

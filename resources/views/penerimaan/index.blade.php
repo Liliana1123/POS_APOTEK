@@ -620,7 +620,7 @@
     @json(old("_method") ? [] : old("items", []))
 </script>
 <script type="application/json" id="penerimaan-server-errors">
-    @json((($errors - > any() && !old('_method')) ? $errors - > toArray() : []))
+    @json((($errors->any() && !old('_method')) ? $errors->toArray() : []))
 </script>
 
 @vite('resources/js/pages/penerimaan-index.js')
