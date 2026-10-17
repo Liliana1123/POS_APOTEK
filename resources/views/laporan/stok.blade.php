@@ -513,7 +513,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div>
             <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans">
-                Batch Mendekati Expired (&le; 90 Hari)
+                Batch Kadaluwarsa dan Mendekati Expired (&le; 90 Hari)
             </h2>
             <p class="text-caption mt-0.5">
                 Daftar obat dengan sisa stok aktif yang akan kadaluarsa dalam rentang waktu dekat.
