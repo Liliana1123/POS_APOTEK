@@ -16,6 +16,8 @@ class InfoApotek extends Model
         'kota',
         'provinsi',
         'kode_pos',
+        'latitude',
+        'longitude',
         'telepon',
         'email',
         'no_izin_sia',

@@ -26,23 +26,29 @@ class RusakController extends Controller
             });
         }
 
-        if ($request->filled('tanggal_mulai')) {
-            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
-        }
+        $tanggalMulai = $request->filled('tanggal_mulai')
+            ? $request->tanggal_mulai
+            : ($request->filled('tanggal') ? $request->tanggal : now()->startOfMonth()->format('Y-m-d'));
 
-        if ($request->filled('tanggal_akhir')) {
-            $query->whereDate('tanggal', '<=', $request->tanggal_akhir);
-        }
+        $tanggalAkhir = $request->filled('tanggal_akhir')
+            ? $request->tanggal_akhir
+            : ($request->filled('tanggal') ? $request->tanggal : now()->endOfMonth()->format('Y-m-d'));
 
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal', $request->tanggal);
+        } else {
+            if ($tanggalMulai && $tanggalAkhir) {
+                $query->whereBetween('tanggal', [$tanggalMulai, $tanggalAkhir]);
+            } elseif ($tanggalMulai) {
+                $query->whereDate('tanggal', '>=', $tanggalMulai);
+            } elseif ($tanggalAkhir) {
+                $query->whereDate('tanggal', '<=', $tanggalAkhir);
+            }
         }
 
-        $perPage = $request->input('per_page', 15);
+        $rusaks = $query->orderByDesc('tanggal')->paginate(15)->withQueryString();
 
-        $rusaks = $query->orderByDesc('tanggal')->paginate($perPage)->withQueryString();
-
-        return view('rusak.index', compact('rusaks'));
+        return view('rusak.index', compact('rusaks', 'tanggalMulai', 'tanggalAkhir'));
     }
 
     public function create()

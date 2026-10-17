@@ -1,43 +1,14 @@
-<style>
-    .table-payment-penerimaan {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-
-    .table-payment-penerimaan th {
-        padding: 0.6rem 0.75rem !important;
-        font-size: 0.65rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.03em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
-    }
-
-    .table-payment-penerimaan td {
-        padding: 0.55rem 0.75rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        vertical-align: middle;
-    }
-</style>
-
 <div class="space-y-4">
     <!-- Info Cards Grid (Selaras dengan Form Susulan & Detail Penerimaan) -->
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}</strong>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->translatedFormat('d F Y') ?? '-' }}</strong>
         </div>
 
         <div>
@@ -79,7 +50,7 @@
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo ? $penerimaan->jatuh_tempo->format('d M Y') : '-' }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo ? $penerimaan->jatuh_tempo->translatedFormat('d F Y') : '-' }}</strong>
         </div>
     </div>
 
@@ -159,7 +130,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Pembayaran
+                        Keterangan atau Catatan Pembayaran
                     </label>
                     <input
                         type="text"
@@ -194,7 +165,7 @@
                                 <tr class="hover:bg-slate-50/60 transition-colors">
                                     <td class="text-center text-slate-500 font-medium">{{ $loop->iteration }}</td>
                                     <td class="text-slate-700 font-medium">
-                                        {{ $pembayaran->tanggal_bayar?->format('d M Y') ?? '-' }}
+                                        {{ $pembayaran->tanggal_bayar?->translatedFormat('d F Y') ?? '-' }}
                                     </td>
                                     <td class="text-right font-mono font-semibold text-emerald-600">
                                         Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
@@ -274,7 +245,7 @@
                             <tr class="hover:bg-slate-50/60 transition-colors">
                                 <td class="text-center text-slate-500 font-medium">{{ $loop->iteration }}</td>
                                 <td class="text-slate-700 font-medium">
-                                    {{ $pembayaran->tanggal_bayar?->format('d M Y') ?? '-' }}
+                                    {{ $pembayaran->tanggal_bayar?->translatedFormat('d F Y') ?? '-' }}
                                 </td>
                                 <td class="text-right font-mono font-semibold text-emerald-600">
                                     Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}

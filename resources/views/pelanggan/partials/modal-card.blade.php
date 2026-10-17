@@ -24,26 +24,61 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <span class="text-[9px] text-gray-400 block font-semibold uppercase tracking-wide">Benefit Diskon</span>
-                        <strong class="text-sm text-green-600 font-bold">{{ config('pos.diskon_member', 10) }}% OFF</strong>
+                        <strong id="card-discount" class="text-sm text-green-600 font-bold uppercase tracking-wide">
+                            DISKON {{ config('pos.diskon_member', 10) }}%
+                        </strong>
                     </div>
                 </div>
-            </div>
-            <div class="flex justify-center border-t pt-4">
+                           <div class="flex justify-center border-t pt-4">
                 <img id="card-qrcode" class="border p-1.5 bg-white w-32 h-32 rounded-lg shadow-sm" alt="QR Code">
-            </div>
-        </div>
-        <!-- Action Buttons -->
-        <div class="modal-footer-custom mt-4">
-            <button onclick="closeCardModal()" class="btn-secondary">Tutup</button>
-            <button onclick="printCard()" class="btn-primary">Cetak Kartu</button>
-        </div>
-    </div>
-</div>
+                        </div>
+                    </div> <!-- Penutup space-y-3 -->
+                </div> <!-- Penutup print-area -->
+
+                <!-- Action Buttons -->
+                <div class="modal-footer-custom mt-4">
+                    <button onclick="closeCardModal()" class="btn-secondary">Tutup</button>
+                    <button onclick="printCard()" class="btn-primary">Cetak Kartu</button>
+                </div>
+            </div> <!-- Penutup modal-container-custom -->
+        </div> <!-- Penutup modal-card -->
+
+<style>
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #modal-card, #modal-card #print-area, #modal-card #print-area * {
+        visibility: visible !important;
+    }
+    #modal-card {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    #print-area {
+        margin: 20px auto !important;
+        box-shadow: none !important;
+    }
+    .modal-footer-custom {
+        display: none !important;
+    }
+}
+</style>
 
 <script>
-function openCardModal(nama, memberId, totalTransaksi, statusMember) {
+function openCardModal(nama, memberId, totalTransaksi, statusMember, customDiscount) {
     document.getElementById('card-name').textContent = nama || '-';
     document.getElementById('card-id').textContent = memberId || '-';
+
+    const discountVal = (customDiscount !== null && customDiscount !== undefined && customDiscount !== '')
+        ? parseFloat(customDiscount)
+        : {{ config('pos.diskon_member', 10) }};
+    document.getElementById('card-discount').textContent = `DISKON ${discountVal}%`;
 
     const statusElement = document.getElementById('card-status-member');
     statusElement.textContent = statusMember || 'Member Pelanggan Tetap';

@@ -6,38 +6,46 @@
     <title>@yield('title', 'POS Apotek')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => \App\Models\InfoApotek::first()
+        );
+    @endphp
+    <link rel="icon" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        @media print {
+            aside#app-sidebar,
+            #sidebar-backdrop,
+            nav,
+            footer,
+            .app-global-footer {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                min-height: 0 !important;
+                max-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                position: absolute !important;
+                top: -9999px !important;
+                left: -9999px !important;
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex overflow-x-hidden">
+<body class="bg-gray-100 h-screen overflow-hidden flex">
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 self-start transform -translate-x-full lg:translate-x-0 lg:sticky lg:flex lg:w-24 lg:hover:w-64 transition-all duration-200 ease-in-out print:hidden">
-        <script>
-            (function () {
-                var sidebar = document.getElementById('app-sidebar');
-                function expandSidebar() {
-                    sidebar.classList.add('sidebar-expanded');
-                }
-                function collapseSidebar() {
-                    sidebar.classList.remove('sidebar-expanded');
-                }
-                sidebar.addEventListener('mouseenter', expandSidebar);
-                sidebar.addEventListener('mouseleave', collapseSidebar);
-                sidebar.addEventListener('focusin', expandSidebar);
-                sidebar.addEventListener('focusout', collapseSidebar);
-            })();
-        </script>
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:w-24 lg:hover:w-64 transition-all duration-200 ease-in-out print:hidden">
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php
-                $apotek = \Illuminate\Support\Facades\Cache::remember(
-                    'info_apotek',
-                    now()->addHours(6),
-                    fn () => \App\Models\InfoApotek::first()
-                );
                 $abbr = ($apotek?->nama_apotek ?? '')
                     ? collect(explode(' ', $apotek->nama_apotek))
                         ->take(2)
@@ -77,23 +85,55 @@
                     variant="top"
                 />
 
-                <!-- Group: Master Data -->
                 @php
+                    $u = auth()->user();
+                    if (!$u) {
+                        $u = new class {
+                            public $name = '';
+                            public $role = '';
+                            public function hasPermission($name) { return false; }
+                            public function isSuperAdmin() { return false; }
+                        };
+                    }
                     $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
-                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
+                        || request()->routeIs('permission.*');
+                    $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
+                        || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
+                        || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
+                        || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan')
+                        || $u->isSuperAdmin();
                 @endphp
-                @if (auth()->user()->isAdmin())
+
+                <!-- Group: Master Data -->
+                @if ($adaMaster)
                     <x-sidebar-group name="master" icon="cube" icon-type="s" label="Data Master" :has-active="$masterActive">
-                        <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
-                        <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
-                        <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
-                        <x-nav-link route="pabrik.index" pattern="pabrik.*" icon="building-storefront" label="Pabrik" />
-                        <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
-                        <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
-                        <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
-                        <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                        @if ($u->hasPermission('master.barang'))
+                            <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
+                        @endif
+                        @if ($u->hasPermission('master.kategori'))
+                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                        @endif
+                        @if ($u->hasPermission('master.satuan'))
+                            <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
+                        @endif
+                        @if ($u->hasPermission('master.pabrik'))
+                            <x-nav-link route="pabrik.index" pattern="pabrik.*" icon="building-storefront" label="Pabrik" />
+                        @endif
+                        @if ($u->hasPermission('master.supplier'))
+                            <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
+                        @endif
+                        @if ($u->hasPermission('master.pelanggan'))
+                            <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
+                        @endif
+                        @if ($u->hasPermission('sistem.kelola-user'))
+                            <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
+                        @endif
+                        @if ($u->hasPermission('sistem.pengaturan'))
+                            <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                        @endif
                     </x-sidebar-group>
                 @endif
 
@@ -103,69 +143,76 @@
                         || request()->routeIs('rusak.*');
                 @endphp
                 <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
-                    <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
-                    @if (auth()->user()->isAdmin())
+                    @if ($u->hasPermission('transaksi.penjualan'))
+                        <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
+                    @endif
+                    @if ($u->hasPermission('transaksi.penerimaan'))
                         <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
+                    @endif
+                    @if ($u->hasPermission('transaksi.rusak'))
                         <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
                     @endif
                 </x-sidebar-group>
 
-                <!-- Group: Laporan (Admin Only) -->
-                @if (auth()->user()->isAdmin())
+                <!-- Group: Laporan -->
+                @if ($u->hasPermission('laporan.stok') || $u->hasPermission('laporan.penerimaan')
+                    || $u->hasPermission('laporan.penjualan') || $u->hasPermission('laporan.rusak')
+                    || $u->hasPermission('laporan.laba-rugi') || $u->hasPermission('laporan.diskon'))
                     <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
-                        <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
-                        <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
-                        <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
-                        <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
-                        <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
-                        <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                        @if ($u->hasPermission('laporan.stok'))
+                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                        @endif
+                        @if ($u->hasPermission('laporan.penerimaan'))
+                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                        @endif
+                        @if ($u->hasPermission('laporan.penjualan'))
+                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                        @endif
+                        @if ($u->hasPermission('laporan.rusak'))
+                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                        @endif
+                        @if ($u->hasPermission('laporan.laba-rugi'))
+                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                        @endif
+                        @if ($u->hasPermission('laporan.diskon'))
+                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                        @endif
                     </x-sidebar-group>
                 @endif
 
-                <!-- Group: Promo & Log (Admin Only) -->
-                @if (auth()->user()->isAdmin())
+                <!-- Group: Promo & Log -->
+                @if ($u->hasPermission('master.custom-discount') || $u->hasPermission('sistem.activity-log'))
                     @php
                         $promoActive = request()->routeIs('custom-discount.*') || request()->routeIs('activity-log');
                     @endphp
                     <x-sidebar-group name="promo" icon="gift" icon-type="s" label="Promo & Log" :has-active="$promoActive">
-                        <x-nav-link route="custom-discount.index" pattern="custom-discount.*" icon="tag" label="Custom Discount" />
-                        <x-nav-link route="activity-log" icon="book-open" label="Log Aktivitas" />
+                        @if ($u->hasPermission('master.custom-discount'))
+                            <x-nav-link route="custom-discount.index" pattern="custom-discount.*" icon="tag" label="Custom Discount" />
+                        @endif
+                        @if ($u->hasPermission('sistem.activity-log'))
+                            <x-nav-link route="activity-log" icon="book-open" label="Log Aktivitas" />
+                        @endif
+                    </x-sidebar-group>
+                @endif
+
+                @if ($u->isSuperAdmin())
+                    <x-sidebar-group name="izin" icon="shield-check" icon-type="s" label="Izin Akses" :has-active="request()->routeIs('permission.*')">
+                        <x-nav-link route="permission.index" pattern="permission.*" icon="adjustments-horizontal" label="Izin Akses" />
                     </x-sidebar-group>
                 @endif
 
             </nav>
         </div>
 
-        <!-- Restore sidebar group state synchronously (blocking) to prevent flicker -->
-        <script>
-            (function () {
-                document.querySelectorAll('.sidebar-group').forEach(function (group) {
-                    var name = group.dataset.group;
-                    var saved = localStorage.getItem('sidebar-group-' + name);
-                    var items = group.querySelector('.sidebar-group-items');
-                    if (!items) return;
-                    var expand = saved === '1' || items.dataset.hasActive === 'true';
-                    if (expand) {
-                        items.style.maxHeight = '999px';
-                        items.setAttribute('data-expanded', '1');
-                        var btn = group.querySelector('.sidebar-group-header');
-                        if (btn) btn.setAttribute('aria-expanded', 'true');
-                        var arrow = items.previousElementSibling ? items.previousElementSibling.querySelector('.sidebar-group-arrow') : null;
-                        if (arrow) arrow.classList.add('rotate-90');
-                    }
-                });
-            })();
-        </script>
-
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
             <div class="flex items-center gap-3 min-w-0">
                 <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                    {{ $u ? strtoupper(substr($u->name, 0, 2)) : '' }}
                 </div>
                 <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
-                    <span class="block text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</span>
-                    <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ auth()->user()->role }}</span>
+                    <span class="block text-xs font-semibold text-white truncate">{{ $u?->name }}</span>
+                    <span class="block text-[9px] font-bold text-blue-200 uppercase tracking-wider truncate">{{ $u?->role }}</span>
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="sidebar-footer-logout shrink-0 overflow-hidden">
@@ -178,7 +225,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <!-- Top Navbar (Sticky) -->
         <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
             <div class="flex items-center gap-3">
@@ -206,9 +253,12 @@
         </nav>
 
         <!-- Main Content Wrapper -->
-        <main class="flex-1 p-6 w-full pb-12">
+        <main class="flex-1 p-6 w-full pb-8">
             @yield('content')
         </main>
+
+        <!-- Global Reusable Footer -->
+        @include('layouts.footer')
     </div>
 
     <!-- Session Flash Toast Notifications -->
@@ -218,15 +268,6 @@
         <span>{{ session('success') }}</span>
         <button onclick="document.getElementById('toast-success').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
     </div>
-    <script>
-        setTimeout(() => {
-            const toast = document.getElementById('toast-success');
-            if (toast) {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }
-        }, 3500);
-    </script>
     @endif
 
     @if (session('error'))
@@ -235,153 +276,8 @@
         <span>{{ session('error') }}</span>
         <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
     </div>
-    <script>
-        setTimeout(() => {
-            const toast = document.getElementById('toast-error');
-            if (toast) {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }
-        }, 4000);
-    </script>
     @endif
 
-    <!-- Shell Interactions & Global Logic Script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.getElementById('app-sidebar');
-            const toggle = document.getElementById('mobile-sidebar-toggle');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            const closeBtn = document.getElementById('close-sidebar');
-
-            if (toggle && sidebar) {
-                toggle.addEventListener('click', function () {
-                    sidebar.classList.remove('-translate-x-full');
-                    if (backdrop) backdrop.classList.remove('hidden');
-                    const scrollArea = sidebar.querySelector('.sidebar-scroll-area');
-                    if (scrollArea) scrollArea.scrollTop = 0;
-                });
-            }
-
-            function closeSidebar() {
-                if (sidebar) sidebar.classList.add('-translate-x-full');
-                if (backdrop) backdrop.classList.add('hidden');
-            }
-
-            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-            if (backdrop) backdrop.addEventListener('click', closeSidebar);
-
-            // Escape key to close sidebar drawer
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    closeSidebar();
-                }
-            });
-
-            // Sidebar Group Accordion Toggle
-            document.querySelectorAll('.sidebar-group-header').forEach(function(header) {
-                header.addEventListener('click', function() {
-                    const group = this.closest('.sidebar-group');
-                    const items = group.querySelector('.sidebar-group-items');
-                    const arrow = this.querySelector('.sidebar-group-arrow');
-                    const groupName = group.dataset.group;
-
-                    const isExpanded = items.getAttribute('data-expanded') === '1';
-
-                    if (isExpanded) {
-                        items.style.maxHeight = '0px';
-                        items.setAttribute('data-expanded', '0');
-                        this.setAttribute('aria-expanded', 'false');
-                        localStorage.setItem('sidebar-group-' + groupName, '0');
-                    } else {
-                        items.style.maxHeight = '999px';
-                        items.setAttribute('data-expanded', '1');
-                        this.setAttribute('aria-expanded', 'true');
-                        localStorage.setItem('sidebar-group-' + groupName, '1');
-                    }
-                    arrow.classList.toggle('rotate-90');
-                });
-            });
-        });
-
-        // Delete Form Confirmation Modal Interceptor
-        document.addEventListener('submit', function (e) {
-            const form = e.target;
-            if (form.method.toLowerCase() === 'post' && form.querySelector('input[name="_method"][value="DELETE"]')) {
-                if (!form.dataset.confirmed) {
-                    e.preventDefault();
-                    const modal = document.createElement('div');
-                    modal.className = 'modal-backdrop-custom';
-                    modal.innerHTML = `
-                        <div class="modal-container-custom mx-4">
-                            <div class="modal-header-custom">
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>
-                                <button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">
-                                    <x-heroicon-o-x-mark class="w-5 h-5" />
-                                </button>
-                            </div>
-                            <div class="modal-body-custom leading-relaxed">
-                                Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan dan dapat memengaruhi integritas relasi data transaksi.
-                            </div>
-                            <div class="modal-footer-custom">
-                                <button type="button" id="confirm-cancel" class="btn-secondary">Batal</button>
-                                <button type="button" id="confirm-submit" class="btn-destructive">Hapus</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-
-                    const closeModal = () => modal.remove();
-                    modal.querySelector('#confirm-cancel').onclick = closeModal;
-                    modal.querySelector('#confirm-x').onclick = closeModal;
-                    modal.querySelector('#confirm-submit').onclick = function () {
-                        form.dataset.confirmed = 'true';
-                        closeModal();
-                        form.submit();
-                    };
-                }
-            }
-        });
-
-        // Universal Form Submission Loading States to prevent double-submit
-        document.addEventListener('submit', function (e) {
-            const form = e.target;
-            if (form.action.includes('logout') || form.dataset.confirmed === 'false') {
-                return;
-            }
-            const btn = form.querySelector('button[type="submit"]');
-            if (btn) {
-                setTimeout(() => {
-                    btn.disabled = true;
-                    btn.innerHTML = btn.dataset.loadingText || 'Memproses...';
-                }, 10);
-            }
-        });
-
-        // Real-time Clock Updater
-        (function () {
-            function updateClock() {
-                var el = document.getElementById('realtime-clock');
-                if (!el) return;
-                var now = new Date();
-                var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                
-                var dayName = days[now.getDay()];
-                var date = now.getDate();
-                var monthName = months[now.getMonth()];
-                var year = now.getFullYear();
-                
-                var hours = String(now.getHours()).padStart(2, '0');
-                var minutes = String(now.getMinutes()).padStart(2, '0');
-                var seconds = String(now.getSeconds()).padStart(2, '0');
-                
-                el.textContent = dayName + ', ' + date + ' ' + monthName + ' ' + year + ' • ' + hours + ':' + minutes + ':' + seconds + ' WIB';
-            }
-            updateClock();
-            setInterval(updateClock, 1000);
-        })();
-    </script>
 </body>
 
 </html>

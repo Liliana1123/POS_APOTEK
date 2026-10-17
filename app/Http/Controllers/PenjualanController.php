@@ -9,6 +9,9 @@ use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
 
 class PenjualanController extends Controller
 {
@@ -62,8 +65,8 @@ class PenjualanController extends Controller
 
         // Data lengkap untuk laporan cetak, mengikuti filter yang sama
         $laporanPenjualans = (clone $query)
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('no_faktur', 'desc')
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('no_faktur', 'asc')
             ->get();
 
         // Data tabel riwayat tetap memakai pagination
@@ -89,35 +92,175 @@ class PenjualanController extends Controller
     public function create()
     {
         $pelanggans = Pelanggan::orderBy('nama')
-            ->orderBy('nama')
             ->get()
-            ->map(fn($p) => [
-            'id' => $p->id,
-            'nama' => $p->nama,
-            'telepon' => $p->telepon,
-            'is_member' => $p->is_member,
-            'member_aktif' => (bool) ($p->member_aktif ?? true),
-            'member_id' => $p->member_id,
-            'diskon_percent' => ($p->is_member && ($p->member_aktif ?? false))
-            ? min(50, config('pos.diskon_member', 10))
-            : 0,
-        ]);
+            ->map(function ($p) {
+                $memberDiscount = $p->custom_discount_percentage !== null
+                    ? (float) $p->custom_discount_percentage
+                    : (float) config('pos.diskon_member', 10);
+
+                return [
+                    'id' => $p->id,
+                    'nama' => $p->nama,
+                    'telepon' => $p->telepon,
+                    'is_member' => (bool) $p->is_member,
+                    'member_aktif' => (bool) ($p->member_aktif ?? true),
+                    'member_id' => $p->member_id,
+                    'custom_discount_percentage' => $p->custom_discount_percentage !== null
+                        ? (float) $p->custom_discount_percentage
+                        : null,
+                    'diskon_percent' => ($p->is_member && ($p->member_aktif ?? false))
+                        ? min(50, $memberDiscount)
+                        : 0,
+                ];
+            });
 
         // Cuma barang yang aktif & masih ada stok yang bisa dijual
-        $barangs = Barang::where('aktif', true)
-            ->get()
-            ->filter(fn($b) => $b->stokTotal() > 0)
+        // eager-load stok aggregate (withSum) dan batch FEFO pertama agar tidak terjadi N+1 per baris
+        $barangs = Barang::withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
+            ->with('batchFefoFirst')
+            ->where('aktif', true)
+            ->get();
+
+        // Precompute custom discount % untuk SEMUA barang aktif dalam sekali query (tidak dipanggil per-barang)
+        $activePromos = \App\Models\CustomDiscount::aktifHariIni()
+            ->with(['kategoris', 'barangs'])
+            ->get();
+        $discountMap = [];
+        foreach ($barangs as $b) {
+            $discountMap[$b->id] = 0;
+        }
+        foreach ($activePromos as $promo) {
+            if ($promo->cakupan === 'semua') {
+                foreach ($barangs as $b) {
+                    $discountMap[$b->id] = $promo->persentase;
+                }
+                break;
+            } elseif ($promo->cakupan === 'kategori') {
+                $kategoriIds = $promo->kategoris->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($kategoriIds->contains($b->kategori_id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            } elseif ($promo->cakupan === 'barang') {
+                $barangIds = $promo->barangs->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($barangIds->contains($b->id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            } elseif ($promo->cakupan === 'kombinasi') {
+                $kategoriIds = $promo->kategoris->pluck('id');
+                $barangIds = $promo->barangs->pluck('id');
+                foreach ($barangs as $b) {
+                    if ($kategoriIds->contains($b->kategori_id) || $barangIds->contains($b->id)) {
+                        $discountMap[$b->id] = $promo->persentase;
+                    }
+                }
+            }
+        }
+
+        $barangs = $barangs->filter(fn($b) => $b->detail_penerimaan_sum_stok > 0)
             ->map(fn($b) => [
-                'id' => $b->id,
-                'nama' => $b->nama,
-                'stok' => $b->stokTotal(),
-                'harga' => $b->hargaJualTerkini(),
-                'butuh_resep' => $b->butuh_resep,
-                'diskon_custom_percent' => \App\Models\CustomDiscount::getPercentForBarang($b),
+                'id'                  => $b->id,
+                'kode_apotek'         => $b->kode_apotek,
+                'nama'                => $b->nama,
+                'stok'                => (int) $b->detail_penerimaan_sum_stok,
+                'harga'               => $b->batchFefoFirst->first()?->harga_jual,
+                'butuh_resep'         => $b->butuh_resep,
+                'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
             ])
             ->values();
 
         return view('penjualan.create', compact('pelanggans', 'barangs'));
+    }
+
+    public function export(Request $request)
+    {
+        $query = Penjualan::with(['user', 'pelanggan', 'detail']);
+
+        // Filter No. Invoice
+        if ($request->filled('cari')) {
+            $query->where(
+                'no_faktur',
+                'like',
+                '%' . $request->cari . '%'
+            );
+        }
+
+        // Filter tanggal awal
+        if ($request->filled('tanggal_awal')) {
+            $query->whereDate(
+                'tanggal',
+                '>=',
+                $request->tanggal_awal
+            );
+        }
+
+        // Filter tanggal akhir
+        if ($request->filled('tanggal_akhir')) {
+            $query->whereDate(
+                'tanggal',
+                '<=',
+                $request->tanggal_akhir
+            );
+        }
+
+        $penjualans = $query
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('no_faktur', 'desc')
+            ->get();
+
+        $headers = [
+            'No.',
+            'No. Invoice',
+            'Tanggal',
+            'Pelanggan',
+            'Kasir',
+            'Total Diskon',
+            'Total Transaksi',
+        ];
+
+        $data = [];
+
+        foreach ($penjualans as $index => $penjualan) {
+            $data[] = [
+                $index + 1,
+                $penjualan->no_faktur,
+                $penjualan->tanggal->format('d M Y'),
+                $penjualan->pelanggan?->nama ?? 'Umum',
+                $penjualan->user?->name ?? '-',
+                $penjualan->detail->sum('diskon'),
+                $penjualan->total,
+            ];
+        }
+
+        return response()->streamDownload(function () use ($headers, $data) {
+            $writer = new Writer();
+
+            $writer->openToFile('php://output');
+
+            $headerStyle = (new Style())
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E40AF');
+
+            $writer->addRow(
+                Row::fromValues($headers, $headerStyle)
+            );
+
+            foreach ($data as $row) {
+                $writer->addRow(
+                    Row::fromValues($row)
+                );
+            }
+
+            $writer->close();
+        }, 'export-penjualan-' . now()->format('Y-m-d-His') . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment',
+            'Cache-Control' => 'max-age=0',
+        ]);
     }
 
     public function store(Request $request)
@@ -128,7 +271,12 @@ class PenjualanController extends Controller
             'pelanggan_telepon' => 'nullable|string|max:30',
             'tanggal' => 'required|date',
             'no_faktur' => 'required|string|max:100|unique:penjualans,no_faktur',
+            'jenis_transaksi' => 'required|in:non_resep,resep',
+            'nama_dokter' => 'nullable|string|max:255',
+            'id_dokter' => 'nullable|string|max:255',
+            'alamat_lembaga' => 'nullable|string|max:255',
             'metode_pembayaran' => 'required|in:cash,qris,debit,piutang',
+            'due_date' => 'nullable|date',
             'qris_lunas' => 'nullable|boolean',
             'debit_lunas' => 'nullable|boolean',
             'items' => 'required|array|min:1',
@@ -148,8 +296,41 @@ class PenjualanController extends Controller
             ]);
         }
 
+        // Validasi Piutang & Member
+        if ($data['metode_pembayaran'] === 'piutang') {
+            if (empty($data['pelanggan_id'])) {
+                throw ValidationException::withMessages([
+                    'metode_pembayaran' => 'Metode pembayaran Piutang hanya dapat digunakan oleh Member.',
+                ]);
+            }
+
+            $pelangganCheck = Pelanggan::find($data['pelanggan_id']);
+            if (!$pelangganCheck || !$pelangganCheck->is_member || !($pelangganCheck->member_aktif ?? false)) {
+                throw ValidationException::withMessages([
+                    'metode_pembayaran' => 'Metode pembayaran Piutang hanya dapat digunakan oleh Member.',
+                ]);
+            }
+
+            if (!empty($data['due_date'])) {
+                $tglTransaksi = \Illuminate\Support\Carbon::parse($data['tanggal'])->startOfDay();
+                $tglJatuhTempo = \Illuminate\Support\Carbon::parse($data['due_date'])->startOfDay();
+
+                if ($tglJatuhTempo->lt($tglTransaksi)) {
+                    throw ValidationException::withMessages([
+                        'due_date' => 'Tanggal jatuh tempo tidak boleh lebih awal dari tanggal transaksi.',
+                    ]);
+                }
+
+                $finalDueDate = $tglJatuhTempo->format('Y-m-d');
+            } else {
+                $finalDueDate = \Illuminate\Support\Carbon::parse($data['tanggal'])->addMonth()->format('Y-m-d');
+            }
+        } else {
+            $finalDueDate = null;
+        }
+
         try {
-            $penjualan = DB::transaction(function () use ($data, $request) {
+            $penjualan = DB::transaction(function () use ($data, $request, $finalDueDate) {
 
                         // Tentukan pelanggan yang digunakan dalam transaksi
                 if (empty($data['pelanggan_id'])) {
@@ -238,14 +419,17 @@ class PenjualanController extends Controller
                     }
 
                     if ($pelanggan->is_member && ($pelanggan->member_aktif ?? false)) {
-                        $diskonMemberPercent = min(50, config('pos.diskon_member', 10));
+                        $memberDiscount = $pelanggan->custom_discount_percentage !== null
+                            ? (float) $pelanggan->custom_discount_percentage
+                            : (float) config('pos.diskon_member', 10);
+                        $diskonMemberPercent = min(50, $memberDiscount);
                     }
 
                     // Piutang hanya boleh untuk member yang aktif
                     if ($data['metode_pembayaran'] === 'piutang') {
                         if (!$pelanggan->is_member || !($pelanggan->member_aktif ?? false)) {
                             throw ValidationException::withMessages([
-                                'metode_pembayaran' => 'Pembayaran dengan piutang hanya dapat digunakan oleh member yang aktif.',
+                                'metode_pembayaran' => 'Metode pembayaran Piutang hanya dapat digunakan oleh Member.',
                             ]);
                         }
                     }
@@ -258,6 +442,11 @@ class PenjualanController extends Controller
                     'no_faktur' => $data['no_faktur'],
                     'total' => 0,
                     'metode_pembayaran' => $data['metode_pembayaran'],
+                    'due_date' => $finalDueDate,
+                    'jenis_transaksi' => $data['jenis_transaksi'],
+                    'nama_dokter' => $data['nama_dokter'] ?? null,
+                    'id_dokter' => $data['id_dokter'] ?? null,
+                    'alamat_lembaga' => $data['alamat_lembaga'] ?? null,
                 ]);
 
                 $totalFaktur = 0;
@@ -423,10 +612,25 @@ class PenjualanController extends Controller
             'user',
             'pelanggan',
             'detail.detailPenerimaan.barang',
+            'discountUsages',
         ]);
 
+        // Hitung total persentase diskon member yang digunakan pada transaksi ini
+        $memberDiscountPercent = null;
+        $memberDiscountUsages = $penjualan->discountUsages
+            ->where('jenis', 'member');
+
+        if ($memberDiscountUsages->isNotEmpty()) {
+            // Ambil persentase member diskon dari usage pertama (semua item seharusnya sama)
+            $memberDiscountPercent = (float) $memberDiscountUsages->first()->persentase;
+        }
+
+        $penjualanData = $penjualan->toArray();
+        $penjualanData['member_discount_percent_used'] = $memberDiscountPercent;
+        $penjualanData['due_date_formatted'] = $penjualan->due_date ? $penjualan->due_date->format('d M Y') : null;
+
         return response()->json([
-            'penjualan' => $penjualan,
+            'penjualan' => $penjualanData,
         ]);
     }
 

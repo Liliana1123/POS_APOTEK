@@ -26,6 +26,11 @@ class DetailPesananPenerimaan extends Model
 
     public function totalDiterima(): int
     {
+        if ($this->relationLoaded('riwayatPenerimaan')) {
+            return (int) $this->riwayatPenerimaan
+                ->where('jenis', 'penerimaan')
+                ->sum('jumlah');
+        }
         return (int) $this->riwayatPenerimaan()
             ->where('jenis', 'penerimaan')
             ->sum('jumlah');
@@ -33,6 +38,11 @@ class DetailPesananPenerimaan extends Model
 
     public function totalDibatalkan(): int
     {
+        if ($this->relationLoaded('riwayatPenerimaan')) {
+            return (int) $this->riwayatPenerimaan
+                ->where('jenis', 'pembatalan')
+                ->sum('jumlah');
+        }
         return (int) $this->riwayatPenerimaan()
             ->where('jenis', 'pembatalan')
             ->sum('jumlah');

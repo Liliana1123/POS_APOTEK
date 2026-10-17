@@ -9,7 +9,11 @@
     </button>
 </x-page-header>
 
-<x-card-filter :action="route('satuan.index')" :reset-url="route('satuan.index')">
+<x-card-filter
+    :action="route('satuan.index')"
+    :reset-url="route('satuan.index')"
+    :grid="true"
+    :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari satuan..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -40,7 +44,7 @@
                                 delete-confirm="Yakin ingin menghapus satuan ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $satuan->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $satuan->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $satuan->nama }}</td>
                     </tr>
                 @empty
@@ -51,7 +55,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $satuans->links() }}</div>
+<div class="mt-4">{{ $satuans->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-satuan"

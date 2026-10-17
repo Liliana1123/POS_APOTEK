@@ -16,6 +16,9 @@
 <!-- Filter & Search Card -->
 <div class="card-base p-4 mb-6">
     <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
+        @if(request()->filled('tanggal'))
+            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
                 <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
@@ -54,15 +57,21 @@
             </div>
 
             <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Pencatatan
-                </label>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Awal
+                    </label>
+                    <span class="text-sm invisible select-none">-</span>
+                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                        Tanggal Akhir
+                    </label>
+                </div>
 
                 <div class="flex items-center gap-2">
                     <input
                         type="date"
                         name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
+                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
                         class="form-input min-w-0"
                     >
 
@@ -71,7 +80,7 @@
                     <input
                         type="date"
                         name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
+                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
                         class="form-input min-w-0"
                     >
                 </div>
@@ -85,8 +94,9 @@
                 </a>
             @endif
 
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -101,7 +111,7 @@
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">Tanggal Lapor</th>
-                    <th scope="col">Barang / Obat</th>
+                    <th scope="col">Barang atau Obat</th>
                     <th scope="col">No. Batch</th>
                     <th scope="col" class="text-right">Jumlah</th>
                     <th scope="col">Keterangan</th>
@@ -173,7 +183,7 @@
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->format('d M Y') }}
+                        {{ $rusak->tanggal->translatedFormat('d F Y') }}
                     </td>
 
                     {{-- Barang / Obat --}}
@@ -223,29 +233,8 @@
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            form="filter-form"
-            onchange="this.form.submit()"
-        >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $rusaks->links() }}
-    </div>
+<div class="mt-4">
+    {{ $rusaks->links('vendor.pagination.apotek') }}
 </div>
 
     @php
@@ -296,12 +285,12 @@
                 @endif
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang / Obat <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang atau Obat <span class="text-red-500">*</span></label>
                     <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
                         <option value="">Pilih Batch</option>
                         @foreach ($batches as $batch)
                             <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
-                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->format('d M Y') : '-' }})
+                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->translatedFormat('d F Y') : '-' }})
                             </option>
                         @endforeach
                     </select>
@@ -707,9 +696,19 @@
             keterangan: document.getElementById('edit-keterangan-rusak').value
         })
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
-            throw new Error('Gagal menyimpan perubahan.');
+            let errorMsg = 'Gagal menyimpan perubahan.';
+            try {
+                const errData = await response.json();
+                if (errData?.errors) {
+                    const firstErr = Object.values(errData.errors).flat()[0];
+                    if (firstErr) errorMsg = firstErr;
+                } else if (errData?.message) {
+                    errorMsg = errData.message;
+                }
+            } catch (e) {}
+            throw new Error(errorMsg);
         }
 
         closeEditRusak();
@@ -717,7 +716,7 @@
     })
     .catch(error => {
         console.error(error);
-        alert('Gagal menyimpan perubahan.');
+        alert(error.message || 'Gagal menyimpan perubahan.');
     });
 });
 
