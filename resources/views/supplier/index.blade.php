@@ -12,6 +12,7 @@
 <x-card-filter
     :action="route('supplier.index')"
     :reset-url="route('supplier.index')"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..." class="form-input pr-8">
@@ -60,7 +61,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $suppliers->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $suppliers->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-supplier"

@@ -234,7 +234,7 @@ function initShellInteractions() {
     // Universal Form Submission Loading States
     document.addEventListener('submit', function (e) {
         var form = e.target;
-        if (form.action.includes('logout') || form.dataset.confirmed === 'false') return;
+        if (form.action.includes('logout') || form.dataset.confirmed === 'false' || form.dataset.liveFilter === 'true') return;
         var btn = form.querySelector('button[type="submit"]');
         if (btn) {
             setTimeout(function() {

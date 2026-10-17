@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Data Master Barang')
 
 @section('content')
@@ -26,6 +26,7 @@
     :reset-url="route('barang.index')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
     <div>
         <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
@@ -171,7 +172,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $barangs->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $barangs->links('vendor.pagination.apotek') }}</div>
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form

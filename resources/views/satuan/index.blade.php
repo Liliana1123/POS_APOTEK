@@ -12,6 +12,7 @@
 <x-card-filter
     :action="route('satuan.index')"
     :reset-url="route('satuan.index')"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari satuan..." class="form-input pr-8">
@@ -54,7 +55,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $satuans->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $satuans->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-satuan"

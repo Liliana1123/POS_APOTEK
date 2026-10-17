@@ -43,15 +43,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (detailModal) detailModal.classList.add('hidden');
     }
 
-    document.querySelectorAll('.btn-detail-barang').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            try {
-                var data = JSON.parse(this.dataset.json);
-                openDetailModal(data);
-            } catch (e) {
-                console.error('Error parsing barang detail JSON', e);
-            }
-        });
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn-detail-barang');
+        if (!btn) return;
+        try {
+            var data = JSON.parse(btn.dataset.json);
+            openDetailModal(data);
+        } catch (err) {
+            console.error('Error parsing barang detail JSON', err);
+        }
     });
 
     if (btnCloseDetail) btnCloseDetail.addEventListener('click', closeDetailModal);
