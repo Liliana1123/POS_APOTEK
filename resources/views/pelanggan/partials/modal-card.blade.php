@@ -55,7 +55,6 @@
             </div>
         </div> <!-- Penutup modal-container-custom -->
     </div> <!-- Penutup modal-card -->
-</div>
 
 <style>
 @media print {

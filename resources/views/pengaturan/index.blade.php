@@ -168,8 +168,10 @@
 
                     <!-- Granular Address Section: 3 x 2 Grid Layout -->
                     <div class="md:col-span-2 pt-3 border-t border-gray-100">
-                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1">Rincian Alamat Apotek</h4>
-                        <p class="text-[11px] text-gray-500 mb-3">Lengkapi rincian alamat apotek di bawah ini untuk format kop dokumen dan struk transaksi.</p>
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-gray-900">Rincian Alamat Apotek</h4>
+                            <p class="text-xs text-gray-500 mt-0.5">Lengkapi rincian alamat apotek di bawah ini untuk format kop dokumen dan struk transaksi.</p>
+                        </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
@@ -253,8 +255,10 @@
                     </div>
 
                     <div class="md:col-span-2 pt-3 border-t border-gray-100">
-                        <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wider mb-1">Lokasi Apotek</h4>
-                        <p class="text-[11px] text-gray-500 mb-3">Koordinat lokasi apotek (Latitude dan Longitude) dalam format desimal.</p>
+                        <div class="mb-4">
+                            <h4 class="text-sm font-semibold text-gray-900">Lokasi Apotek</h4>
+                            <p class="text-xs text-gray-500 mt-0.5">Koordinat lokasi apotek (Latitude dan Longitude) dalam format desimal.</p>
+                        </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
