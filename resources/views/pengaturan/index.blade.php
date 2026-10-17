@@ -430,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevTelepon = document.getElementById('preview-telepon');
     const prevEmail = document.getElementById('preview-email');
     const prevPj = document.getElementById('preview-pj');
-    const prevLogoImg = document.getElementById('preview-logo-img');
     const formLogoPreview = document.getElementById('form-logo-preview');
     const formLogoPlaceholder = document.getElementById('form-logo-placeholder');
 
@@ -543,51 +542,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const prevLogoPlaceholder = document.getElementById('preview-logo-placeholder');
+
     const btnReset = document.getElementById('btn-reset');
-    console.log('btnReset element:', btnReset);
     if (btnReset) {
         btnReset.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Clear button clicked!');
-            window.resetFormToInitial();
+            const konfirmasi = confirm('Apakah Anda yakin ingin mengosongkan seluruh kolom form pengaturan ini?');
+            if (konfirmasi) {
+                window.clearForm();
+            }
         });
     }
 
-    window.resetFormToInitial = function () {
-        console.log('resetFormToInitial called', __INITIAL_FORM_STATE, __INITIAL_LOGO_URL);
-        document.querySelectorAll('input[name]:not([type="file"]), textarea[name]').forEach(el => {
-            const initial = __INITIAL_FORM_STATE[el.name];
-            if (initial !== undefined) {
-                el.value = initial;
-                el.dispatchEvent(new Event('input'));
-            }
+    window.clearForm = function () {
+        // Kosongkan semua input teks dan textarea
+        document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
+            el.value = '';
+            el.dispatchEvent(new Event('input'));
         });
 
+        // Kosongkan input file logo
         if (inputLogo) {
             inputLogo.value = '';
-            
-            if (__INITIAL_LOGO_URL && !__INITIAL_LOGO_URL.endsWith('/')) {
-                if (prevLogoImg) {
-                    prevLogoImg.src = __INITIAL_LOGO_URL;
-                    prevLogoImg.classList.remove('hidden');
-                }
-                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.add('hidden');
-                if (formLogoPreview) {
-                    formLogoPreview.src = __INITIAL_LOGO_URL;
-                    formLogoPreview.classList.remove('hidden');
-                }
-                if (formLogoPlaceholder) formLogoPlaceholder.classList.add('hidden');
-                if (receiptLogo) {
-                    receiptLogo.src = __INITIAL_LOGO_URL;
-                    receiptLogo.classList.remove('hidden');
-                }
-            } else {
-                if (prevLogoImg) prevLogoImg.classList.add('hidden');
-                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.remove('hidden');
-                if (formLogoPreview) formLogoPreview.classList.add('hidden');
-                if (formLogoPlaceholder) formLogoPlaceholder.classList.remove('hidden');
-                if (receiptLogo) receiptLogo.classList.add('hidden');
-            }
+        }
+
+        // Reset pratinjau logo ke keadaan kosong
+        if (prevLogoImg) {
+            prevLogoImg.src = '';
+            prevLogoImg.classList.add('hidden');
+        }
+        if (prevLogoPlaceholder) {
+            prevLogoPlaceholder.classList.remove('hidden');
+        }
+        if (formLogoPreview) {
+            formLogoPreview.src = '';
+            formLogoPreview.classList.add('hidden');
+        }
+        if (formLogoPlaceholder) {
+            formLogoPlaceholder.classList.remove('hidden');
+        }
+        if (receiptLogo) {
+            receiptLogo.src = '';
+            receiptLogo.classList.add('hidden');
         }
     };
 });
