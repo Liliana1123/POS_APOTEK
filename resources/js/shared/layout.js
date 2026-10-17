@@ -7,11 +7,41 @@ function initSidebarExpand() {
     if (!sidebar) return;
 
     var KEEP_KEY = 'sidebar-keep-expanded';
+    var PIN_KEY = 'sidebar-pinned';
     var html = document.documentElement;
     var pointerInside = false;
 
+    var pinBtn = document.getElementById('pin-sidebar-toggle');
+    var iconUnpinned = document.getElementById('pin-icon-unpinned');
+    var iconPinned = document.getElementById('pin-icon-pinned');
+
     function isDesktop() {
         return window.matchMedia('(min-width: 1024px)').matches;
+    }
+
+    function isPinned() {
+        try {
+            return localStorage.getItem(PIN_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function updatePinUI(pinned) {
+        if (!pinBtn) return;
+        if (pinned) {
+            pinBtn.title = 'Lepas kunci sidebar (Unpin)';
+            pinBtn.setAttribute('aria-label', 'Lepas kunci sidebar');
+            pinBtn.classList.add('bg-blue-800', 'text-white');
+            if (iconUnpinned) iconUnpinned.classList.add('hidden');
+            if (iconPinned) iconPinned.classList.remove('hidden');
+        } else {
+            pinBtn.title = 'Kunci sidebar tetap terbuka (Pin)';
+            pinBtn.setAttribute('aria-label', 'Kunci sidebar');
+            pinBtn.classList.remove('bg-blue-800', 'text-white');
+            if (iconUnpinned) iconUnpinned.classList.remove('hidden');
+            if (iconPinned) iconPinned.classList.add('hidden');
+        }
     }
 
     function expandSidebar() {
@@ -20,12 +50,33 @@ function initSidebarExpand() {
     }
 
     function collapseSidebar() {
+        if (isPinned()) return;
         sidebar.classList.remove('sidebar-expanded');
         html.classList.remove('sidebar-keep-expanded');
     }
 
     function isFocusInside() {
         return sidebar.contains(document.activeElement);
+    }
+
+    if (pinBtn) {
+        pinBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var pinned = isPinned();
+            if (pinned) {
+                try { localStorage.removeItem(PIN_KEY); } catch (err) {}
+                html.classList.remove('sidebar-keep-expanded');
+                updatePinUI(false);
+                if (!pointerInside && !isFocusInside()) {
+                    collapseSidebar();
+                }
+            } else {
+                try { localStorage.setItem(PIN_KEY, '1'); } catch (err) {}
+                html.classList.add('sidebar-keep-expanded');
+                expandSidebar();
+                updatePinUI(true);
+            }
+        });
     }
 
     sidebar.addEventListener('click', function (e) {
@@ -35,13 +86,18 @@ function initSidebarExpand() {
         sessionStorage.setItem(KEEP_KEY, '1');
     });
 
-    if (isDesktop() && (html.classList.contains('sidebar-keep-expanded') || sessionStorage.getItem(KEEP_KEY) === '1')) {
+    var initialPinned = isPinned();
+    updatePinUI(initialPinned);
+
+    if (isDesktop() && (initialPinned || html.classList.contains('sidebar-keep-expanded') || sessionStorage.getItem(KEEP_KEY) === '1')) {
         pointerInside = true;
         expandSidebar();
-        sessionStorage.removeItem(KEEP_KEY);
-        requestAnimationFrame(function () {
-            html.classList.remove('sidebar-keep-expanded');
-        });
+        if (!initialPinned) {
+            sessionStorage.removeItem(KEEP_KEY);
+            requestAnimationFrame(function () {
+                html.classList.remove('sidebar-keep-expanded');
+            });
+        }
 
         function settlePointer(e) {
             document.removeEventListener('pointermove', settlePointer, true);

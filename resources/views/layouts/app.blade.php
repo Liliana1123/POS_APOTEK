@@ -6,7 +6,7 @@
     <script>
         (function () {
             try {
-                if (sessionStorage.getItem('sidebar-keep-expanded') === '1'
+                if ((localStorage.getItem('sidebar-pinned') === '1' || sessionStorage.getItem('sidebar-keep-expanded') === '1')
                     && window.matchMedia('(min-width: 1024px)').matches) {
                     document.documentElement.classList.add('sidebar-keep-expanded');
                 }
@@ -78,6 +78,19 @@
                     {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
                 </span>
             </div>
+            <!-- Pin Sidebar Toggle (Desktop) -->
+            <button id="pin-sidebar-toggle"
+                    type="button"
+                    class="hidden lg:flex sidebar-nav-label text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-blue-600/50 transition-colors"
+                    title="Kunci sidebar tetap terbuka (Pin)"
+                    aria-label="Kunci sidebar">
+                <svg id="pin-icon-unpinned" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5" />
+                </svg>
+                <svg id="pin-icon-pinned" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
             <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
                 <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
             </button>
@@ -224,8 +237,8 @@
 
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
+            <div class="flex items-center gap-3 min-w-0" title="{{ $u?->name }} ({{ ucfirst($u?->role) }})">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md cursor-default" aria-label="Profil: {{ $u?->name }}">
                     {{ $u ? strtoupper(substr($u->name, 0, 2)) : '' }}
                 </div>
                 <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
@@ -260,11 +273,11 @@
                     <span id="realtime-clock" class="font-mono text-[11px] sm:text-xs tracking-tight">--:--:--</span>
                 </div>
 
-                <form method="POST" action="{{ route('logout') }}" class="inline md:hidden">
+                <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1" aria-label="Logout">
+                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Logout dari sistem" aria-label="Logout">
                         <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
-                        Logout
+                        <span class="hidden sm:inline">Logout</span>
                     </button>
                 </form>
             </div>

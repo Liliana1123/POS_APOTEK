@@ -725,6 +725,13 @@ h3,
         transition: opacity 0.2s 0.05s ease-out;
     }
 
+    #app-sidebar:hover #pin-sidebar-toggle,
+    #app-sidebar:focus-within #pin-sidebar-toggle,
+    #app-sidebar.sidebar-expanded #pin-sidebar-toggle,
+    html.sidebar-keep-expanded #app-sidebar #pin-sidebar-toggle {
+        display: inline-flex !important;
+    }
+
     #app-sidebar:hover .sidebar-group-arrow,
     #app-sidebar:focus-within .sidebar-group-arrow,
     #app-sidebar.sidebar-expanded .sidebar-group-arrow,
