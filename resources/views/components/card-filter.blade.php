@@ -31,15 +31,19 @@
             </div>
         @else
             {{ $slot }}
-            @if($resetUrl && request()->filled('cari'))
+            <button type="submit" class="btn-primary flex items-center gap-2">
+                @if($label === 'Cari')
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                @else
+                    <x-heroicon-o-funnel class="w-4 h-4" />
+                @endif
+                <span>{{ $label }}</span>
+            </button>
+            @if(($hasReset || request()->filled('cari')) && $resetUrl)
                 <a href="{{ $resetUrl }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
                     Clear
                 </a>
             @endif
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>{{ $label }}</span>
-            </button>
         @endif
     </form>
 </div>

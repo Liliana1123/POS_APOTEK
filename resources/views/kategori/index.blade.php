@@ -12,7 +12,6 @@
 <x-card-filter
     :action="route('kategori.index')"
     :reset-url="route('kategori.index')"
-    :grid="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama kategori..." class="form-input pr-8">
