@@ -108,8 +108,7 @@
                     $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
-                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
-                        || request()->routeIs('permission.*');
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
                     $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                         || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
                         || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
@@ -124,7 +123,7 @@
                             <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
                         @endif
                         @if ($u->hasPermission('master.kategori'))
-                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="squares-2x2" label="Kategori" />
                         @endif
                         @if ($u->hasPermission('master.satuan'))
                             <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
@@ -149,20 +148,24 @@
 
                 <!-- Group: Transaksi -->
                 @php
+                    $adaTransaksi = $u->hasPermission('transaksi.penjualan') || $u->hasPermission('transaksi.penerimaan')
+                        || $u->hasPermission('transaksi.rusak');
                     $transaksiActive = request()->routeIs('penjualan.*') || request()->routeIs('penerimaan.*')
                         || request()->routeIs('rusak.*');
                 @endphp
-                <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
-                    @if ($u->hasPermission('transaksi.penjualan'))
-                        <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
-                    @endif
-                    @if ($u->hasPermission('transaksi.penerimaan'))
-                        <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
-                    @endif
-                    @if ($u->hasPermission('transaksi.rusak'))
-                        <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
-                    @endif
-                </x-sidebar-group>
+                @if ($adaTransaksi)
+                    <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
+                        @if ($u->hasPermission('transaksi.penjualan'))
+                            <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
+                        @endif
+                        @if ($u->hasPermission('transaksi.penerimaan'))
+                            <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan Barang" />
+                        @endif
+                        @if ($u->hasPermission('transaksi.rusak'))
+                            <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang Rusak" />
+                        @endif
+                    </x-sidebar-group>
+                @endif
 
                 <!-- Group: Laporan -->
                 @if ($u->hasPermission('laporan.stok') || $u->hasPermission('laporan.penerimaan')
@@ -170,22 +173,22 @@
                     || $u->hasPermission('laporan.laba-rugi') || $u->hasPermission('laporan.diskon'))
                     <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
                         @if ($u->hasPermission('laporan.stok'))
-                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan Stok" />
                         @endif
                         @if ($u->hasPermission('laporan.penerimaan'))
-                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan Penerimaan" />
                         @endif
                         @if ($u->hasPermission('laporan.penjualan'))
-                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan Penjualan" />
                         @endif
                         @if ($u->hasPermission('laporan.rusak'))
-                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan Barang Rusak" />
                         @endif
                         @if ($u->hasPermission('laporan.laba-rugi'))
-                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan Laba Rugi" />
                         @endif
                         @if ($u->hasPermission('laporan.diskon'))
-                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan Diskon" />
                         @endif
                     </x-sidebar-group>
                 @endif
@@ -206,9 +209,14 @@
                 @endif
 
                 @if ($u->isSuperAdmin())
-                    <x-sidebar-group name="izin" icon="shield-check" icon-type="s" label="Izin Akses" :has-active="request()->routeIs('permission.*')">
-                        <x-nav-link route="permission.index" pattern="permission.*" icon="adjustments-horizontal" label="Izin Akses" />
-                    </x-sidebar-group>
+                    <x-nav-link
+                        route="permission.index"
+                        pattern="permission.*"
+                        icon="shield-check"
+                        icon-type="s"
+                        label="Izin Akses"
+                        variant="top"
+                    />
                 @endif
 
             </nav>
