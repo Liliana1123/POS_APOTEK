@@ -761,6 +761,30 @@ h3,
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
     }
+
+    /* Active indicator dot on group header in collapsed rail mode */
+    .sidebar-group-active-dot {
+        display: block;
+    }
+
+    #app-sidebar:hover .sidebar-group-active-dot,
+    #app-sidebar:focus-within .sidebar-group-active-dot,
+    #app-sidebar.sidebar-expanded .sidebar-group-active-dot,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-group-active-dot {
+        display: none !important;
+    }
+
+    /* Pinned sidebar visual distinction */
+    #app-sidebar.sidebar-pinned {
+        border-right-color: rgba(147, 197, 253, 0.45) !important;
+        box-shadow: 4px 0 24px -4px rgba(15, 23, 42, 0.18);
+    }
+}
+
+@media (max-width: 1023px) {
+    .sidebar-group-active-dot {
+        display: none !important;
+    }
 }
 
 .customer-data-row {

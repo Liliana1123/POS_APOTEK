@@ -30,15 +30,17 @@ function initSidebarExpand() {
     function updatePinUI(pinned) {
         if (!pinBtn) return;
         if (pinned) {
-            pinBtn.title = 'Lepas kunci sidebar (Unpin)';
-            pinBtn.setAttribute('aria-label', 'Lepas kunci sidebar');
+            pinBtn.title = 'Lepas kunci sidebar (Unpin - Ctrl+B)';
+            pinBtn.setAttribute('aria-label', 'Lepas kunci sidebar (Ctrl+B)');
             pinBtn.classList.add('bg-blue-800', 'text-white');
+            sidebar.classList.add('sidebar-pinned');
             if (iconUnpinned) iconUnpinned.classList.add('hidden');
             if (iconPinned) iconPinned.classList.remove('hidden');
         } else {
-            pinBtn.title = 'Kunci sidebar tetap terbuka (Pin)';
-            pinBtn.setAttribute('aria-label', 'Kunci sidebar');
+            pinBtn.title = 'Kunci sidebar tetap terbuka (Pin - Ctrl+B)';
+            pinBtn.setAttribute('aria-label', 'Kunci sidebar (Ctrl+B)');
             pinBtn.classList.remove('bg-blue-800', 'text-white');
+            sidebar.classList.remove('sidebar-pinned');
             if (iconUnpinned) iconUnpinned.classList.remove('hidden');
             if (iconPinned) iconPinned.classList.add('hidden');
         }
@@ -64,14 +66,15 @@ function initSidebarExpand() {
             e.stopPropagation();
             var pinned = isPinned();
             if (pinned) {
-                try { localStorage.removeItem(PIN_KEY); } catch (err) {}
+                try { localStorage.removeItem(PIN_KEY); } catch (err) { }
                 html.classList.remove('sidebar-keep-expanded');
                 updatePinUI(false);
                 if (!pointerInside && !isFocusInside()) {
                     collapseSidebar();
                 }
             } else {
-                try { localStorage.setItem(PIN_KEY, '1'); } catch (err) {}
+                try { localStorage.setItem(PIN_KEY, '1'); } catch (err) { }
+                try { sessionStorage.removeItem(KEEP_KEY); } catch (err) { }
                 html.classList.add('sidebar-keep-expanded');
                 expandSidebar();
                 updatePinUI(true);
@@ -133,11 +136,11 @@ function initSidebarGroupRestore() {
         var expand = saved === '1' || items.dataset.hasActive === 'true';
         if (expand) {
             items.style.transition = 'none';
-            items.style.maxHeight = '999px';
+            items.style.maxHeight = items.scrollHeight ? (items.scrollHeight + 'px') : 'none';
             items.setAttribute('data-expanded', '1');
             var btn = group.querySelector('.sidebar-group-header');
             if (btn) btn.setAttribute('aria-expanded', 'true');
-            var arrow = items.previousElementSibling ? items.previousElementSibling.querySelector('.sidebar-group-arrow') : null;
+            var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
             if (arrow) arrow.classList.add('rotate-90');
             void items.offsetHeight;
             items.style.transition = '';
@@ -183,16 +186,16 @@ function initSidebarScrollRestore() {
 function initToastAutoDismiss() {
     var toastSuccess = document.getElementById('toast-success');
     if (toastSuccess) {
-        setTimeout(function() {
+        setTimeout(function () {
             toastSuccess.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(function() { toastSuccess.remove(); }, 300);
+            setTimeout(function () { toastSuccess.remove(); }, 300);
         }, 3500);
     }
     var toastError = document.getElementById('toast-error');
     if (toastError) {
-        setTimeout(function() {
+        setTimeout(function () {
             toastError.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(function() { toastError.remove(); }, 300);
+            setTimeout(function () { toastError.remove(); }, 300);
         }, 4000);
     }
 }
@@ -208,8 +211,6 @@ function initShellInteractions() {
         toggle.addEventListener('click', function () {
             sidebar.classList.remove('-translate-x-full');
             if (backdrop) backdrop.classList.remove('hidden');
-            var scrollArea = sidebar.querySelector('.sidebar-scroll-area');
-            if (scrollArea) scrollArea.scrollTop = 0;
         });
     }
 
@@ -222,12 +223,21 @@ function initShellInteractions() {
     if (backdrop) backdrop.addEventListener('click', closeSidebar);
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeSidebar();
+        // Only close sidebar on Escape if mobile sidebar is actually open
+        if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full') && !window.matchMedia('(min-width: 1024px)').matches) {
+            closeSidebar();
+        }
+        // Ctrl+B / Cmd+B: toggle sidebar pin (desktop only)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            var pinToggle = document.getElementById('pin-sidebar-toggle');
+            if (pinToggle && window.matchMedia('(min-width: 1024px)').matches) pinToggle.click();
+        }
     });
 
     // Sidebar Group Accordion
-    document.querySelectorAll('.sidebar-group-header').forEach(function(header) {
-        header.addEventListener('click', function() {
+    document.querySelectorAll('.sidebar-group-header').forEach(function (header) {
+        header.addEventListener('click', function () {
             var group = this.closest('.sidebar-group');
             var items = group.querySelector('.sidebar-group-items');
             var arrow = this.querySelector('.sidebar-group-arrow');
@@ -236,17 +246,20 @@ function initShellInteractions() {
             var isExpanded = items.getAttribute('data-expanded') === '1';
 
             if (isExpanded) {
+                items.style.maxHeight = items.scrollHeight + 'px';
+                void items.offsetHeight;
                 items.style.maxHeight = '0px';
                 items.setAttribute('data-expanded', '0');
                 this.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.classList.remove('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '0');
             } else {
-                items.style.maxHeight = '999px';
+                items.style.maxHeight = items.scrollHeight + 'px';
                 items.setAttribute('data-expanded', '1');
                 this.setAttribute('aria-expanded', 'true');
+                if (arrow) arrow.classList.add('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '1');
             }
-            arrow.classList.toggle('rotate-90');
         });
     });
 
@@ -260,22 +273,22 @@ function initShellInteractions() {
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (
                     '<div class="modal-container-custom mx-4 max-w-md">' +
-                        '<div class="modal-header-custom">' +
-                            '<h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>' +
-                            '<button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>' +
-                        '</div>' +
-                        '<div class="modal-body-custom leading-relaxed">' +
-                            'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan dan dapat memengaruhi integritas relasi data transaksi.' +
-                        '</div>' +
-                        '<div class="modal-footer-custom">' +
-                            '<button type="button" id="confirm-cancel" class="btn-secondary">Batal</button>' +
-                            '<button type="button" id="confirm-submit" class="btn-destructive">Hapus</button>' +
-                        '</div>' +
+                    '<div class="modal-header-custom">' +
+                    '<h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>' +
+                    '<button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>' +
+                    '</div>' +
+                    '<div class="modal-body-custom leading-relaxed">' +
+                    'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan dan dapat memengaruhi integritas relasi data transaksi.' +
+                    '</div>' +
+                    '<div class="modal-footer-custom">' +
+                    '<button type="button" id="confirm-cancel" class="btn-secondary">Batal</button>' +
+                    '<button type="button" id="confirm-submit" class="btn-destructive">Hapus</button>' +
+                    '</div>' +
                     '</div>'
                 );
                 document.body.appendChild(modal);
 
-                var closeModal = function() { modal.remove(); };
+                var closeModal = function () { modal.remove(); };
                 modal.querySelector('#confirm-cancel').onclick = closeModal;
                 modal.querySelector('#confirm-x').onclick = closeModal;
                 modal.querySelector('#confirm-submit').onclick = function () {
@@ -293,7 +306,7 @@ function initShellInteractions() {
         if (form.action.includes('logout') || form.dataset.confirmed === 'false' || form.dataset.liveFilter === 'true') return;
         var btn = form.querySelector('button[type="submit"]');
         if (btn) {
-            setTimeout(function() {
+            setTimeout(function () {
                 btn.disabled = true;
                 btn.innerHTML = btn.dataset.loadingText || 'Memproses...';
             }, 10);
@@ -385,15 +398,15 @@ function initIdleAutoLogout() {
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (
                     '<div class="modal-container-custom mx-4 max-w-md">' +
-                        '<div class="modal-header-custom">' +
-                            '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
-                        '</div>' +
-                        '<div class="modal-body-custom leading-relaxed">' +
-                            'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
-                        '</div>' +
-                        '<div class="modal-footer-custom">' +
-                            '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
-                        '</div>' +
+                    '<div class="modal-header-custom">' +
+                    '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
+                    '</div>' +
+                    '<div class="modal-body-custom leading-relaxed">' +
+                    'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
+                    '</div>' +
+                    '<div class="modal-footer-custom">' +
+                    '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
+                    '</div>' +
                     '</div>'
                 );
                 document.body.appendChild(modal);
@@ -455,7 +468,7 @@ window.Layout = {
     initToastAutoDismiss: initToastAutoDismiss,
     initShellInteractions: initShellInteractions,
     initIdleAutoLogout: initIdleAutoLogout,
-    initAll: function() {
+    initAll: function () {
         initSidebarExpand();
         initSidebarGroupRestore();
         initSidebarScrollRestore();
@@ -466,7 +479,7 @@ window.Layout = {
 };
 
 // Auto-init on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     window.Layout.initAll();
 });
 
