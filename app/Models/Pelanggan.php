@@ -136,10 +136,6 @@ class Pelanggan extends Model
             }
 
             $hariMenujuJatuhTempo = (int) $today->diffInDays($dueDate->copy()->startOfDay(), false);
-            // Pengingat H-3 sampai jatuh tempo (<= 3 hari) atau sudah lewat
-            if ($hariMenujuJatuhTempo > 3) {
-                return null;
-            }
 
             return [
                 'penjualan_id' => $p->id,

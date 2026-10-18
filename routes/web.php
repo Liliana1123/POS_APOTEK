@@ -82,6 +82,10 @@ Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
     Route::post('pelanggan/{pelanggan}/whatsapp-piutang/send', [\App\Http\Controllers\WhatsAppPiutangController::class, 'send'])->name('pelanggan.whatsapp-piutang.send');
     Route::post('pelanggan/whatsapp-piutang/bulk-preview', [\App\Http\Controllers\WhatsAppPiutangController::class, 'bulkPreview'])->name('pelanggan.whatsapp-piutang.bulk-preview');
     Route::post('pelanggan/{pelanggan}/whatsapp-piutang/bulk-send', [\App\Http\Controllers\WhatsAppPiutangController::class, 'sendBulkItem'])->name('pelanggan.whatsapp-piutang.bulk-send');
+    Route::get('whatsapp-templates', [\App\Http\Controllers\WhatsAppPiutangController::class, 'getTemplates'])->name('whatsapp-templates.index');
+    Route::post('whatsapp-templates', [\App\Http\Controllers\WhatsAppPiutangController::class, 'storeTemplate'])->name('whatsapp-templates.store');
+    Route::put('whatsapp-templates/{template}', [\App\Http\Controllers\WhatsAppPiutangController::class, 'updateTemplate'])->name('whatsapp-templates.update');
+    Route::delete('whatsapp-templates/{template}', [\App\Http\Controllers\WhatsAppPiutangController::class, 'destroyTemplate'])->name('whatsapp-templates.destroy');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {
