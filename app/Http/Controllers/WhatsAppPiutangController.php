@@ -619,11 +619,17 @@ class WhatsAppPiutangController extends Controller
             $keterangan = $result['msg'] ?? ($result['status'] ? 'Pesan berhasil dikirim ke nomor WhatsApp.' : 'Gagal mengirim pesan WhatsApp.');
 
             try {
-                $pengingatData = $pelanggan->pengingat_piutang;
+                $isPiutang = $kategori === 'pengingat_piutang';
+                $pengingatData = $isPiutang ? $pelanggan->pengingat_piutang : null;
+                $penjualanId = $isPiutang ? ($request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null)) : null;
+                $penjualan = $penjualanId ? Penjualan::find($penjualanId) : null;
+                $fakturInfo = $isPiutang ? ($penjualan?->no_faktur ?: ($penjualanId ? '#' . $penjualanId : null)) : null;
+                $totalTagihan = $isPiutang ? ($pengingatData['total_sisa'] ?? null) : null;
+
                 WhatsAppLog::create([
                     'pelanggan_id' => $pelanggan->id,
                     'user_id' => auth()->id(),
-                    'penjualan_id' => $request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null),
+                    'penjualan_id' => $penjualanId,
                     'nama_member' => $pelanggan->nama,
                     'nomor_whatsapp' => $teleponFormatted,
                     'kategori' => $kategori,
@@ -633,8 +639,8 @@ class WhatsAppPiutangController extends Controller
                     'waktu_kirim' => $waktuKirim,
                     'waktu_respon' => $waktuRespon,
                     'keterangan' => $keterangan,
-                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($pengingatData ? ('#' . $pengingatData['primary_penjualan_id']) : null) : null,
-                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($pengingatData['total_sisa'] ?? null) : null,
+                    'faktur_info' => $fakturInfo,
+                    'total_tagihan' => $totalTagihan,
                     'metadata' => [
                         'bulk' => true,
                         'provider_response' => $result,
@@ -663,11 +669,17 @@ class WhatsAppPiutangController extends Controller
             ]);
         } catch (\Throwable $e) {
             try {
-                $pengingatData = $pelanggan->pengingat_piutang;
+                $isPiutang = $kategori === 'pengingat_piutang';
+                $pengingatData = $isPiutang ? $pelanggan->pengingat_piutang : null;
+                $penjualanId = $isPiutang ? ($request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null)) : null;
+                $penjualan = $penjualanId ? Penjualan::find($penjualanId) : null;
+                $fakturInfo = $isPiutang ? ($penjualan?->no_faktur ?: ($penjualanId ? '#' . $penjualanId : null)) : null;
+                $totalTagihan = $isPiutang ? ($pengingatData['total_sisa'] ?? null) : null;
+
                 WhatsAppLog::create([
                     'pelanggan_id' => $pelanggan->id,
                     'user_id' => auth()->id(),
-                    'penjualan_id' => $request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null),
+                    'penjualan_id' => $penjualanId,
                     'nama_member' => $pelanggan->nama,
                     'nomor_whatsapp' => $teleponFormatted ?? $pelanggan->telepon,
                     'kategori' => $kategori,
@@ -677,8 +689,8 @@ class WhatsAppPiutangController extends Controller
                     'waktu_kirim' => $waktuKirim ?? now(),
                     'waktu_respon' => now(),
                     'keterangan' => 'Kesalahan sistem: ' . $e->getMessage(),
-                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($pengingatData ? ('#' . $pengingatData['primary_penjualan_id']) : null) : null,
-                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($pengingatData['total_sisa'] ?? null) : null,
+                    'faktur_info' => $fakturInfo,
+                    'total_tagihan' => $totalTagihan,
                     'metadata' => ['bulk' => true, 'exception' => $e->getMessage()],
                 ]);
             } catch (\Throwable $logEx) {}

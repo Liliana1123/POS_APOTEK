@@ -149,13 +149,45 @@ class WhatsAppMonitorController extends Controller
         $log = WhatsAppLog::with(['user', 'pelanggan', 'penjualan', 'followUpUser', 'followUpHistories.user'])->findOrFail($id);
 
         $waktuKirimFormatted = $log->waktu_kirim ? $log->waktu_kirim->translatedFormat('d M Y, H:i') : '-';
-        $waktuResponFormatted = $log->waktu_respon ? $log->waktu_respon->translatedFormat('d M Y, H:i') : ($log->waktu_kirim ? $log->waktu_kirim->translatedFormat('d M Y, H:i') : '-');
+        $waktuResponFormatted = $log->waktu_respon ? $log->waktu_respon->translatedFormat('d M Y, H:i') : '-';
         $waktuFollowUpFormatted = $log->waktu_follow_up ? $log->waktu_follow_up->translatedFormat('d M Y, H:i') : '-';
 
         $senderName = $log->user?->name ?? '-';
         $senderRole = $log->user?->role ? ucwords(str_replace('_', ' ', $log->user->role)) : '-';
 
         $followUpUserName = $log->followUpUser?->name ?? '-';
+
+        // Validasi dan resolusi relasi faktur / transaksi
+        $hasTransaksi = false;
+        $fakturInfo = 'Tidak ada faktur terkait';
+        $totalTagihanFormatted = '-';
+
+        // Hanya pesan piutang atau pesan yang secara eksplisit menyimpan relasi penjualan yang valid
+        if ($log->kategori === 'pengingat_piutang' || $log->penjualan_id !== null) {
+            if ($log->penjualan) {
+                // Relasi penjualan ditemukan di database
+                $hasTransaksi = true;
+                $fakturInfo = $log->penjualan->no_faktur ?: ('#' . $log->penjualan->id);
+                $nominal = $log->total_tagihan !== null ? (float) $log->total_tagihan : (float) $log->penjualan->total;
+                $totalTagihanFormatted = 'Rp ' . number_format($nominal, 0, ',', '.');
+            } elseif ($log->penjualan_id !== null) {
+                // Ada penjualan_id tersimpan, tetapi record di tabel penjualans tidak ditemukan
+                $hasTransaksi = false;
+                $fakturInfo = 'Faktur tidak ditemukan di database';
+                $totalTagihanFormatted = $log->total_tagihan !== null ? ('Rp ' . number_format((float) $log->total_tagihan, 0, ',', '.')) : '-';
+            } elseif (!empty($log->faktur_info)) {
+                // Multi-faktur atau informasi faktur piutang yang tersimpan
+                $hasTransaksi = true;
+                $fakturInfo = $log->faktur_info;
+                $totalTagihanFormatted = $log->total_tagihan !== null ? ('Rp ' . number_format((float) $log->total_tagihan, 0, ',', '.')) : '-';
+            } else {
+                $fakturInfo = 'Tidak ada faktur terkait';
+            }
+        } else {
+            // Pesan non-piutang (promosi, ucapan, pengumuman, dsb)
+            $fakturInfo = 'Tidak ada faktur terkait';
+            $totalTagihanFormatted = '-';
+        }
 
         $histories = $log->followUpHistories->map(function (WhatsAppFollowUpHistory $history) {
             return [
@@ -194,9 +226,10 @@ class WhatsAppMonitorController extends Controller
                 'follow_up_user_nama' => $followUpUserName,
                 'follow_up_histories' => $histories,
                 'keterangan' => $log->keterangan ?: ($log->status === 'terkirim' ? 'Pesan berhasil dikirim ke nomor WhatsApp.' : '-'),
-                'faktur_info' => $log->faktur_info ?: '-',
+                'has_transaksi' => $hasTransaksi,
+                'faktur_info' => $fakturInfo,
                 'total_tagihan' => $log->total_tagihan,
-                'total_tagihan_formatted' => $log->total_tagihan ? ('Rp ' . number_format($log->total_tagihan, 0, ',', '.')) : '-',
+                'total_tagihan_formatted' => $totalTagihanFormatted,
                 'pengirim_nama' => $senderName,
                 'pengirim_role' => $senderRole,
                 'metadata' => $log->metadata,

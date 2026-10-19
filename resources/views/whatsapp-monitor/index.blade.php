@@ -465,7 +465,7 @@
                     <dl class="space-y-1.5 text-xs">
                         <div class="grid grid-cols-3">
                             <dt class="text-gray-500">Faktur Terkait</dt>
-                            <dd id="detailFakturInfo" class="col-span-2 font-mono text-gray-800">-</dd>
+                            <dd id="detailFakturInfo" class="col-span-2 text-gray-800 break-words">-</dd>
                         </div>
                         <div class="grid grid-cols-3">
                             <dt class="text-gray-500">Total Tagihan</dt>
@@ -478,14 +478,7 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-5 py-3 border-t border-gray-200 bg-gray-50/80 flex items-center justify-between">
-            <button
-                type="button"
-                onclick="openFollowUpFromDetail()"
-                class="btn-primary py-1.5 px-4 flex items-center gap-1.5 cursor-pointer !bg-emerald-600 hover:!bg-emerald-700 border-emerald-600">
-                <x-heroicon-o-chat-bubble-bottom-center-text class="w-4 h-4" />
-                <span>Update Status Follow-up</span>
-            </button>
+        <div class="px-5 py-3 border-t border-gray-200 bg-gray-50/80 flex items-center justify-end">
             <button
                 type="button"
                 onclick="closeWhatsAppDetailModal()"
