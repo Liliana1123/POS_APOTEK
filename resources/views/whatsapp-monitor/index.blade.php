@@ -6,9 +6,8 @@
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 font-sans">WhatsApp Monitor</h1>
-        <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member.</p>
+        <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member dan perkembangan follow-up.</p>
     </div>
-
 </div>
 
 <!-- Filter & Search Card (Pola Penerimaan Barang) -->
@@ -20,10 +19,10 @@
 
         <!-- Filter Satu Baris Horizontal (Pola Penerimaan Barang) -->
         <div class="overflow-x-auto pb-1">
-            <div class="min-w-[50rem] lg:min-w-0 grid grid-cols-12 gap-3.5 items-start">
+            <div class="min-w-[62rem] lg:min-w-0 grid grid-cols-12 gap-3 items-start">
                 
-                <!-- 1. Pencarian (Lebar Lebih Besar) -->
-                <div class="col-span-4 min-w-0">
+                <!-- 1. Pencarian -->
+                <div class="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                         Pencarian
                     </label>
@@ -33,7 +32,7 @@
                             name="search"
                             id="filterSearchInput"
                             value="{{ $search }}"
-                            placeholder="Cari nama member, nomor WhatsApp, atau isi pesan..."
+                            placeholder="Cari member, nomor, pesan..."
                             class="form-input pr-8"
                             autocomplete="off"
                         >
@@ -43,8 +42,8 @@
                     </div>
                 </div>
 
-                <!-- 2. Tanggal Awal – Tanggal Akhir (Cukup Ruang) -->
-                <div class="col-span-4 min-w-0">
+                <!-- 2. Tanggal Awal – Tanggal Akhir -->
+                <div class="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
                     <div class="flex items-center gap-2 mb-1.5">
                         <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
                             Tanggal Awal
@@ -73,13 +72,13 @@
                     </div>
                 </div>
 
-                <!-- 3. Jenis Pesan (Proporsional) -->
-                <div class="col-span-2 min-w-0">
+                <!-- 3. Jenis Pesan -->
+                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                         Jenis Pesan
                     </label>
                     <select name="kategori" id="filterKategoriSelect" class="form-input">
-                        <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Semua Jenis Pesan</option>
+                        <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Semua Jenis</option>
                         <option value="pengingat_piutang" @selected($kategori === 'pengingat_piutang')>Pengingat Piutang</option>
                         <option value="promosi_diskon" @selected($kategori === 'promosi_diskon')>Promosi / Diskon</option>
                         <option value="ucapan_apresiasi" @selected($kategori === 'ucapan_apresiasi')>Ucapan & Apresiasi</option>
@@ -89,17 +88,30 @@
                     </select>
                 </div>
 
-                <!-- 4. Status Pengiriman (Proporsional) -->
-                <div class="col-span-2 min-w-0">
+                <!-- 4. Status Pengiriman -->
+                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
                         Status Pengiriman
                     </label>
                     <select name="status" id="filterStatusSelect" class="form-input">
-                        <option value="semua" @selected(empty($status) || $status === 'semua')>Semua Status</option>
+                        <option value="semua" @selected(empty($status) || $status === 'semua')>Semua Pengiriman</option>
                         <option value="terkirim" @selected($status === 'terkirim')>Terkirim</option>
-                        <option value="menunggu" @selected($status === 'menunggu')>Menunggu / Diproses</option>
+                        <option value="menunggu" @selected($status === 'menunggu')>Menunggu</option>
                         <option value="gagal" @selected($status === 'gagal')>Gagal</option>
                         <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
+                    </select>
+                </div>
+
+                <!-- 5. Status Follow-up -->
+                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                        Status Follow-up
+                    </label>
+                    <select name="status_follow_up" id="filterStatusFollowUpSelect" class="form-input">
+                        <option value="semua" @selected(empty($statusFollowUp) || $statusFollowUp === 'semua')>Semua Follow-up</option>
+                        @foreach($statusFollowUpOptions as $val => $lbl)
+                            <option value="{{ $val }}" @selected($statusFollowUp === $val)>{{ $lbl }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -114,11 +126,13 @@
                     || !empty($tanggalAkhir)
                     || (!empty($kategori) && $kategori !== 'semua')
                     || (!empty($status) && $status !== 'semua')
+                    || (!empty($statusFollowUp) && $statusFollowUp !== 'semua')
                     || request()->filled('search')
                     || request()->filled('tanggal_awal')
                     || request()->filled('tanggal_akhir')
                     || (request()->filled('kategori') && request('kategori') !== 'semua')
-                    || (request()->filled('status') && request('status') !== 'semua');
+                    || (request()->filled('status') && request('status') !== 'semua')
+                    || (request()->filled('status_follow_up') && request('status_follow_up') !== 'semua');
             @endphp
 
             @if($hasActiveFilter)
@@ -145,22 +159,25 @@
         <table class="table-custom min-w-full">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-14">Aksi</th>
-                    <th scope="col" class="text-center w-14">No.</th>
+                    <th scope="col" class="text-center w-20">Aksi</th>
+                    <th scope="col" class="text-center w-12">No.</th>
                     <th scope="col" class="whitespace-nowrap">Tanggal Kirim</th>
                     <th scope="col" class="whitespace-nowrap">Nama Member</th>
                     <th scope="col" class="whitespace-nowrap">No. WhatsApp</th>
                     <th scope="col" class="whitespace-nowrap">Jenis Pesan</th>
                     <th scope="col" class="text-center whitespace-nowrap">Status Pengiriman</th>
+                    <th scope="col" class="text-center whitespace-nowrap">Status Follow-up</th>
+                    <th scope="col" class="whitespace-nowrap">Terakhir Update</th>
                     <th scope="col" class="whitespace-nowrap">Dikirim Oleh</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
                 @forelse($logs as $index => $log)
-                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <!-- Aksi Detail -->
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}" id="row-log-{{ $log->id }}">
+                        <!-- Aksi (Detail & Follow-up) -->
                         <td class="text-center">
-                            <div class="flex items-center justify-center gap-1">
+                            <div class="flex items-center justify-center gap-1.5">
+                                {{-- Tombol Detail --}}
                                 <button
                                     type="button"
                                     onclick="openWhatsAppDetailModal({{ $log->id }})"
@@ -168,6 +185,16 @@
                                     class="btn-secondary !p-1.5 btn-action-detail cursor-pointer"
                                     style="color: #2563EB;">
                                     <x-heroicon-o-eye class="w-4 h-4" />
+                                </button>
+
+                                {{-- Tombol Update Follow-up --}}
+                                <button
+                                    type="button"
+                                    onclick="openFollowUpModal({{ $log->id }})"
+                                    title="Update Status Follow-up"
+                                    class="btn-secondary !p-1.5 btn-action-followup cursor-pointer hover:bg-emerald-50 hover:border-emerald-300"
+                                    style="color: #059669;">
+                                    <x-heroicon-o-chat-bubble-bottom-center-text class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>
@@ -184,12 +211,12 @@
 
                         <!-- Nama Member -->
                         <td class="font-semibold text-gray-800 whitespace-nowrap">
-                            {{ $log->nama_member }}
+                            {{ $log->nama_member ?: ($log->pelanggan?->nama ?? '-') }}
                         </td>
 
                         <!-- No. WhatsApp -->
                         <td class="font-mono text-gray-600 whitespace-nowrap">
-                            {{ $log->nomor_whatsapp }}
+                            {{ $log->nomor_whatsapp ?: ($log->pelanggan?->telepon ?? '-') }}
                         </td>
 
                         <!-- Jenis Pesan -->
@@ -197,7 +224,7 @@
                             {{ $log->kategori_label }}
                         </td>
 
-                        <!-- Status Pengiriman -->
+                        <!-- Status Pengiriman (Aktual dari sistem / WhatsApp provider) -->
                         <td class="text-center whitespace-nowrap">
                             @if($log->status === 'terkirim')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -222,14 +249,28 @@
                             @endif
                         </td>
 
+                        <!-- Status Follow-up (Terpisah dari status pengiriman) -->
+                        <td class="text-center whitespace-nowrap">
+                            <span id="row-followup-badge-{{ $log->id }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold {{ $log->status_follow_up_badge_class }}">
+                                {{ $log->status_follow_up_label }}
+                            </span>
+                        </td>
+
+                        <!-- Terakhir Update Follow-up -->
+                        <td class="whitespace-nowrap text-xs text-gray-600 font-mono">
+                            <span id="row-followup-time-{{ $log->id }}">
+                                {{ $log->waktu_follow_up ? $log->waktu_follow_up->translatedFormat('d M Y, H:i') : '-' }}
+                            </span>
+                        </td>
+
                         <!-- Dikirim Oleh -->
                         <td class="text-gray-700 whitespace-nowrap">
-                            {{ $log->user?->name ?? 'aku admin' }}
+                            {{ $log->user?->name ?? '-' }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-12 text-gray-500">
+                        <td colspan="10" class="text-center py-12 text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
                                     <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 opacity-70" />
@@ -252,7 +293,9 @@
     {{ $logs->links('vendor.pagination.apotek') }}
 </div>
 
-<!-- Modal Popup Detail Pengiriman WhatsApp (Dua Kolom) -->
+<!-- ========================================================================= -->
+<!-- MODAL 1: Detail Pengiriman WhatsApp (Dua Kolom) -->
+<!-- ========================================================================= -->
 <div
     id="modalDetailWhatsApp"
     class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto transition-opacity"
@@ -348,14 +391,14 @@
                 </div>
             </div>
 
-            <!-- Kolom 2: Informasi Pengiriman, Detail Pesan, & Pengirim -->
+            <!-- Kolom 2: Informasi Pengiriman & Status Follow-up -->
             <div class="rounded-xl border border-gray-200 p-4 bg-white shadow-2xs space-y-4">
-                <!-- Sub-kartu 1: Informasi Pengiriman -->
+                <!-- Sub-kartu 1: Status Pengiriman WhatsApp -->
                 <div>
-                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Informasi Pengiriman</h3>
+                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Status Pengiriman WhatsApp</h3>
                     <dl class="space-y-2 text-xs">
                         <div class="flex items-center justify-between">
-                            <dt class="text-gray-500">Status</dt>
+                            <dt class="text-gray-500">Status Pengiriman</dt>
                             <dd id="detailInfoStatusBadge">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
                                     Terkirim
@@ -367,7 +410,7 @@
                             <dd id="detailWaktuRespon" class="font-medium text-gray-800">-</dd>
                         </div>
                         <div>
-                            <dt class="text-gray-500 mb-0.5">Keterangan</dt>
+                            <dt class="text-gray-500 mb-0.5">Keterangan Pengiriman</dt>
                             <dd id="detailKeterangan" class="text-gray-700 bg-gray-50 rounded-lg p-2 border border-gray-200/70 font-mono text-[11px] leading-relaxed break-words">
                                 Pesan berhasil dikirim ke nomor WhatsApp.
                             </dd>
@@ -377,20 +420,51 @@
 
                 <hr class="border-gray-100">
 
-                <!-- Sub-kartu 2: Detail Pesan & Transaksi -->
+                <!-- Sub-kartu 2: Perkembangan Follow-up -->
                 <div>
-                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Detail Pesan</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider">Perkembangan Follow-up</h3>
+                        <button
+                            type="button"
+                            onclick="openFollowUpFromDetail()"
+                            class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 underline cursor-pointer">
+                            Perbarui Status
+                        </button>
+                    </div>
+                    <dl class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <dt class="text-gray-500">Status Follow-up</dt>
+                            <dd id="detailInfoFollowUpBadge">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
+                                    Belum ditindaklanjuti
+                                </span>
+                            </dd>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <dt class="text-gray-500">Terakhir Update</dt>
+                            <dd id="detailWaktuFollowUp" class="font-medium text-gray-800">-</dd>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <dt class="text-gray-500">Petugas Follow-up</dt>
+                            <dd id="detailFollowUpUser" class="font-medium text-gray-800">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500 mb-0.5">Catatan Terakhir</dt>
+                            <dd id="detailCatatanFollowUp" class="text-gray-700 bg-gray-50 rounded-lg p-2 border border-gray-200/70 font-sans text-xs leading-relaxed break-words">
+                                -
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <hr class="border-gray-100">
+
+                <!-- Sub-kartu 3: Detail Transaksi / Faktur Terkait -->
+                <div>
+                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Detail Transaksi / Faktur</h3>
                     <dl class="space-y-1.5 text-xs">
                         <div class="grid grid-cols-3">
-                            <dt class="text-gray-500">Jenis Pesan</dt>
-                            <dd id="detailInfoKategori" class="col-span-2 font-medium text-gray-800">-</dd>
-                        </div>
-                        <div class="grid grid-cols-3">
-                            <dt class="text-gray-500">Template</dt>
-                            <dd id="detailInfoTemplate" class="col-span-2 text-gray-800">-</dd>
-                        </div>
-                        <div class="grid grid-cols-3">
-                            <dt class="text-gray-500">Faktur Dipilih</dt>
+                            <dt class="text-gray-500">Faktur Terkait</dt>
                             <dd id="detailFakturInfo" class="col-span-2 font-mono text-gray-800">-</dd>
                         </div>
                         <div class="grid grid-cols-3">
@@ -399,29 +473,19 @@
                         </div>
                     </dl>
                 </div>
-
-                <hr class="border-gray-100">
-
-                <!-- Sub-kartu 3: Pengirim -->
-                <div>
-                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Pengirim</h3>
-                    <dl class="space-y-1.5 text-xs">
-                        <div class="grid grid-cols-3">
-                            <dt class="text-gray-500">Nama</dt>
-                            <dd id="detailSenderNama" class="col-span-2 font-semibold text-gray-800">-</dd>
-                        </div>
-                        <div class="grid grid-cols-3">
-                            <dt class="text-gray-500">Role</dt>
-                            <dd id="detailSenderRole" class="col-span-2 text-gray-600">-</dd>
-                        </div>
-                    </dl>
-                </div>
             </div>
 
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-5 py-3 border-t border-gray-200 bg-gray-50/80 flex justify-end">
+        <div class="px-5 py-3 border-t border-gray-200 bg-gray-50/80 flex items-center justify-between">
+            <button
+                type="button"
+                onclick="openFollowUpFromDetail()"
+                class="btn-primary py-1.5 px-4 flex items-center gap-1.5 cursor-pointer !bg-emerald-600 hover:!bg-emerald-700 border-emerald-600">
+                <x-heroicon-o-chat-bubble-bottom-center-text class="w-4 h-4" />
+                <span>Update Status Follow-up</span>
+            </button>
             <button
                 type="button"
                 onclick="closeWhatsAppDetailModal()"
@@ -432,29 +496,214 @@
     </div>
 </div>
 
+<!-- ========================================================================= -->
+<!-- MODAL 2: Update Status Follow-up & Riwayat Lengkap -->
+<!-- ========================================================================= -->
+<div
+    id="modalFollowUpWhatsApp"
+    class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto transition-opacity"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalFollowUpWhatsAppTitle">
+    
+    <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-4xl my-auto overflow-hidden animate-in fade-in zoom-in duration-150">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-gray-50/60">
+            <div>
+                <h2 id="modalFollowUpWhatsAppTitle" class="text-base font-bold text-gray-900 font-sans">
+                    Update Status Follow-up Member
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5" id="modalFollowUpSubtitle">
+                    Catat perkembangan tindak lanjut komunikasi dengan member.
+                </p>
+            </div>
+            <button
+                type="button"
+                onclick="closeFollowUpModal()"
+                class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200/60 transition cursor-pointer"
+                title="Tutup">
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- Modal Body (2 Kolom: Form Input Kiri, Riwayat Kanan) -->
+        <div class="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs text-gray-700">
+            
+            <!-- Kolom Kiri: Form Update Follow-up -->
+            <div class="rounded-xl border border-gray-200 p-4 bg-white shadow-2xs flex flex-col justify-between">
+                <div>
+                    <!-- Ringkasan Singkat Pesan Pengiriman -->
+                    <div class="pb-3 mb-3 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-bold text-sm text-gray-900" id="fuMemberNama">-</span>
+                            <span id="fuStatusPengirimanBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                                Terkirim
+                            </span>
+                        </div>
+                        <div class="text-gray-500 text-[11px] space-y-0.5">
+                            <p>No. WA: <span class="font-mono text-gray-700" id="fuMemberTelepon">-</span></p>
+                            <p>Kategori: <span class="font-medium text-gray-700" id="fuKategoriLabel">-</span> • Dikirim: <span id="fuWaktuKirim">-</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Isi Pesan Pengiriman -->
+                    <div class="mb-3">
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 font-sans">
+                            Isi Pesan Terkirim
+                        </label>
+                        <div id="fuIsiPesanBox" class="p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700 font-sans leading-relaxed whitespace-pre-wrap max-h-24 overflow-y-auto">
+                            -
+                        </div>
+                    </div>
+
+                    <!-- Status Saat Ini -->
+                    <div class="mb-4 bg-gray-50 rounded-lg p-2.5 border border-gray-200/70 flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Status Follow-up Saat Ini:</span>
+                        <span id="fuStatusSaatIniBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
+                            Belum ditindaklanjuti
+                        </span>
+                    </div>
+
+                    <!-- Form Pembaruan -->
+                    <form id="formUpdateFollowUp" onsubmit="submitFollowUpForm(event)" class="space-y-3.5">
+                        <input type="hidden" id="fuLogId" value="">
+
+                        <!-- Dropdown Status Baru -->
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1 font-sans">
+                                Pilih Status Follow-up Baru <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="fuSelectStatus"
+                                name="status_follow_up"
+                                required
+                                class="form-input text-xs w-full">
+                                <option value="" disabled>-- Pilih Status --</option>
+                                @foreach($statusFollowUpOptions as $val => $lbl)
+                                    <option value="{{ $val }}">{{ $lbl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Catatan Follow-up -->
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1 font-sans">
+                                Catatan Hasil Tindak Lanjut (Opsional)
+                            </label>
+                            <textarea
+                                id="fuTextareaCatatan"
+                                name="catatan"
+                                rows="3"
+                                maxlength="1000"
+                                placeholder="Contoh: Member berjanji akan melunasi piutang tanggal 25 saat gajian..."
+                                class="form-input text-xs w-full resize-none leading-relaxed"></textarea>
+                            <div class="flex justify-between items-center text-[10px] text-gray-400 mt-1">
+                                <span>Beri catatan detail hasil komunikasi bila diperlukan.</span>
+                                <span id="fuCharCounter">0/1000</span>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Simpan -->
+                        <div class="pt-2">
+                            <button
+                                type="submit"
+                                id="fuBtnSubmit"
+                                class="btn-primary w-full py-2 flex items-center justify-center gap-2 cursor-pointer shadow-xs !bg-emerald-600 hover:!bg-emerald-700 border-emerald-600">
+                                <x-heroicon-o-check class="w-4 h-4" />
+                                <span id="fuBtnSubmitText">Simpan Status Follow-up</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Riwayat Perkembangan Follow-up (Timeline) -->
+            <div class="rounded-xl border border-gray-200 p-4 bg-white shadow-2xs flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-2 mb-3 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider">
+                            Riwayat Tindak Lanjut
+                        </h3>
+                        <span class="text-[11px] text-gray-400 font-mono" id="fuHistoryCount">
+                            0 riwayat
+                        </span>
+                    </div>
+
+                    <!-- Timeline List Container -->
+                    <div
+                        id="fuHistoryContainer"
+                        class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                        <!-- Item riwayat dinamis -->
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 text-[10px] text-gray-400">
+                    <p>Setiap perubahan status akan dicatat sebagai riwayat baru dan tidak akan menghapus catatan terdahulu.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-5 py-3 border-t border-gray-200 bg-gray-50/80 flex justify-end">
+            <button
+                type="button"
+                onclick="closeFollowUpModal()"
+                class="btn-secondary py-1.5 px-4 cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast Feedback -->
+<div
+    id="fuToastNotification"
+    class="hidden fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-2 opacity-0"
+    role="alert">
+    <div id="fuToastIcon"></div>
+    <span id="fuToastMessage" class="font-medium"></span>
+</div>
+
 @push('scripts')
 <script>
 let currentDetailPesanText = '';
+let currentFollowUpLogId = null;
 
+// Character counter untuk textarea catatan
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('fuTextareaCatatan');
+    const counter = document.getElementById('fuCharCounter');
+    if (textarea && counter) {
+        textarea.addEventListener('input', function() {
+            counter.textContent = `${this.value.length}/1000`;
+        });
+    }
+});
+
+// =========================================================================
+// 1. DETAIL PENGIRIMAN MODAL
+// =========================================================================
 function openWhatsAppDetailModal(logId) {
     const modal = document.getElementById('modalDetailWhatsApp');
     if (!modal) return;
 
+    currentFollowUpLogId = logId;
+
     // Reset isi modal sementara
-    document.getElementById('detailMemberNama').textContent = 'Memuat...';
-    document.getElementById('detailMemberTelepon').textContent = '-';
-    document.getElementById('detailWaktuKirim').textContent = '-';
-    document.getElementById('detailPengirimNama').textContent = '-';
-    document.getElementById('detailTemplateNama').textContent = '-';
+    document.getElementById('detailMemberNama').textContent = ': Memuat...';
+    document.getElementById('detailMemberTelepon').textContent = ': -';
+    document.getElementById('detailWaktuKirim').textContent = ': -';
+    document.getElementById('detailPengirimNama').textContent = ': -';
+    document.getElementById('detailTemplateNama').textContent = ': -';
     document.getElementById('detailIsiPesanBox').textContent = 'Memuat isi pesan...';
     document.getElementById('detailWaktuRespon').textContent = '-';
     document.getElementById('detailKeterangan').textContent = '-';
-    document.getElementById('detailInfoKategori').textContent = '-';
-    document.getElementById('detailInfoTemplate').textContent = '-';
+    document.getElementById('detailWaktuFollowUp').textContent = '-';
+    document.getElementById('detailFollowUpUser').textContent = '-';
+    document.getElementById('detailCatatanFollowUp').textContent = '-';
     document.getElementById('detailFakturInfo').textContent = '-';
     document.getElementById('detailTotalTagihan').textContent = '-';
-    document.getElementById('detailSenderNama').textContent = '-';
-    document.getElementById('detailSenderRole').textContent = '-';
 
     modal.classList.remove('hidden');
 
@@ -488,21 +737,23 @@ function openWhatsAppDetailModal(logId) {
         document.getElementById('detailTemplateNama').textContent = ': ' + (data.nama_template || '-');
         document.getElementById('detailIsiPesanBox').textContent = data.isi_pesan || '(Pesan kosong)';
 
-        // Badge Status Header & Info
-        const statusBadgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${data.status_badge_class || 'bg-gray-100 text-gray-700'}">${data.status_label || data.status}</span>`;
+        // Status Pengiriman
+        const statusBadgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${data.status_badge_class || 'bg-gray-100 text-gray-700'}">${data.status_label || data.status}</span>`;
         document.getElementById('detailHeaderStatusBadge').innerHTML = statusBadgeHtml;
         document.getElementById('detailInfoStatusBadge').innerHTML = statusBadgeHtml;
 
         document.getElementById('detailWaktuRespon').textContent = data.waktu_respon || '-';
         document.getElementById('detailKeterangan').textContent = data.keterangan || '-';
 
-        document.getElementById('detailInfoKategori').textContent = data.kategori_label || '-';
-        document.getElementById('detailInfoTemplate').textContent = data.nama_template || '-';
+        // Status Follow-up
+        const followUpBadgeHtml = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${data.status_follow_up_badge_class || 'bg-gray-100 text-gray-700'}">${data.status_follow_up_label || 'Belum ditindaklanjuti'}</span>`;
+        document.getElementById('detailInfoFollowUpBadge').innerHTML = followUpBadgeHtml;
+        document.getElementById('detailWaktuFollowUp').textContent = data.waktu_follow_up || '-';
+        document.getElementById('detailFollowUpUser').textContent = data.follow_up_user_nama || '-';
+        document.getElementById('detailCatatanFollowUp').textContent = data.catatan_follow_up || '-';
+
         document.getElementById('detailFakturInfo').textContent = data.faktur_info || '-';
         document.getElementById('detailTotalTagihan').textContent = data.total_tagihan_formatted || '-';
-
-        document.getElementById('detailSenderNama').textContent = data.pengirim_nama || '-';
-        document.getElementById('detailSenderRole').textContent = data.pengirim_role || '-';
     })
     .catch(err => {
         document.getElementById('detailIsiPesanBox').textContent = 'Terjadi kesalahan saat memuat detail: ' + err.message;
@@ -516,6 +767,241 @@ function closeWhatsAppDetailModal() {
     }
 }
 
+function openFollowUpFromDetail() {
+    if (!currentFollowUpLogId) return;
+    closeWhatsAppDetailModal();
+    openFollowUpModal(currentFollowUpLogId);
+}
+
+// =========================================================================
+// 2. MODAL UPDATE STATUS FOLLOW-UP & RIWAYAT
+// =========================================================================
+function openFollowUpModal(logId) {
+    const modal = document.getElementById('modalFollowUpWhatsApp');
+    if (!modal) return;
+
+    currentFollowUpLogId = logId;
+    document.getElementById('fuLogId').value = logId;
+
+    // Reset Form
+    document.getElementById('fuMemberNama').textContent = 'Memuat...';
+    document.getElementById('fuMemberTelepon').textContent = '-';
+    document.getElementById('fuKategoriLabel').textContent = '-';
+    document.getElementById('fuWaktuKirim').textContent = '-';
+    document.getElementById('fuIsiPesanBox').textContent = '-';
+    document.getElementById('fuTextareaCatatan').value = '';
+    document.getElementById('fuCharCounter').textContent = '0/1000';
+    document.getElementById('fuHistoryContainer').innerHTML = '<div class="py-6 text-center text-gray-400">Memuat riwayat follow-up...</div>';
+
+    modal.classList.remove('hidden');
+
+    const url = `{{ url('whatsapp-monitor') }}/${encodeURIComponent(logId)}/follow-up`;
+
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+        if (!response.ok) {
+            throw new Error('Gagal memuat data follow-up.');
+        }
+        return response.json();
+    })
+    .then(result => {
+        if (!result.status || !result.data) {
+            throw new Error(result.message || 'Data tidak valid.');
+        }
+
+        const data = result.data;
+
+        document.getElementById('fuMemberNama').textContent = data.nama_member || '-';
+        document.getElementById('fuMemberTelepon').textContent = data.nomor_whatsapp || '-';
+        document.getElementById('fuKategoriLabel').textContent = data.kategori_label || '-';
+        document.getElementById('fuWaktuKirim').textContent = data.waktu_kirim || '-';
+        document.getElementById('fuIsiPesanBox').textContent = data.isi_pesan || '(Pesan kosong)';
+
+        // Badge Status Pengiriman
+        document.getElementById('fuStatusPengirimanBadge').className = `inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${data.status_pengiriman_badge_class || 'bg-gray-100 text-gray-700'}`;
+        document.getElementById('fuStatusPengirimanBadge').textContent = data.status_pengiriman_label || data.status_pengiriman;
+
+        // Badge Status Follow-up Saat Ini
+        document.getElementById('fuStatusSaatIniBadge').className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${data.status_follow_up_badge_class || 'bg-gray-100 text-gray-700'}`;
+        document.getElementById('fuStatusSaatIniBadge').textContent = data.status_follow_up_label || 'Belum ditindaklanjuti';
+
+        // Set value dropdown ke status saat ini
+        const select = document.getElementById('fuSelectStatus');
+        if (select) {
+            select.value = data.status_follow_up || 'belum_ditindaklanjuti';
+        }
+
+        // Render Riwayat
+        renderFollowUpHistory(data.histories || []);
+    })
+    .catch(err => {
+        document.getElementById('fuHistoryContainer').innerHTML = `<div class="p-3 bg-red-50 text-red-600 rounded-lg text-xs">Gagal memuat: ${err.message}</div>`;
+    });
+}
+
+function closeFollowUpModal() {
+    const modal = document.getElementById('modalFollowUpWhatsApp');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function renderFollowUpHistory(histories) {
+    const container = document.getElementById('fuHistoryContainer');
+    const counter = document.getElementById('fuHistoryCount');
+    if (!container) return;
+
+    if (counter) {
+        counter.textContent = `${histories.length} riwayat`;
+    }
+
+    if (!histories || histories.length === 0) {
+        container.innerHTML = `
+            <div class="py-8 text-center text-gray-400">
+                <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <p class="font-medium text-xs text-gray-600">Belum ada riwayat follow-up</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">Pilih status baru dan simpan untuk mencatat perkembangan tindak lanjut pertama.</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    histories.forEach((item, idx) => {
+        const isLatest = idx === 0;
+        html += `
+            <div class="p-3 rounded-xl border ${isLatest ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50'} relative">
+                ${isLatest ? '<span class="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Terbaru</span>' : ''}
+                <div class="flex items-center gap-1.5 flex-wrap text-xs mb-1.5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">${item.status_sebelum_label || 'Awal'}</span>
+                    <span class="text-gray-400 font-bold">&rarr;</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${item.status_sesudah_badge_class}">${item.status_sesudah_label}</span>
+                </div>
+                ${item.catatan && item.catatan !== '-' ? `<p class="text-xs text-gray-800 font-sans my-1.5 bg-white p-2 rounded-lg border border-gray-200/60 leading-relaxed break-words">${item.catatan}</p>` : ''}
+                <div class="flex items-center justify-between text-[10px] text-gray-500 mt-1">
+                    <span>${item.waktu}</span>
+                    <span class="font-medium text-gray-700">Oleh: ${item.admin_nama}</span>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// =========================================================================
+// 3. SUBMIT FORM UPDATE FOLLOW-UP (TRANSACTIONAL)
+// =========================================================================
+function submitFollowUpForm(event) {
+    event.preventDefault();
+
+    if (!currentFollowUpLogId) return;
+
+    const select = document.getElementById('fuSelectStatus');
+    const textarea = document.getElementById('fuTextareaCatatan');
+    const btnSubmit = document.getElementById('fuBtnSubmit');
+    const btnText = document.getElementById('fuBtnSubmitText');
+
+    const statusValue = select.value;
+    const catatanValue = textarea.value.trim();
+
+    if (!statusValue) {
+        showToast('Pilih salah satu status follow-up.', 'error');
+        return;
+    }
+
+    // Disable button & loading state
+    btnSubmit.disabled = true;
+    btnSubmit.classList.add('opacity-70', 'cursor-not-allowed');
+    btnText.textContent = 'Menyimpan...';
+
+    const url = `{{ url('whatsapp-monitor') }}/${encodeURIComponent(currentFollowUpLogId)}/follow-up`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            status_follow_up: statusValue,
+            catatan: catatanValue
+        })
+    })
+    .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const errorMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Gagal menyimpan status follow-up.');
+            throw new Error(errorMsg);
+        }
+        return data;
+    })
+    .then(result => {
+        if (!result.status || !result.data) {
+            throw new Error(result.message || 'Respons tidak valid dari server.');
+        }
+
+        const resData = result.data;
+
+        // 1. Update UI Status Saat Ini pada modal
+        document.getElementById('fuStatusSaatIniBadge').className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${resData.status_follow_up_badge_class}`;
+        document.getElementById('fuStatusSaatIniBadge').textContent = resData.status_follow_up_label;
+
+        // 2. Kosongkan textarea catatan
+        textarea.value = '';
+        document.getElementById('fuCharCounter').textContent = '0/1000';
+
+        // 3. Update Baris Tabel secara instan (tanpa reload halaman)
+        const rowBadge = document.getElementById(`row-followup-badge-${currentFollowUpLogId}`);
+        if (rowBadge) {
+            rowBadge.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${resData.status_follow_up_badge_class}`;
+            rowBadge.textContent = resData.status_follow_up_label;
+        }
+
+        const rowTime = document.getElementById(`row-followup-time-${currentFollowUpLogId}`);
+        if (rowTime) {
+            rowTime.textContent = resData.waktu_follow_up;
+        }
+
+        // 4. Perbarui daftar riwayat pada modal
+        const container = document.getElementById('fuHistoryContainer');
+        if (resData.new_history) {
+            // Muat ulang daftar lengkap agar timeline konsisten
+            fetch(`{{ url('whatsapp-monitor') }}/${encodeURIComponent(currentFollowUpLogId)}/follow-up`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.status && res.data) {
+                    renderFollowUpHistory(res.data.histories || []);
+                }
+            });
+        }
+
+        showToast(result.message || 'Status follow-up berhasil diperbarui.', 'success');
+    })
+    .catch(err => {
+        showToast(err.message || 'Terjadi kesalahan sistem saat menyimpan follow-up.', 'error');
+    })
+    .finally(() => {
+        btnSubmit.disabled = false;
+        btnSubmit.classList.remove('opacity-70', 'cursor-not-allowed');
+        btnText.textContent = 'Simpan Status Follow-up';
+    });
+}
+
+// =========================================================================
+// 4. UTILITIES & SALIN PESAN
+// =========================================================================
 function salinIsiPesan() {
     if (!currentDetailPesanText) return;
 
@@ -555,10 +1041,34 @@ function onCopySuccess() {
     }
 }
 
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('fuToastNotification');
+    const msgEl = document.getElementById('fuToastMessage');
+    const iconEl = document.getElementById('fuToastIcon');
+    if (!toast || !msgEl) return;
+
+    msgEl.textContent = message;
+
+    if (type === 'success') {
+        toast.className = 'fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100 bg-emerald-50 border-emerald-200 text-emerald-800';
+        iconEl.innerHTML = `<svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
+    } else {
+        toast.className = 'fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100 bg-red-50 border-red-200 text-red-800';
+        iconEl.innerHTML = `<svg class="w-4 h-4 text-red-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>`;
+    }
+
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+    }, 4000);
+}
+
 // Tutup modal jika tombol ESC ditekan
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeWhatsAppDetailModal();
+        closeFollowUpModal();
     }
 });
 </script>

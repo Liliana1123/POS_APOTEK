@@ -12,6 +12,21 @@ class WhatsAppLog extends Model
 
     protected $table = 'whatsapp_logs';
 
+    public const STATUS_FOLLOW_UP_BELUM = 'belum_ditindaklanjuti';
+    public const STATUS_FOLLOW_UP_MENUNGGU = 'menunggu_respons';
+    public const STATUS_FOLLOW_UP_SUDAH_DATANG = 'sudah_datang';
+    public const STATUS_FOLLOW_UP_TIDAK_DAPAT = 'tidak_dapat_dihubungi';
+
+    // Status tambahan lama untuk kompatibilitas
+    public const STATUS_FOLLOW_UP_MERESPONS = 'merespons';
+    public const STATUS_FOLLOW_UP_AKAN_DATANG = 'akan_datang';
+    public const STATUS_FOLLOW_UP_PERLU_HUBUNGI = 'perlu_dihubungi_kembali';
+    public const STATUS_FOLLOW_UP_SELESAI = 'selesai';
+
+    protected $attributes = [
+        'status_follow_up' => self::STATUS_FOLLOW_UP_BELUM,
+    ];
+
     protected $fillable = [
         'pelanggan_id',
         'user_id',
@@ -22,6 +37,10 @@ class WhatsAppLog extends Model
         'nama_template',
         'isi_pesan',
         'status',
+        'status_follow_up',
+        'catatan_follow_up',
+        'waktu_follow_up',
+        'follow_up_user_id',
         'waktu_kirim',
         'waktu_respon',
         'keterangan',
@@ -33,6 +52,7 @@ class WhatsAppLog extends Model
     protected $casts = [
         'waktu_kirim' => 'datetime',
         'waktu_respon' => 'datetime',
+        'waktu_follow_up' => 'datetime',
         'total_tagihan' => 'float',
         'metadata' => 'array',
     ];
@@ -50,6 +70,36 @@ class WhatsAppLog extends Model
     public function penjualan(): BelongsTo
     {
         return $this->belongsTo(Penjualan::class);
+    }
+
+    public function followUpUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'follow_up_user_id');
+    }
+
+    public function followUpHistories()
+    {
+        return $this->hasMany(WhatsAppFollowUpHistory::class, 'whatsapp_log_id')->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+    }
+
+    public static function getStatusFollowUpOptions(): array
+    {
+        return [
+            self::STATUS_FOLLOW_UP_BELUM => 'Belum ditindaklanjuti',
+            self::STATUS_FOLLOW_UP_MENUNGGU => 'WhatsApp terkirim, belum ada respons',
+            self::STATUS_FOLLOW_UP_SUDAH_DATANG => 'Member sudah datang ke apotek',
+            self::STATUS_FOLLOW_UP_TIDAK_DAPAT => 'Tidak dapat dihubungi',
+        ];
+    }
+
+    public function getStatusFollowUpLabelAttribute(): string
+    {
+        return WhatsAppFollowUpHistory::getStatusLabel($this->status_follow_up ?? self::STATUS_FOLLOW_UP_BELUM);
+    }
+
+    public function getStatusFollowUpBadgeClassAttribute(): string
+    {
+        return WhatsAppFollowUpHistory::getStatusBadgeClass($this->status_follow_up ?? self::STATUS_FOLLOW_UP_BELUM);
     }
 
     public function getKategoriLabelAttribute(): string

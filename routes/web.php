@@ -89,6 +89,8 @@ Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
 
     Route::get('whatsapp-monitor', [\App\Http\Controllers\WhatsAppMonitorController::class, 'index'])->name('whatsapp-monitor.index');
     Route::get('whatsapp-monitor/{id}', [\App\Http\Controllers\WhatsAppMonitorController::class, 'show'])->name('whatsapp-monitor.show');
+    Route::get('whatsapp-monitor/{id}/follow-up', [\App\Http\Controllers\WhatsAppMonitorController::class, 'getFollowUp'])->name('whatsapp-monitor.follow-up.get');
+    Route::post('whatsapp-monitor/{id}/follow-up', [\App\Http\Controllers\WhatsAppMonitorController::class, 'updateFollowUp'])->name('whatsapp-monitor.follow-up.update');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {
