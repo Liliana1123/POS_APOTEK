@@ -560,7 +560,7 @@
                     <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                            Expiry Health
+                            Expiry Date
                         </span>
                         <a href="{{ route('laporan.stok') }}" class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-0.5">
                             Lihat Semua &rarr;

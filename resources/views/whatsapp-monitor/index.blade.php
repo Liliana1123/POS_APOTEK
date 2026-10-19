@@ -3,10 +3,10 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 font-sans">WhatsApp Monitor</h1>
-        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Pantau riwayat pengiriman pesan WhatsApp kepada member.</p>
+        <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member.</p>
     </div>
     <div class="flex items-center gap-2.5 flex-wrap">
         <div class="inline-flex items-center gap-2 bg-white border border-gray-200/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-700 shadow-xs">
@@ -37,282 +37,210 @@
     </div>
 </div>
 
-<!-- Panel Filter -->
-<div class="bg-white rounded-2xl border border-gray-200/90 shadow-xs p-4 sm:p-5 mb-5">
-    <form id="filterWhatsAppForm" method="GET" action="{{ route('whatsapp-monitor.index') }}" class="space-y-4">
-        <!-- Input Pencarian Utama -->
-        <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-            <input
-                type="text"
-                name="search"
-                value="{{ $search }}"
-                placeholder="Cari nama member, nomor, atau isi pesan..."
-                class="w-full pl-10 pr-4 py-2.5 bg-gray-50/70 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+<!-- Filter & Search Card (Pola Penerimaan Barang) -->
+<div class="card-base p-4 mb-6">
+    <form method="GET" action="{{ route('whatsapp-monitor.index') }}" class="space-y-4" id="filterWhatsAppForm">
+        @if(request()->filled('per_page'))
+            <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+        @endif
+
+        <!-- Filter Satu Baris Horizontal (Pola Penerimaan Barang) -->
+        <div class="overflow-x-auto pb-1">
+            <div class="min-w-[50rem] lg:min-w-0 grid grid-cols-12 gap-3.5 items-start">
+                
+                <!-- 1. Pencarian (Lebar Lebih Besar) -->
+                <div class="col-span-4 min-w-0">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                        Pencarian
+                    </label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            name="search"
+                            id="filterSearchInput"
+                            value="{{ $search }}"
+                            placeholder="Cari nama member, nomor WhatsApp, atau isi pesan..."
+                            class="form-input pr-8"
+                            autocomplete="off"
+                        >
+                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 2. Tanggal Awal – Tanggal Akhir (Cukup Ruang) -->
+                <div class="col-span-4 min-w-0">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                            Tanggal Awal
+                        </label>
+                        <span class="text-sm invisible select-none">-</span>
+                        <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
+                            Tanggal Akhir
+                        </label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input
+                            type="date"
+                            name="tanggal_awal"
+                            id="filterTanggalAwalInput"
+                            value="{{ $tanggalAwal }}"
+                            class="form-input min-w-0 flex-1"
+                        >
+                        <span class="text-sm text-gray-400">-</span>
+                        <input
+                            type="date"
+                            name="tanggal_akhir"
+                            id="filterTanggalAkhirInput"
+                            value="{{ $tanggalAkhir }}"
+                            class="form-input min-w-0 flex-1"
+                        >
+                    </div>
+                </div>
+
+                <!-- 3. Jenis Pesan (Proporsional) -->
+                <div class="col-span-2 min-w-0">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                        Jenis Pesan
+                    </label>
+                    <select name="kategori" id="filterKategoriSelect" class="form-input">
+                        <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Semua Jenis Pesan</option>
+                        <option value="pengingat_piutang" @selected($kategori === 'pengingat_piutang')>Pengingat Piutang</option>
+                        <option value="promosi_diskon" @selected($kategori === 'promosi_diskon')>Promosi / Diskon</option>
+                        <option value="ucapan_apresiasi" @selected($kategori === 'ucapan_apresiasi')>Ucapan & Apresiasi</option>
+                        <option value="informasi_produk" @selected($kategori === 'informasi_produk')>Informasi Produk</option>
+                        <option value="informasi_pengumuman" @selected($kategori === 'informasi_pengumuman')>Pengumuman</option>
+                        <option value="pesan_custom" @selected($kategori === 'pesan_custom')>Pesan Custom</option>
+                    </select>
+                </div>
+
+                <!-- 4. Status Pengiriman (Proporsional) -->
+                <div class="col-span-2 min-w-0">
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
+                        Status Pengiriman
+                    </label>
+                    <select name="status" id="filterStatusSelect" class="form-input">
+                        <option value="semua" @selected(empty($status) || $status === 'semua')>Semua Status</option>
+                        <option value="terkirim" @selected($status === 'terkirim')>Terkirim</option>
+                        <option value="menunggu" @selected($status === 'menunggu')>Menunggu / Diproses</option>
+                        <option value="gagal" @selected($status === 'gagal')>Gagal</option>
+                        <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
+                    </select>
+                </div>
+
+            </div>
         </div>
 
-        <!-- Filter Baris 2: Dropdown, Tanggal, & Tombol Aksi -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
-            <!-- Filter Status Pengiriman -->
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-600 mb-1.5 font-sans">
-                    Status Pengiriman
-                </label>
-                <select name="status" class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                    <option value="semua" @selected(empty($status) || $status === 'semua')>Semua Status</option>
-                    <option value="terkirim" @selected($status === 'terkirim')>Terkirim</option>
-                    <option value="menunggu" @selected($status === 'menunggu')>Menunggu / Diproses</option>
-                    <option value="gagal" @selected($status === 'gagal')>Gagal</option>
-                    <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
-                </select>
-            </div>
-
-            <!-- Filter Jenis Pesan -->
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-600 mb-1.5 font-sans">
-                    Jenis Pesan
-                </label>
-                <select name="kategori" class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                    <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Semua Jenis Pesan</option>
-                    <option value="pengingat_piutang" @selected($kategori === 'pengingat_piutang')>Pengingat Piutang</option>
-                    <option value="promosi_diskon" @selected($kategori === 'promosi_diskon')>Promosi / Diskon</option>
-                    <option value="ucapan_apresiasi" @selected($kategori === 'ucapan_apresiasi')>Ucapan & Apresiasi</option>
-                    <option value="informasi_produk" @selected($kategori === 'informasi_produk')>Informasi Produk</option>
-                    <option value="informasi_pengumuman" @selected($kategori === 'informasi_pengumuman')>Pengumuman</option>
-                    <option value="pesan_custom" @selected($kategori === 'pesan_custom')>Pesan Custom</option>
-                </select>
-            </div>
-
-            <!-- Tanggal Awal -->
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-600 mb-1.5 font-sans">
-                    Tanggal Awal
-                </label>
-                <div class="relative">
-                    <input
-                        type="date"
-                        name="tanggal_awal"
-                        value="{{ $tanggalAwal }}"
-                        class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                </div>
-            </div>
-
-            <!-- Tanggal Akhir -->
-            <div>
-                <label class="block text-[11px] font-semibold text-gray-600 mb-1.5 font-sans">
-                    Tanggal Akhir
-                </label>
-                <div class="relative">
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ $tanggalAkhir }}"
-                        class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                </div>
-            </div>
-
-            <!-- Tombol Terapkan Filter -->
-            <div>
-                <input type="hidden" name="per_page" id="filterPerPageInput" value="{{ $perPage }}">
-                <button
-                    type="submit"
-                    class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer">
-                    <x-heroicon-o-funnel class="w-4 h-4 shrink-0" />
-                    <span>Terapkan Filter</span>
-                </button>
-            </div>
-
-            <!-- Tombol Reset -->
-            <div>
-                <a
-                    href="{{ route('whatsapp-monitor.index') }}"
-                    class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-800 rounded-xl text-xs font-semibold shadow-xs transition">
-                    <x-heroicon-o-arrow-path class="w-4 h-4 shrink-0 text-gray-500" />
-                    <span>Reset</span>
-                </a>
-            </div>
+        <!-- Baris Tombol Aksi: Terapkan Filter & Clear (Hanya muncul jika filter diubah dan belum diterapkan) -->
+        <div id="filter-action-bar" class="flex justify-end gap-2 pt-2 border-t border-gray-100 hidden">
+            <button
+                type="button"
+                onclick="clearWhatsAppFilters()"
+                class="btn-secondary py-1.5 px-4 flex items-center justify-center cursor-pointer">
+                Clear
+            </button>
+            <button
+                type="submit"
+                class="btn-primary flex items-center gap-2 cursor-pointer">
+                <x-heroicon-o-funnel class="w-4 h-4" />
+                <span>Terapkan Filter</span>
+            </button>
         </div>
     </form>
 </div>
 
-<!-- Ringkasan Statistik KPI Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 mb-5">
-    <!-- Card Terkirim -->
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-xs flex items-center justify-between">
-        <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs shrink-0">
-                <svg class="w-5 h-5 -rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-500">Terkirim</p>
-                <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="text-2xl font-bold text-gray-900 font-sans tracking-tight">{{ $stats['terkirim'] }}</span>
-                    <span class="text-xs font-semibold text-gray-400">({{ $stats['terkirim_pct'] }}%)</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Card Menunggu -->
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-xs flex items-center justify-between">
-        <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-xs shrink-0">
-                <x-heroicon-o-clock class="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-500">Menunggu</p>
-                <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="text-2xl font-bold text-gray-900 font-sans tracking-tight">{{ $stats['menunggu'] }}</span>
-                    <span class="text-xs font-semibold text-gray-400">({{ $stats['menunggu_pct'] }}%)</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Card Gagal -->
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-xs flex items-center justify-between">
-        <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-full bg-red-500 text-white flex items-center justify-center shadow-xs shrink-0">
-                <x-heroicon-o-x-mark class="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-500">Gagal</p>
-                <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="text-2xl font-bold text-gray-900 font-sans tracking-tight">{{ $stats['gagal'] }}</span>
-                    <span class="text-xs font-semibold text-gray-400">({{ $stats['gagal_pct'] }}%)</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Card Dibatalkan -->
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 shadow-xs flex items-center justify-between">
-        <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-full bg-slate-500 text-white flex items-center justify-center shadow-xs shrink-0">
-                <svg class="w-5 h-5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="9"></circle>
-                    <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line>
-                </svg>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-gray-500">Dibatalkan</p>
-                <div class="flex items-baseline gap-2 mt-0.5">
-                    <span class="text-2xl font-bold text-gray-900 font-sans tracking-tight">{{ $stats['dibatalkan'] }}</span>
-                    <span class="text-xs font-semibold text-gray-400">({{ $stats['dibatalkan_pct'] }}%)</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Card Info Periode -->
-    <div class="bg-blue-50/70 rounded-2xl border border-blue-200/80 p-4 shadow-xs flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-            <x-heroicon-o-information-circle class="w-5 h-5" />
-        </div>
-        <p class="text-xs text-blue-900 leading-snug font-medium">
-            Total <strong>{{ $stats['total'] }}</strong> pengiriman pesan WhatsApp dalam periode yang dipilih.
-        </p>
-    </div>
-</div>
-
-<!-- Tabel Riwayat WhatsApp -->
-<div class="bg-white rounded-2xl border border-gray-200/90 shadow-xs overflow-hidden">
+<!-- Table Custom Wrapper (Pola Penerimaan Barang) -->
+<div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-            <thead>
-                <tr class="bg-blue-50/70 border-b border-gray-200 text-gray-600 font-semibold tracking-wide">
-                    <th class="py-3 px-3 text-center w-14">Aksi</th>
-                    <th class="py-3 px-3 text-center w-14">No.</th>
-                    <th class="py-3 px-4 whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1">
-                            Tanggal Kirim
-                            <x-heroicon-o-chevron-up-down class="w-3.5 h-3.5 text-gray-400" />
-                        </span>
-                    </th>
-                    <th class="py-3 px-4 whitespace-nowrap">Nama Member</th>
-                    <th class="py-3 px-4 whitespace-nowrap">No. WhatsApp</th>
-                    <th class="py-3 px-4 whitespace-nowrap">Jenis Pesan</th>
-                    <th class="py-3 px-4 text-center whitespace-nowrap">Status Pengiriman</th>
-                    <th class="py-3 px-4 whitespace-nowrap">Dikirim Oleh</th>
+        <table class="table-custom min-w-full">
+            <thead class="table-custom-header">
+                <tr>
+                    <th scope="col" class="text-center w-14">Aksi</th>
+                    <th scope="col" class="text-center w-14">No.</th>
+                    <th scope="col" class="whitespace-nowrap">Tanggal Kirim</th>
+                    <th scope="col" class="whitespace-nowrap">Nama Member</th>
+                    <th scope="col" class="whitespace-nowrap">No. WhatsApp</th>
+                    <th scope="col" class="whitespace-nowrap">Jenis Pesan</th>
+                    <th scope="col" class="text-center whitespace-nowrap">Status Pengiriman</th>
+                    <th scope="col" class="whitespace-nowrap">Dikirim Oleh</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 text-gray-700">
+            <tbody class="table-custom-body">
                 @forelse($logs as $index => $log)
-                    <tr class="hover:bg-blue-50/40 transition-colors">
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <!-- Aksi Detail -->
-                        <td class="py-3 px-3 text-center">
-                            <button
-                                type="button"
-                                onclick="openWhatsAppDetailModal({{ $log->id }})"
-                                title="Lihat detail pengiriman"
-                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white transition shadow-2xs cursor-pointer">
-                                <x-heroicon-o-eye class="w-4 h-4" />
-                            </button>
+                        <td class="text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button
+                                    type="button"
+                                    onclick="openWhatsAppDetailModal({{ $log->id }})"
+                                    title="Lihat detail pengiriman"
+                                    class="btn-secondary !p-1.5 btn-action-detail cursor-pointer"
+                                    style="color: #2563EB;">
+                                    <x-heroicon-o-eye class="w-4 h-4" />
+                                </button>
+                            </div>
                         </td>
 
                         <!-- Nomor Urut -->
-                        <td class="py-3 px-3 text-center font-medium text-gray-500">
+                        <td class="text-center font-medium text-gray-500">
                             {{ $logs->firstItem() + $index }}
                         </td>
 
                         <!-- Tanggal Kirim -->
-                        <td class="py-3 px-4 font-medium text-gray-800 whitespace-nowrap">
+                        <td class="font-medium text-gray-800 whitespace-nowrap">
                             {{ $log->waktu_kirim ? $log->waktu_kirim->translatedFormat('d M Y, H:i') : '-' }}
                         </td>
 
                         <!-- Nama Member -->
-                        <td class="py-3 px-4 font-semibold text-gray-900 whitespace-nowrap">
+                        <td class="font-semibold text-gray-800 whitespace-nowrap">
                             {{ $log->nama_member }}
                         </td>
 
                         <!-- No. WhatsApp -->
-                        <td class="py-3 px-4 font-mono text-gray-600 whitespace-nowrap">
+                        <td class="font-mono text-gray-600 whitespace-nowrap">
                             {{ $log->nomor_whatsapp }}
                         </td>
 
                         <!-- Jenis Pesan -->
-                        <td class="py-3 px-4 whitespace-nowrap text-gray-800">
+                        <td class="whitespace-nowrap text-gray-800">
                             {{ $log->kategori_label }}
                         </td>
 
                         <!-- Status Pengiriman -->
-                        <td class="py-3 px-4 text-center whitespace-nowrap">
+                        <td class="text-center whitespace-nowrap">
                             @if($log->status === 'terkirim')
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                     Terkirim
                                 </span>
                             @elseif($log->status === 'menunggu')
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
                                     Menunggu
                                 </span>
                             @elseif($log->status === 'gagal')
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 border border-red-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">
                                     Gagal
                                 </span>
                             @elseif($log->status === 'dibatalkan')
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
                                     Dibatalkan
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
                                     {{ ucfirst($log->status) }}
                                 </span>
                             @endif
                         </td>
 
                         <!-- Dikirim Oleh -->
-                        <td class="py-3 px-4 text-gray-700 whitespace-nowrap">
+                        <td class="text-gray-700 whitespace-nowrap">
                             {{ $log->user?->name ?? 'aku admin' }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="py-12 text-center">
+                        <td colspan="8" class="text-center py-12 text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
                                     <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 opacity-70" />
@@ -328,33 +256,14 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Table Footer: Per-page Selector & Pagination -->
-    <div class="p-4 border-t border-gray-200/80 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2 text-gray-600">
-            <span>Menampilkan {{ $logs->firstItem() ?? 0 }} - {{ $logs->lastItem() ?? 0 }} dari {{ $logs->total() }} data</span>
-            <span class="text-gray-300">|</span>
-            <label class="flex items-center gap-1.5">
-                <span>Per halaman:</span>
-                <select
-                    id="selectPerPage"
-                    onchange="changePerPage(this.value)"
-                    class="py-1 px-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="10" @selected($perPage == 10)>10</option>
-                    <option value="25" @selected($perPage == 25)>25</option>
-                    <option value="50" @selected($perPage == 50)>50</option>
-                    <option value="100" @selected($perPage == 100)>100</option>
-                </select>
-            </label>
-        </div>
-
-        <div>
-            {{ $logs->links('vendor.pagination.apotek') }}
-        </div>
-    </div>
 </div>
 
-<!-- Modal Popup Detail Pengiriman WhatsApp -->
+<!-- Footer Pagination (Sama persis dengan Penerimaan Barang) -->
+<div class="mt-4">
+    {{ $logs->links('vendor.pagination.apotek') }}
+</div>
+
+<!-- Modal Popup Detail Pengiriman WhatsApp (Dua Kolom) -->
 <div
     id="modalDetailWhatsApp"
     class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto transition-opacity"
@@ -362,7 +271,7 @@
     aria-modal="true"
     aria-labelledby="modalDetailWhatsAppTitle">
     
-    <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-5xl my-auto overflow-hidden animate-in fade-in zoom-in duration-150">
+    <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-4xl my-auto overflow-hidden animate-in fade-in zoom-in duration-150">
         <!-- Modal Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-gray-50/60">
             <h2 id="modalDetailWhatsAppTitle" class="text-base font-bold text-gray-900 font-sans">
@@ -377,11 +286,11 @@
             </button>
         </div>
 
-        <!-- Modal Body (3 Kolom sesuai acuan gambar referensi) -->
-        <div class="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 text-xs text-gray-700">
+        <!-- Modal Body (2 Kolom Seimbang) -->
+        <div class="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-5 text-xs text-gray-700">
             
-            <!-- Kolom 1: Kartu Member & Isi Pesan (lg:col-span-5) -->
-            <div class="lg:col-span-5 flex flex-col justify-between rounded-xl border border-gray-200 p-4 bg-white shadow-2xs">
+            <!-- Kolom 1: Kartu Member & Isi Pesan -->
+            <div class="flex flex-col justify-between rounded-xl border border-gray-200 p-4 bg-white shadow-2xs">
                 <div>
                     <!-- Header Kartu Member -->
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
@@ -450,8 +359,8 @@
                 </div>
             </div>
 
-            <!-- Kolom 2: Informasi Pengiriman & Status Respons (lg:col-span-4) -->
-            <div class="lg:col-span-4 rounded-xl border border-gray-200 p-4 bg-white shadow-2xs space-y-4">
+            <!-- Kolom 2: Informasi Pengiriman, Detail Pesan, & Pengirim -->
+            <div class="rounded-xl border border-gray-200 p-4 bg-white shadow-2xs space-y-4">
                 <!-- Sub-kartu 1: Informasi Pengiriman -->
                 <div>
                     <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-2">Informasi Pengiriman</h3>
@@ -520,69 +429,6 @@
                 </div>
             </div>
 
-            <!-- Kolom 3: Panduan Status Pengiriman & Info (lg:col-span-3) -->
-            <div class="lg:col-span-3 space-y-4">
-                <!-- Panduan Status Pengiriman -->
-                <div class="rounded-xl border border-gray-200 p-4 bg-white shadow-2xs">
-                    <h3 class="font-bold text-gray-900 text-xs uppercase tracking-wider mb-3">Status Pengiriman</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-3.5 h-3.5 -rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                </svg>
-                            </div>
-                            <div>
-                                <span class="inline-block font-semibold text-emerald-800 text-[11px]">Terkirim</span>
-                                <p class="text-[11px] text-gray-500 leading-snug">Pesan berhasil terkirim ke nomor WhatsApp.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                                <x-heroicon-o-clock class="w-3.5 h-3.5 stroke-[2.5]" />
-                            </div>
-                            <div>
-                                <span class="inline-block font-semibold text-blue-800 text-[11px]">Menunggu</span>
-                                <p class="text-[11px] text-gray-500 leading-snug">Pesan sedang diproses oleh sistem WhatsApp.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                                <x-heroicon-o-x-mark class="w-3.5 h-3.5 stroke-[2.5]" />
-                            </div>
-                            <div>
-                                <span class="inline-block font-semibold text-red-800 text-[11px]">Gagal</span>
-                                <p class="text-[11px] text-gray-500 leading-snug">Pengiriman gagal. Lihat detail penyebabnya.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start gap-2.5">
-                            <div class="w-6 h-6 rounded-full bg-slate-500 text-white flex items-center justify-center shrink-0 mt-0.5">
-                                <svg class="w-3.5 h-3.5 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <circle cx="12" cy="12" r="9"></circle>
-                                    <line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line>
-                                </svg>
-                            </div>
-                            <div>
-                                <span class="inline-block font-semibold text-slate-800 text-[11px]">Dibatalkan</span>
-                                <p class="text-[11px] text-gray-500 leading-snug">Pengiriman dibatalkan oleh pengguna atau sistem.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Catatan Sumber Data -->
-                <div class="rounded-xl border border-blue-200 bg-blue-50/60 p-3.5 shadow-2xs flex items-start gap-2.5">
-                    <x-heroicon-o-information-circle class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                    <p class="text-[11px] text-blue-900 leading-relaxed">
-                        Data yang ditampilkan diambil dari aktivitas pengiriman WhatsApp yang sebenarnya, baik dari pengiriman perorangan maupun massal.
-                    </p>
-                </div>
-            </div>
-
         </div>
 
         <!-- Modal Footer -->
@@ -590,7 +436,7 @@
             <button
                 type="button"
                 onclick="closeWhatsAppDetailModal()"
-                class="px-4 py-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-xl text-xs font-semibold text-gray-700 transition cursor-pointer">
+                class="btn-secondary py-1.5 px-4 cursor-pointer">
                 Tutup
             </button>
         </div>
@@ -599,6 +445,90 @@
 
 @push('scripts')
 <script>
+// State filter yang saat ini sedang aktif / diterapkan pada request
+const appliedFilterState = {
+    search: @json((string) $search),
+    status: @json((string) ($status ?: 'semua')),
+    kategori: @json((string) ($kategori ?: 'semua')),
+    tanggal_awal: @json((string) ($tanggalAwal ?: '')),
+    tanggal_akhir: @json((string) ($tanggalAkhir ?: ''))
+};
+
+function getCurrentFilterState() {
+    return {
+        search: (document.getElementById('filterSearchInput')?.value || '').trim(),
+        status: document.getElementById('filterStatusSelect')?.value || 'semua',
+        kategori: document.getElementById('filterKategoriSelect')?.value || 'semua',
+        tanggal_awal: document.getElementById('filterTanggalAwalInput')?.value || '',
+        tanggal_akhir: document.getElementById('filterTanggalAkhirInput')?.value || ''
+    };
+}
+
+function checkFilterDirty() {
+    const current = getCurrentFilterState();
+    const isDirty = (
+        current.search !== appliedFilterState.search ||
+        current.status !== appliedFilterState.status ||
+        current.kategori !== appliedFilterState.kategori ||
+        current.tanggal_awal !== appliedFilterState.tanggal_awal ||
+        current.tanggal_akhir !== appliedFilterState.tanggal_akhir
+    );
+
+    const actionBar = document.getElementById('filter-action-bar');
+    if (actionBar) {
+        if (isDirty) {
+            actionBar.classList.remove('hidden');
+        } else {
+            actionBar.classList.add('hidden');
+        }
+    }
+}
+
+function clearWhatsAppFilters() {
+    const hasApplied = (
+        appliedFilterState.search !== '' ||
+        (appliedFilterState.status !== '' && appliedFilterState.status !== 'semua') ||
+        (appliedFilterState.kategori !== '' && appliedFilterState.kategori !== 'semua') ||
+        appliedFilterState.tanggal_awal !== '' ||
+        appliedFilterState.tanggal_akhir !== ''
+    );
+
+    if (hasApplied) {
+        // Jika ada filter yang aktif di URL/backend, redirect kembali ke URL bersih index
+        window.location.href = "{{ route('whatsapp-monitor.index') }}";
+    } else {
+        // Jika belum ada filter yang diterapkan, kembalikan input ke default dan sembunyikan tombol
+        if (document.getElementById('filterSearchInput')) document.getElementById('filterSearchInput').value = '';
+        if (document.getElementById('filterStatusSelect')) document.getElementById('filterStatusSelect').value = 'semua';
+        if (document.getElementById('filterKategoriSelect')) document.getElementById('filterKategoriSelect').value = 'semua';
+        if (document.getElementById('filterTanggalAwalInput')) document.getElementById('filterTanggalAwalInput').value = '';
+        if (document.getElementById('filterTanggalAkhirInput')) document.getElementById('filterTanggalAkhirInput').value = '';
+        checkFilterDirty();
+    }
+}
+
+// Pasang event listener untuk memantau perubahan filter
+document.addEventListener('DOMContentLoaded', function() {
+    const filterInputIds = [
+        'filterSearchInput',
+        'filterStatusSelect',
+        'filterKategoriSelect',
+        'filterTanggalAwalInput',
+        'filterTanggalAkhirInput'
+    ];
+
+    filterInputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', checkFilterDirty);
+            el.addEventListener('change', checkFilterDirty);
+        }
+    });
+
+    // Pengecekan awal saat halaman dimuat (pastikan tombol tersembunyi karena belum ada perubahan)
+    checkFilterDirty();
+});
+
 let currentDetailPesanText = '';
 
 function openWhatsAppDetailModal(logId) {
@@ -717,17 +647,6 @@ function onCopySuccess() {
         setTimeout(() => {
             btnText.textContent = originalText;
         }, 2000);
-    }
-}
-
-function changePerPage(val) {
-    const input = document.getElementById('filterPerPageInput');
-    if (input) {
-        input.value = val;
-    }
-    const form = document.getElementById('filterWhatsAppForm');
-    if (form) {
-        form.submit();
     }
 }
 
