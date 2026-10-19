@@ -86,6 +86,9 @@ Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
     Route::post('whatsapp-templates', [\App\Http\Controllers\WhatsAppPiutangController::class, 'storeTemplate'])->name('whatsapp-templates.store');
     Route::put('whatsapp-templates/{template}', [\App\Http\Controllers\WhatsAppPiutangController::class, 'updateTemplate'])->name('whatsapp-templates.update');
     Route::delete('whatsapp-templates/{template}', [\App\Http\Controllers\WhatsAppPiutangController::class, 'destroyTemplate'])->name('whatsapp-templates.destroy');
+
+    Route::get('whatsapp-monitor', [\App\Http\Controllers\WhatsAppMonitorController::class, 'index'])->name('whatsapp-monitor.index');
+    Route::get('whatsapp-monitor/{id}', [\App\Http\Controllers\WhatsAppMonitorController::class, 'show'])->name('whatsapp-monitor.show');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {

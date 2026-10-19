@@ -2231,6 +2231,9 @@ function eksekusiKirimIndividualWhatsApp() {
     const urlTemplate = @json(route('pelanggan.whatsapp-piutang.send', ['pelanggan' => '__ID__']));
     const url = urlTemplate.replace('__ID__', encodeURIComponent(currentPelangganId));
 
+    const tmplSelect = document.getElementById('waTemplateSelect');
+    const selectedTemplateName = tmplSelect && tmplSelect.selectedIndex >= 0 && tmplSelect.value ? tmplSelect.options[tmplSelect.selectedIndex].text.trim() : null;
+
     fetch(url, {
         method: 'POST',
         headers: {
@@ -2243,7 +2246,8 @@ function eksekusiKirimIndividualWhatsApp() {
         body: JSON.stringify({
             kategori: currentKategoriPesan,
             penjualan_id: penjualanId,
-            pesan: (currentFinalPesan || rawPesan)
+            pesan: (currentFinalPesan || rawPesan),
+            nama_template: selectedTemplateName
         })
     })
     .then(async r => {
@@ -3036,6 +3040,9 @@ async function startBulkWhatsAppSending() {
 
         const url = sendUrlTemplate.replace('__ID__', encodeURIComponent(item.id));
 
+        const tmplSelect = document.getElementById('waTemplateSelect');
+        const selectedTemplateName = tmplSelect && tmplSelect.selectedIndex >= 0 && tmplSelect.value ? tmplSelect.options[tmplSelect.selectedIndex].text.trim() : null;
+
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -3048,7 +3055,8 @@ async function startBulkWhatsAppSending() {
                 credentials: 'same-origin',
                 body: JSON.stringify({
                     kategori: currentKategoriPesan,
-                    pesan: item.pesan
+                    pesan: item.pesan,
+                    nama_template: selectedTemplateName
                 })
             });
 

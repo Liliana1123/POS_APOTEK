@@ -108,6 +108,7 @@
                     $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
+                        || request()->routeIs('whatsapp-monitor.*')
                         || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
                         || request()->routeIs('permission.*');
                     $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
@@ -136,7 +137,29 @@
                             <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
                         @endif
                         @if ($u->hasPermission('master.pelanggan'))
-                            <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
+                            @php
+                                $pelangganActive = request()->routeIs('pelanggan.*') || request()->is('pelanggan*');
+                                $waMonitorActive = request()->routeIs('whatsapp-monitor.*') || request()->is('whatsapp-monitor*');
+                                $pelangganRowClass = $pelangganActive
+                                    ? 'sidebar-nav-active bg-white text-blue-800 font-semibold shadow-xs'
+                                    : 'text-blue-100 hover:bg-blue-600/60 hover:text-white';
+                            @endphp
+                            <div class="sidebar-subgroup" data-subgroup="pelanggan">
+                                <div class="flex items-center justify-between rounded-lg transition-colors {{ $pelangganRowClass }}">
+                                    <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="sidebar-nav-link sidebar-subgroup-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 flex-1 min-w-0 transition-colors {{ $pelangganActive ? 'text-blue-800 font-semibold' : 'text-blue-100 hover:text-white' }}">
+                                        <x-dynamic-component component="heroicon-o-user" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
+                                        <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
+                                    </a>
+                                    <button type="button" onclick="toggleWhatsAppSubmenu(event)" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 px-2.5 py-1.5 mr-1 rounded-md transition-colors focus:outline-none cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
+                                        <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-200 pointer-events-none" aria-hidden="true" />
+                                    </button>
+                                </div>
+                                <div class="sidebar-subgroup-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1 pl-3.5 ml-4 border-l-2 border-blue-400/25" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}">
+                                    @if ($u->hasPermission('master.pelanggan') || $u->isSuperAdmin())
+                                        <x-nav-link route="whatsapp-monitor.index" pattern="whatsapp-monitor.*" icon="chat-bubble-left-right" label="WhatsApp Monitor" />
+                                    @endif
+                                </div>
+                            </div>
                         @endif
                         @if ($u->hasPermission('sistem.kelola-user'))
                             <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
@@ -288,6 +311,92 @@
     </div>
     @endif
 
+    @stack('scripts')
+    <script>
+        window.toggleWhatsAppSubmenu = function(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
+            if (!subgroup) return;
+            var items = subgroup.querySelector('.sidebar-subgroup-items');
+            var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+            var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+            if (!items) return;
+
+            var isExpanded = items.getAttribute('data-expanded') === '1' || items.classList.contains('subgroup-open');
+
+            if (isExpanded) {
+                items.style.maxHeight = '0px';
+                items.classList.remove('subgroup-open');
+                items.classList.add('max-h-0');
+                items.setAttribute('data-expanded', '0');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.classList.remove('rotate-90');
+                try { localStorage.setItem('sidebar-subgroup-pelanggan', '0'); } catch(err) {}
+            } else {
+                items.classList.remove('max-h-0');
+                items.classList.add('subgroup-open');
+                items.style.maxHeight = '999px';
+                items.setAttribute('data-expanded', '1');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                if (arrow) arrow.classList.add('rotate-90');
+                try { localStorage.setItem('sidebar-subgroup-pelanggan', '1'); } catch(err) {}
+            }
+        };
+
+        (function() {
+            function initSubgroupAccordion() {
+                var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
+                if (!subgroup) return;
+                var items = subgroup.querySelector('.sidebar-subgroup-items');
+                var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+                var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+                var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
+                if (!items) return;
+
+                var hasActive = items.dataset.hasActive === 'true';
+                var saved = null;
+                try { saved = localStorage.getItem('sidebar-subgroup-pelanggan'); } catch(err) {}
+                var expand = hasActive || saved === '1';
+
+                if (expand) {
+                    items.style.transition = 'none';
+                    items.classList.remove('max-h-0');
+                    items.classList.add('subgroup-open');
+                    items.style.maxHeight = '999px';
+                    items.setAttribute('data-expanded', '1');
+                    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                    if (arrow) arrow.classList.add('rotate-90');
+                    void items.offsetHeight;
+                    items.style.transition = '';
+                } else {
+                    items.classList.add('max-h-0');
+                    items.classList.remove('subgroup-open');
+                    items.style.maxHeight = '0px';
+                    items.setAttribute('data-expanded', '0');
+                    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                    if (arrow) arrow.classList.remove('rotate-90');
+                }
+
+                if (mainLink && !mainLink.dataset.bound) {
+                    mainLink.dataset.bound = '1';
+                    mainLink.addEventListener('click', function(e) {
+                        if (window.location.pathname.replace(/\/$/, '') === new URL(mainLink.href).pathname.replace(/\/$/, '')) {
+                            window.toggleWhatsAppSubmenu(e);
+                        }
+                    });
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSubgroupAccordion);
+            } else {
+                initSubgroupAccordion();
+            }
+        })();
+    </script>
 </body>
 
 </html>

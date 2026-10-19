@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\InfoApotek;
 use App\Models\Pelanggan;
 use App\Models\Penjualan;
+use App\Models\WhatsAppLog;
 use App\Models\WhatsAppTemplate;
 use App\Services\WhatsAppService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class WhatsAppPiutangController extends Controller
 {
@@ -302,7 +304,37 @@ class WhatsAppPiutangController extends Controller
             $pesanFinal = strtr($customPesan, $replacements);
 
             // 7. Kirim melalui WhatsAppService
+            $waktuKirim = now();
             $result = $whatsAppService->sendMessage($formattedPhone, $pesanFinal);
+            $waktuRespon = now();
+
+            $status = $result['status'] ? 'terkirim' : 'gagal';
+            $keterangan = $result['msg'] ?? ($result['status'] ? 'Pesan berhasil dikirim ke nomor WhatsApp.' : 'Gagal mengirim pesan WhatsApp.');
+
+            try {
+                WhatsAppLog::create([
+                    'pelanggan_id' => $pelanggan->id,
+                    'user_id' => auth()->id(),
+                    'penjualan_id' => ($dataTagihan['mode'] ?? '') === 'single' ? ($dataTagihan['penjualan_id'] ?? null) : null,
+                    'nama_member' => $pelanggan->nama,
+                    'nomor_whatsapp' => $formattedPhone,
+                    'kategori' => $kategori,
+                    'nama_template' => $request->input('nama_template') ?: null,
+                    'isi_pesan' => $pesanFinal,
+                    'status' => $status,
+                    'waktu_kirim' => $waktuKirim,
+                    'waktu_respon' => $waktuRespon,
+                    'keterangan' => $keterangan,
+                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($dataTagihan['no_faktur'] ?? null) : null,
+                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($dataTagihan['total_sisa'] ?? ($dataTagihan['sisa'] ?? null)) : null,
+                    'metadata' => [
+                        'mode' => $dataTagihan['mode'] ?? 'single',
+                        'provider_response' => $result,
+                    ],
+                ]);
+            } catch (\Throwable $logEx) {
+                Log::error('Failed recording WhatsAppLog: ' . $logEx->getMessage());
+            }
 
             if (!$result['status']) {
                 return response()->json([
@@ -322,6 +354,26 @@ class WhatsAppPiutangController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
+            try {
+                WhatsAppLog::create([
+                    'pelanggan_id' => $pelanggan->id,
+                    'user_id' => auth()->id(),
+                    'penjualan_id' => ($dataTagihan['mode'] ?? '') === 'single' ? ($dataTagihan['penjualan_id'] ?? null) : null,
+                    'nama_member' => $pelanggan->nama,
+                    'nomor_whatsapp' => $formattedPhone ?: $pelanggan->telepon,
+                    'kategori' => $kategori,
+                    'nama_template' => $request->input('nama_template') ?: null,
+                    'isi_pesan' => $pesanFinal ?? ($customPesan ?? ''),
+                    'status' => 'gagal',
+                    'waktu_kirim' => $waktuKirim ?? now(),
+                    'waktu_respon' => now(),
+                    'keterangan' => 'Kesalahan sistem: ' . $e->getMessage(),
+                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($dataTagihan['no_faktur'] ?? null) : null,
+                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($dataTagihan['total_sisa'] ?? ($dataTagihan['sisa'] ?? null)) : null,
+                    'metadata' => ['exception' => $e->getMessage()],
+                ]);
+            } catch (\Throwable $logEx) {}
+
             return response()->json([
                 'status' => false,
                 'message' => 'Terjadi kesalahan sistem saat mengirim pesan: ' . $e->getMessage(),
@@ -559,7 +611,38 @@ class WhatsAppPiutangController extends Controller
                 $pesan = "Halo Bapak/Ibu {$pelanggan->nama},\n\nTerima kasih telah menjadi member setia di {$namaApotek}.\n\nSalam sehat,\n{$namaApotek}";
             }
 
+            $waktuKirim = now();
             $result = $whatsAppService->sendMessage($pelanggan->telepon, $pesan);
+            $waktuRespon = now();
+
+            $status = $result['status'] ? 'terkirim' : 'gagal';
+            $keterangan = $result['msg'] ?? ($result['status'] ? 'Pesan berhasil dikirim ke nomor WhatsApp.' : 'Gagal mengirim pesan WhatsApp.');
+
+            try {
+                $pengingatData = $pelanggan->pengingat_piutang;
+                WhatsAppLog::create([
+                    'pelanggan_id' => $pelanggan->id,
+                    'user_id' => auth()->id(),
+                    'penjualan_id' => $request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null),
+                    'nama_member' => $pelanggan->nama,
+                    'nomor_whatsapp' => $teleponFormatted,
+                    'kategori' => $kategori,
+                    'nama_template' => $request->input('nama_template') ?: null,
+                    'isi_pesan' => $pesan,
+                    'status' => $status,
+                    'waktu_kirim' => $waktuKirim,
+                    'waktu_respon' => $waktuRespon,
+                    'keterangan' => $keterangan,
+                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($pengingatData ? ('#' . $pengingatData['primary_penjualan_id']) : null) : null,
+                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($pengingatData['total_sisa'] ?? null) : null,
+                    'metadata' => [
+                        'bulk' => true,
+                        'provider_response' => $result,
+                    ],
+                ]);
+            } catch (\Throwable $logEx) {
+                Log::error('Failed recording WhatsAppLog in bulk: ' . $logEx->getMessage());
+            }
 
             if (!$result['status']) {
                 return response()->json([
@@ -579,10 +662,33 @@ class WhatsAppPiutangController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
+            try {
+                $pengingatData = $pelanggan->pengingat_piutang;
+                WhatsAppLog::create([
+                    'pelanggan_id' => $pelanggan->id,
+                    'user_id' => auth()->id(),
+                    'penjualan_id' => $request->input('primary_penjualan_id') ?: ($pengingatData['primary_penjualan_id'] ?? null),
+                    'nama_member' => $pelanggan->nama,
+                    'nomor_whatsapp' => $teleponFormatted ?? $pelanggan->telepon,
+                    'kategori' => $kategori,
+                    'nama_template' => $request->input('nama_template') ?: null,
+                    'isi_pesan' => $pesan ?? ($customPesan ?? ''),
+                    'status' => 'gagal',
+                    'waktu_kirim' => $waktuKirim ?? now(),
+                    'waktu_respon' => now(),
+                    'keterangan' => 'Kesalahan sistem: ' . $e->getMessage(),
+                    'faktur_info' => $kategori === 'pengingat_piutang' ? ($pengingatData ? ('#' . $pengingatData['primary_penjualan_id']) : null) : null,
+                    'total_tagihan' => $kategori === 'pengingat_piutang' ? ($pengingatData['total_sisa'] ?? null) : null,
+                    'metadata' => ['bulk' => true, 'exception' => $e->getMessage()],
+                ]);
+            } catch (\Throwable $logEx) {}
+
             return response()->json([
                 'status' => false,
                 'message' => 'Terjadi kesalahan sistem saat memproses pengiriman WhatsApp.',
             ], 500);
+        } finally {
+            $lock->release();
         }
     }
 
