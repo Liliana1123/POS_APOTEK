@@ -8,33 +8,7 @@
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 font-sans">WhatsApp Monitor</h1>
         <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member.</p>
     </div>
-    <div class="flex items-center gap-2.5 flex-wrap">
-        <div class="inline-flex items-center gap-2 bg-white border border-gray-200/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-700 shadow-xs">
-            <x-heroicon-o-calendar class="w-4 h-4 text-gray-500 shrink-0" />
-            <span>
-                @if($tanggalAwal && $tanggalAkhir)
-                    {{ \Carbon\Carbon::parse($tanggalAwal)->translatedFormat('d M Y') }} - {{ \Carbon\Carbon::parse($tanggalAkhir)->translatedFormat('d M Y') }}
-                @elseif($tanggalAwal)
-                    Mulai {{ \Carbon\Carbon::parse($tanggalAwal)->translatedFormat('d M Y') }}
-                @elseif($tanggalAkhir)
-                    Hingga {{ \Carbon\Carbon::parse($tanggalAkhir)->translatedFormat('d M Y') }}
-                @else
-                    {{ now()->translatedFormat('d M Y') }}
-                @endif
-            </span>
-        </div>
-        <div class="inline-flex items-center gap-2 bg-white border border-gray-200/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-700 shadow-xs">
-            <span class="w-2 h-2 rounded-full {{ $status === 'terkirim' ? 'bg-emerald-500' : ($status === 'gagal' ? 'bg-red-500' : ($status === 'menunggu' ? 'bg-blue-500' : ($status === 'dibatalkan' ? 'bg-gray-400' : 'bg-blue-600'))) }}"></span>
-            <span>
-                @if($status === 'terkirim') Terkirim
-                @elseif($status === 'menunggu') Menunggu
-                @elseif($status === 'gagal') Gagal
-                @elseif($status === 'dibatalkan') Dibatalkan
-                @else Semua Status
-                @endif
-            </span>
-        </div>
-    </div>
+
 </div>
 
 <!-- Filter & Search Card (Pola Penerimaan Barang) -->
@@ -132,19 +106,34 @@
             </div>
         </div>
 
-        <!-- Baris Tombol Aksi: Terapkan Filter & Clear (Hanya muncul jika filter diubah dan belum diterapkan) -->
-        <div id="filter-action-bar" class="flex justify-end gap-2 pt-2 border-t border-gray-100 hidden">
-            <button
-                type="button"
-                onclick="clearWhatsAppFilters()"
-                class="btn-secondary py-1.5 px-4 flex items-center justify-center cursor-pointer">
-                Clear
-            </button>
+        <!-- Baris Tombol Aksi: Filter dan Clear (Pola Penerimaan Barang) -->
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            @php
+                $hasActiveFilter = !empty($search)
+                    || !empty($tanggalAwal)
+                    || !empty($tanggalAkhir)
+                    || (!empty($kategori) && $kategori !== 'semua')
+                    || (!empty($status) && $status !== 'semua')
+                    || request()->filled('search')
+                    || request()->filled('tanggal_awal')
+                    || request()->filled('tanggal_akhir')
+                    || (request()->filled('kategori') && request('kategori') !== 'semua')
+                    || (request()->filled('status') && request('status') !== 'semua');
+            @endphp
+
+            @if($hasActiveFilter)
+                <a
+                    href="{{ route('whatsapp-monitor.index') }}"
+                    class="btn-secondary py-1.5 px-4 flex items-center justify-center cursor-pointer">
+                    Clear
+                </a>
+            @endif
+
             <button
                 type="submit"
                 class="btn-primary flex items-center gap-2 cursor-pointer">
                 <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Terapkan Filter</span>
+                <span>Filter</span>
             </button>
         </div>
     </form>
@@ -445,90 +434,6 @@
 
 @push('scripts')
 <script>
-// State filter yang saat ini sedang aktif / diterapkan pada request
-const appliedFilterState = {
-    search: @json((string) $search),
-    status: @json((string) ($status ?: 'semua')),
-    kategori: @json((string) ($kategori ?: 'semua')),
-    tanggal_awal: @json((string) ($tanggalAwal ?: '')),
-    tanggal_akhir: @json((string) ($tanggalAkhir ?: ''))
-};
-
-function getCurrentFilterState() {
-    return {
-        search: (document.getElementById('filterSearchInput')?.value || '').trim(),
-        status: document.getElementById('filterStatusSelect')?.value || 'semua',
-        kategori: document.getElementById('filterKategoriSelect')?.value || 'semua',
-        tanggal_awal: document.getElementById('filterTanggalAwalInput')?.value || '',
-        tanggal_akhir: document.getElementById('filterTanggalAkhirInput')?.value || ''
-    };
-}
-
-function checkFilterDirty() {
-    const current = getCurrentFilterState();
-    const isDirty = (
-        current.search !== appliedFilterState.search ||
-        current.status !== appliedFilterState.status ||
-        current.kategori !== appliedFilterState.kategori ||
-        current.tanggal_awal !== appliedFilterState.tanggal_awal ||
-        current.tanggal_akhir !== appliedFilterState.tanggal_akhir
-    );
-
-    const actionBar = document.getElementById('filter-action-bar');
-    if (actionBar) {
-        if (isDirty) {
-            actionBar.classList.remove('hidden');
-        } else {
-            actionBar.classList.add('hidden');
-        }
-    }
-}
-
-function clearWhatsAppFilters() {
-    const hasApplied = (
-        appliedFilterState.search !== '' ||
-        (appliedFilterState.status !== '' && appliedFilterState.status !== 'semua') ||
-        (appliedFilterState.kategori !== '' && appliedFilterState.kategori !== 'semua') ||
-        appliedFilterState.tanggal_awal !== '' ||
-        appliedFilterState.tanggal_akhir !== ''
-    );
-
-    if (hasApplied) {
-        // Jika ada filter yang aktif di URL/backend, redirect kembali ke URL bersih index
-        window.location.href = "{{ route('whatsapp-monitor.index') }}";
-    } else {
-        // Jika belum ada filter yang diterapkan, kembalikan input ke default dan sembunyikan tombol
-        if (document.getElementById('filterSearchInput')) document.getElementById('filterSearchInput').value = '';
-        if (document.getElementById('filterStatusSelect')) document.getElementById('filterStatusSelect').value = 'semua';
-        if (document.getElementById('filterKategoriSelect')) document.getElementById('filterKategoriSelect').value = 'semua';
-        if (document.getElementById('filterTanggalAwalInput')) document.getElementById('filterTanggalAwalInput').value = '';
-        if (document.getElementById('filterTanggalAkhirInput')) document.getElementById('filterTanggalAkhirInput').value = '';
-        checkFilterDirty();
-    }
-}
-
-// Pasang event listener untuk memantau perubahan filter
-document.addEventListener('DOMContentLoaded', function() {
-    const filterInputIds = [
-        'filterSearchInput',
-        'filterStatusSelect',
-        'filterKategoriSelect',
-        'filterTanggalAwalInput',
-        'filterTanggalAkhirInput'
-    ];
-
-    filterInputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', checkFilterDirty);
-            el.addEventListener('change', checkFilterDirty);
-        }
-    });
-
-    // Pengecekan awal saat halaman dimuat (pastikan tombol tersembunyi karena belum ada perubahan)
-    checkFilterDirty();
-});
-
 let currentDetailPesanText = '';
 
 function openWhatsAppDetailModal(logId) {

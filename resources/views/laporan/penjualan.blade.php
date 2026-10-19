@@ -3,6 +3,15 @@
 
 @section('content')
 
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+    }
+</style>
+
 @php
     $apotek = \Illuminate\Support\Facades\Cache::remember(
         'info_apotek',
@@ -68,16 +77,16 @@
     <table class="table-custom table-penjualan print-table w-full">
         <thead class="table-custom-header">
             <tr>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
-                <th scope="col" class="w-[13%] text-center !px-2 py-3 whitespace-nowrap">No. Invoice</th>
-                <th scope="col" class="w-[14%] !px-2.5 py-3 break-words">Nama Pelanggan</th>
-                <th scope="col" class="w-[12%] text-center !px-2 py-3 break-words">Jenis Pelanggan</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Kasir</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Jenis Transaksi</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Metode Pembayaran</th>
-                <th scope="col" class="w-[8%] text-center !px-2 py-3 whitespace-nowrap">Status Piutang</th>
-                <th scope="col" class="text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Kotor</th>
-                <th scope="col" class="text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Transaksi</th>
+                <th scope="col" class="col-penjualan-tanggal w-[9%] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
+                <th scope="col" class="col-penjualan-faktur w-[13%] text-center !px-2 py-3 whitespace-nowrap">No. Invoice</th>
+                <th scope="col" class="col-penjualan-pelanggan w-[14%] !px-2.5 py-3 break-words">Nama Pelanggan</th>
+                <th scope="col" class="col-penjualan-jenis-pelanggan w-[12%] text-center !px-2 py-3 break-words">Jenis Pelanggan</th>
+                <th scope="col" class="col-penjualan-kasir w-[9%] text-center !px-2 py-3 whitespace-nowrap">Kasir</th>
+                <th scope="col" class="col-penjualan-jenis w-[9%] text-center !px-2 py-3 whitespace-nowrap">Jenis Transaksi</th>
+                <th scope="col" class="col-penjualan-metode w-[9%] text-center !px-2 py-3 whitespace-nowrap">Metode Pembayaran</th>
+                <th scope="col" class="col-penjualan-status-piutang w-[8%] text-center !px-2 py-3 whitespace-nowrap">Status Piutang</th>
+                <th scope="col" class="col-penjualan-kotor text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Kotor</th>
+                <th scope="col" class="col-penjualan-total text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Transaksi</th>
             </tr>
         </thead>
         <tbody class="table-custom-body">
@@ -120,52 +129,52 @@
                 @endphp
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     {{-- 1. Tanggal --}}
-                    <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
                         {{ $penjualan->tanggal ? $penjualan->tanggal->format('d M Y') : '—' }}
                     </td>
 
                     {{-- 2. No. Invoice --}}
-                    <td class="text-center font-semibold text-gray-800 font-mono text-xs !px-2 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-faktur text-center font-semibold text-gray-800 font-mono text-xs !px-2 py-3 whitespace-nowrap">
                         {{ $penjualan->no_faktur }}
                     </td>
 
                     {{-- 3. Nama Pelanggan --}}
-                    <td class="font-medium text-gray-800 text-xs !px-2.5 py-3 break-words leading-snug">
+                    <td class="col-penjualan-pelanggan font-medium text-gray-800 text-xs !px-2.5 py-3 break-words leading-snug">
                         {{ $penjualan->pelanggan->nama ?? 'Umum' }}
                     </td>
 
                     {{-- 4. Jenis Pelanggan --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 break-words leading-snug text-center">
+                    <td class="col-penjualan-jenis-pelanggan text-gray-600 font-medium text-xs !px-2 py-3 break-words leading-snug text-center">
                         {{ $jenisPelanggan }}
                     </td>
 
                     {{-- 5. Kasir --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-kasir text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $penjualan->user->name ?? 'Admin' }}
                     </td>
 
                     {{-- 6. Jenis Transaksi --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-jenis text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $jenisTransaksi }}
                     </td>
 
                     {{-- 7. Metode Pembayaran --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-metode text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $metodeLabel }}
                     </td>
 
                     {{-- 8. Status Piutang --}}
-                    <td class="font-medium text-xs !px-2 py-3 whitespace-nowrap text-center {{ $statusPiutangText === 'Terlambat' ? 'text-red-600 font-semibold' : ($statusPiutangText === 'Lunas' ? 'text-emerald-600 font-semibold' : 'text-gray-600') }}">
+                    <td class="col-penjualan-status-piutang font-medium text-xs !px-2 py-3 whitespace-nowrap text-center {{ $statusPiutangText === 'Terlambat' ? 'text-red-600 font-semibold' : ($statusPiutangText === 'Lunas' ? 'text-emerald-600 font-semibold' : 'text-gray-600') }}">
                         {{ $statusPiutangText }}
                     </td>
 
                     {{-- 9. Total Kotor --}}
-                    <td class="table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-kotor table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                         Rp {{ number_format($totalKotor, 0, ',', '.') }}
                     </td>
 
                     {{-- 10. Total Transaksi --}}
-                    <td class="table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                         Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                     </td>
                 </tr>

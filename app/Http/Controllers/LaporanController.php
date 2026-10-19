@@ -117,11 +117,22 @@ class LaporanController extends Controller
                 }
             })
 
+            ->orderByRaw("
+                CASE 
+                    WHEN expired_date IS NOT NULL AND expired_date <= '" . now()->startOfDay()->toDateString() . "' THEN 1
+                    WHEN expired_date IS NOT NULL AND expired_date < '" . now()->startOfDay()->addMonth()->toDateString() . "' THEN 2
+                    WHEN expired_date IS NOT NULL AND expired_date < '" . now()->startOfDay()->addMonths(3)->toDateString() . "' THEN 3
+                    WHEN expired_date IS NOT NULL THEN 4
+                    ELSE 5
+                END ASC
+            ")
+            ->orderBy('expired_date', 'asc')
             ->orderBy(
-            Barang::select('nama')
-                ->whereColumn('barangs.id', 'detail_penerimaans.barang_id')
+                Barang::select('nama')
+                    ->whereColumn('barangs.id', 'detail_penerimaans.barang_id'),
+                'asc'
             )
-            ->orderBy('expired_date')
+            ->orderBy('no_batch', 'asc')
             ->get();
 
         // Ringkasan metrik stok sinkron dari data transaksi riil

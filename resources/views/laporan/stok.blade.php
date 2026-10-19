@@ -4,6 +4,15 @@
 
 @section('content')
 
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+    }
+</style>
+
 @php
     $apotek = \Illuminate\Support\Facades\Cache::remember(
         'info_apotek',
@@ -262,43 +271,43 @@
     <div class="table-custom-container print-table-wrapper">
         <div class="overflow-x-auto print-table-wrapper">
 
-            <table class="table-custom print-table w-full min-w-[62rem]">
+            <table class="table-custom table-stok print-table w-full min-w-[62rem]">
                 <thead class="table-custom-header">
                     <tr>
-                        <th scope="col" class="w-10 text-center !px-2">
+                        <th scope="col" class="col-stok-no w-10 text-center !px-2">
                             No
                         </th>
-                        <th scope="col" class="w-44 max-w-[12rem] !px-2.5">
+                        <th scope="col" class="col-stok-barang w-44 max-w-[12rem] !px-2.5">
                             Barang
                         </th>
-                        <th scope="col" class="w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-kategori w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">
                             Kategori
                         </th>
-                        <th scope="col" class="w-24 text-center !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-batch w-24 text-center !px-2 whitespace-nowrap">
                             No. Batch
                         </th>
-                        <th scope="col" class="w-20 text-center !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-rak w-20 text-center !px-2 whitespace-nowrap">
                             No. Rak
                         </th>
-                        <th scope="col" class="text-center w-28 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-expired text-center w-28 !px-2 whitespace-nowrap">
                             Expired
                         </th>
-                        <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-status-exp text-center w-24 !px-2 whitespace-nowrap">
                             Status Expired
                         </th>
-                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-awal text-right w-16 !px-2 whitespace-nowrap">
                             Stok Awal
                         </th>
-                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-terjual text-right w-16 !px-2 whitespace-nowrap">
                             Stok Terjual
                         </th>
-                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-rusak text-right w-16 !px-2 whitespace-nowrap">
                             Stok Rusak
                         </th>
-                        <th scope="col" class="text-right w-16 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-sisa text-right w-16 !px-2 whitespace-nowrap">
                             Sisa Stok
                         </th>
-                        <th scope="col" class="text-center w-20 !px-2 whitespace-nowrap">
+                        <th scope="col" class="col-stok-status-stok text-center w-20 !px-2 whitespace-nowrap">
                             Status Stok
                         </th>
                     </tr>
@@ -324,37 +333,37 @@
 
                         <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                             <!-- No -->
-                            <td class="table-num text-center">
+                            <td class="col-stok-no table-num text-center">
                                 {{ $index + 1 }}
                             </td>
 
                             <!-- Barang -->
-                            <td class="font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">
+                            <td class="col-stok-barang font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">
                                 {{ $item->barang->nama ?? '—' }}
                             </td>
 
                             <!-- Kategori -->
-                            <td class="text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate" title="{{ $item->barang->kategori->nama ?? '—' }}">
+                            <td class="col-stok-kategori text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate" title="{{ $item->barang->kategori->nama ?? '—' }}">
                                 {{ $item->barang->kategori->nama ?? '—' }}
                             </td>
 
                             <!-- Batch -->
-                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
+                            <td class="col-stok-batch font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_batch ?? '—' }}
                             </td>
 
                             <!-- Rak -->
-                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
+                            <td class="col-stok-rak font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
                                 {{ $item->no_rak ?? '—' }}
                             </td>
 
                             <!-- Expired -->
-                            <td class="text-center font-mono !px-2 whitespace-nowrap">
+                            <td class="col-stok-expired text-center font-mono !px-2 whitespace-nowrap">
                                 {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
                             </td>
 
                             <!-- Status Expired -->
-                            <td class="text-center !px-2 whitespace-nowrap">
+                            <td class="col-stok-status-exp text-center !px-2 whitespace-nowrap">
                                 @if (!$expiredDate)
                                     <span class="badge-secondary">
                                         Tidak Ada Tanggal
@@ -379,27 +388,27 @@
                             </td>
 
                             <!-- Stok Awal -->
-                            <td class="table-num font-medium text-gray-700 !px-2 text-right whitespace-nowrap">
+                            <td class="col-stok-awal table-num font-medium text-gray-700 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokAwal, 0, ',', '.') }}
                             </td>
 
                             <!-- Stok Terjual -->
-                            <td class="table-num font-semibold text-indigo-600 !px-2 text-right whitespace-nowrap">
+                            <td class="col-stok-terjual table-num font-semibold text-indigo-600 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokTerjual, 0, ',', '.') }}
                             </td>
 
                             <!-- Stok Rusak -->
-                            <td class="table-num font-semibold text-rose-600 !px-2 text-right whitespace-nowrap">
+                            <td class="col-stok-rusak table-num font-semibold text-rose-600 !px-2 text-right whitespace-nowrap">
                                 {{ number_format($stokRusak, 0, ',', '.') }}
                             </td>
 
                             <!-- Sisa Stok Saat Ini -->
-                            <td class="table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
+                            <td class="col-stok-sisa table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
                                 {{ number_format($sisaStok, 0, ',', '.') }}
                             </td>
 
                             <!-- Status Stok -->
-                            <td class="text-center !px-2 whitespace-nowrap">
+                            <td class="col-stok-status-stok text-center !px-2 whitespace-nowrap">
                                 @if ($sisaStok <= 0)
                                     <span class="badge-danger">Habis</span>
                                 @elseif ($sisaStok <= $stokMinimum)
@@ -501,158 +510,6 @@
                     (____________________)
                 @endif
             </p>
-        </div>
-    </div>
-</div>
-
-
-<!-- ========================================================= -->
-<!-- SECTION 2 : BATCH MENDEKATI EXPIRED -->
-<!-- ========================================================= -->
-<div class="mb-8 no-print print:hidden no-print-expired">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <div>
-            <h2 class="text-xs font-bold uppercase tracking-wider text-gray-700 font-sans">
-                Batch Kadaluwarsa dan Mendekati Expired (&le; 90 Hari)
-            </h2>
-            <p class="text-caption mt-0.5">
-                Daftar obat dengan sisa stok aktif yang akan kadaluarsa dalam rentang waktu dekat.
-            </p>
-        </div>
-        <div class="text-xs font-medium text-gray-500">
-            Menampilkan <span class="font-semibold text-gray-700">{{ $mendekatiExpired->count() }}</span> batch
-        </div>
-    </div>
-
-   <div class="table-custom-container print-table-wrapper">
-        <div class="overflow-x-auto print-table-wrapper">
-
-            <table class="table-custom print-table w-full min-w-[58rem]">
-                <thead class="table-custom-header">
-                    <tr>
-                        <th scope="col" class="w-10 text-center !px-2">
-                            No
-                        </th>
-                        <th scope="col" class="w-44 max-w-[12rem] !px-2.5">
-                            Barang
-                        </th>
-                        <th scope="col" class="w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">
-                            Kategori
-                        </th>
-                        <th scope="col" class="w-24 text-center !px-2 whitespace-nowrap">
-                            No. Batch
-                        </th>
-                        <th scope="col" class="w-20 text-center !px-2 whitespace-nowrap">
-                            No. Rak
-                        </th>
-                        <th scope="col" class="text-center w-28 !px-2 whitespace-nowrap">
-                            Expired
-                        </th>
-                        <th scope="col" class="text-center w-24 !px-2 whitespace-nowrap">
-                            Status Expired
-                        </th>
-                        <th scope="col" class="text-right w-20 !px-2 whitespace-nowrap">
-                            Sisa Stok
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody class="table-custom-body">
-                    @forelse ($mendekatiExpired as $index => $item)
-                        @php
-                            $today = now()->startOfDay();
-                            $oneMonth = $today->copy()->addMonth();
-                            $threeMonths = $today->copy()->addMonths(3);
-
-                            $expiredDate = $item->expired_date
-                                ? \Carbon\Carbon::parse($item->expired_date)->startOfDay()
-                                : null;
-                            $sisaStokExp = (int) $item->jumlah - (int) ($item->stok_terjual ?? 0) - (int) ($item->stok_rusak ?? 0);
-                            $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
-                        @endphp
-
-                        <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                            <td class="table-num text-center">
-                                {{ $index + 1 }}
-                            </td>
-
-                            <td class="font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">
-                                {{ $item->barang->nama ?? '—' }}
-                            </td>
-
-                            <td class="text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate" title="{{ $item->barang->kategori->nama ?? '—' }}">
-                                {{ $item->barang->kategori->nama ?? '—' }}
-                            </td>
-
-                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
-                                {{ $item->no_batch ?? '—' }}
-                            </td>
-
-                            <td class="font-mono text-gray-600 text-center !px-2 whitespace-nowrap">
-                                {{ $item->no_rak ?? '—' }}
-                            </td>
-
-                            <td class="text-center font-mono !px-2 whitespace-nowrap">
-                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
-                            </td>
-
-                            <td class="text-center !px-2 whitespace-nowrap">
-                                @if (!$expiredDate)
-                                    <span class="badge-secondary">
-                                        Tidak Ada Tanggal
-                                    </span>
-                                @elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today))
-                                    <span class="badge-danger">
-                                        KADALUARSA
-                                    </span>
-                                @elseif ($expiredDate->lt($oneMonth))
-                                    <span class="badge-orange">
-                                        < 1 Bulan
-                                    </span>
-                                @elseif ($expiredDate->lt($threeMonths))
-                                    <span class="badge-warning">
-                                        < 3 Bulan
-                                    </span>
-                                @else
-                                    <span class="badge-success">
-                                        Normal
-                                    </span>
-                                @endif
-                            </td>
-
-                            <td class="table-num font-bold {{ $sisaStokExp <= 0 ? 'text-red-600' : ($sisaStokExp <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">
-                                {{ number_format($sisaStokExp, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="p-0">
-                                <div class="empty-state-container">
-                                    <div class="empty-state-title">
-                                        Tidak Ada Batch Kadaluarsa atau Mendekati Expired
-                                    </div>
-                                    <div class="empty-state-desc">
-                                        Tidak terdapat batch dengan sisa stok aktif yang sudah kadaluarsa atau akan kadaluarsa dalam 90 hari.
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-
-                @if ($mendekatiExpired->isNotEmpty())
-                    <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                        <tr>
-                            <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider text-gray-600">
-                                Total Sisa Stok Kadaluarsa dan Mendekati Expired:
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-red-600 font-bold whitespace-nowrap">
-                                {{ number_format($mendekatiExpired->sum(fn ($i) => (int) $i->jumlah - (int) ($i->stok_terjual ?? 0) - (int) ($i->stok_rusak ?? 0)), 0, ',', '.') }}
-                            </td>
-                        </tr>
-                    </tfoot>
-                @endif
-            </table>
         </div>
     </div>
 </div>

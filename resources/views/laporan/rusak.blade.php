@@ -80,7 +80,7 @@
     {{-- JUDUL LAPORAN --}}
     <div class="print-report-title">
         <h2>
-            Laporan Kerugian Barang Rusak atau Kadaluarsa
+            Laporan Kerugian Barang Rusak
         </h2>
         <p>
             Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
@@ -99,7 +99,7 @@
 <!-- Page Header Pattern -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
     <div>
-        <h1>Laporan Barang Rusak atau Kadaluarsa</h1>
+        <h1>Laporan Barang Rusak</h1>
         <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
     </div>
     <div class="flex gap-2 shrink-0">
@@ -241,9 +241,9 @@
                                 </div>
                                 <div class="empty-state-desc">
                                     @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                                        Tidak ditemukan data pelaporan obat rusak atau kadaluarsa yang cocok dengan filter kriteria Anda.
+                                        Tidak ditemukan data pelaporan obat rusak yang cocok dengan filter kriteria Anda.
                                     @else
-                                        Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa yang terdaftar di sistem.
+                                        Tidak ditemukan riwayat pelaporan obat rusak yang terdaftar di sistem.
                                     @endif
                                 </div>
                             </div>

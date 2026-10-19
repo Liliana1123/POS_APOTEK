@@ -313,81 +313,66 @@
 
     @stack('scripts')
     <script>
-        window.toggleWhatsAppSubmenu = function(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
-            if (!subgroup) return;
-            var items = subgroup.querySelector('.sidebar-subgroup-items');
-            var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
-            var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
-            if (!items) return;
-
-            var isExpanded = items.getAttribute('data-expanded') === '1' || items.classList.contains('subgroup-open');
-
-            if (isExpanded) {
-                items.style.maxHeight = '0px';
-                items.classList.remove('subgroup-open');
-                items.classList.add('max-h-0');
-                items.setAttribute('data-expanded', '0');
-                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
-                if (arrow) arrow.classList.remove('rotate-90');
-                try { localStorage.setItem('sidebar-subgroup-pelanggan', '0'); } catch(err) {}
-            } else {
-                items.classList.remove('max-h-0');
-                items.classList.add('subgroup-open');
-                items.style.maxHeight = '999px';
-                items.setAttribute('data-expanded', '1');
-                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
-                if (arrow) arrow.classList.add('rotate-90');
-                try { localStorage.setItem('sidebar-subgroup-pelanggan', '1'); } catch(err) {}
-            }
-        };
-
         (function() {
             function initSubgroupAccordion() {
-                var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
-                if (!subgroup) return;
-                var items = subgroup.querySelector('.sidebar-subgroup-items');
-                var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
-                var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
-                var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
-                if (!items) return;
+                document.querySelectorAll('.sidebar-subgroup').forEach(function(subgroup) {
+                    var name = subgroup.dataset.subgroup;
+                    var saved = localStorage.getItem('sidebar-subgroup-' + name);
+                    var items = subgroup.querySelector('.sidebar-subgroup-items');
+                    var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+                    var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+                    var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
+                    if (!items) return;
 
-                var hasActive = items.dataset.hasActive === 'true';
-                var saved = null;
-                try { saved = localStorage.getItem('sidebar-subgroup-pelanggan'); } catch(err) {}
-                var expand = hasActive || saved === '1';
+                    var hasActive = items.dataset.hasActive === 'true';
+                    var expand = hasActive || saved === '1';
 
-                if (expand) {
-                    items.style.transition = 'none';
-                    items.classList.remove('max-h-0');
-                    items.classList.add('subgroup-open');
-                    items.style.maxHeight = '999px';
-                    items.setAttribute('data-expanded', '1');
-                    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
-                    if (arrow) arrow.classList.add('rotate-90');
-                    void items.offsetHeight;
-                    items.style.transition = '';
-                } else {
-                    items.classList.add('max-h-0');
-                    items.classList.remove('subgroup-open');
-                    items.style.maxHeight = '0px';
-                    items.setAttribute('data-expanded', '0');
-                    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
-                    if (arrow) arrow.classList.remove('rotate-90');
-                }
+                    if (expand) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = '999px';
+                        items.setAttribute('data-expanded', '1');
+                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                        if (arrow) arrow.classList.add('rotate-90');
+                        void items.offsetHeight;
+                        items.style.transition = '';
+                    }
 
-                if (mainLink && !mainLink.dataset.bound) {
-                    mainLink.dataset.bound = '1';
-                    mainLink.addEventListener('click', function(e) {
-                        if (window.location.pathname.replace(/\/$/, '') === new URL(mainLink.href).pathname.replace(/\/$/, '')) {
-                            window.toggleWhatsAppSubmenu(e);
+                    function doToggle(e) {
+                        if (e) e.stopPropagation();
+                        var isExpanded = items.getAttribute('data-expanded') === '1';
+                        if (isExpanded) {
+                            items.style.maxHeight = '0px';
+                            items.setAttribute('data-expanded', '0');
+                            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                            if (arrow) arrow.classList.remove('rotate-90');
+                            localStorage.setItem('sidebar-subgroup-' + name, '0');
+                        } else {
+                            items.style.maxHeight = '999px';
+                            items.setAttribute('data-expanded', '1');
+                            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                            if (arrow) arrow.classList.add('rotate-90');
+                            localStorage.setItem('sidebar-subgroup-' + name, '1');
                         }
-                    });
-                }
+                    }
+
+                    if (toggleBtn && !toggleBtn.dataset.bound) {
+                        toggleBtn.dataset.bound = '1';
+                        toggleBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            doToggle(e);
+                        });
+                    }
+
+                    if (mainLink && !mainLink.dataset.bound) {
+                        mainLink.dataset.bound = '1';
+                        mainLink.addEventListener('click', function(e) {
+                            if (window.location.pathname === new URL(mainLink.href).pathname) {
+                                e.preventDefault();
+                                doToggle(e);
+                            }
+                        });
+                    }
+                });
             }
 
             if (document.readyState === 'loading') {

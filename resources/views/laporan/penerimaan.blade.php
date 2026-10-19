@@ -3,6 +3,15 @@
 
 @section('content')
 
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+    }
+</style>
+
 @php
     $apotek = \Illuminate\Support\Facades\Cache::remember(
         'info_apotek',
@@ -239,27 +248,27 @@
         <table class="table-custom table-penerimaan print-table w-full min-w-[54rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-[4%] min-w-[2.5rem] text-center !px-1.5 py-3">No</th>
-                    <th scope="col" class="w-[14%] min-w-[7.5rem] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
-                    <th scope="col" class="w-[11.5%] min-w-[6.25rem] !px-2.5 py-3 break-words">No. Faktur</th>
-                    <th scope="col" class="w-[13%] min-w-[6.5rem] !px-2.5 py-3 break-words">Supplier</th>
-                    <th scope="col" class="w-[26%] min-w-[11.5rem] !px-3 py-3 break-words">Nama Barang</th>
-                    <th scope="col" class="text-right w-[7%] min-w-[3.75rem] !px-2 py-3 whitespace-nowrap">Jumlah</th>
-                    <th scope="col" class="text-right w-[11%] min-w-[6rem] !px-2.5 py-3 whitespace-nowrap">Harga Beli</th>
-                    <th scope="col" class="text-right w-[13%] min-w-[6.75rem] !px-2.5 py-3 whitespace-nowrap">Total Nilai</th>
+                    <th scope="col" class="col-penerimaan-no w-[4%] min-w-[2.5rem] text-center !px-1.5 py-3">No</th>
+                    <th scope="col" class="col-penerimaan-tanggal w-[14%] min-w-[7.5rem] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
+                    <th scope="col" class="col-penerimaan-faktur w-[11.5%] min-w-[6.25rem] !px-2.5 py-3 break-words">No. Faktur</th>
+                    <th scope="col" class="col-penerimaan-supplier w-[13%] min-w-[6.5rem] !px-2.5 py-3 break-words">Supplier</th>
+                    <th scope="col" class="col-penerimaan-barang w-[26%] min-w-[11.5rem] !px-3 py-3 break-words">Nama Barang</th>
+                    <th scope="col" class="col-penerimaan-qty text-right w-[7%] min-w-[3.75rem] !px-2 py-3 whitespace-nowrap">Jumlah</th>
+                    <th scope="col" class="col-penerimaan-harga text-right w-[11%] min-w-[6rem] !px-2.5 py-3 whitespace-nowrap">Harga Beli</th>
+                    <th scope="col" class="col-penerimaan-total text-right w-[13%] min-w-[6.75rem] !px-2.5 py-3 whitespace-nowrap">Total Nilai</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
-                        <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $item->penerimaan->tanggal->translatedFormat('d F Y') }}</td>
-                        <td class="font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->no_faktur }}</td>
-                        <td class="text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
-                        <td class="font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->barang->nama ?? '—' }}</td>
-                        <td class="table-num font-bold text-gray-800 text-right text-xs !px-2 py-3 whitespace-nowrap">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                        <td class="table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
-                        <td class="table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
+                        <td class="col-penerimaan-no table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
+                        <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $item->penerimaan->tanggal->translatedFormat('d F Y') }}</td>
+                        <td class="col-penerimaan-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->no_faktur }}</td>
+                        <td class="col-penerimaan-supplier text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
+                        <td class="col-penerimaan-barang font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->barang->nama ?? '—' }}</td>
+                        <td class="col-penerimaan-qty table-num font-bold text-gray-800 text-right text-xs !px-2 py-3 whitespace-nowrap">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                        <td class="col-penerimaan-harga table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
+                        <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
