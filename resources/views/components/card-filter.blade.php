@@ -156,6 +156,17 @@
             if (pushState !== false) {
                 window.history.replaceState({ liveSearchUrl: targetUrl }, '', targetUrl);
             }
+
+            // Sinkronisasi link export jika ada di halaman
+            var exportLinks = document.querySelectorAll('a[data-sync-filter="true"], #btn-export-barang');
+            exportLinks.forEach(function(link) {
+                try {
+                    var currentSearch = new URL(targetUrl, window.location.origin).search;
+                    var linkUrl = new URL(link.href, window.location.origin);
+                    linkUrl.search = currentSearch;
+                    link.href = linkUrl.pathname + linkUrl.search;
+                } catch (e) {}
+            });
         })
         .catch(function(err) {
             if (err.name !== 'AbortError') {

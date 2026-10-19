@@ -4,20 +4,22 @@
 @section('content')
 <!-- Page Header -->
 <x-page-header title="Daftar Barang dan Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
-    <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
-        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-        <span>Import Data</span>
-    </button>
+    @if(auth()->user()->canManage('master.barang'))
+        <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
+            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+            <span>Import Data</span>
+        </button>
 
-    <a href="{{ route('barang.export', request()->query()) }}" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
-        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-        <span>Export Data</span>
-    </a>
+        <a href="{{ route('barang.export', request()->query()) }}" id="btn-export-barang" data-sync-filter="true" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            <span>Export Data</span>
+        </a>
 
-    <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Barang</span>
-    </button>
+        <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Barang</span>
+        </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
@@ -103,12 +105,15 @@
                             $statusStokBadge = 'badge-warning';
                         }
                     @endphp
+                    @php
+                        $canManageBarang = auth()->user()->canManage('master.barang');
+                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-barang"
-                                :edit-id="$barang->id"
-                                :edit-data="[
+                                edit-class="{{ $canManageBarang ? 'btn-edit-barang' : '' }}"
+                                :edit-id="$canManageBarang ? $barang->id : null"
+                                :edit-data="$canManageBarang ? [
                                     'kode_apotek' => $barang->kode_apotek,
                                     'kode_kfa' => $barang->kode_kfa,
                                     'nama' => $barang->nama,
@@ -120,8 +125,8 @@
                                     'stok_minimum' => $barang->stok_minimum,
                                     'butuh_resep' => (int) $barang->butuh_resep,
                                     'aktif' => (int) $barang->aktif
-                                ]"
-                                :delete-url="route('barang.destroy', $barang)"
+                                ] : null"
+                                :delete-url="$canManageBarang ? route('barang.destroy', $barang) : null"
                                 delete-confirm="Yakin ingin menghapus barang ini?">
                                 
                                 <button type="button"
