@@ -92,31 +92,33 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-.h1 {
-    font-size: 1.5rem;
-    /* text-2xl */
-    font-weight: 700;
-    line-height: 2rem;
-    color: var(--color-text-main);
-}
+@layer base {
+    h1,
+    .h1 {
+        font-size: 1.5rem;
+        /* text-2xl */
+        font-weight: 700;
+        line-height: 2rem;
+        color: var(--color-text-main);
+    }
 
-h2,
-.h2 {
-    font-size: 1.25rem;
-    /* text-xl */
-    font-weight: 700;
-    line-height: 1.75rem;
-    color: var(--color-text-main);
-}
+    h2,
+    .h2 {
+        font-size: 1.25rem;
+        /* text-xl */
+        font-weight: 700;
+        line-height: 1.75rem;
+        color: var(--color-text-main);
+    }
 
-h3,
-.h3 {
-    font-size: 1rem;
-    /* text-base */
-    font-weight: 600;
-    line-height: 1.5rem;
-    color: var(--color-text-main);
+    h3,
+    .h3 {
+        font-size: 1rem;
+        /* text-base */
+        font-weight: 600;
+        line-height: 1.5rem;
+        color: var(--color-text-main);
+    }
 }
 
 .text-small {
