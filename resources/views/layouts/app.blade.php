@@ -195,7 +195,7 @@
                                         <x-dynamic-component component="heroicon-o-user" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
                                         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
                                     </a>
-                                    <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 p-1.5 mr-1 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
+                                    <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 p-1.5 mr-1 bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:text-blue-950' : 'text-blue-300 hover:text-white' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
                                         <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-200 pointer-events-none" aria-hidden="true" />
                                     </button>
                                 </div>
