@@ -750,10 +750,28 @@ body {
         display: inline-flex !important;
     }
 
+    /* Unified Arrow Transitions (Group & Subgroup) */
+    .sidebar-group-arrow,
+    .sidebar-subgroup-arrow {
+        will-change: transform;
+        transform-origin: center;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s 0.05s ease-out !important;
+    }
+
     #app-sidebar:hover .sidebar-group-arrow,
     #app-sidebar:focus-within .sidebar-group-arrow,
     #app-sidebar.sidebar-expanded .sidebar-group-arrow,
     html.sidebar-keep-expanded #app-sidebar .sidebar-group-arrow,
+    #app-sidebar:hover .sidebar-subgroup-arrow,
+    #app-sidebar:focus-within .sidebar-subgroup-arrow,
+    #app-sidebar.sidebar-expanded .sidebar-subgroup-arrow,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-arrow {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
     #app-sidebar:hover .sidebar-subgroup-toggle,
     #app-sidebar:focus-within .sidebar-subgroup-toggle,
     #app-sidebar.sidebar-expanded .sidebar-subgroup-toggle,
