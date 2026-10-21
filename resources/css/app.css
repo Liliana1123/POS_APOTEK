@@ -675,16 +675,24 @@ body {
         padding-right: 1.375rem !important;
     }
 
-    /* Sub-menu items inside group: indented with hierarchy tree in expanded state */
+    /* Level 1: Sub-menu items inside group - line aligned directly with the center axis of the parent group icon (22px + 10px = 32px / 2rem) */
     #app-sidebar .sidebar-group-items {
-        margin-left: 1.375rem;
-        padding-left: 0.625rem;
+        margin-left: 2rem;
+        padding-left: 0.75rem;
+        border-left: 1.5px solid rgba(191, 219, 254, 0.3);
+        transition: border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+    }
+
+    /* Level 2: Sub-menu items inside child item (e.g. WhatsApp Monitor under Pelanggan) - line aligned directly with the center axis of the Pelanggan icon (8px + 8px = 16px / 1rem) */
+    #app-sidebar .sidebar-subgroup-items {
+        margin-left: 1rem;
+        padding-left: 0.75rem;
         border-left: 1.5px solid rgba(191, 219, 254, 0.3);
         transition: border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
     }
 
     #app-sidebar .sidebar-nav-child {
-        padding-left: 0.625rem !important;
+        padding-left: 0.5rem !important;
         padding-right: 0.75rem !important;
         transition: padding 0.2s ease, background-color 0.15s ease, color 0.15s ease;
     }

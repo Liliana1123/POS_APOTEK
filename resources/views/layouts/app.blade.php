@@ -200,7 +200,7 @@
                                         <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-200 pointer-events-none" aria-hidden="true" />
                                     </button>
                                 </div>
-                                <div class="sidebar-subgroup-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1 pl-3.5 ml-4 border-l-2 border-blue-400/25" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}">
+                                <div class="sidebar-subgroup-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}">
                                     @if ($u->hasPermission('master.pelanggan') || $u->isSuperAdmin())
                                         <x-nav-link route="whatsapp-monitor.index" pattern="whatsapp-monitor.*" icon="chat-bubble-left-right" label="WhatsApp Monitor" />
                                     @endif

@@ -22,7 +22,7 @@
             <span class="sidebar-group-active-dot absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-white/80" aria-hidden="true"></span>
         @endif
     </button>
-    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1 pl-3.5 ml-4 border-l-2 border-blue-400/25" data-has-active="{{ $hasActiveStr }}">
+    <div class="sidebar-group-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1" data-has-active="{{ $hasActiveStr }}">
         {{ $slot }}
     </div>
 </div>
