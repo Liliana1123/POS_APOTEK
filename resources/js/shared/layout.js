@@ -136,7 +136,7 @@ function initSidebarGroupRestore() {
         var expand = saved === '1' || items.dataset.hasActive === 'true';
         if (expand) {
             items.style.transition = 'none';
-            items.style.maxHeight = items.scrollHeight ? (items.scrollHeight + 'px') : 'none';
+            items.style.maxHeight = 'none';
             items.setAttribute('data-expanded', '1');
             var btn = group.querySelector('.sidebar-group-header');
             if (btn) btn.setAttribute('aria-expanded', 'true');
@@ -144,6 +144,109 @@ function initSidebarGroupRestore() {
             if (arrow) arrow.classList.add('rotate-90');
             void items.offsetHeight;
             items.style.transition = '';
+        }
+    });
+}
+
+// Subgroup Accordion (e.g., Pelanggan -> WhatsApp Monitor)
+function initSubgroupAccordion() {
+    window.toggleWhatsAppSubmenu = function (e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
+        if (!subgroup) return;
+        var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+        if (toggleBtn && typeof toggleBtn.__doToggle === 'function') {
+            toggleBtn.__doToggle(e);
+        }
+    };
+
+    document.querySelectorAll('.sidebar-subgroup').forEach(function (subgroup) {
+        var name = subgroup.dataset.subgroup;
+        var saved = localStorage.getItem('sidebar-subgroup-' + name);
+        var items = subgroup.querySelector('.sidebar-subgroup-items');
+        var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+        var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+        var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
+        if (!items) return;
+
+        function ensureParentExpanded() {
+            var parentGroup = subgroup.closest('.sidebar-group');
+            if (parentGroup) {
+                var parentItems = parentGroup.querySelector('.sidebar-group-items');
+                if (parentItems) {
+                    parentItems.style.maxHeight = 'none';
+                }
+            }
+        }
+
+        var hasActive = items.dataset.hasActive === 'true';
+        var expand = hasActive || saved === '1';
+
+        if (expand) {
+            items.style.transition = 'none';
+            items.style.maxHeight = 'none';
+            items.setAttribute('data-expanded', '1');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+            if (arrow) arrow.classList.add('rotate-90');
+            ensureParentExpanded();
+            void items.offsetHeight;
+            items.style.transition = '';
+        }
+
+        function doToggle(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var isExpanded = items.getAttribute('data-expanded') === '1';
+            if (isExpanded) {
+                items.style.maxHeight = items.scrollHeight + 'px';
+                void items.offsetHeight;
+                items.style.maxHeight = '0px';
+                items.setAttribute('data-expanded', '0');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.classList.remove('rotate-90');
+                localStorage.setItem('sidebar-subgroup-' + name, '0');
+            } else {
+                items.style.maxHeight = items.scrollHeight + 'px';
+                items.setAttribute('data-expanded', '1');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                if (arrow) arrow.classList.add('rotate-90');
+                localStorage.setItem('sidebar-subgroup-' + name, '1');
+                ensureParentExpanded();
+
+                var onSubEnd = function (ev) {
+                    if (ev.propertyName === 'max-height' && items.getAttribute('data-expanded') === '1') {
+                        items.style.maxHeight = 'none';
+                    }
+                    items.removeEventListener('transitionend', onSubEnd);
+                };
+                items.addEventListener('transitionend', onSubEnd);
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.__doToggle = doToggle;
+            if (!toggleBtn.dataset.bound) {
+                toggleBtn.dataset.bound = '1';
+                toggleBtn.addEventListener('click', function (e) {
+                    doToggle(e);
+                });
+            }
+        }
+
+        if (mainLink && !mainLink.dataset.bound) {
+            mainLink.dataset.bound = '1';
+            mainLink.addEventListener('click', function (e) {
+                var currentPath = window.location.pathname.replace(/\/+$/, '');
+                var linkPath = new URL(mainLink.href).pathname.replace(/\/+$/, '');
+                if (currentPath === linkPath) {
+                    doToggle(e);
+                }
+            });
         }
     });
 }
@@ -259,6 +362,14 @@ function initShellInteractions() {
                 this.setAttribute('aria-expanded', 'true');
                 if (arrow) arrow.classList.add('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '1');
+
+                var onGroupEnd = function (ev) {
+                    if (ev.propertyName === 'max-height' && items.getAttribute('data-expanded') === '1') {
+                        items.style.maxHeight = 'none';
+                    }
+                    items.removeEventListener('transitionend', onGroupEnd);
+                };
+                items.addEventListener('transitionend', onGroupEnd);
             }
         });
     });
@@ -464,6 +575,7 @@ function initIdleAutoLogout() {
 window.Layout = {
     initSidebarExpand: initSidebarExpand,
     initSidebarGroupRestore: initSidebarGroupRestore,
+    initSubgroupAccordion: initSubgroupAccordion,
     initSidebarScrollRestore: initSidebarScrollRestore,
     initToastAutoDismiss: initToastAutoDismiss,
     initShellInteractions: initShellInteractions,
@@ -471,6 +583,7 @@ window.Layout = {
     initAll: function () {
         initSidebarExpand();
         initSidebarGroupRestore();
+        initSubgroupAccordion();
         initSidebarScrollRestore();
         initToastAutoDismiss();
         initShellInteractions();
@@ -483,4 +596,4 @@ document.addEventListener('DOMContentLoaded', function () {
     window.Layout.initAll();
 });
 
-export { initSidebarExpand, initSidebarGroupRestore, initSidebarScrollRestore, initToastAutoDismiss, initShellInteractions, initIdleAutoLogout };
+export { initSidebarExpand, initSidebarGroupRestore, initSubgroupAccordion, initSidebarScrollRestore, initToastAutoDismiss, initShellInteractions, initIdleAutoLogout };

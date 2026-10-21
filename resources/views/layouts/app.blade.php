@@ -113,7 +113,7 @@
             <!-- Pin Sidebar Toggle (Desktop) -->
             <button id="pin-sidebar-toggle"
                     type="button"
-                    class="hidden lg:flex sidebar-nav-label text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-blue-600/50 transition-colors"
+                    class="hidden lg:flex sidebar-nav-label text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-blue-600/50 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-colors"
                     title="Kunci sidebar tetap terbuka (Pin - Ctrl+B)"
                     aria-label="Kunci sidebar (Ctrl+B)">
                 <svg id="pin-icon-unpinned" class="w-4 h-4 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -125,7 +125,7 @@
                     <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
                 </svg>
             </button>
-            <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
+            <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg p-1 transition-colors" aria-label="Tutup menu">
                 <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
             </button>
         </div>
@@ -192,11 +192,11 @@
                             @endphp
                             <div class="sidebar-subgroup" data-subgroup="pelanggan">
                                 <div class="flex items-center justify-between rounded-lg transition-colors {{ $pelangganRowClass }}">
-                                    <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="sidebar-nav-link sidebar-subgroup-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 flex-1 min-w-0 transition-colors {{ $pelangganActive ? 'text-blue-800 font-semibold' : 'text-blue-100 hover:text-white' }}">
+                                    <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="sidebar-nav-link sidebar-subgroup-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 flex-1 min-w-0 transition-colors focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none {{ $pelangganActive ? 'text-blue-800 font-semibold' : 'text-blue-100 hover:text-white' }}">
                                         <x-dynamic-component component="heroicon-o-user" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
                                         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
                                     </a>
-                                    <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 px-2.5 py-1.5 mr-1 rounded-md transition-colors focus:outline-none cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
+                                    <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 px-2.5 py-1.5 mr-1 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
                                         <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-200 pointer-events-none" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -305,7 +305,7 @@
             </div>
             <form method="POST" action="{{ route('logout') }}" class="sidebar-footer-logout shrink-0 overflow-hidden">
                 @csrf
-                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout" aria-label="Logout">
+                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1 rounded-md focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none" title="Logout" aria-label="Logout">
                     <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
                 </button>
             </form>
@@ -378,107 +378,6 @@
     <x-global-quick-search />
 
     @stack('scripts')
-    <script>
-        (function() {
-            window.toggleWhatsAppSubmenu = function(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
-                if (!subgroup) return;
-                var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
-                if (toggleBtn && typeof toggleBtn.__doToggle === 'function') {
-                    toggleBtn.__doToggle(e);
-                }
-            };
-
-            function initSubgroupAccordion() {
-                document.querySelectorAll('.sidebar-subgroup').forEach(function(subgroup) {
-                    var name = subgroup.dataset.subgroup;
-                    var saved = localStorage.getItem('sidebar-subgroup-' + name);
-                    var items = subgroup.querySelector('.sidebar-subgroup-items');
-                    var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
-                    var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
-                    var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
-                    if (!items) return;
-
-                    function ensureParentExpanded() {
-                        var parentGroup = subgroup.closest('.sidebar-group');
-                        if (parentGroup) {
-                            var parentItems = parentGroup.querySelector('.sidebar-group-items');
-                            if (parentItems) {
-                                parentItems.style.maxHeight = 'none';
-                            }
-                        }
-                    }
-
-                    var hasActive = items.dataset.hasActive === 'true';
-                    var expand = hasActive || saved === '1';
-
-                    if (expand) {
-                        items.style.transition = 'none';
-                        items.style.maxHeight = '999px';
-                        items.setAttribute('data-expanded', '1');
-                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
-                        if (arrow) arrow.classList.add('rotate-90');
-                        ensureParentExpanded();
-                        void items.offsetHeight;
-                        items.style.transition = '';
-                    }
-
-                    function doToggle(e) {
-                        if (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }
-                        var isExpanded = items.getAttribute('data-expanded') === '1';
-                        if (isExpanded) {
-                            items.style.maxHeight = '0px';
-                            items.setAttribute('data-expanded', '0');
-                            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
-                            if (arrow) arrow.classList.remove('rotate-90');
-                            localStorage.setItem('sidebar-subgroup-' + name, '0');
-                        } else {
-                            items.style.maxHeight = '999px';
-                            items.setAttribute('data-expanded', '1');
-                            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
-                            if (arrow) arrow.classList.add('rotate-90');
-                            localStorage.setItem('sidebar-subgroup-' + name, '1');
-                            ensureParentExpanded();
-                        }
-                    }
-
-                    if (toggleBtn) {
-                        toggleBtn.__doToggle = doToggle;
-                        if (!toggleBtn.dataset.bound) {
-                            toggleBtn.dataset.bound = '1';
-                            toggleBtn.addEventListener('click', function(e) {
-                                doToggle(e);
-                            });
-                        }
-                    }
-
-                    if (mainLink && !mainLink.dataset.bound) {
-                        mainLink.dataset.bound = '1';
-                        mainLink.addEventListener('click', function(e) {
-                            var currentPath = window.location.pathname.replace(/\/+$/, '');
-                            var linkPath = new URL(mainLink.href).pathname.replace(/\/+$/, '');
-                            if (currentPath === linkPath) {
-                                doToggle(e);
-                            }
-                        });
-                    }
-                });
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initSubgroupAccordion);
-            } else {
-                initSubgroupAccordion();
-            }
-        })();
-    </script>
 </body>
 
 </html>

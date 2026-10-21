@@ -12,7 +12,7 @@
 @endphp
 
 <div class="sidebar-group" data-group="{{ $name }}">
-    <button type="button" aria-expanded="false" class="sidebar-group-header group/header relative flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider px-3 py-2.5 rounded-xl hover:text-white hover:bg-blue-600/50 transition-colors">
+    <button type="button" aria-expanded="false" title="{{ $label }}" class="sidebar-group-header group/header relative flex items-center justify-between w-full text-xs text-blue-200 font-bold uppercase tracking-wider px-3 py-2.5 rounded-xl hover:text-white hover:bg-blue-600/50 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-colors">
         <span class="flex items-center gap-3 min-w-0">
             <x-dynamic-component :component="$iconComponent" class="w-5 h-5 shrink-0 text-blue-200 group-hover/header:text-white transition-colors" aria-hidden="true" />
             <span class="sidebar-nav-label truncate whitespace-nowrap tracking-wider text-[11px] font-bold">{{ $label }}</span>

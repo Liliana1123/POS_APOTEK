@@ -17,12 +17,12 @@
 @endphp
 
 @if ($variant === 'top')
-    <a href="{{ route($route) }}" title="{{ $label }}" class="sidebar-nav-link sidebar-nav-top flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-xs {{ $activeClass }}" {{ $attributes }}>
+    <a href="{{ route($route) }}" title="{{ $label }}" class="sidebar-nav-link sidebar-nav-top flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-xs focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none {{ $activeClass }}" {{ $attributes }}>
         <x-dynamic-component :component="$iconComponent" class="w-5 h-5 shrink-0" aria-hidden="true" />
         <span class="sidebar-nav-label truncate whitespace-nowrap font-bold uppercase tracking-wider">{{ $label }}</span>
     </a>
 @else
-    <a href="{{ route($route) }}" title="{{ $label }}" class="group/link sidebar-nav-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors text-xs {{ $activeClass }}" {{ $attributes }}>
+    <a href="{{ route($route) }}" title="{{ $label }}" class="group/link sidebar-nav-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors text-xs focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none {{ $activeClass }}" {{ $attributes }}>
         <x-dynamic-component :component="$iconComponent" class="w-4 h-4 shrink-0 opacity-80 group-hover/link:opacity-100 transition-opacity" aria-hidden="true" />
         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">{{ $label }}</span>
     </a>
