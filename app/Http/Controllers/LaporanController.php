@@ -1047,20 +1047,40 @@ class LaporanController extends Controller
             $query->where('custom_discount_id', $request->promo_id);
         }
 
-        // Filter: status pelanggan (member / umum)
+        
+        // Filter: status pelanggan / kategori member
         if ($request->filled('status_pelanggan')) {
-            if ($request->status_pelanggan === 'member') {
+            $statusPelanggan = $request->input('status_pelanggan');
+
+            if ($statusPelanggan === 'pelanggan_tetap') {
                 $query->whereHas('penjualan.pelanggan', function ($q) {
-                    $q->where('is_member', true);
+                    $q->where('is_member', true)
+                      ->where('status_member', 'Member Pelanggan Tetap');
                 });
-            } else if ($request->status_pelanggan === 'umum') {
+            } elseif ($statusPelanggan === 'keluarga_nakes') {
+                $query->whereHas('penjualan.pelanggan', function ($q) {
+                    $q->where('is_member', true)
+                      ->where('status_member', 'Member Keluarga Nakes');
+                });
+            } elseif ($statusPelanggan === 'member_only') {
+                $query->whereHas('penjualan.pelanggan', function ($q) {
+                    $q->where('is_member', true)
+                      ->where('status_member', 'Member Only');
+                });
+            } elseif ($statusPelanggan === 'umum') {
                 $query->where(function ($q) {
-                    $q->whereHas('penjualan.pelanggan', function ($q2) {
-                        $q2->where('is_member', false);
-                    })->orWhereNull('penjualan.pelanggan_id');
+                    // Transaksi tanpa pelanggan
+                    $q->whereDoesntHave('penjualan.pelanggan')
+                      // Pelanggan non-member atau kategori member kosong
+                      ->orWhereHas('penjualan.pelanggan', function ($q2) {
+                          $q2->where('is_member', false)
+                             ->orWhereNull('status_member')
+                             ->orWhere('status_member', '');
+                      });
                 });
             }
         }
+
 
         $usages = $query->orderByDesc('created_at')->get();
         $totalNominal = $usages->sum('nominal');
@@ -1071,19 +1091,35 @@ class LaporanController extends Controller
         if ($request->query('export') === 'excel' || $request->query('export') === 'xlsx' || $request->query('export') === 'csv') {
             if ($request->query('export') === 'csv') {
                 $headers = ['Tanggal', 'No. Faktur', 'Barang', 'Pelanggan', 'Jenis Diskon', 'Nama Promo', 'Persentase', 'Nominal'];
+                
                 $data = [];
+
                 foreach ($usages as $usage) {
+                    $pelanggan = $usage->penjualan?->pelanggan;
+                    $namaPelanggan = $pelanggan?->nama ?? 'Umum';
+
+                    if (!$pelanggan || !$pelanggan->is_member) {
+                        $kategoriPelanggan = 'Umum';
+                    } else {
+                        $kategoriPelanggan = $pelanggan->status_member ?: 'Member';
+                    }
+
+                    $namaPelangganEkspor = $namaPelanggan . ' (' . $kategoriPelanggan . ')';
+
                     $data[] = [
-                        $usage->created_at->format('d M Y H:i'),
-                        $usage->penjualan->no_faktur ?? '',
-                        $usage->barang_nama,
-                        $usage->penjualan->pelanggan->nama ?? 'Umum',
-                        $usage->jenis,
+                        $usage->created_at
+                            ? $usage->created_at->format('d M Y H:i')
+                            : '—',
+                        $usage->penjualan?->no_faktur ?? '—',
+                        $usage->barang_nama ?? '—',
+                        $namaPelangganEkspor,
+                        $usage->jenis === 'member' ? 'Member' : 'Custom Promo',
                         $usage->custom_discount_nama ?? '-',
-                        $usage->persentase,
+                        $usage->persentase . '%',
                         $usage->nominal
                     ];
                 }
+
                 return $this->exportCsv('laporan-diskon-' . $dari . '-' . $sampai . '.csv', $headers, $data);
             }
 

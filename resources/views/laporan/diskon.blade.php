@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Laporan Audit Diskon')
+@section('title', 'Laporan Audit Diskon Dan Promo')
 
 @section('content')
 
@@ -91,7 +91,15 @@
                 &nbsp;•&nbsp; Promo: {{ $promoAktif->nama }}
             @endif
             @if(request('status_pelanggan'))
-                &nbsp;•&nbsp; Status: {{ request('status_pelanggan') === 'member' ? 'Member' : 'Umum' }}
+                &nbsp;•&nbsp; Status:
+                {{
+                    [
+                        'pelanggan_tetap' => 'Member Pelanggan Tetap',
+                        'keluarga_nakes' => 'Member Keluarga Nakes',
+                        'member_only' => 'Member Only',
+                        'umum' => 'Umum',
+                    ][request('status_pelanggan')] ?? 'Semua Pelanggan'
+                }}
             @endif
             &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
         </p>
@@ -103,7 +111,7 @@
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
     <div>
         <h1>Laporan Penggunaan Diskon dan Promo</h1>
-        <p class="text-caption mt-1">Pantau riwayat audit dan hemat rupiah dari promo/membership.</p>
+        <p class="text-caption mt-1">Pantau riwayat audit dan diskon rupiah dari promo/membership.</p>
     </div>
     <div class="flex gap-2 shrink-0">
         <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
@@ -161,8 +169,22 @@
                 </label>
                 <select name="status_pelanggan" class="form-input">
                     <option value="">Semua Pelanggan</option>
-                    <option value="member" @selected(request('status_pelanggan') === 'member')>Member</option>
-                    <option value="umum" @selected(request('status_pelanggan') === 'umum')>Umum</option>
+                    <option value="pelanggan_tetap"
+                        @selected(request('status_pelanggan') === 'pelanggan_tetap')>
+                        Member Pelanggan Tetap
+                    </option>
+                    <option value="keluarga_nakes"
+                        @selected(request('status_pelanggan') === 'keluarga_nakes')>
+                        Member Keluarga Nakes
+                    </option>
+                    <option value="member_only"
+                        @selected(request('status_pelanggan') === 'member_only')>
+                        Member Only
+                    </option>
+                    <option value="umum"
+                        @selected(request('status_pelanggan') === 'umum')>
+                        Umum
+                    </option>
                 </select>
             </div>
         </div>
@@ -187,42 +209,66 @@
         <table class="table-custom table-diskon print-table w-full min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-[11%] min-w-[6.5rem] col-diskon-tanggal text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
-                    <th scope="col" class="w-[11%] min-w-[6.5rem] col-diskon-faktur !px-2.5 py-3 break-words">No. Faktur</th>
-                    <th scope="col" class="w-[20%] min-w-[10rem] col-diskon-barang !px-3 py-3 break-words">Barang / Obat</th>
-                    <th scope="col" class="w-[10%] min-w-[5.5rem] col-diskon-pelanggan !px-2.5 py-3 break-words">Pelanggan</th>
-                    <th scope="col" class="w-[12%] min-w-[6.5rem] col-diskon-jenis text-center !px-2 py-3 break-words">Jenis Diskon</th>
-                    <th scope="col" class="w-[18%] min-w-[8.5rem] col-diskon-nama !px-2.5 py-3 break-words">Nama Promo</th>
-                    <th scope="col" class="w-[6%] min-w-[3.5rem] col-diskon-persentase text-center !px-1.5 py-3 whitespace-nowrap">Persentase</th>
-                    <th scope="col" class="w-[12%] min-w-[6.5rem] col-diskon-hemat text-right !px-2.5 py-3 whitespace-nowrap">Hemat Rupiah</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">No. Invoice</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Tanggal</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Barang / Obat</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Pelanggan</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Jenis Diskon</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Nama Promo</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Persentase Diskon</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Diskon Rupiah</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
                 @forelse ($usages as $index => $usage)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="col-diskon-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $usage->created_at->format('d M Y H:i') }}</td>
-                        <td class="col-diskon-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
-                            <a href="{{ route('penjualan.show', $usage->penjualan_id) }}" class="text-blue-600 hover:underline print:text-gray-800">
+                        <td class="col-diskon-faktur text-center font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
+                            <a href="{{ route('penjualan.show', ['penjualan' => $usage->penjualan_id, 'from' => 'laporan_diskon']) }}" class="text-blue-600 hover:underline print:text-gray-800">
                                 {{ $usage->penjualan->no_faktur ?? 'Faktur Terhapus' }}
                             </a>
                         </td>
-                        <td class="col-diskon-barang font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $usage->barang_nama }}</td>
-                        <td class="col-diskon-pelanggan text-gray-700 font-medium text-xs !px-2.5 py-3 break-words leading-snug">
-                            {{ $usage->penjualan->pelanggan->nama ?? 'Umum' }}
-                            @if (isset($usage->penjualan->pelanggan) && $usage->penjualan->pelanggan->is_member)
-                                <span class="badge-success ml-1.5 py-0.5 px-1 text-[8px] print:hidden">Member</span>
-                            @endif
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->created_at->format('d M Y H:i') }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->barang_nama }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
+                            @php
+                                $pelanggan = $usage->penjualan?->pelanggan;
+                                $statusMember = trim((string) ($pelanggan?->status_member ?? ''));
+
+                                $memberVariant = match ($statusMember) {
+                                    'Member Pelanggan Tetap' => 'success',
+                                    'Member Keluarga Nakes' => 'info',
+                                    'Member Only' => 'warning',
+                                    default => null,
+                                };
+                            @endphp
+
+                            <div class="flex flex-col items-center justify-center gap-1 min-w-0"> 
+                                <span class="font-semibold text-gray-800 text-xs text-center">
+                                    {{ $pelanggan?->nama ?? 'Umum' }}
+                                </span>
+
+                                @if ($memberVariant)
+                                    <span class="badge-{{ $memberVariant }} self-center py-0.5 px-1.5 text-[9px]">
+                                        {{ $statusMember }}
+                                    </span>
+                                @else
+                                    <span class="self-center text-[9px]">
+                                        {{ (!$pelanggan || !$pelanggan->is_member) ? 'Umum' : ($statusMember ?: 'Member') }}
+                                    </span>
+                                @endif
+
+                            </div>
                         </td>
-                        <td class="col-diskon-jenis text-center text-xs !px-1.5 py-3 break-words">
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
                             @if ($usage->jenis === 'member')
                                 <span class="badge-info">Member</span>
                             @else
                                 <span class="badge-neutral">Custom Promo</span>
                             @endif
                         </td>
-                        <td class="col-diskon-nama text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
-                        <td class="col-diskon-persentase text-center font-bold text-gray-800 text-xs !px-1.5 py-3 whitespace-nowrap">{{ $usage->persentase }}%</td>
-                        <td class="col-diskon-hemat table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->persentase }}%</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -249,8 +295,8 @@
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
-                    <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Hemat:</td>
-                    <td class="col-diskon-hemat table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
+                    <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Diskon:</td>
+                    <td class="col-diskon-hemat table-num !px-2.5 py-3.5 text-left text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>

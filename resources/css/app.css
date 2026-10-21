@@ -1661,7 +1661,7 @@ h3,
     .no-print-expired,
     .page-header-web,
     .filter-card-web,
-    .card-base:not(.print-table-card, .print-table-wrapper),
+    .card-base:not(.print-table-card, .print-table-wrapper, #struk, .print-struk),
     button,
     .btn-primary,
     .btn-secondary {

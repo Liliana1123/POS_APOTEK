@@ -167,4 +167,108 @@ class PenjualanResepTest extends TestCase
             'alamat_lembaga' => 'Klinik Sehat Sentosa',
         ]);
     }
+
+    public function test_detail_penjualan_non_resep_mengembalikan_jenis_non_resep_dan_data_dokter_null(): void
+    {
+        [$user, $barang] = $this->setupData();
+
+        $penjualan = Penjualan::create([
+            'user_id' => $user->id,
+            'tanggal' => now()->format('Y-m-d'),
+            'no_faktur' => 'INV-TEST-NR-01',
+            'total' => 16000,
+            'metode_pembayaran' => 'cash',
+            'jenis_transaksi' => 'non_resep',
+            'nama_dokter' => null,
+            'id_dokter' => null,
+            'alamat_lembaga' => null,
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('penjualan.detail', $penjualan));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'penjualan' => [
+                'no_faktur' => 'INV-TEST-NR-01',
+                'jenis_transaksi' => 'non_resep',
+                'is_resep' => false,
+                'nama_dokter' => null,
+                'id_dokter' => null,
+                'alamat_lembaga' => null,
+            ],
+        ]);
+    }
+
+    public function test_detail_penjualan_resep_mengembalikan_data_resep_dan_dokter_lengkap(): void
+    {
+        [$user, $barang] = $this->setupData();
+
+        $penjualan = Penjualan::create([
+            'user_id' => $user->id,
+            'tanggal' => now()->format('Y-m-d'),
+            'no_faktur' => 'INV-TEST-RSP-01',
+            'total' => 24000,
+            'metode_pembayaran' => 'cash',
+            'jenis_transaksi' => 'resep',
+            'nama_dokter' => 'dr. Budi Santoso',
+            'id_dokter' => 'DOC-88219',
+            'alamat_lembaga' => 'RS Medika Sejahtera, Jl. Merdeka No. 10',
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('penjualan.detail', $penjualan));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'penjualan' => [
+                'no_faktur' => 'INV-TEST-RSP-01',
+                'jenis_transaksi' => 'resep',
+                'is_resep' => true,
+                'nama_dokter' => 'dr. Budi Santoso',
+                'id_dokter' => 'DOC-88219',
+                'alamat_lembaga' => 'RS Medika Sejahtera, Jl. Merdeka No. 10',
+            ],
+        ]);
+    }
+
+    public function test_detail_penjualan_transaksi_lama_fallback_ke_non_resep(): void
+    {
+        [$user, $barang] = $this->setupData();
+
+        // Transaksi lama yang dibuat tanpa menentukan jenis_transaksi secara eksplisit
+        $penjualan = Penjualan::create([
+            'user_id' => $user->id,
+            'tanggal' => now()->format('Y-m-d'),
+            'no_faktur' => 'INV-TEST-OLD-01',
+            'total' => 8000,
+            'metode_pembayaran' => 'cash',
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('penjualan.detail', $penjualan));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'penjualan' => [
+                'no_faktur' => 'INV-TEST-OLD-01',
+                'jenis_transaksi' => 'non_resep',
+                'is_resep' => false,
+                'nama_dokter' => null,
+                'id_dokter' => null,
+                'alamat_lembaga' => null,
+            ],
+        ]);
+    }
+
+    public function test_halaman_index_penjualan_memuat_modal_detail_dengan_elemen_resep(): void
+    {
+        [$user, $barang] = $this->setupData();
+
+        $response = $this->actingAs($user)->get(route('penjualan.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('id="modalDetailPenjualan"', false);
+        $response->assertSee('id="isiDetailPenjualan"', false);
+        $response->assertSee('Jenis Transaksi', false);
+        $response->assertSee('Informasi Resep', false);
+        $response->assertSee('Tidak ada data resep (Transaksi Non Resep)', false);
+    }
 }
