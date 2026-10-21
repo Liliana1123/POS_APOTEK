@@ -438,6 +438,8 @@ class PenjualanController extends Controller
                     }
                 }
                 
+                $isResep = ($data['jenis_transaksi'] ?? '') === 'resep';
+
                 $penjualan = Penjualan::create([
                     'user_id' => $request->user()->id,
                     'pelanggan_id' => $data['pelanggan_id'] ?? null,
@@ -447,9 +449,9 @@ class PenjualanController extends Controller
                     'metode_pembayaran' => $data['metode_pembayaran'],
                     'due_date' => $finalDueDate,
                     'jenis_transaksi' => $data['jenis_transaksi'],
-                    'nama_dokter' => $data['nama_dokter'] ?? null,
-                    'id_dokter' => $data['id_dokter'] ?? null,
-                    'alamat_lembaga' => $data['alamat_lembaga'] ?? null,
+                    'nama_dokter' => $isResep ? ($data['nama_dokter'] ?? null) : null,
+                    'id_dokter' => $isResep ? ($data['id_dokter'] ?? null) : null,
+                    'alamat_lembaga' => $isResep ? ($data['alamat_lembaga'] ?? null) : null,
                 ]);
 
                 $totalFaktur = 0;
@@ -631,6 +633,17 @@ class PenjualanController extends Controller
         $penjualanData = $penjualan->toArray();
         $penjualanData['member_discount_percent_used'] = $memberDiscountPercent;
         $penjualanData['due_date_formatted'] = $penjualan->due_date ? $penjualan->due_date->format('d M Y') : null;
+
+        $isResep = strtolower((string) ($penjualan->jenis_transaksi ?? '')) === 'resep';
+        $penjualanData['is_resep'] = $isResep;
+        $penjualanData['jenis_transaksi'] = $isResep ? 'resep' : 'non_resep';
+        $penjualanData['id_dokter'] = $isResep ? $penjualan->id_dokter : null;
+        $penjualanData['nama_dokter'] = $isResep ? $penjualan->nama_dokter : null;
+        $penjualanData['alamat_lembaga'] = $isResep ? $penjualan->alamat_lembaga : null;
+        $penjualanData['tanggal_formatted'] = $penjualan->tanggal ? $penjualan->tanggal->format('d M Y') : null;
+        $penjualanData['jam_formatted'] = $penjualan->created_at
+            ? $penjualan->created_at->setTimezone('Asia/Jakarta')->format('H:i')
+            : null;
 
         return response()->json([
             'penjualan' => $penjualanData,

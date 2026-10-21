@@ -276,113 +276,137 @@
     <div class="flex flex-col lg:flex-row gap-4 items-stretch">
 
         {{-- KOLOM KIRI (7 KARTU DALAM 2 BARIS) --}}
-        <div class="flex-1 min-w-0 flex flex-col justify-between gap-3.5">
+        <div class="flex-1 min-w-0 flex flex-col gap-3">
 
             {{-- BARIS 1: 4 KARTU (Omzet Kotor, Total Diskon, Penjualan Bersih, HPP) --}}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
+                
                 {{-- 1. Omzet Kotor --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0f7ff; border: 1px solid #dbeafe;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2.5px solid #bfdbfe !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-chart-bar class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            Omzet Kotor
+                        </span>
+
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($omzetKotor, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Omzet Kotor</span>
                     </div>
-                    <strong class="block text-base font-bold text-blue-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($omzetKotor, 0, ',', '.') }}
-                    </strong>
+
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shadow-sm">
+                        <x-heroicon-o-chart-bar class="h-6 w-6" />
+                    </div>
                 </div>
 
                 {{-- 2. Total Diskon --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #faf5ff; border: 1px solid #f3e8ff;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2.5px solid #eabffeff !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-purple-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-tag class="w-4 h-4" />
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                            Total Diskon
+                        </span>
+                        <div class="text-xl font-black text-gray-900 mt-1">
+                            Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Total Diskon</span>
                     </div>
-                    <strong class="block text-base font-bold text-purple-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($totalDiskon, 0, ',', '.') }}
-                    </strong>
+                    <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm shrink-0">
+                        <x-heroicon-o-tag class="w-6 h-6" />
+                    </div>
                 </div>
-
+                
                 {{-- 3. Penjualan Bersih --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0fdf4; border: 1px solid #dcfce7;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2.5px solid #bffee1ff !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-currency-dollar class="w-4 h-4" />
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                            Penjualan Bersih
+                        </span>
+                        <div class="text-xl font-black text-gray-900 mt-1">
+                            Rp {{ number_format($penjualanBersih, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Penjualan Bersih</span>
                     </div>
-                    <strong class="block text-base font-bold text-emerald-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($penjualanBersih, 0, ',', '.') }}
-                    </strong>
+                    <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs">
+                        <x-heroicon-o-banknotes class="w-6 h-6" />
+                    </div>
                 </div>
-
-                {{-- 4. HPP (Harga Pokok Penjualan) --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #fff7ed; border: 1px solid #ffedd5;">
+                
+                {{-- 4. HPP --}}
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2.5px solid #ffedd5 !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-orange-400 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-circle-stack class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            HPP (Harga Pokok Penjualan)
+                        </span>
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($hpp, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">HPP (Harga Pokok Penjualan)</span>
                     </div>
-                    <strong class="block text-base font-bold text-orange-500 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($hpp, 0, ',', '.') }}
-                    </strong>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 shadow-sm">
+                        <x-heroicon-s-circle-stack class="h-6 w-6" />
+                    </div>
                 </div>
-
             </div>
 
             {{-- BARIS 2: 3 KARTU (Laba Kotor, Total Beban Operasional, Laba Bersih) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch w-full">
 
-                {{-- 5. Laba Kotor --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0fdf9; border: 1px solid #ccfbf1;">
-                    <div>
-                        <div class="w-8 h-8 rounded-lg bg-teal-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-circle-stack class="w-4 h-4" />
-                        </div>
-                        <span class="block text-xs font-semibold text-slate-500">Laba Kotor</span>
-                    </div>
-                    <strong class="block text-base font-bold text-teal-600 mt-1 font-mono tracking-tight">
+            {{-- 5. Laba Kotor --}}
+            <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                style="background-color: #ffffff; border: 2.5px solid #bfdbfe !important;">
+                <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        Laba Kotor
+                    </span>
+                    <div class="mt-1 text-xl font-black text-gray-900">
                         Rp {{ number_format($labaKotor, 0, ',', '.') }}
-                    </strong>
-                </div>
-
-                {{-- 6. Total Beban Operasional --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #fff1f2; border: 1px solid #ffe4e6;">
-                    <div>
-                        <div class="w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-wallet class="w-4 h-4" />
-                        </div>
-                        <span class="block text-xs font-semibold text-slate-500">Total Beban Operasional</span>
                     </div>
-                    <strong class="block text-base font-bold text-rose-500 mt-1 font-mono tracking-tight">
+                </div>
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shadow-sm">
+                    <x-heroicon-o-banknotes class="h-6 w-6" />
+                </div>
+            </div>
+
+            {{-- 6. Total Beban Operasional --}}
+            <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                style="background-color: #ffffff; border: 2.5px solid #ffb6ccff !important;">
+                <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        Total Beban Operasional
+                    </span>
+                    <div class="mt-1 text-xl font-black text-gray-900">
                         Rp {{ number_format($totalBeban, 0, ',', '.') }}
-                    </strong>
-                </div>
-
-                {{-- 7. Laba Bersih --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f5f3ff; border: 1px solid #ede9fe;">
-                    <div>
-                        <div class="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-arrow-trending-up class="w-4 h-4" />
-                        </div>
-                        <span class="block text-xs font-semibold text-slate-500">Laba Bersih</span>
                     </div>
-                    <strong class="block text-base font-bold text-indigo-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($labaBersih, 0, ',', '.') }}
-                    </strong>
                 </div>
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm"
+                    style="background-color: #fff1f5; color: #fd89acff;">
+                    <x-heroicon-o-wallet class="h-6 w-6" />
+                </div>
+            </div>
 
+            {{-- 7. Laba Bersih --}}
+            <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                style="background-color: #ffffff; border: 2.5px solid #bffee1ff !important;">
+                <div>
+                    <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        Laba Bersih
+                    </span>
+                    <div class="mt-1 text-xl font-black text-gray-900">
+                        Rp {{ number_format($labaBersih, 0, ',', '.') }}
+                    </div>
+                </div>
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 shadow-sm">
+                    <x-heroicon-o-arrow-trending-up class="h-6 w-6" />
+                </div>
+            </div>
             </div>
 
         </div>
 
         {{-- KOLOM KANAN: RINGKASAN PIUTANG & UTANG --}}
-        <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+        <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0"
+            style="background-color: #ffffffff; border: 1px solid #d1d1d1ff;">
             <h2 class="text-xs font-bold text-slate-800 mb-3 tracking-wide">Ringkasan Piutang & Utang</h2>
 
             <div class="space-y-4 my-auto">
@@ -518,9 +542,6 @@
             {{-- Header Kartu Beban --}}
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center">
-                        <x-heroicon-s-clipboard-document-list class="w-3.5 h-3.5" />
-                    </div>
                     <h2 class="text-sm font-bold text-slate-800 tracking-tight">Ringkasan Beban Operasional</h2>
                 </div>
 
@@ -575,17 +596,24 @@
                             </tr>
                         @endforelse
                     </tbody>
-                    <tfoot>
-                        {{-- Baris Total Beban Operasional --}}
-                        <tr class="border-t border-slate-200" style="background-color: #f0f7ff;">
-                            <td colspan="2" class="py-2.5 px-3 font-bold text-blue-600 text-xs">
-                                Total Beban Operasional
-                            </td>
-                            <td class="py-2.5 px-4 text-right font-bold text-blue-600 font-mono text-xs">
-                                Rp {{ number_format($totalBeban, 0, ',', '.') }}
+                    {{-- Ruang kosong untuk menyamakan posisi dengan Laba Bersih --}}
+                    @for ($i = 0; $i < 5; $i++)
+                        <tr>
+                            <td colspan="3" class="py-2.5 px-3 border-0">
+                                &nbsp;
                             </td>
                         </tr>
-                    </tfoot>
+                    @endfor
+
+                    {{-- Baris Total Beban Operasional --}}
+                    <tr class="border-t border-slate-200" style="background-color: #f0f7ff;">
+                        <td colspan="2" class="py-2.5 px-3 font-bold text-blue-600 text-xs">
+                            Total Beban Operasional
+                        </td>
+                        <td class="py-2.5 px-4 text-right font-bold text-blue-600 font-mono text-xs">
+                            Rp {{ number_format($totalBeban, 0, ',', '.') }}
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -669,9 +697,6 @@
                     Nominal Beban (Rp) <span class="text-rose-500">*</span>
                 </label>
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-bold text-slate-400">
-                        Rp
-                    </span>
                     <input
                         type="number"
                         id="modal-beban-nominal"
@@ -712,7 +737,6 @@
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                    <x-heroicon-o-check-circle class="w-4 h-4" />
                     <span>Simpan Beban</span>
                 </button>
             </div>

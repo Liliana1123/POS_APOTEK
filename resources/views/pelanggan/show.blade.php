@@ -185,7 +185,7 @@
                         <td class="table-num font-semibold text-green-600">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</td>
                         <td class="table-num font-bold text-gray-850">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</td>
                         <td class="text-right">
-                            <a href="{{ route('penjualan.show', $penjualan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
+                            <a href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'pelanggan']) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
                         </td>
                     </tr>
                 @empty

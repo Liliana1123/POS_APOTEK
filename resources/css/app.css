@@ -219,6 +219,7 @@ h3,
 .btn-secondary.text-blue-600 {
     color: #2563EB !important;
 }
+
 .btn-secondary.btn-detail-penerimaan:hover,
 .btn-secondary.btn-action-view:hover,
 .btn-secondary.btn-action-detail:hover,
@@ -233,6 +234,7 @@ h3,
 .btn-secondary.text-amber-500 {
     color: #F59E0B !important;
 }
+
 .btn-secondary.btn-edit-penerimaan:hover,
 .btn-secondary.btn-action-edit:hover,
 .btn-secondary.text-amber-500:hover {
@@ -246,6 +248,7 @@ h3,
 .btn-secondary.text-emerald-600 {
     color: #16A34A !important;
 }
+
 .btn-secondary.btn-payment-penerimaan:hover,
 .btn-secondary.btn-action-payment:hover,
 .btn-secondary.text-emerald-600:hover {
@@ -259,6 +262,7 @@ h3,
 .btn-secondary.text-purple-600 {
     color: #7C3AED !important;
 }
+
 .btn-secondary.btn-susulan-penerimaan:hover,
 .btn-secondary.btn-action-susulan:hover,
 .btn-secondary.text-purple-600:hover {
@@ -271,6 +275,7 @@ h3,
 .btn-secondary.text-red-600 {
     color: #DC2626 !important;
 }
+
 .btn-secondary.btn-action-delete:hover,
 .btn-secondary.text-red-600:hover {
     background-color: #fef2f2 !important;
@@ -560,7 +565,8 @@ h3,
     background-color: var(--color-surface);
     border-radius: 0.75rem;
     border: 1px solid var(--color-border-custom);
-    overflow: clip; /* clip clips overflow tanpa mengganggu inner overflow-x:auto */
+    overflow: clip;
+    /* clip clips overflow tanpa mengganggu inner overflow-x:auto */
 }
 
 .table-custom {
@@ -1694,7 +1700,7 @@ h3,
     .no-print-expired,
     .page-header-web,
     .filter-card-web,
-    .card-base:not(.print-table-card, .print-table-wrapper, #struk),
+    .card-base:not(.print-table-card, .print-table-wrapper, #struk, .print-struk),
     button,
     .btn-primary,
     .btn-secondary {
@@ -1730,7 +1736,7 @@ h3,
         print-color-adjust: exact !important;
     }
 
-    body > div.flex-1,
+    body>div.flex-1,
     div.flex-1.flex.flex-col,
     main {
         position: static !important;
@@ -1817,7 +1823,10 @@ h3,
         page-break-inside: avoid !important;
     }
 
-    h1, h2, h3, h4,
+    h1,
+    h2,
+    h3,
+    h4,
     .print-kop,
     .print-report-title,
     .print-section-header,
@@ -2006,18 +2015,53 @@ h3,
         vertical-align: middle !important;
     }
 
-    .table-stok .col-stok-no { width: 3.5% !important; }
-    .table-stok .col-stok-barang { width: 17% !important; }
-    .table-stok .col-stok-kategori { width: 10% !important; }
-    .table-stok .col-stok-batch { width: 8.5% !important; }
-    .table-stok .col-stok-rak { width: 6% !important; }
-    .table-stok .col-stok-expired { width: 8% !important; }
-    .table-stok .col-stok-status-exp { width: 12% !important; }
-    .table-stok .col-stok-awal { width: 7% !important; }
-    .table-stok .col-stok-terjual { width: 7% !important; }
-    .table-stok .col-stok-rusak { width: 7% !important; }
-    .table-stok .col-stok-sisa { width: 7% !important; }
-    .table-stok .col-stok-status-stok { width: 7% !important; }
+    .table-stok .col-stok-no {
+        width: 3.5% !important;
+    }
+
+    .table-stok .col-stok-barang {
+        width: 17% !important;
+    }
+
+    .table-stok .col-stok-kategori {
+        width: 10% !important;
+    }
+
+    .table-stok .col-stok-batch {
+        width: 8.5% !important;
+    }
+
+    .table-stok .col-stok-rak {
+        width: 6% !important;
+    }
+
+    .table-stok .col-stok-expired {
+        width: 8% !important;
+    }
+
+    .table-stok .col-stok-status-exp {
+        width: 12% !important;
+    }
+
+    .table-stok .col-stok-awal {
+        width: 7% !important;
+    }
+
+    .table-stok .col-stok-terjual {
+        width: 7% !important;
+    }
+
+    .table-stok .col-stok-rusak {
+        width: 7% !important;
+    }
+
+    .table-stok .col-stok-sisa {
+        width: 7% !important;
+    }
+
+    .table-stok .col-stok-status-stok {
+        width: 7% !important;
+    }
 
     /* ============================================================
        Tabel Laporan Penjualan (Print)
@@ -2033,16 +2077,45 @@ h3,
         vertical-align: middle !important;
     }
 
-    .table-penjualan .col-penjualan-tanggal { width: 9% !important; }
-    .table-penjualan .col-penjualan-faktur { width: 13% !important; }
-    .table-penjualan .col-penjualan-pelanggan { width: 14% !important; }
-    .table-penjualan .col-penjualan-jenis-pelanggan { width: 12% !important; }
-    .table-penjualan .col-penjualan-kasir { width: 9% !important; }
-    .table-penjualan .col-penjualan-jenis { width: 9% !important; }
-    .table-penjualan .col-penjualan-metode { width: 9% !important; }
-    .table-penjualan .col-penjualan-status-piutang { width: 8% !important; }
-    .table-penjualan .col-penjualan-kotor { width: 8% !important; }
-    .table-penjualan .col-penjualan-total { width: 9% !important; }
+    .table-penjualan .col-penjualan-tanggal {
+        width: 9% !important;
+    }
+
+    .table-penjualan .col-penjualan-faktur {
+        width: 13% !important;
+    }
+
+    .table-penjualan .col-penjualan-pelanggan {
+        width: 14% !important;
+    }
+
+    .table-penjualan .col-penjualan-jenis-pelanggan {
+        width: 12% !important;
+    }
+
+    .table-penjualan .col-penjualan-kasir {
+        width: 9% !important;
+    }
+
+    .table-penjualan .col-penjualan-jenis {
+        width: 9% !important;
+    }
+
+    .table-penjualan .col-penjualan-metode {
+        width: 9% !important;
+    }
+
+    .table-penjualan .col-penjualan-status-piutang {
+        width: 8% !important;
+    }
+
+    .table-penjualan .col-penjualan-kotor {
+        width: 8% !important;
+    }
+
+    .table-penjualan .col-penjualan-total {
+        width: 9% !important;
+    }
 
     /* ============================================================
        Tabel Laporan Penerimaan (Print)
@@ -2058,14 +2131,37 @@ h3,
         vertical-align: middle !important;
     }
 
-    .table-penerimaan .col-penerimaan-no { width: 4% !important; }
-    .table-penerimaan .col-penerimaan-tanggal { width: 14% !important; }
-    .table-penerimaan .col-penerimaan-faktur { width: 11.5% !important; }
-    .table-penerimaan .col-penerimaan-supplier { width: 13% !important; }
-    .table-penerimaan .col-penerimaan-barang { width: 24% !important; }
-    .table-penerimaan .col-penerimaan-qty { width: 7% !important; }
-    .table-penerimaan .col-penerimaan-harga { width: 12% !important; }
-    .table-penerimaan .col-penerimaan-total { width: 14.5% !important; }
+    .table-penerimaan .col-penerimaan-no {
+        width: 4% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-tanggal {
+        width: 14% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-faktur {
+        width: 11.5% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-supplier {
+        width: 13% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-barang {
+        width: 24% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-qty {
+        width: 7% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-harga {
+        width: 12% !important;
+    }
+
+    .table-penerimaan .col-penerimaan-total {
+        width: 14.5% !important;
+    }
 
     /* ============================================================
        Tabel Laporan Barang Rusak (Print)
@@ -2081,13 +2177,33 @@ h3,
         vertical-align: middle !important;
     }
 
-    .table-rusak .col-rusak-no { width: 4% !important; }
-    .table-rusak .col-rusak-tanggal { width: 14% !important; }
-    .table-rusak .col-rusak-barang { width: 24% !important; }
-    .table-rusak .col-rusak-batch { width: 13% !important; }
-    .table-rusak .col-rusak-jumlah { width: 7% !important; }
-    .table-rusak .col-rusak-kerugian { width: 15% !important; }
-    .table-rusak .col-rusak-ket { width: 23% !important; }
+    .table-rusak .col-rusak-no {
+        width: 4% !important;
+    }
+
+    .table-rusak .col-rusak-tanggal {
+        width: 14% !important;
+    }
+
+    .table-rusak .col-rusak-barang {
+        width: 24% !important;
+    }
+
+    .table-rusak .col-rusak-batch {
+        width: 13% !important;
+    }
+
+    .table-rusak .col-rusak-jumlah {
+        width: 7% !important;
+    }
+
+    .table-rusak .col-rusak-kerugian {
+        width: 15% !important;
+    }
+
+    .table-rusak .col-rusak-ket {
+        width: 23% !important;
+    }
 
     /* ============================================================
        Tabel Laporan Diskon & Promo (Print)
@@ -2118,14 +2234,37 @@ h3,
     }
 
     /* Proporsi Kolom Laporan Diskon (Total 100%) */
-    .table-diskon .col-diskon-tanggal { width: 11% !important; }
-    .table-diskon .col-diskon-faktur { width: 11% !important; }
-    .table-diskon .col-diskon-barang { width: 20% !important; }
-    .table-diskon .col-diskon-pelanggan { width: 10% !important; }
-    .table-diskon .col-diskon-jenis { width: 12% !important; }
-    .table-diskon .col-diskon-nama { width: 18% !important; }
-    .table-diskon .col-diskon-persentase { width: 6% !important; }
-    .table-diskon .col-diskon-hemat { width: 12% !important; }
+    .table-diskon .col-diskon-tanggal {
+        width: 11% !important;
+    }
+
+    .table-diskon .col-diskon-faktur {
+        width: 11% !important;
+    }
+
+    .table-diskon .col-diskon-barang {
+        width: 20% !important;
+    }
+
+    .table-diskon .col-diskon-pelanggan {
+        width: 10% !important;
+    }
+
+    .table-diskon .col-diskon-jenis {
+        width: 12% !important;
+    }
+
+    .table-diskon .col-diskon-nama {
+        width: 18% !important;
+    }
+
+    .table-diskon .col-diskon-persentase {
+        width: 6% !important;
+    }
+
+    .table-diskon .col-diskon-hemat {
+        width: 12% !important;
+    }
 
     /* Kolom Tanggal, Persentase, dan Nominal Tetap Rapi */
     .table-diskon td.col-diskon-tanggal,

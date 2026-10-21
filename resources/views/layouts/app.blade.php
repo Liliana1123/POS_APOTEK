@@ -27,16 +27,48 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         @media print {
+            html,
+            body {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background-color: #ffffff !important;
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            body > div,
+            main {
+                display: block !important;
+                position: static !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+                flex: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
             aside#app-sidebar,
             #sidebar-backdrop,
             nav,
             footer,
-            .app-global-footer {
+            .app-global-footer,
+            #mobile-sidebar-toggle,
+            .print\:hidden,
+            #toast-success,
+            #toast-error {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
                 min-height: 0 !important;
                 max-height: 0 !important;
+                width: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 position: absolute !important;
