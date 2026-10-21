@@ -156,8 +156,6 @@
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
                         || request()->routeIs('whatsapp-monitor.*')
-                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
-                        || request()->routeIs('permission.*');
                         || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
                     $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                         || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
@@ -198,7 +196,7 @@
                                         <x-dynamic-component component="heroicon-o-user" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
                                         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
                                     </a>
-                                    <button type="button" onclick="toggleWhatsAppSubmenu(event)" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 px-2.5 py-1.5 mr-1 rounded-md transition-colors focus:outline-none cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
+                                    <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 px-2.5 py-1.5 mr-1 rounded-md transition-colors focus:outline-none cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:bg-blue-100' : 'text-blue-300 hover:text-white hover:bg-blue-500/50' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
                                         <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-200 pointer-events-none" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -376,10 +374,25 @@
     </div>
     @endif
 
-<<<<<<< HEAD
+    {{-- Global Quick Search Modal (Ctrl + K) --}}
+    <x-global-quick-search />
+
     @stack('scripts')
     <script>
         (function() {
+            window.toggleWhatsAppSubmenu = function(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
+                if (!subgroup) return;
+                var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+                if (toggleBtn && typeof toggleBtn.__doToggle === 'function') {
+                    toggleBtn.__doToggle(e);
+                }
+            };
+
             function initSubgroupAccordion() {
                 document.querySelectorAll('.sidebar-subgroup').forEach(function(subgroup) {
                     var name = subgroup.dataset.subgroup;
@@ -390,6 +403,16 @@
                     var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
                     if (!items) return;
 
+                    function ensureParentExpanded() {
+                        var parentGroup = subgroup.closest('.sidebar-group');
+                        if (parentGroup) {
+                            var parentItems = parentGroup.querySelector('.sidebar-group-items');
+                            if (parentItems) {
+                                parentItems.style.maxHeight = 'none';
+                            }
+                        }
+                    }
+
                     var hasActive = items.dataset.hasActive === 'true';
                     var expand = hasActive || saved === '1';
 
@@ -399,12 +422,16 @@
                         items.setAttribute('data-expanded', '1');
                         if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
                         if (arrow) arrow.classList.add('rotate-90');
+                        ensureParentExpanded();
                         void items.offsetHeight;
                         items.style.transition = '';
                     }
 
                     function doToggle(e) {
-                        if (e) e.stopPropagation();
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
                         var isExpanded = items.getAttribute('data-expanded') === '1';
                         if (isExpanded) {
                             items.style.maxHeight = '0px';
@@ -418,22 +445,26 @@
                             if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
                             if (arrow) arrow.classList.add('rotate-90');
                             localStorage.setItem('sidebar-subgroup-' + name, '1');
+                            ensureParentExpanded();
                         }
                     }
 
-                    if (toggleBtn && !toggleBtn.dataset.bound) {
-                        toggleBtn.dataset.bound = '1';
-                        toggleBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            doToggle(e);
-                        });
+                    if (toggleBtn) {
+                        toggleBtn.__doToggle = doToggle;
+                        if (!toggleBtn.dataset.bound) {
+                            toggleBtn.dataset.bound = '1';
+                            toggleBtn.addEventListener('click', function(e) {
+                                doToggle(e);
+                            });
+                        }
                     }
 
                     if (mainLink && !mainLink.dataset.bound) {
                         mainLink.dataset.bound = '1';
                         mainLink.addEventListener('click', function(e) {
-                            if (window.location.pathname === new URL(mainLink.href).pathname) {
-                                e.preventDefault();
+                            var currentPath = window.location.pathname.replace(/\/+$/, '');
+                            var linkPath = new URL(mainLink.href).pathname.replace(/\/+$/, '');
+                            if (currentPath === linkPath) {
                                 doToggle(e);
                             }
                         });
@@ -448,11 +479,6 @@
             }
         })();
     </script>
-=======
-    {{-- Global Quick Search Modal (Ctrl + K) --}}
-    <x-global-quick-search />
-
->>>>>>> origin/risang-fitur-data-master
 </body>
 
 </html>
