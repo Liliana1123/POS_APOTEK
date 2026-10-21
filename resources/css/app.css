@@ -659,8 +659,8 @@ body {
     #app-sidebar:focus-within,
     #app-sidebar.sidebar-expanded,
     html.sidebar-keep-expanded #app-sidebar {
-        width: 16rem !important;
-        /* 256px expanded */
+        width: 18rem !important;
+        /* 288px (w-72) expanded */
     }
 
     /* Avoid rail→expand animation on the first paint after a menu click */
@@ -736,7 +736,7 @@ body {
         display: inline-block !important;
         opacity: 1 !important;
         visibility: visible !important;
-        max-width: 180px !important;
+        max-width: 210px !important;
         pointer-events: auto !important;
         transition: opacity 0.2s 0.05s ease-out;
     }
