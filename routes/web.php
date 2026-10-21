@@ -17,6 +17,7 @@ use App\Http\Controllers\CustomDiscountController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\QuickSearchController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard')
+    ->middleware('auth');
+
+Route::get('/quick-search', [QuickSearchController::class, 'search'])
+    ->name('quick-search')
     ->middleware('auth');
 
 // Redirect halaman utama ke dashboard (atau ke login kalau belum login)

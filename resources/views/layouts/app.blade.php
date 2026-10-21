@@ -260,28 +260,36 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <!-- Top Navbar (Sticky) -->
-        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
-            <div class="flex items-center gap-3">
+        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-2.5 flex justify-between items-center print:hidden shadow-xs">
+            <div class="flex items-center gap-3 md:gap-5 flex-1 min-w-0 pr-4">
                 <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
                     <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span class="font-bold text-sm text-gray-800 uppercase tracking-wide">@yield('title', 'Dashboard')</span>
+
+                <!-- Quick Search Input Trigger (Desktop) -->
+                <button type="button"
+                        id="global-quick-search-trigger"
+                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 border border-gray-200 rounded-lg transition-all w-52 md:w-72 shadow-2xs group focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        title="Cari obat, transaksi faktur, atau menu">
+                    <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                    <span class="truncate text-gray-400 group-hover:text-gray-600 font-normal">Cari obat, faktur, menu...</span>
+                </button>
+
+                <!-- Quick Search Icon (Mobile) -->
+                <button type="button"
+                        id="mobile-quick-search-trigger"
+                        class="sm:hidden p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                        title="Pencarian cepat">
+                    <x-heroicon-o-magnifying-glass class="w-5 h-5" />
+                </button>
             </div>
             
-            <div class="flex items-center gap-3 md:gap-4 text-xs">
+            <div class="flex items-center gap-3 md:gap-4 text-xs shrink-0">
                 <!-- Real-time Clock Widget -->
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-lg text-slate-700 shadow-2xs font-medium">
                     <x-heroicon-o-clock class="w-4 h-4 text-blue-600 shrink-0" />
                     <span id="realtime-clock" class="font-mono text-[11px] sm:text-xs tracking-tight">--:--:--</span>
                 </div>
-
-                <form method="POST" action="{{ route('logout') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Logout dari sistem" aria-label="Logout">
-                        <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
-                        <span class="hidden sm:inline">Logout</span>
-                    </button>
-                </form>
             </div>
         </nav>
 
@@ -310,6 +318,9 @@
         <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
     </div>
     @endif
+
+    {{-- Global Quick Search Modal (Ctrl + K) --}}
+    <x-global-quick-search />
 
 </body>
 
