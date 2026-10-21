@@ -4,11 +4,12 @@
 @section('content')
 <!-- Page Header -->
 <x-page-header title="Daftar Pelanggan atau Member" subtitle="Kelola data pelanggan dan member POS Apotek.">
-    <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Pelanggan</span>
-    </button>
-    
+    @if(auth()->user()->canManage('master.pelanggan'))
+        <button type="button" id="btn-tambah-pelanggan" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Pelanggan</span>
+        </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
@@ -196,22 +197,28 @@
                                     <x-heroicon-o-eye class="w-4 h-4" />
                                 </button>
 
+                                @php
+                                    $canManagePelanggan = auth()->user()->canManage('master.pelanggan');
+                                @endphp
+
                                 <!-- 2. Edit Modal Button -->
-                                <button
-                                    type="button"
-                                    class="btn-secondary !p-1.5 btn-edit-pelanggan"
-                                    style="color: #F59E0B;"
-                                    title="Edit"
-                                    aria-label="Edit"
-                                    data-id="{{ $pelanggan->id }}"
-                                    data-nama="{{ $pelanggan->nama }}"
-                                    data-telepon="{{ $pelanggan->telepon }}"
-                                    data-alamat="{{ $pelanggan->alamat }}"
-                                    data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
-                                    data-status_member="{{ $pelanggan->status_member }}"
-                                    data-custom_discount_percentage="{{ $pelanggan->custom_discount_percentage }}">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </button>
+                                @if($canManagePelanggan)
+                                    <button
+                                        type="button"
+                                        class="btn-secondary !p-1.5 btn-edit-pelanggan"
+                                        style="color: #F59E0B;"
+                                        title="Edit"
+                                        aria-label="Edit"
+                                        data-id="{{ $pelanggan->id }}"
+                                        data-nama="{{ $pelanggan->nama }}"
+                                        data-telepon="{{ $pelanggan->telepon }}"
+                                        data-alamat="{{ $pelanggan->alamat }}"
+                                        data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
+                                        data-status_member="{{ $pelanggan->status_member }}"
+                                        data-custom_discount_percentage="{{ $pelanggan->custom_discount_percentage }}">
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                    </button>
+                                @endif
 
                                 <!-- 3. Print Card Button -->
                                 <button
@@ -251,18 +258,20 @@
                                 </button>
 
                                 <!-- 6. Delete Button -->
-                                <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" onsubmit="return confirm('Hapus data pelanggan ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        type="submit"
-                                        class="btn-secondary !p-1.5"
-                                        style="color: #DC2626;"
-                                        title="Hapus"
-                                        aria-label="Hapus">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
+                                @if($canManagePelanggan)
+                                    <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" onsubmit="return confirm('Hapus data pelanggan ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="btn-secondary !p-1.5"
+                                            style="color: #DC2626;"
+                                            title="Hapus"
+                                            aria-label="Hapus">
+                                            <x-heroicon-o-trash class="w-4 h-4" />
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                         <td class="text-center whitespace-nowrap">

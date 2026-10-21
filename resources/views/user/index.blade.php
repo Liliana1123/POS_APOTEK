@@ -4,17 +4,19 @@
 @section('content')
 <!-- Page Header -->
 <x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: {{ collect(config('permission.roles'))->pluck('label')->implode(', ') }}.">
-    <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah User</span>
-    </button>
+    @if(auth()->user()->canManage('sistem.kelola-user'))
+        <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah User</span>
+        </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
     :action="route('user.index')"
     :reset-url="route('user.index')"
-    :grid="true"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
@@ -30,7 +32,7 @@
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="text-left w-36 pl-3">Aksi</th>
                     <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama</th>
                     <th scope="col">Email</th>
@@ -39,17 +41,26 @@
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
+                @php
+                    $canManageUser = auth()->user()->canManage('sistem.kelola-user');
+                    $isSuper = auth()->user()->isSuperAdmin();
+                @endphp
                 @forelse ($users as $index => $user)
+                    @php
+                        $canEditUser = $canManageUser && (! $user->isSuperAdmin() || $isSuper);
+                        $canDeleteUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists();
+                        $canToggleUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper);
+                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-user"
-                                :edit-id="$user->id"
-                                :edit-data="['name' => $user->name, 'email' => $user->email, 'role' => $user->role]"
-                                :delete-url="($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
+                                edit-class="{{ $canEditUser ? 'btn-edit-user' : '' }}"
+                                :edit-id="$canEditUser ? $user->id : null"
+                                :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
+                                :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
                                 delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
                                 
-                                @if($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()))
+                                @if($canToggleUser)
                                     <!-- Toggle Aktif / Nonaktif -->
                                     <form action="{{ route('user.toggle', $user) }}" method="POST" class="inline">
                                         @csrf
@@ -102,7 +113,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $users->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $users->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-user"

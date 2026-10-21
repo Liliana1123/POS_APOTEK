@@ -6,7 +6,7 @@
     <script>
         (function () {
             try {
-                if (sessionStorage.getItem('sidebar-keep-expanded') === '1'
+                if ((localStorage.getItem('sidebar-pinned') === '1' || sessionStorage.getItem('sidebar-keep-expanded') === '1')
                     && window.matchMedia('(min-width: 1024px)').matches) {
                     document.documentElement.classList.add('sidebar-keep-expanded');
                 }
@@ -78,6 +78,21 @@
                     {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
                 </span>
             </div>
+            <!-- Pin Sidebar Toggle (Desktop) -->
+            <button id="pin-sidebar-toggle"
+                    type="button"
+                    class="hidden lg:flex sidebar-nav-label text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-blue-600/50 transition-colors"
+                    title="Kunci sidebar tetap terbuka (Pin - Ctrl+B)"
+                    aria-label="Kunci sidebar (Ctrl+B)">
+                <svg id="pin-icon-unpinned" class="w-4 h-4 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <svg id="pin-icon-pinned" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+            </button>
             <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
                 <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
             </button>
@@ -111,6 +126,7 @@
                         || request()->routeIs('whatsapp-monitor.*')
                         || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
                         || request()->routeIs('permission.*');
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
                     $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                         || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
                         || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
@@ -125,7 +141,7 @@
                             <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
                         @endif
                         @if ($u->hasPermission('master.kategori'))
-                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                            <x-nav-link route="kategori.index" pattern="kategori.*" icon="squares-2x2" label="Kategori" />
                         @endif
                         @if ($u->hasPermission('master.satuan'))
                             <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
@@ -172,20 +188,24 @@
 
                 <!-- Group: Transaksi -->
                 @php
+                    $adaTransaksi = $u->hasPermission('transaksi.penjualan') || $u->hasPermission('transaksi.penerimaan')
+                        || $u->hasPermission('transaksi.rusak');
                     $transaksiActive = request()->routeIs('penjualan.*') || request()->routeIs('penerimaan.*')
                         || request()->routeIs('rusak.*');
                 @endphp
-                <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
-                    @if ($u->hasPermission('transaksi.penjualan'))
-                        <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
-                    @endif
-                    @if ($u->hasPermission('transaksi.penerimaan'))
-                        <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
-                    @endif
-                    @if ($u->hasPermission('transaksi.rusak'))
-                        <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
-                    @endif
-                </x-sidebar-group>
+                @if ($adaTransaksi)
+                    <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
+                        @if ($u->hasPermission('transaksi.penjualan'))
+                            <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
+                        @endif
+                        @if ($u->hasPermission('transaksi.penerimaan'))
+                            <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan Barang" />
+                        @endif
+                        @if ($u->hasPermission('transaksi.rusak'))
+                            <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang Rusak" />
+                        @endif
+                    </x-sidebar-group>
+                @endif
 
                 <!-- Group: Laporan -->
                 @if ($u->hasPermission('laporan.stok') || $u->hasPermission('laporan.penerimaan')
@@ -193,22 +213,22 @@
                     || $u->hasPermission('laporan.laba-rugi') || $u->hasPermission('laporan.diskon'))
                     <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
                         @if ($u->hasPermission('laporan.stok'))
-                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                            <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan Stok" />
                         @endif
                         @if ($u->hasPermission('laporan.penerimaan'))
-                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                            <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan Penerimaan" />
                         @endif
                         @if ($u->hasPermission('laporan.penjualan'))
-                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                            <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan Penjualan" />
                         @endif
                         @if ($u->hasPermission('laporan.rusak'))
-                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                            <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan Barang Rusak" />
                         @endif
                         @if ($u->hasPermission('laporan.laba-rugi'))
-                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                            <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan Laba Rugi" />
                         @endif
                         @if ($u->hasPermission('laporan.diskon'))
-                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                            <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan Diskon" />
                         @endif
                     </x-sidebar-group>
                 @endif
@@ -229,9 +249,14 @@
                 @endif
 
                 @if ($u->isSuperAdmin())
-                    <x-sidebar-group name="izin" icon="shield-check" icon-type="s" label="Izin Akses" :has-active="request()->routeIs('permission.*')">
-                        <x-nav-link route="permission.index" pattern="permission.*" icon="adjustments-horizontal" label="Izin Akses" />
-                    </x-sidebar-group>
+                    <x-nav-link
+                        route="permission.index"
+                        pattern="permission.*"
+                        icon="shield-check"
+                        icon-type="s"
+                        label="Izin Akses"
+                        variant="top"
+                    />
                 @endif
 
             </nav>
@@ -239,8 +264,8 @@
 
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
+            <div class="flex items-center gap-3 min-w-0" title="{{ $u?->name }} ({{ ucfirst($u?->role) }})">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md cursor-default" aria-label="Profil: {{ $u?->name }}">
                     {{ $u ? strtoupper(substr($u->name, 0, 2)) : '' }}
                 </div>
                 <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
@@ -260,28 +285,36 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <!-- Top Navbar (Sticky) -->
-        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
-            <div class="flex items-center gap-3">
+        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-2.5 flex justify-between items-center print:hidden shadow-xs">
+            <div class="flex items-center gap-3 md:gap-5 flex-1 min-w-0 pr-4">
                 <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
                     <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span class="font-bold text-sm text-gray-800 uppercase tracking-wide">@yield('title', 'Dashboard')</span>
+
+                <!-- Quick Search Input Trigger (Desktop) -->
+                <button type="button"
+                        id="global-quick-search-trigger"
+                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 border border-gray-200 rounded-lg transition-all w-52 md:w-72 shadow-2xs group focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        title="Cari obat, transaksi faktur, atau menu">
+                    <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                    <span class="truncate text-gray-400 group-hover:text-gray-600 font-normal">Cari obat, faktur, menu...</span>
+                </button>
+
+                <!-- Quick Search Icon (Mobile) -->
+                <button type="button"
+                        id="mobile-quick-search-trigger"
+                        class="sm:hidden p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                        title="Pencarian cepat">
+                    <x-heroicon-o-magnifying-glass class="w-5 h-5" />
+                </button>
             </div>
             
-            <div class="flex items-center gap-3 md:gap-4 text-xs">
+            <div class="flex items-center gap-3 md:gap-4 text-xs shrink-0">
                 <!-- Real-time Clock Widget -->
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-lg text-slate-700 shadow-2xs font-medium">
                     <x-heroicon-o-clock class="w-4 h-4 text-blue-600 shrink-0" />
                     <span id="realtime-clock" class="font-mono text-[11px] sm:text-xs tracking-tight">--:--:--</span>
                 </div>
-
-                <form method="POST" action="{{ route('logout') }}" class="inline md:hidden">
-                    @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1" aria-label="Logout">
-                        <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
-                        Logout
-                    </button>
-                </form>
             </div>
         </nav>
 
@@ -311,6 +344,7 @@
     </div>
     @endif
 
+<<<<<<< HEAD
     @stack('scripts')
     <script>
         (function() {
@@ -382,6 +416,11 @@
             }
         })();
     </script>
+=======
+    {{-- Global Quick Search Modal (Ctrl + K) --}}
+    <x-global-quick-search />
+
+>>>>>>> origin/risang-fitur-data-master
 </body>
 
 </html>

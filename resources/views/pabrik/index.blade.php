@@ -3,16 +3,18 @@
 
 @section('content')
 <x-page-header title="Daftar Pabrik" subtitle="Kelola data pabrikan produsen obat.">
-    <button type="button" id="btn-tambah-pabrik" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Pabrik</span>
-    </button>
+    @if(auth()->user()->canManage('master.pabrik'))
+        <button type="button" id="btn-tambah-pabrik" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Pabrik</span>
+        </button>
+    @endif
 </x-page-header>
 
 <x-card-filter
     :action="route('pabrik.index')"
     :reset-url="route('pabrik.index')"
-    :grid="true"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama pabrik..." class="form-input pr-8">
@@ -27,7 +29,7 @@
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="text-left w-36 pl-3">Aksi</th>
                     <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama Pabrik</th>
                     <th scope="col" class="w-40">Telepon</th>
@@ -37,12 +39,12 @@
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($pabriks as $index => $pabrik)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-pabrik"
-                                :edit-id="$pabrik->id"
-                                :edit-data="['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat]"
-                                :delete-url="route('pabrik.destroy', $pabrik)"
+                                edit-class="{{ auth()->user()->canManage('master.pabrik') ? 'btn-edit-pabrik' : '' }}"
+                                :edit-id="auth()->user()->canManage('master.pabrik') ? $pabrik->id : null"
+                                :edit-data="auth()->user()->canManage('master.pabrik') ? ['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat] : null"
+                                :delete-url="auth()->user()->canManage('master.pabrik') ? route('pabrik.destroy', $pabrik) : null"
                                 delete-confirm="Yakin ingin menghapus pabrik ini?"
                             />
                         </td>
@@ -59,7 +61,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $pabriks->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $pabriks->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-pabrik"

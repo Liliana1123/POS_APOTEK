@@ -3,16 +3,18 @@
 
 @section('content')
 <x-page-header title="Daftar Kategori" subtitle="Kelola tipe penggolongan/kategori obat.">
-    <button type="button" id="btn-tambah-kategori" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Kategori</span>
-    </button>
+    @if(auth()->user()->canManage('master.kategori'))
+        <button type="button" id="btn-tambah-kategori" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Kategori</span>
+        </button>
+    @endif
 </x-page-header>
 
 <x-card-filter
     :action="route('kategori.index')"
     :reset-url="route('kategori.index')"
-    :grid="true"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
     <div class="relative shrink-0 w-full sm:w-64">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama kategori..." class="form-input pr-8">
@@ -35,12 +37,12 @@
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($kategoris as $index => $kategori)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-kategori"
-                                :edit-id="$kategori->id"
-                                :edit-data="['nama' => $kategori->nama]"
-                                :delete-url="route('kategori.destroy', $kategori)"
+                                edit-class="{{ auth()->user()->canManage('master.kategori') ? 'btn-edit-kategori' : '' }}"
+                                :edit-id="auth()->user()->canManage('master.kategori') ? $kategori->id : null"
+                                :edit-data="auth()->user()->canManage('master.kategori') ? ['nama' => $kategori->nama] : null"
+                                :delete-url="auth()->user()->canManage('master.kategori') ? route('kategori.destroy', $kategori) : null"
                                 delete-confirm="Yakin ingin menghapus kategori ini?"
                             />
                         </td>
@@ -55,7 +57,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-kategori"
