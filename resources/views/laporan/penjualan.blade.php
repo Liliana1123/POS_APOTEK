@@ -267,179 +267,91 @@
 
 </div>
 
-<div class="card-base p-4 mb-6 laporan-filter-card print:hidden">
-
-    <form
-        method="GET"
-        action="{{ route('laporan.penjualan') }}"
-        class="space-y-4"
-    >
+<!-- Filter & Search Card -->
+<x-card-filter
+    :action="route('laporan.penjualan')"
+    :reset-url="route('laporan.penjualan')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang'])">
     <input type="hidden" name="sort" id="filter-sort-input" value="{{ request('sort', $sort ?? 'tanggal') }}">
     <input type="hidden" name="direction" id="filter-direction-input" value="{{ request('direction', $direction ?? 'asc') }}">
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-    {{-- Tanggal Awal --}}
-    <div>
-        <label for="dari" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Awal
-        </label>
-
+    <div class="flex items-center gap-1.5">
         <input
             type="date"
             id="dari"
             name="dari"
             value="{{ $dari }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
         >
-    </div>
-
-    {{-- Tanggal Akhir --}}
-    <div>
-        <label for="sampai" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Akhir
-        </label>
-
+        <span class="text-sm text-gray-400">-</span>
         <input
             type="date"
             id="sampai"
             name="sampai"
             value="{{ $sampai }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
         >
     </div>
 
-    {{-- Metode Pembayaran --}}
-    <div>
-        <label for="metode_pembayaran" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Metode Pembayaran
-        </label>
+    <select
+        id="metode_pembayaran"
+        name="metode_pembayaran"
+        class="form-input"
+        aria-label="Metode Pembayaran"
+        title="Metode Pembayaran"
+    >
+        <option value="">Metode: Semua</option>
+        <option value="cash" @selected(request('metode_pembayaran') === 'cash')>Cash</option>
+        <option value="qris" @selected(request('metode_pembayaran') === 'qris')>QRIS</option>
+        <option value="debit" @selected(request('metode_pembayaran') === 'debit')>Debit</option>
+        <option value="piutang" @selected(request('metode_pembayaran') === 'piutang')>Piutang</option>
+    </select>
 
-        <select
-            id="metode_pembayaran"
-            name="metode_pembayaran"
-            class="form-input"
-        >
-            <option value="">Semua</option>
-            <option value="cash" @selected(request('metode_pembayaran') === 'cash')>
-                Cash
-            </option>
-            <option value="qris" @selected(request('metode_pembayaran') === 'qris')>
-                QRIS
-            </option>
-            <option value="debit" @selected(request('metode_pembayaran') === 'debit')>
-                Debit
-            </option>
-            <option value="piutang" @selected(request('metode_pembayaran') === 'piutang')>
-                Piutang
-            </option>
-        </select>
-    </div>
+    <select
+        id="pelanggan"
+        name="pelanggan"
+        class="form-input"
+        aria-label="Pelanggan/Member"
+        title="Pelanggan/Member"
+    >
+        <option value="">Pelanggan: Semua</option>
+        <option value="pelanggan_umum" @selected(request('pelanggan') === 'pelanggan_umum')>Pelanggan Umum</option>
+        <option value="pelanggan_tetap" @selected(request('pelanggan') === 'pelanggan_tetap')>Member Pelanggan Tetap</option>
+        <option value="keluarga_nakes" @selected(request('pelanggan') === 'keluarga_nakes')>Member Keluarga Nakes</option>
+        <option value="member_only" @selected(request('pelanggan') === 'member_only')>Member Only</option>
+    </select>
 
-    {{-- Pelanggan / Member --}}
-    <div>
-        <label for="pelanggan" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Pelanggan/Member
-        </label>
+    <select
+        id="jenis_transaksi"
+        name="jenis_transaksi"
+        class="form-input"
+        aria-label="Jenis Transaksi"
+        title="Jenis Transaksi"
+    >
+        <option value="">Transaksi: Semua</option>
+        <option value="non_resep" @selected(request('jenis_transaksi') === 'non_resep')>Non Resep</option>
+        <option value="resep" @selected(request('jenis_transaksi') === 'resep')>Resep</option>
+    </select>
 
-        <select
-            id="pelanggan"
-            name="pelanggan"
-            class="form-input"
-        >
-            <option value="">Semua</option>
-
-            <option value="pelanggan_umum" @selected(request('pelanggan') === 'pelanggan_umum')>
-                Pelanggan Umum
-            </option>
-
-            <option value="pelanggan_tetap" @selected(request('pelanggan') === 'pelanggan_tetap')>
-                Member Pelanggan Tetap
-            </option>
-
-            <option value="keluarga_nakes" @selected(request('pelanggan') === 'keluarga_nakes')>
-                Member Keluarga Nakes
-            </option>
-
-            <option value="member_only" @selected(request('pelanggan') === 'member_only')>
-                Member Only
-            </option>
-        </select>
-    </div>
-
-    {{-- Jenis Transaksi --}}
-    <div>
-        <label for="jenis_transaksi" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Jenis Transaksi
-        </label>
-
-        <select
-            id="jenis_transaksi"
-            name="jenis_transaksi"
-            class="form-input"
-        >
-            <option value="">Semua</option>
-
-            <option value="non_resep" @selected(request('jenis_transaksi') === 'non_resep')>
-                Non Resep
-            </option>
-
-            <option value="resep" @selected(request('jenis_transaksi') === 'resep')>
-                Resep
-            </option>
-        </select>
-    </div>
-
-    {{-- Status Piutang --}}
-    <div>
-        <label for="status_piutang" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Status Piutang
-        </label>
-
-        <select
-            id="status_piutang"
-            name="status_piutang"
-            class="form-input"
-        >
-            <option value="">Semua</option>
-
-            <option value="lunas" @selected(request('status_piutang') === 'lunas')>
-                Lunas
-            </option>
-
-            <option value="belum_lunas" @selected(request('status_piutang') === 'belum_lunas')>
-                Belum Lunas
-            </option>
-
-            <option value="terlambat" @selected(request('status_piutang') === 'terlambat')>
-                Terlambat
-            </option>
-        </select>
-    </div>
-</div>
-
-     {{-- Area Tombol Filter --}}
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang']))
-                <a
-                    href="{{ route('laporan.penjualan') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
-            <button
-                type="submit"
-                class="btn-primary flex items-center gap-2"
-            >
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-
-    </form>
-
-</div>
+    <select
+        id="status_piutang"
+        name="status_piutang"
+        class="form-input"
+        aria-label="Status Piutang"
+        title="Status Piutang"
+    >
+        <option value="">Piutang: Semua</option>
+        <option value="lunas" @selected(request('status_piutang') === 'lunas')>Lunas</option>
+        <option value="belum_lunas" @selected(request('status_piutang') === 'belum_lunas')>Belum Lunas</option>
+        <option value="terlambat" @selected(request('status_piutang') === 'terlambat')>Terlambat</option>
+    </select>
+</x-card-filter>
 
 <!-- Summary Cards (layar) -->
 <div class="laporan-summary-cards grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5 mb-4 print:hidden">

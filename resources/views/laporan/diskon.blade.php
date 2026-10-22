@@ -125,83 +125,55 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.diskon') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    TANGGAL AWAL
-                </label>
-                <input type="date" name="dari" value="{{ $dari }}" class="form-input">
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    TANGGAL AKHIR
-                </label>
-                <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Jenis Diskon
-                </label>
-                <select name="jenis" class="form-input">
-                    <option value="">Semua Jenis</option>
-                    <option value="member" @selected(request('jenis') === 'member')>Diskon Member</option>
-                    <option value="custom" @selected(request('jenis') === 'custom')>Custom Promo</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Promo Custom
-                </label>
-                <select name="promo_id" class="form-input">
-                    <option value="">Semua Promo</option>
-                    @foreach ($promos as $promo)
-                        <option value="{{ $promo->id }}" @selected(request('promo_id') == $promo->id)>
-                            {{ $promo->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Pelanggan
-                </label>
-                <select name="status_pelanggan" class="form-input">
-                    <option value="">Semua Pelanggan</option>
-                    <option value="pelanggan_tetap"
-                        @selected(request('status_pelanggan') === 'pelanggan_tetap')>
-                        Member Pelanggan Tetap
-                    </option>
-                    <option value="keluarga_nakes"
-                        @selected(request('status_pelanggan') === 'keluarga_nakes')>
-                        Member Keluarga Nakes
-                    </option>
-                    <option value="member_only"
-                        @selected(request('status_pelanggan') === 'member_only')>
-                        Member Only
-                    </option>
-                    <option value="umum"
-                        @selected(request('status_pelanggan') === 'umum')>
-                        Umum
-                    </option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan']))
-                <a href="{{ route('laporan.diskon') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
-            @endif
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+<x-card-filter
+    :action="route('laporan.diskon')"
+    :reset-url="route('laporan.diskon')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan'])">
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
+
+    <select name="jenis" class="form-input" aria-label="Jenis Diskon" title="Jenis Diskon">
+        <option value="">Jenis: Semua</option>
+        <option value="member" @selected(request('jenis') === 'member')>Diskon Member</option>
+        <option value="custom" @selected(request('jenis') === 'custom')>Custom Promo</option>
+    </select>
+
+    <select name="promo_id" class="form-input" aria-label="Promo Custom" title="Promo Custom">
+        <option value="">Promo: Semua</option>
+        @foreach ($promos as $promo)
+            <option value="{{ $promo->id }}" @selected(request('promo_id') == $promo->id)>
+                {{ $promo->nama }}
+            </option>
+        @endforeach
+    </select>
+
+    <select name="status_pelanggan" class="form-input" aria-label="Status Pelanggan" title="Status Pelanggan">
+        <option value="">Pelanggan: Semua</option>
+        <option value="pelanggan_tetap" @selected(request('status_pelanggan') === 'pelanggan_tetap')>Member Pelanggan Tetap</option>
+        <option value="keluarga_nakes" @selected(request('status_pelanggan') === 'keluarga_nakes')>Member Keluarga Nakes</option>
+        <option value="member_only" @selected(request('status_pelanggan') === 'member_only')>Member Only</option>
+        <option value="umum" @selected(request('status_pelanggan') === 'umum')>Umum</option>
+    </select>
+</x-card-filter>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">

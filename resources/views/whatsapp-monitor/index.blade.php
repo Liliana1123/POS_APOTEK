@@ -10,148 +10,96 @@
     </div>
 </div>
 
-<!-- Filter & Search Card (Pola Penerimaan Barang) -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('whatsapp-monitor.index') }}" class="space-y-4" id="filterWhatsAppForm">
-        @if(request()->filled('per_page'))
-            <input type="hidden" name="per_page" value="{{ request('per_page') }}">
-        @endif
+@php
+    $hasActiveFilter = !empty($search)
+        || !empty($tanggalAwal)
+        || !empty($tanggalAkhir)
+        || (!empty($kategori) && $kategori !== 'semua')
+        || (!empty($status) && $status !== 'semua')
+        || (!empty($statusFollowUp) && $statusFollowUp !== 'semua')
+        || request()->filled('search')
+        || request()->filled('tanggal_awal')
+        || request()->filled('tanggal_akhir')
+        || (request()->filled('kategori') && request('kategori') !== 'semua')
+        || (request()->filled('status') && request('status') !== 'semua')
+        || (request()->filled('status_follow_up') && request('status_follow_up') !== 'semua');
+@endphp
 
-        <!-- Filter Satu Baris Horizontal (Pola Penerimaan Barang) -->
-        <div class="overflow-x-auto pb-1">
-            <div class="min-w-[62rem] lg:min-w-0 grid grid-cols-12 gap-3 items-start">
-                
-                <!-- 1. Pencarian -->
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                        Pencarian
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            name="search"
-                            id="filterSearchInput"
-                            value="{{ $search }}"
-                            placeholder="Cari member, nomor, pesan..."
-                            class="form-input pr-8"
-                            autocomplete="off"
-                        >
-                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                        </span>
-                    </div>
-                </div>
+<!-- Filter & Search Card -->
+<x-card-filter
+    :action="route('whatsapp-monitor.index')"
+    :reset-url="route('whatsapp-monitor.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :has-reset="$hasActiveFilter">
+    @if(request()->filled('per_page'))
+        <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+    @endif
 
-                <!-- 2. Tanggal Awal – Tanggal Akhir -->
-                <div class="col-span-12 sm:col-span-6 lg:col-span-3 min-w-0">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                            Tanggal Awal
-                        </label>
-                        <span class="text-sm invisible select-none">-</span>
-                        <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                            Tanggal Akhir
-                        </label>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input
-                            type="date"
-                            name="tanggal_awal"
-                            id="filterTanggalAwalInput"
-                            value="{{ $tanggalAwal }}"
-                            class="form-input min-w-0 flex-1"
-                        >
-                        <span class="text-sm text-gray-400">-</span>
-                        <input
-                            type="date"
-                            name="tanggal_akhir"
-                            id="filterTanggalAkhirInput"
-                            value="{{ $tanggalAkhir }}"
-                            class="form-input min-w-0 flex-1"
-                        >
-                    </div>
-                </div>
+    <div class="relative">
+        <input
+            type="text"
+            name="search"
+            id="filterSearchInput"
+            value="{{ $search }}"
+            placeholder="Cari member, nomor, pesan..."
+            class="form-input pr-8"
+            autocomplete="off"
+            aria-label="Pencarian"
+            title="Pencarian"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-                <!-- 3. Jenis Pesan -->
-                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                        Jenis Pesan
-                    </label>
-                    <select name="kategori" id="filterKategoriSelect" class="form-input">
-                        <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Semua Jenis</option>
-                        <option value="pengingat_piutang" @selected($kategori === 'pengingat_piutang')>Pengingat Piutang</option>
-                        <option value="promosi_diskon" @selected($kategori === 'promosi_diskon')>Promosi / Diskon</option>
-                        <option value="ucapan_apresiasi" @selected($kategori === 'ucapan_apresiasi')>Ucapan & Apresiasi</option>
-                        <option value="informasi_produk" @selected($kategori === 'informasi_produk')>Informasi Produk</option>
-                        <option value="informasi_pengumuman" @selected($kategori === 'informasi_pengumuman')>Pengumuman</option>
-                        <option value="pesan_custom" @selected($kategori === 'pesan_custom')>Pesan Custom</option>
-                    </select>
-                </div>
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="tanggal_awal"
+            id="filterTanggalAwalInput"
+            value="{{ $tanggalAwal }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            id="filterTanggalAkhirInput"
+            value="{{ $tanggalAkhir }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
 
-                <!-- 4. Status Pengiriman -->
-                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                        Status Pengiriman
-                    </label>
-                    <select name="status" id="filterStatusSelect" class="form-input">
-                        <option value="semua" @selected(empty($status) || $status === 'semua')>Semua Pengiriman</option>
-                        <option value="terkirim" @selected($status === 'terkirim')>Terkirim</option>
-                        <option value="menunggu" @selected($status === 'menunggu')>Menunggu</option>
-                        <option value="gagal" @selected($status === 'gagal')>Gagal</option>
-                        <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
-                    </select>
-                </div>
+    <select name="kategori" id="filterKategoriSelect" class="form-input" aria-label="Jenis Pesan" title="Jenis Pesan">
+        <option value="semua" @selected(empty($kategori) || $kategori === 'semua')>Jenis: Semua</option>
+        <option value="pengingat_piutang" @selected($kategori === 'pengingat_piutang')>Pengingat Piutang</option>
+        <option value="promosi_diskon" @selected($kategori === 'promosi_diskon')>Promosi / Diskon</option>
+        <option value="ucapan_apresiasi" @selected($kategori === 'ucapan_apresiasi')>Ucapan & Apresiasi</option>
+        <option value="informasi_produk" @selected($kategori === 'informasi_produk')>Informasi Produk</option>
+        <option value="informasi_pengumuman" @selected($kategori === 'informasi_pengumuman')>Pengumuman</option>
+        <option value="pesan_custom" @selected($kategori === 'pesan_custom')>Pesan Custom</option>
+    </select>
 
-                <!-- 5. Status Follow-up -->
-                <div class="col-span-12 sm:col-span-4 lg:col-span-2 min-w-0">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                        Status Follow-up
-                    </label>
-                    <select name="status_follow_up" id="filterStatusFollowUpSelect" class="form-input">
-                        <option value="semua" @selected(empty($statusFollowUp) || $statusFollowUp === 'semua')>Semua Follow-up</option>
-                        @foreach($statusFollowUpOptions as $val => $lbl)
-                            <option value="{{ $val }}" @selected($statusFollowUp === $val)>{{ $lbl }}</option>
-                        @endforeach
-                    </select>
-                </div>
+    <select name="status" id="filterStatusSelect" class="form-input" aria-label="Status Pengiriman" title="Status Pengiriman">
+        <option value="semua" @selected(empty($status) || $status === 'semua')>Status: Semua</option>
+        <option value="terkirim" @selected($status === 'terkirim')>Terkirim</option>
+        <option value="menunggu" @selected($status === 'menunggu')>Menunggu</option>
+        <option value="gagal" @selected($status === 'gagal')>Gagal</option>
+        <option value="dibatalkan" @selected($status === 'dibatalkan')>Dibatalkan</option>
+    </select>
 
-            </div>
-        </div>
-
-        <!-- Baris Tombol Aksi: Filter dan Clear (Pola Penerimaan Barang) -->
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @php
-                $hasActiveFilter = !empty($search)
-                    || !empty($tanggalAwal)
-                    || !empty($tanggalAkhir)
-                    || (!empty($kategori) && $kategori !== 'semua')
-                    || (!empty($status) && $status !== 'semua')
-                    || (!empty($statusFollowUp) && $statusFollowUp !== 'semua')
-                    || request()->filled('search')
-                    || request()->filled('tanggal_awal')
-                    || request()->filled('tanggal_akhir')
-                    || (request()->filled('kategori') && request('kategori') !== 'semua')
-                    || (request()->filled('status') && request('status') !== 'semua')
-                    || (request()->filled('status_follow_up') && request('status_follow_up') !== 'semua');
-            @endphp
-
-            @if($hasActiveFilter)
-                <a
-                    href="{{ route('whatsapp-monitor.index') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center cursor-pointer">
-                    Clear
-                </a>
-            @endif
-
-            <button
-                type="submit"
-                class="btn-primary flex items-center gap-2 cursor-pointer">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <select name="status_follow_up" id="filterStatusFollowUpSelect" class="form-input" aria-label="Status Follow-up" title="Status Follow-up">
+        <option value="semua" @selected(empty($statusFollowUp) || $statusFollowUp === 'semua')>Follow-up: Semua</option>
+        @foreach($statusFollowUpOptions as $val => $lbl)
+            <option value="{{ $val }}" @selected($statusFollowUp === $val)>{{ $lbl }}</option>
+        @endforeach
+    </select>
+</x-card-filter>
 
 <!-- Table Custom Wrapper (Pola Penerimaan Barang) -->
 <div class="table-custom-container">

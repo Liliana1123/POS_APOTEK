@@ -114,93 +114,62 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.rusak') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="nama_barang"
-                        value="{{ request('nama_barang') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('laporan.rusak')"
+    :reset-url="route('laporan.rusak')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])">
+    <div class="relative">
+        <input
+            type="text"
+            name="nama_barang"
+            value="{{ request('nama_barang') }}"
+            placeholder="Cari nama barang..."
+            class="form-input pr-8"
+            aria-label="Nama Barang"
+            title="Nama Barang"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Batch
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_batch"
-                        value="{{ request('no_batch') }}"
-                        placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+    <div class="relative">
+        <input
+            type="text"
+            name="no_batch"
+            value="{{ request('no_batch') }}"
+            placeholder="Cari no. batch..."
+            class="form-input pr-8 font-mono"
+            aria-label="No. Batch"
+            title="No. Batch"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="dari"
-                        value="{{ $dari }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="sampai"
-                        value="{{ $sampai }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                <a
-                    href="{{ route('laporan.rusak') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
+</x-card-filter>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">

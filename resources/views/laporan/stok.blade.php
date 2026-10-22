@@ -136,118 +136,74 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden no-print filter-card-web">
-    <form method="GET" action="{{ route('laporan.stok') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <label for="nama" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="nama"
-                        id="nama"
-                        value="{{ request('nama') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('laporan.stok')"
+    :reset-url="route('laporan.stok')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+    :has-reset="request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai'])">
+    <div class="relative">
+        <input
+            type="text"
+            name="nama"
+            id="nama"
+            value="{{ request('nama') }}"
+            placeholder="Cari nama barang..."
+            class="form-input pr-8"
+            aria-label="Nama Barang"
+            title="Nama Barang"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <label for="kategori_id" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Kategori
-                </label>
-                <select
-                    name="kategori_id"
-                    id="kategori_id"
-                    class="form-input"
-                >
-                    <option value="">Semua Kategori</option>
-                    @foreach ($kategoris as $kategori)
-                        <option
-                            value="{{ $kategori->id }}"
-                            @selected(request('kategori_id') == $kategori->id)
-                        >
-                            {{ $kategori->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+    <select
+        name="kategori_id"
+        id="kategori_id"
+        class="form-input"
+        aria-label="Kategori"
+        title="Kategori"
+    >
+        <option value="">Kategori: Semua</option>
+        @foreach ($kategoris as $kategori)
+            <option
+                value="{{ $kategori->id }}"
+                @selected(request('kategori_id') == $kategori->id)
+            >
+                {{ $kategori->nama }}
+            </option>
+        @endforeach
+    </select>
 
-            <div>
-                <label for="status_expired" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Kadaluarsa
-                </label>
-                <select
-                    name="status_expired"
-                    id="status_expired"
-                    class="form-input"
-                >
-                    <option value="">Semua Status</option>
-                    <option value="kadaluarsa" @selected(request('status_expired') === 'kadaluarsa')>
-                        Kadaluarsa
-                    </option>
-                    <option value="1_bulan" @selected(request('status_expired') === '1_bulan')>
-                        < 1 Bulan
-                    </option>
-                    <option value="3_bulan" @selected(request('status_expired') === '3_bulan')>
-                        < 3 Bulan
-                    </option>
-                    <option value="normal" @selected(request('status_expired') === 'normal')>
-                        Normal
-                    </option>
-                    <option value="tidak_ada" @selected(request('status_expired') === 'tidak_ada')>
-                        Tidak Ada Tanggal
-                    </option>
-                </select>
-            </div>
+    <select
+        name="status_expired"
+        id="status_expired"
+        class="form-input"
+        aria-label="Status Kadaluarsa"
+        title="Status Kadaluarsa"
+    >
+        <option value="">Kadaluarsa: Semua</option>
+        <option value="kadaluarsa" @selected(request('status_expired') === 'kadaluarsa')>Kadaluarsa</option>
+        <option value="1_bulan" @selected(request('status_expired') === '1_bulan')>< 1 Bulan</option>
+        <option value="3_bulan" @selected(request('status_expired') === '3_bulan')>< 3 Bulan</option>
+        <option value="normal" @selected(request('status_expired') === 'normal')>Normal</option>
+        <option value="tidak_ada" @selected(request('status_expired') === 'tidak_ada')>Tidak Ada Tanggal</option>
+    </select>
 
-            <div>
-                <label for="status_stok" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Stok
-                </label>
-                <select
-                    name="status_stok"
-                    id="status_stok"
-                    class="form-input"
-                >
-                    <option value="">Semua Status</option>
-                    <option value="habis" @selected(request('status_stok') === 'habis')>
-                        Habis
-                    </option>
-                    <option value="menipis" @selected(request('status_stok') === 'menipis')>
-                        Menipis
-                    </option>
-                    <option value="aman" @selected(request('status_stok') === 'aman')>
-                        Aman
-                    </option>
-                </select>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai']))
-                <a
-                    href="{{ route('laporan.stok') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-
-        </div>
-    </form>
-</div>
+    <select
+        name="status_stok"
+        id="status_stok"
+        class="form-input"
+        aria-label="Status Stok"
+        title="Status Stok"
+    >
+        <option value="">Stok: Semua</option>
+        <option value="habis" @selected(request('status_stok') === 'habis')>Habis</option>
+        <option value="menipis" @selected(request('status_stok') === 'menipis')>Menipis</option>
+        <option value="aman" @selected(request('status_stok') === 'aman')>Aman</option>
+    </select>
+</x-card-filter>
 
 
 <!-- ========================================================= -->

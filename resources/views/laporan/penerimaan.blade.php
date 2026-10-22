@@ -123,124 +123,77 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.penerimaan') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Faktur
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_faktur"
-                        value="{{ request('no_faktur') }}"
-                        placeholder="Cari no. faktur..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('laporan.penerimaan')"
+    :reset-url="route('laporan.penerimaan')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :has-reset="request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran'])">
+    <div class="relative">
+        <input
+            type="text"
+            name="no_faktur"
+            value="{{ request('no_faktur') }}"
+            placeholder="Cari no. faktur..."
+            class="form-input pr-8 font-mono"
+            aria-label="No. Faktur"
+            title="No. Faktur"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
 
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="dari"
-                        value="{{ $dari }}"
-                        class="form-input min-w-0"
-                    >
+    <select name="supplier_id" class="form-input" aria-label="Supplier" title="Supplier">
+        <option value="">Supplier: Semua</option>
+        @foreach ($suppliers as $s)
+            <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>
+                {{ $s->nama }}
+            </option>
+        @endforeach
+    </select>
 
-                    <span class="text-sm text-gray-400">-</span>
+    <div class="relative">
+        <input
+            type="text"
+            name="nama_barang"
+            value="{{ request('nama_barang') }}"
+            placeholder="Cari nama barang..."
+            class="form-input pr-8"
+            aria-label="Nama Barang"
+            title="Nama Barang"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-                    <input
-                        type="date"
-                        name="sampai"
-                        value="{{ $sampai }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Supplier
-                </label>
-                <select name="supplier_id" class="form-input">
-                    <option value="">Semua Supplier</option>
-                    @foreach ($suppliers as $s)
-                        <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>
-                            {{ $s->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="nama_barang"
-                        value="{{ request('nama_barang') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Pembayaran
-                </label>
-                <select name="status_pembayaran" class="form-input">
-                    <option value="">Semua Status</option>
-                    <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>
-                        Lunas
-                    </option>
-                    <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>
-                        Belum Lunas
-                    </option>
-                </select>
-            </div>
-
-            
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                <a
-                    href="{{ route('laporan.penerimaan') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <select name="status_pembayaran" class="form-input" aria-label="Status Pembayaran" title="Status Pembayaran">
+        <option value="">Pembayaran: Semua</option>
+        <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>Lunas</option>
+        <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>Belum Lunas</option>
+    </select>
+</x-card-filter>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
