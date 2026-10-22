@@ -212,11 +212,18 @@
                                 <!-- 3. Print Card Button -->
                                 <button
                                     type="button"
-                                    class="btn-secondary !p-1.5"
+                                    class="btn-secondary !p-1.5 btn-print-member-card"
                                     style="color: #000000;"
                                     title="Cetak Kartu Member"
                                     aria-label="Cetak Kartu Member"
-                                    onclick="openCardModal(@js($pelanggan->nama), @js($pelanggan->member_id), @js($pelanggan->total_belanja ?? 0), @js($pelanggan->status_member), @js($pelanggan->custom_discount_percentage))">
+                                    data-nama="{{ $pelanggan->nama }}"
+                                    data-member-id="{{ $pelanggan->member_id }}"
+                                    data-total-belanja="{{ $pelanggan->total_belanja ?? 0 }}"
+                                    data-status-member="{{ $pelanggan->status_member }}"
+                                    data-custom-discount="{{ $pelanggan->custom_discount_percentage }}"
+                                    data-is-active="{{ ($pelanggan->is_member && $pelanggan->member_aktif) ? '1' : '0' }}"
+                                    data-discount="{{ $pelanggan->diskon_percent }}"
+                                    onclick="openCardModalFromBtn(this)">
                                     <x-heroicon-o-printer class="w-4 h-4" />
                                 </button>
 
