@@ -221,44 +221,36 @@
 
 <!-- Filter Card (Tampilan Layar) -->
 <div class="print:hidden">
-    <x-card-filter :action="route('activity-log')" :reset-url="route('activity-log')" :grid="true" grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" :has-filter="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])" :live-search="true">
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Cari Aksi / Target</label>
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Ketik kata kunci..." class="form-input">
+    <x-card-filter :action="route('activity-log')" :reset-url="route('activity-log')" :grid="true" grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7" :has-filter="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])" :live-search="true">
+        <div class="relative sm:col-span-2 lg:col-span-2">
+            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari aksi, user, target..." class="form-input pr-8" aria-label="Cari Log" title="Cari Log">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+            </span>
         </div>
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Kategori</label>
-            <select name="kategori" class="form-input">
-                <option value="">Semua Kategori</option>
-                @foreach ($categories as $catKey => $catInfo)
-                    <option value="{{ $catKey }}" @selected(request('kategori') === $catKey)>
-                        {{ $catInfo['label'] }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+        <select name="kategori" class="form-input" aria-label="Kategori Log" title="Kategori Log">
+            <option value="">Kategori: Semua</option>
+            @foreach ($categories as $catKey => $catInfo)
+                <option value="{{ $catKey }}" @selected(request('kategori') === $catKey)>
+                    {{ $catInfo['label'] }}
+                </option>
+            @endforeach
+        </select>
         
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">User / Staf</label>
-            <select name="user_id" class="form-input">
-                <option value="">Semua User</option>
-                @foreach ($users as $user)
-                    <option value="{{ $user->id }}" @selected(request('user_id') == $user->id)>
-                        {{ $user->name }} ({{ ucfirst($user->role ?? 'Staf') }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
+        <select name="user_id" class="form-input" aria-label="User / Staf" title="User / Staf">
+            <option value="">User: Semua</option>
+            @foreach ($users as $user)
+                <option value="{{ $user->id }}" @selected(request('user_id') == $user->id)>
+                    {{ $user->name }} ({{ ucfirst($user->role ?? 'Staf') }})
+                </option>
+            @endforeach
+        </select>
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Awal</label>
-            <input type="date" name="dari" value="{{ $dari }}" class="form-input">
-        </div>
-
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Tanggal Akhir</label>
-            <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
+        <div class="flex items-center gap-1.5 sm:col-span-2 lg:col-span-2">
+            <input type="date" name="dari" value="{{ $dari }}" class="form-input min-w-0" aria-label="Tanggal Awal" title="Tanggal Awal">
+            <span class="text-sm text-gray-400">-</span>
+            <input type="date" name="sampai" value="{{ $sampai }}" class="form-input min-w-0" aria-label="Tanggal Akhir" title="Tanggal Akhir">
         </div>
     </x-card-filter>
 </div>

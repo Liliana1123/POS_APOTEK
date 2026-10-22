@@ -18,14 +18,15 @@
     :action="route('rusak.index')"
     :reset-url="route('rusak.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
     @if(request()->filled('tanggal'))
         <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
     @endif
 
-    <div class="relative sm:col-span-1 md:col-span-2">
+    <div class="relative sm:col-span-2 md:col-span-3">
         <input
             type="text"
             name="cari"
@@ -40,7 +41,7 @@
         </span>
     </div>
 
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
         <input
             type="date"
             name="tanggal_mulai"

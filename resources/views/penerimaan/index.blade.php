@@ -19,14 +19,14 @@
     :action="route('penerimaan.index')"
     :reset-url="route('penerimaan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal'])">
     @if(request()->filled('tanggal'))
         <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
     @endif
 
-    <div class="relative">
+    <div class="relative sm:col-span-2 lg:col-span-2">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
             class="form-input pr-8 font-mono" aria-label="No. Faktur" title="No. Faktur">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">

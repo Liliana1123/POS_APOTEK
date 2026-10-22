@@ -15,10 +15,11 @@
     :action="route('custom-discount.index')"
     :reset-url="route('custom-discount.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'status'])">
-    <div class="relative">
+    <div class="relative sm:col-span-2 md:col-span-3">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
             class="form-input pr-8" aria-label="Nama Promo" title="Nama Promo">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -26,7 +27,7 @@
         </span>
     </div>
 
-    <select name="status" class="form-input" aria-label="Status Promo" title="Status Promo">
+    <select name="status" class="form-input sm:col-span-2 md:col-span-3" aria-label="Status Promo" title="Status Promo">
         <option value="">Status: Semua</option>
         <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
         <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>

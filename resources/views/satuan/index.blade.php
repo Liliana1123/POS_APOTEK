@@ -16,7 +16,7 @@
     :reset-url="route('satuan.index')"
     :live-search="true"
     :has-reset="request()->filled('cari')">
-    <div class="relative shrink-0 w-full sm:w-64">
+    <div class="relative shrink-0 w-full sm:w-[360px]">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari satuan..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />

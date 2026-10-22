@@ -140,10 +140,10 @@
     :action="route('laporan.stok')"
     :reset-url="route('laporan.stok')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
     :has-reset="request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai'])"
     :live-search="true">
-    <div class="relative">
+    <div class="relative sm:col-span-2 lg:col-span-2">
         <input
             type="text"
             name="nama"

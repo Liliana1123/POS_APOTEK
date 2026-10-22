@@ -118,10 +118,11 @@
     :action="route('laporan.rusak')"
     :reset-url="route('laporan.rusak')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
     :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])"
     :live-search="true">
-    <div class="relative sm:col-span-1 md:col-span-2">
+    <div class="relative sm:col-span-2 md:col-span-3">
         <input
             type="text"
             name="cari"
@@ -136,7 +137,7 @@
         </span>
     </div>
 
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
         <input
             type="date"
             name="dari"

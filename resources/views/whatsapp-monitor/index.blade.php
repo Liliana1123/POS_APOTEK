@@ -30,14 +30,14 @@
     :action="route('whatsapp-monitor.index')"
     :reset-url="route('whatsapp-monitor.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
     :live-search="true"
     :has-reset="$hasActiveFilter">
     @if(request()->filled('per_page'))
         <input type="hidden" name="per_page" value="{{ request('per_page') }}">
     @endif
 
-    <div class="relative">
+    <div class="relative sm:col-span-2 lg:col-span-2">
         <input
             type="text"
             name="search"

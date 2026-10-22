@@ -17,10 +17,10 @@
     :action="route('pelanggan.index')"
     :reset-url="route('pelanggan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
     :live-search="true"
     :has-reset="request()->filled('cari') || $status !== 'semua' || $statusPiutang !== 'semua'">
-    <div class="relative">
+    <div class="relative sm:col-span-2 md:col-span-2">
         <input
             type="text"
             name="cari"
