@@ -69,30 +69,57 @@
     {{-- 2. KPI UTAMA (6 KARTU)                                       --}}
     {{-- ============================================================ --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div class="kpi-card kpi-kotor flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Kotor</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetKotor, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Sebelum diskon</span></div>
-            <div class="kpi-icon bg-blue-50 text-blue-600 shadow-2xs"><x-heroicon-o-chart-bar class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-diskon flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Diskon</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total diskon transaksi</span></div>
-            <div class="kpi-icon bg-purple-50 text-purple-600 shadow-2xs"><x-heroicon-o-tag class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-bersih flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Bersih</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetBersih, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Setelah diskon</span></div>
-            <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs"><x-heroicon-o-banknotes class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-member flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Member</span><div class="text-xl font-black text-gray-900 mt-1">{{ number_format($totalMember) }}</div><span class="text-[11px] text-gray-500 block mt-1">Member terdaftar</span></div>
-            <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs"><x-heroicon-o-user-group class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
-            <div class="kpi-icon bg-sky-50 text-sky-600 shadow-2xs"><x-heroicon-o-building-office-2 class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Member</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total piutang member</span></div>
-            <div class="kpi-icon bg-rose-50 text-rose-600 shadow-2xs"><x-heroicon-o-credit-card class="w-6 h-6" /></div>
-        </div>
+        <x-kpi-card
+            title="Omzet Kotor"
+            :value="'Rp ' . number_format($omzetKotor, 0, ',', '.')"
+            subtitle="Sebelum diskon"
+            variant="kotor"
+            icon="heroicon-o-chart-bar"
+            icon-class="bg-blue-50 text-blue-600"
+        />
+
+        <x-kpi-card
+            title="Total Diskon"
+            :value="'Rp ' . number_format($totalDiskon, 0, ',', '.')"
+            subtitle="Total diskon transaksi"
+            variant="diskon"
+            icon="heroicon-o-tag"
+            icon-class="bg-purple-50 text-purple-600"
+        />
+
+        <x-kpi-card
+            title="Omzet Bersih"
+            :value="'Rp ' . number_format($omzetBersih, 0, ',', '.')"
+            subtitle="Setelah diskon"
+            variant="bersih"
+            icon="heroicon-o-banknotes"
+            icon-class="bg-emerald-50 text-emerald-600"
+        />
+
+        <x-kpi-card
+            title="Total Member"
+            :value="number_format($totalMember)"
+            subtitle="Member terdaftar"
+            variant="member"
+            icon="heroicon-o-user-group"
+            icon-class="bg-amber-50 text-amber-600"
+        />
+
+        <x-kpi-card
+            title="Piutang Supplier"
+            :value="'Rp ' . number_format($totalHutangSupplier, 0, ',', '.')"
+            subtitle="Total hutang supplier"
+            icon="heroicon-o-building-office-2"
+            icon-class="bg-sky-50 text-sky-600"
+        />
+
+        <x-kpi-card
+            title="Piutang Member"
+            :value="'Rp ' . number_format($totalPiutangMember, 0, ',', '.')"
+            subtitle="Total piutang member"
+            icon="heroicon-o-credit-card"
+            icon-class="bg-rose-50 text-rose-600"
+        />
     </div>
 
     {{-- ============================================================ --}}

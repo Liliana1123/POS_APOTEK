@@ -2,7 +2,7 @@
     'title',
     'value',
     'subtitle' => null,
-    'variant' => 'bersih',
+    'variant' => null,
     'icon' => null,
     'iconClass' => null,
 ])
@@ -13,6 +13,7 @@
         'diskon', 'green', 'emerald', 'success' => 'kpi-diskon',
         'bersih', 'blue', 'primary' => 'kpi-bersih',
         'member', 'purple' => 'kpi-member',
+        null, '', 'none' => '',
         default => str_starts_with($variant, 'kpi-') ? $variant : 'kpi-' . $variant,
     };
 
