@@ -26,21 +26,21 @@
           @endif
           {{ $attributes->merge(['class' => $grid ? 'space-y-0' : 'flex flex-wrap gap-2.5 items-center']) }}>
         @if($grid)
-            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+            <div class="flex flex-col lg:flex-row lg:items-end gap-3">
                 <div class="grid {{ $gridCols }} gap-3 flex-1 min-w-0">
                     {{ $slot }}
                 </div>
-                <div class="flex items-center gap-2 shrink-0 self-end lg:self-end pb-0.5">
+                <div class="flex items-center gap-2 shrink-0">
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"
-                           class="btn-secondary py-1.5 px-3.5 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap {{ $isFiltered ? '' : 'hidden' }}"
+                           class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
                            title="Reset seluruh filter">
                             <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
                             <span>Reset</span>
                         </a>
                     @endif
-                    <button type="submit" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap">
+                    <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center gap-1.5 text-xs font-semibold whitespace-nowrap box-border">
                         <x-heroicon-o-funnel class="w-4 h-4" />
                         <span>{{ $label }}</span>
                     </button>
@@ -48,7 +48,7 @@
             </div>
         @else
             {{ $slot }}
-            <button type="submit" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs font-semibold">
+            <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center gap-1.5 text-xs font-semibold box-border">
                 @if($label === 'Cari')
                     <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                 @else
@@ -59,7 +59,7 @@
             @if($resetUrl && ($hasReset || request()->filled('cari') || $liveSearch))
                 <a href="{{ $resetUrl }}"
                    data-role="clear-filter"
-                   class="btn-secondary py-1.5 px-3.5 flex items-center gap-1.5 text-xs font-semibold {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
+                   class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
                    title="Reset pencarian">
                     <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
                     <span>Reset</span>
