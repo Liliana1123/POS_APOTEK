@@ -169,40 +169,12 @@
         </div>
 
         {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
-        <div class="flex flex-wrap items-center gap-2">
-            {{-- Tombol Preset Periode --}}
-            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'hari_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Hari Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'minggu_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Minggu Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'bulan_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Bulan Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'tahun_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Tahun Ini
-                </a>
-                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Custom
-                </button>
-            </div>
-
-            {{-- Form Rentang Tanggal Custom (hanya tampil saat Custom aktif) --}}
-            <form method="GET" action="{{ route('laporan.laba-rugi') }}" id="customDateContainer" class="{{ $currentPeriode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
-                <input type="hidden" name="periode" value="custom">
-                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <span class="text-xs text-gray-400">s/d</span>
-                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
-            </form>
-        </div>
+        <x-date-range-filter
+            :action="route('laporan.laba-rugi')"
+            :periode="$currentPeriode"
+            :dari="$dari"
+            :sampai="$sampai"
+        />
     </div>
 </div>
 

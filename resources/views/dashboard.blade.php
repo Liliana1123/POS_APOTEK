@@ -19,50 +19,12 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
-            {{-- Tombol Preset Periode --}}
-            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
-                <a href="{{ route('dashboard', ['periode' => 'hari_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Hari Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'minggu_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Minggu Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'bulan_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Bulan Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'tahun_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Tahun Ini
-                </a>
-                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Custom
-                </button>
-            </div>
-
-            {{-- Form Rentang Tanggal Custom --}}
-            <form method="GET" action="{{ route('dashboard') }}" id="customDateContainer" class="{{ $periode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
-                <input type="hidden" name="periode" value="custom">
-                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <span class="text-xs text-gray-400">s/d</span>
-                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
-            </form>
-
-            {{-- Tombol Reset (Aktif jika sedang filter selain default Bulan Ini) --}}
-            @if(request()->filled('periode') && request('periode') !== 'bulan_ini' || request()->filled('dari') || request()->filled('sampai'))
-                <a href="{{ route('dashboard') }}"
-                   class="btn-secondary !py-1 !px-2.5 !text-xs flex items-center gap-1 text-gray-600 hover:text-red-600 hover:border-red-300 transition-colors shadow-2xs"
-                   title="Reset filter ke Bulan Ini">
-                    <x-heroicon-o-arrow-path class="w-3.5 h-3.5 text-gray-500" />
-                    <span>Reset</span>
-                </a>
-            @endif
-        </div>
+        <x-date-range-filter
+            :action="route('dashboard')"
+            :periode="$periode"
+            :dari="$dari"
+            :sampai="$sampai"
+        />
     </div>
 
     {{-- ============================================================ --}}

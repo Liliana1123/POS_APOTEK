@@ -114,6 +114,22 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   />
   ```
 
+### 2.4 Komponen Filter Rentang Tanggal Preset (`<x-date-range-filter>`)
+- [x] **Lokasi**: `resources/views/components/date-range-filter.blade.php` (Sudah dibuat & diuji)
+- [x] **Deskripsi**: Tombol pill preset (*Hari Ini, Minggu Ini, Bulan Ini, Tahun Ini, Custom*) beserta toggle input kalender `dari` & `sampai`.
+- [x] **File Terdampak / Status Integrasi**:
+  - [x] `resources/views/dashboard.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/laba_rugi.blade.php` (Di-refactor)
+- **Contoh Penggunaan**:
+  ```blade
+  <x-date-range-filter
+      :action="route('dashboard')"
+      :periode="$periode"
+      :dari="$dari"
+      :sampai="$sampai"
+  />
+  ```
+
 ---
 
 ## Fase 3: Blade Directives & Helper Formatting (Rupiah & Tanggal)
@@ -191,6 +207,19 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Memastikan konsistensi penataan layout flexbox, font size, margin, dan shadow.
   - Pengujian sintaks melalui `php artisan view:cache` berjalan sukses tanpa kendala.
 
-### 2. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 2. Eksekusi Target 2 (Filter Rentang Tanggal Preset)
+* **Target File**: `resources/views/dashboard.blade.php` dan `resources/views/laporan/laba_rugi.blade.php`
+* **Komponen Baru**: `resources/views/components/date-range-filter.blade.php` (`<x-date-range-filter>`)
+* **Perubahan yang Diterapkan**:
+  - Mengekstrak tombol pill preset (*Hari Ini, Minggu Ini, Bulan Ini, Tahun Ini, Custom*) dan form input kalender rentang tanggal (*dari* & *sampai*) beserta tombol *Reset* ke dalam satu komponen reusable.
+  - Menyatukan fungsi JavaScript toggle custom date agar aman dan tidak perlu duplikasi script inline di setiap halaman.
+  - Menerapkan `<x-date-range-filter>` pada:
+    1. **Header Dashboard**: Filter periode operasional apotek.
+    2. **Laporan Laba Rugi**: Filter periode analitik finansial apotek.
+* **Keuntungan**:
+  - Menghapus puluhan baris form manual dan styling tombol pill yang berulang.
+  - Memastikan parameter URL periode dan tanggal tersinkronisasi dengan rapi.
+
+### 3. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
