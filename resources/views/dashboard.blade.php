@@ -1327,6 +1327,7 @@
                     row.classList.toggle('hidden', !expanded);
                 });
                 btnToggleKinerja.textContent = expanded ? 'Sembunyikan' : originalText;
+            });
         }
 
         // ==========================================
