@@ -356,22 +356,8 @@
         @include('layouts.footer')
     </div>
 
-    <!-- Session Flash Toast Notifications -->
-    @if (session('success'))
-    <div id="toast-success" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="status" aria-live="polite">
-        <x-heroicon-o-check-circle class="w-5 h-5 text-green-500 shrink-0" aria-hidden="true" />
-        <span>{{ session('success') }}</span>
-        <button onclick="document.getElementById('toast-success').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
-    </div>
-    @endif
-
-    @if (session('error'))
-    <div id="toast-error" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="alert" aria-live="assertive">
-        <x-heroicon-o-x-circle class="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
-        <span>{{ session('error') }}</span>
-        <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
-    </div>
-    @endif
+    <!-- Global Reusable Toast Notification (Top-Center) -->
+    <x-toast />
 
     {{-- Global Quick Search Modal (Ctrl + K) --}}
     <x-global-quick-search />

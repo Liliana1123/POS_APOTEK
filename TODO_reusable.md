@@ -15,7 +15,7 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## 📌 Status Tahapan Implementasi
 
 ```
-[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI
+[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI
 ```
 
 ---
@@ -210,6 +210,29 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 
 ---
 
+## Fase 5: Komponen Notifikasi Reusable (Toast & Alert)
+*Notifikasi umpan balik aksi user (CRUD, pesan sukses, peringatan validasi, dan feedback AJAX).*
+
+### 5.1 Komponen Toast Notifikasi Floating Top-Center (`<x-toast>`)
+- [x] **Lokasi**: `resources/views/components/toast.blade.php` (Dibuat & diuji)
+- [x] **Deskripsi**:
+  - Penempatan **Top-Center (Atas Tengah)** (`fixed top-6 left-1/2 -translate-x-1/2 z-[9999]`) tepat setinggi pandangan mata (*eye-level*) staf & kasir.
+  - Tampilan pill modern bernuansa *dark glassmorphism* (`bg-slate-900/95 backdrop-blur-md`) dengan border glow & ikon Heroicons berwarna (`success`, `error`, `warning`, `info`).
+  - Animasi transisi masuk (*slide-down*) dan keluar (*slide-up*) dengan CSS transform.
+  - Fitur jeda timer otomatis saat kursor mouse di-hover di atas notifikasi (*pause on hover*).
+  - Menyediakan API JavaScript global seragam: `window.showToast(message, type, duration)` untuk request asynchronous/AJAX.
+- [x] **File Terdampak / Status Refactor**:
+  - [x] `resources/views/layouts/app.blade.php`: Menggantikan markup notifikasi session toast statis hardcoded dengan tag `<x-toast />`.
+  - [x] `resources/views/whatsapp-monitor/index.blade.php`: Menghapus DOM duplikat `#fuToastNotification` dan mendelegasikan fungsi lokal `showToast` ke `window.showToast(...)`.
+
+### 5.2 Komponen Inline Banner Alert (`<x-alert>`)
+- [x] **Lokasi**: `resources/views/components/alert.blade.php` (Dibuat & diuji)
+- [x] **Deskripsi**: Banner notifikasi kontekstual inline yang disematkan langsung di dalam form atau tabel, mendukung 4 varian warna (`success`, `danger/error`, `warning`, `info`), judul tebal opsional, slot konten fleksibel, dan tombol dismiss silang (`x-mark`).
+- [x] **File Terdampak / Status Refactor**:
+  - [x] `resources/views/laporan/laba_rugi.blade.php`: Menggantikan banner alert error manual `$errors->any()` dengan `<x-alert type="danger" ...>`.
+
+---
+
 ## 📊 Laporan Hasil Eksekusi Refaktorisasi
 
 ### 1. Eksekusi Target 1 (Dashboard KPI Cards)
@@ -283,10 +306,28 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Controller menjadi sangat deklaratif, bersih, dan konsisten dalam menangani pencarian, rentang tanggal, dan status aktif.
   - Seluruh service & routing lolos verifikasi `php artisan about` dan `php artisan view:clear`.
 
-### 6. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 6. Eksekusi Target 6 (Komponen Notifikasi Reusable Top-Center & Inline Alert)
+* **Komponen Baru**:
+  - `resources/views/components/toast.blade.php` (`<x-toast />`): Floating toast notification berdesain pill di posisi **Top-Center (Atas Tengah)** (`fixed top-6 left-1/2 -translate-x-1/2 z-[9999]`) agar langsung terlihat oleh kasir/petugas apotek tanpa tertutup area kerja bawah.
+  - `resources/views/components/alert.blade.php` (`<x-alert />`): Komponen banner alert inline dengan 4 varian warna, border halus, judul tebal opsional, dan tombol dismiss.
+* **Perubahan yang Diterapkan**:
+  - Mengintegrasikan `<x-toast />` ke layout utama `resources/views/layouts/app.blade.php`, menggantikan blok script dan DOM hardcoded `#toast-success` dan `#toast-error`.
+  - Menerapkan fungsi API global `window.showToast(message, type, duration)` pada `<x-toast>` yang dapat dipanggil langsung dari AJAX mana pun di aplikasi.
+  - Merefaktor `resources/views/whatsapp-monitor/index.blade.php`: menghapus duplikasi markup `#fuToastNotification` dan mendelegasikan pemanggilan `showToast` ke helper global `window.showToast`.
+  - Menerapkan `<x-alert type="danger" ...>` pada `resources/views/laporan/laba_rugi.blade.php` untuk menampilkan pesan validasi error form.
+* **Keuntungan**:
+  - Tampilan feedback notifikasi menjadi seragam, modern, dan sangat elegan dengan estetika *dark glassmorphism* (`backdrop-blur-md`).
+  - Penempatan **Top-Center** menyelesaikan masalah blindspot user pada notifikasi pojok kanan bawah.
+  - Semua pesan AJAX dan flash session Laravel (`success`, `error`, `warning`, `info`) terpusat dalam satu siklus hidup komponen dengan dukungan auto-dismiss dan pause on hover.
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 7. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
 * **Target 2**: Filter rentang tanggal preset dashboard dan laba rugi menggunakan `<x-date-range-filter>`.
 * **Target 3**: Rollout directive mata uang `@rupiah(...)` pada seluruh modul kasir dan faktur penerimaan.
 * **Target 4**: Rollout directive penanggalan Indonesia `@tanggalId` dan `@tanggalWaktuId` pada 20 view aplikasi.
+* **Target 5**: Integrasi backend Eloquent Model Traits `GeneratesCode` & `Filterable`.
+* **Target 6**: Komponen notifikasi reusable `<x-toast>` (Top-Center) & `<x-alert>`.
+

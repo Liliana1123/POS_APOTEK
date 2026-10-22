@@ -598,14 +598,7 @@
     </div>
 </div>
 
-<!-- Notification Toast Feedback -->
-<div
-    id="fuToastNotification"
-    class="hidden fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-2 opacity-0"
-    role="alert">
-    <div id="fuToastIcon"></div>
-    <span id="fuToastMessage" class="font-medium"></span>
-</div>
+
 
 @push('scripts')
 <script>
@@ -984,26 +977,9 @@ function onCopySuccess() {
 }
 
 function showToast(message, type = 'success') {
-    const toast = document.getElementById('fuToastNotification');
-    const msgEl = document.getElementById('fuToastMessage');
-    const iconEl = document.getElementById('fuToastIcon');
-    if (!toast || !msgEl) return;
-
-    msgEl.textContent = message;
-
-    if (type === 'success') {
-        toast.className = 'fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100 bg-emerald-50 border-emerald-200 text-emerald-800';
-        iconEl.innerHTML = `<svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
-    } else {
-        toast.className = 'fixed bottom-5 right-5 z-50 rounded-xl px-4 py-3 shadow-lg border text-xs flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100 bg-red-50 border-red-200 text-red-800';
-        iconEl.innerHTML = `<svg class="w-4 h-4 text-red-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>`;
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
     }
-
-    setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-2', 'opacity-0');
-        setTimeout(() => toast.classList.add('hidden'), 300);
-    }, 4000);
 }
 
 // Tutup modal jika tombol ESC ditekan

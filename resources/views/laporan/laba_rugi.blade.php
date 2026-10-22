@@ -179,28 +179,14 @@
 </div>
 
 {{-- Flash Notification Alerts --}}
-@if(session('success'))
-    <div class="mb-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 shadow-sm print:hidden">
-        <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-600 shrink-0" />
-        <div class="font-medium flex-1">{{ session('success') }}</div>
-        <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
-            <x-heroicon-o-x-mark class="h-4 w-4" />
-        </button>
-    </div>
-@endif
-
 @if(isset($errors) && $errors->any())
-    <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800 shadow-sm print:hidden">
-        <div class="font-bold mb-1 flex items-center gap-2">
-            <x-heroicon-o-exclamation-triangle class="h-4 w-4 text-rose-600" />
-            <span>Terjadi kesalahan saat memproses data:</span>
-        </div>
-        <ul class="list-disc list-inside space-y-0.5 text-rose-700 pl-1">
+    <x-alert type="danger" title="Terjadi kesalahan saat memproses data:" class="print:hidden">
+        <ul class="list-disc list-inside space-y-0.5 pl-1">
             @foreach($errors->all() as $err)
                 <li>{{ $err }}</li>
             @endforeach
         </ul>
-    </div>
+    </x-alert>
 @endif
 
 {{-- ========================================================= --}}
