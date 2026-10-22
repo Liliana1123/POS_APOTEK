@@ -90,48 +90,40 @@
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
     :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
 >
-    {{-- Cari No. Invoice --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Cari No. Invoice
-        </label>
-        <div class="relative">
-            <input
-                type="text"
-                name="cari"
-                value="{{ request('cari') }}"
-                placeholder="Cari no. invoice..."
-                class="form-input pr-8"
-            >
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
+    {{-- Cari No. Invoice (Lebar 2 Kolom) --}}
+    <div class="relative sm:col-span-2 md:col-span-2">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari') }}"
+            placeholder="Cari no. invoice..."
+            class="form-input pr-8 font-mono"
+            aria-label="No. Invoice"
+            title="No. Invoice"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
     </div>
 
-    {{-- Tanggal Awal --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Awal
-        </label>
+    {{-- Rentang Tanggal (Tanggal Awal - Tanggal Akhir) --}}
+    <div class="flex items-center gap-1.5">
         <input
             type="date"
             name="tanggal_awal"
             value="{{ request('tanggal_awal') }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
         >
-    </div>
-
-    {{-- Tanggal Akhir --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Akhir
-        </label>
+        <span class="text-sm text-gray-400">-</span>
         <input
             type="date"
             name="tanggal_akhir"
             value="{{ request('tanggal_akhir') }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
         >
     </div>
 </x-card-filter>
