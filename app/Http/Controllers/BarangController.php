@@ -14,7 +14,9 @@ class BarangController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Barang::with(['kategori', 'satuan', 'pabrik']);
+        $query = Barang::with(['kategori', 'satuan', 'pabrik'])
+            ->withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
+            ->with('latestDetailPenerimaan.penerimaan.supplier');
 
         if ($request->filled('cari')) {
             $query->where(function($q) use ($request) {

@@ -1,46 +1,13 @@
-<style>
-    .table-detail-penerimaan {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-    .table-detail-penerimaan th {
-        padding: 0.5rem 0.65rem !important;
-        font-size: 0.6875rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-    }
-    .table-detail-penerimaan td {
-        padding: 0.4rem 0.65rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-
-    /* Kolom jumlah pada baris induk dan seluruh baris detail */
-    .table-detail-penerimaan tbody td:nth-child(6),
-    .table-detail-penerimaan tbody td:nth-child(7),
-    .table-detail-penerimaan tbody td:nth-child(8),
-    .table-detail-penerimaan tbody td:nth-child(9) {
-        text-align: center !important;
-    }
-</style>
-
 <!-- Info Cards Grid -->
 <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '' }}</strong>
+        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '' }}</strong>
     </div>
 
     <div>
         <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '' }}</strong>
+        <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->translatedFormat('d F Y') ?? '' }}</strong>
     </div>
 
     <div>
@@ -83,7 +50,7 @@
     @if ($penerimaan->jatuh_tempo)
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->format('d M Y') }}</strong>
+            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->translatedFormat('d F Y') }}</strong>
         </div>
     @endif
 </div>
@@ -338,7 +305,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @foreach ($penerimaan->pembayaran as $p)
                             <tr>
-                                <td class="py-1.5 px-1.5 text-gray-600">{{ $p->tanggal_bayar?->format('d M Y') ?? '' }}</td>
+                                <td class="py-1.5 px-1.5 text-gray-600">{{ $p->tanggal_bayar?->translatedFormat('d F Y') ?? '' }}</td>
                                 <td class="py-1.5 px-1.5 text-right font-medium text-emerald-600">
                                     Rp {{ number_format($p->jumlah, 0, ',', '.') }}
                                 </td>

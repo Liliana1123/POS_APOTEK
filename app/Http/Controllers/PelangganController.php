@@ -29,6 +29,7 @@ class PelangganController extends Controller
             'semua',
             'lunas',
             'belum_lunas',
+            'terlambat',
         ];
 
         if (!in_array($statusPiutang, $allowedStatusPiutang, true)) {
@@ -37,43 +38,71 @@ class PelangganController extends Controller
 
         $query = Pelanggan::query();
 
-        // Halaman Pelanggan/Member hanya menampilkan member.
-        $query->where('is_member', true);
+        try {
+            $query->where('is_member', true);
 
-        if ($status === 'pelanggan_tetap') {
-            $query->where('status_member', 'Member Pelanggan Tetap');
-        } elseif ($status === 'keluarga_nakes') {
-            $query->where('status_member', 'Member Keluarga Nakes');
-        } elseif ($status === 'member_only') {
-            $query->where('status_member', 'Member Only');
+            if ($status === 'pelanggan_tetap') {
+                $query->where('status_member', 'Member Pelanggan Tetap');
+            } elseif ($status === 'keluarga_nakes') {
+                $query->where('status_member', 'Member Keluarga Nakes');
+            } elseif ($status === 'member_only') {
+                $query->where('status_member', 'Member Only');
+            }
+
+            if ($statusPiutang === 'lunas') {
+                $query->where(function ($q) {
+                    $q->whereNull('saldo_piutang')
+                        ->orWhere('saldo_piutang', '<=', 0);
+                });
+            } elseif ($statusPiutang === 'belum_lunas') {
+                $query->where('saldo_piutang', '>', 0);
+            } elseif ($statusPiutang === 'terlambat') {
+                $query->where('saldo_piutang', '>', 0)
+                    ->whereHas('penjualan', function ($q) {
+                        $q->where('metode_pembayaran', 'piutang')
+                            ->whereNotNull('due_date')
+                            ->whereDate('due_date', '<', Carbon::today())
+                            ->whereRaw('
+                                penjualans.total > (
+                                    SELECT COALESCE(SUM(pp.jumlah), 0)
+                                    FROM pembayaran_piutangs pp
+                                    WHERE pp.penjualan_id = penjualans.id
+                                )
+                            ');
+                    });
+            }
+
+            if ($request->filled('cari')) {
+                $search = $request->input('cari');
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('telepon', 'like', "%{$search}%")
+                        ->orWhere('member_id', 'like', "%{$search}%");
+                });
+            }
+
+            $pelanggans = $query
+                ->withCount('penjualan')
+                ->withSum('penjualan as total_belanja', 'total')
+                ->withSum('discountUsages as total_diskon', 'nominal')
+                ->with(['penjualan' => function ($q) {
+                    $q->where('metode_pembayaran', 'piutang')
+                      ->with('pembayaranPiutang');
+                }])
+                ->orderByRaw('member_id IS NULL, member_id asc')
+                ->paginate(15)
+                ->withQueryString();
+        } catch (\Throwable $e) {
+            \Log::error('Pelanggan index error: '.$e->getMessage(), [
+                'status' => $status,
+                'status_piutang' => $statusPiutang,
+                'search' => $request->input('cari'),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $pelanggans = collect();
         }
-
-        if ($statusPiutang === 'lunas') {
-            $query->where(function ($q) {
-                $q->whereNull('saldo_piutang')
-                    ->orWhere('saldo_piutang', '<=', 0);
-            });
-        } elseif ($statusPiutang === 'belum_lunas') {
-            $query->where('saldo_piutang', '>', 0);
-        }
-
-        if ($request->filled('cari')) {
-            $search = $request->input('cari');
-
-            $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                    ->orWhere('telepon', 'like', "%{$search}%")
-                    ->orWhere('member_id', 'like', "%{$search}%");
-            });
-        }
-
-        $pelanggans = $query
-            ->withCount('penjualan')
-            ->withSum('penjualan as total_belanja', 'total')
-            ->withSum('discountUsages as total_diskon', 'nominal')
-            ->orderByRaw('member_id IS NULL, member_id asc')
-            ->paginate(15)
-            ->withQueryString();
 
         return view('pelanggan.index', compact(
             'pelanggans',
@@ -98,6 +127,7 @@ class PelangganController extends Controller
                 'no_faktur',
                 'total',
                 'metode_pembayaran',
+                'due_date',
             ])
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
@@ -106,6 +136,8 @@ class PelangganController extends Controller
 
         // Jika dipanggil dari modal Detail, kembalikan JSON.
         if ($request->expectsJson()) {
+            $jatuhTempo = $pelanggan->jatuh_tempo_aktif;
+
             return response()->json([
                 'pelanggan' => [
                     'id' => $pelanggan->id,
@@ -116,7 +148,15 @@ class PelangganController extends Controller
                     'is_member' => (bool) $pelanggan->is_member,
                     'member_aktif' => (bool) $pelanggan->member_aktif,
                     'status_member' => $pelanggan->status_member,
+                    'custom_discount_percentage' => $pelanggan->custom_discount_percentage !== null
+                        ? (float) $pelanggan->custom_discount_percentage
+                        : null,
+                    'diskon_percent' => $pelanggan->diskon_percent,
+                    'benefit_diskon_label' => $pelanggan->custom_discount_percentage !== null
+                        ? 'Diskon ' . rtrim(rtrim(number_format((float) $pelanggan->custom_discount_percentage, 2), '0'), '.') . '%'
+                        : 'Diskon Default ' . config('pos.diskon_member', 10) . '%',
                     'saldo_piutang' => (float) ($pelanggan->saldo_piutang ?? 0),
+                    'jatuh_tempo' => $jatuhTempo ? $jatuhTempo->format('d M Y') : '-',
                     'total_diskon' => $totalDiskon,
                     'total_belanja' => $totalBelanja,
                     'jumlah_transaksi' => $pelanggan->penjualan_count,
@@ -127,6 +167,8 @@ class PelangganController extends Controller
                         'tanggal' => $penjualan->tanggal?->format('Y-m-d'),
                         'no_faktur' => $penjualan->no_faktur,
                         'metode_pembayaran' => $penjualan->metode_pembayaran,
+                        'due_date' => $penjualan->due_date?->format('Y-m-d'),
+                        'due_date_formatted' => $penjualan->due_date?->format('d M Y') ?? '-',
                         'total' => (float) $penjualan->total,
                     ];
                 })->values(),
@@ -161,7 +203,12 @@ class PelangganController extends Controller
             'alamat' => 'required|string',
             'tanggal_lahir' => 'nullable|date',
             'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
+            'custom_discount_percentage' => 'nullable|numeric|min:0|max:100',
         ]);
+
+        $data['custom_discount_percentage'] = ($request->has('custom_discount_percentage') && $request->input('custom_discount_percentage') !== null && $request->input('custom_discount_percentage') !== '')
+            ? (float) $request->input('custom_discount_percentage')
+            : null;
 
         $attempts = 0;
         $maxAttempts = 5;
@@ -228,7 +275,12 @@ class PelangganController extends Controller
             'alamat' => 'required|string|max:1000',
             'tanggal_lahir' => 'nullable|date',
             'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
+            'custom_discount_percentage' => 'nullable|numeric|min:0|max:100',
         ]);
+
+        $data['custom_discount_percentage'] = ($request->has('custom_discount_percentage') && $request->input('custom_discount_percentage') !== null && $request->input('custom_discount_percentage') !== '')
+            ? (float) $request->input('custom_discount_percentage')
+            : null;
 
         $pelanggan->update($data);
 
@@ -267,11 +319,15 @@ class PelangganController extends Controller
             'nama' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:30',
             'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
+            'custom_discount_percentage' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $telepon = $request->input('telepon');
         $nama = $request->input('nama');
         $statusMember = $request->input('status_member');
+        $customDiscount = $request->filled('custom_discount_percentage')
+            ? $request->input('custom_discount_percentage')
+            : null;
 
         $pelanggan = null;
 
@@ -292,9 +348,10 @@ class PelangganController extends Controller
                         'is_member' => true,
                         'member_id' => $pelanggan->member_id,
                         'member_aktif' => (bool) $pelanggan->member_aktif,
-                        'diskon_percent' => $pelanggan->member_aktif
-                            ? config('pos.diskon_member', 10)
-                            : 0,
+                        'custom_discount_percentage' => $pelanggan->custom_discount_percentage !== null
+                            ? (float) $pelanggan->custom_discount_percentage
+                            : null,
+                        'diskon_percent' => $pelanggan->diskon_percent,
                     ],
                 ]);
             }
@@ -304,13 +361,14 @@ class PelangganController extends Controller
 
             while ($attempts < $maxAttempts && !$saved) {
                 try {
-                    DB::transaction(function () use ($pelanggan, $nama, $statusMember, &$saved) {
+                    DB::transaction(function () use ($pelanggan, $nama, $statusMember, $customDiscount, &$saved) {
                         $pelanggan->nama = $nama;
                         $pelanggan->member_id = Pelanggan::generateMemberId();
                         $pelanggan->is_member = true;
                         $pelanggan->member_aktif = true;
                         $pelanggan->member_since = now();
                         $pelanggan->status_member = $statusMember;
+                        $pelanggan->custom_discount_percentage = $customDiscount;
                         $pelanggan->save();
 
                         \App\Models\ActivityLog::log(
@@ -351,9 +409,10 @@ class PelangganController extends Controller
                     'is_member' => true,
                     'member_id' => $pelanggan->member_id,
                     'member_aktif' => (bool) $pelanggan->member_aktif,
-                    'diskon_percent' => $pelanggan->member_aktif
-                        ? config('pos.diskon_member', 10)
-                        : 0,
+                    'custom_discount_percentage' => $pelanggan->custom_discount_percentage !== null
+                        ? (float) $pelanggan->custom_discount_percentage
+                        : null,
+                    'diskon_percent' => $pelanggan->diskon_percent,
                 ],
             ]);
         }
@@ -364,7 +423,7 @@ class PelangganController extends Controller
 
         while ($attempts < $maxAttempts && !$saved) {
             try {
-                DB::transaction(function () use ($nama, $telepon, $statusMember, &$saved, &$newPelanggan) {
+                DB::transaction(function () use ($nama, $telepon, $statusMember, $customDiscount, &$saved, &$newPelanggan) {
                     $newPelanggan = Pelanggan::create([
                         'nama' => $nama,
                         'telepon' => $telepon,
@@ -373,6 +432,7 @@ class PelangganController extends Controller
                         'member_aktif' => true,
                         'member_since' => now(),
                         'status_member' => $statusMember,
+                        'custom_discount_percentage' => $customDiscount,
                         'saldo_piutang' => 0,
                     ]);
 
@@ -414,7 +474,10 @@ class PelangganController extends Controller
                 'is_member' => true,
                 'member_id' => $newPelanggan->member_id,
                 'member_aktif' => true,
-                'diskon_percent' => config('pos.diskon_member', 10),
+                'custom_discount_percentage' => $newPelanggan->custom_discount_percentage !== null
+                    ? (float) $newPelanggan->custom_discount_percentage
+                    : null,
+                'diskon_percent' => $newPelanggan->diskon_percent,
             ],
         ]);
     }

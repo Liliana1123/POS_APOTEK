@@ -11,12 +11,12 @@
     @csrf
 
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Batch Barang / Obat</label>
+        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Batch Barang atau Obat</label>
         <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-blue-500">
             <option value="">Pilih Batch</option>
             @foreach ($batches as $batch)
                 <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
-                    {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date->format('d M Y') }})
+                    {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date?->translatedFormat('d F Y') ?? '-' }})
                 </option>
             @endforeach
         </select>

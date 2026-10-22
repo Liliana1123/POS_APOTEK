@@ -103,10 +103,14 @@
 
         <!-- Footer -->
         <div class="flex items-center justify-between gap-2 px-6 py-3.5 border-t border-gray-100 shrink-0 bg-slate-50/70">
-            <button type="button" id="btn-edit-from-detail" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs">
-                <x-heroicon-o-pencil-square class="w-4 h-4" />
-                <span>Edit Barang</span>
-            </button>
+            @if(auth()->user()->canManage('master.barang'))
+                <button type="button" id="btn-edit-from-detail" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs">
+                    <x-heroicon-o-pencil-square class="w-4 h-4" />
+                    <span>Edit Barang</span>
+                </button>
+            @else
+                <div></div>
+            @endif
             <button type="button" id="btn-cancel-detail-modal" class="btn-secondary py-1.5 px-4 text-xs">
                 Tutup
             </button>

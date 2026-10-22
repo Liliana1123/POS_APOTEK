@@ -28,6 +28,8 @@ class PengaturanController extends Controller
             'kota' => 'nullable|string|max:100',
             'provinsi' => 'nullable|string|max:100',
             'kode_pos' => 'nullable|string|max:20',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'alamat' => 'nullable|string',
             'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',

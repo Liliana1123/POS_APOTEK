@@ -3,14 +3,20 @@
 
 @section('content')
 <x-page-header title="Daftar Supplier" subtitle="Kelola data penyalur/distributor obat.">
-    <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Supplier</span>
-    </button>
+    @if(auth()->user()->canManage('master.supplier'))
+        <button type="button" id="btn-tambah-supplier" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Supplier</span>
+        </button>
+    @endif
 </x-page-header>
 
-<x-card-filter :action="route('supplier.index')" :reset-url="route('supplier.index')">
-    <div class="relative shrink-0 w-full sm:w-64">
+<x-card-filter
+    :action="route('supplier.index')"
+    :reset-url="route('supplier.index')"
+    :live-search="true"
+    :has-reset="request()->filled('cari')">
+    <div class="relative shrink-0 w-full sm:w-[360px]">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama supplier..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
@@ -23,7 +29,7 @@
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="text-left w-36 pl-3">Aksi</th>
                     <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama Supplier</th>
                     <th scope="col" class="w-44">Telepon</th>
@@ -34,16 +40,16 @@
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($suppliers as $index => $supplier)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-supplier"
-                                :edit-id="$supplier->id"
-                                :edit-data="['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic]"
-                                :delete-url="route('supplier.destroy', $supplier)"
+                                edit-class="{{ auth()->user()->canManage('master.supplier') ? 'btn-edit-supplier' : '' }}"
+                                :edit-id="auth()->user()->canManage('master.supplier') ? $supplier->id : null"
+                                :edit-data="auth()->user()->canManage('master.supplier') ? ['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic] : null"
+                                :delete-url="auth()->user()->canManage('master.supplier') ? route('supplier.destroy', $supplier) : null"
                                 delete-confirm="Yakin ingin menghapus supplier ini?"
                             />
                         </td>
-                        <td class="table-num">{{ $supplier->id }}</td>
+                        <td class="table-num">{{ sprintf('%02d', $supplier->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $supplier->nama }}</td>
                         <td class="text-gray-600 font-mono">{{ $supplier->telepon ?? '—' }}</td>
                         <td class="text-gray-600 truncate max-w-xs" title="{{ $supplier->alamat }}">{{ $supplier->alamat ?? '—' }}</td>
@@ -57,7 +63,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $suppliers->links() }}</div>
+<div class="mt-4 pagination-container">{{ $suppliers->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-supplier"

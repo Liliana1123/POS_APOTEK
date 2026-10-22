@@ -3,16 +3,22 @@
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: admin, apoteker, kasir.">
-    <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah User</span>
-    </button>
+<x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: {{ collect(config('permission.roles'))->pluck('label')->implode(', ') }}.">
+    @if(auth()->user()->canManage('sistem.kelola-user'))
+        <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah User</span>
+        </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<x-card-filter :action="route('user.index')" :reset-url="route('user.index')">
-    <div class="relative shrink-0 w-full sm:w-64">
+<x-card-filter
+    :action="route('user.index')"
+    :reset-url="route('user.index')"
+    :live-search="true"
+    :has-reset="request()->filled('cari')">
+    <div class="relative shrink-0 w-full sm:w-[360px]">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
@@ -26,7 +32,7 @@
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="text-left w-36 pl-3">Aksi</th>
                     <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama</th>
                     <th scope="col">Email</th>
@@ -35,17 +41,26 @@
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
+                @php
+                    $canManageUser = auth()->user()->canManage('sistem.kelola-user');
+                    $isSuper = auth()->user()->isSuperAdmin();
+                @endphp
                 @forelse ($users as $index => $user)
+                    @php
+                        $canEditUser = $canManageUser && (! $user->isSuperAdmin() || $isSuper);
+                        $canDeleteUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists();
+                        $canToggleUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper);
+                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-user"
-                                :edit-id="$user->id"
-                                :edit-data="['name' => $user->name, 'email' => $user->email, 'role' => $user->role]"
-                                :delete-url="($user->id !== auth()->id() && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
+                                edit-class="{{ $canEditUser ? 'btn-edit-user' : '' }}"
+                                :edit-id="$canEditUser ? $user->id : null"
+                                :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
+                                :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
                                 delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
                                 
-                                @if($user->id !== auth()->id())
+                                @if($canToggleUser)
                                     <!-- Toggle Aktif / Nonaktif -->
                                     <form action="{{ route('user.toggle', $user) }}" method="POST" class="inline">
                                         @csrf
@@ -66,20 +81,23 @@
                                 @endif
                             </x-table-action>
                         </td>
-                        <td class="table-num">{{ $user->id }}</td>
+                         <td class="table-num">{{ sprintf('%02d', $user->id) }}</td>
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
-                            @php
-                                $roleVariant = match($user->role) {
-                                    'admin' => 'info',
-                                    'apoteker' => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <x-badge :variant="$roleVariant">
-                                {{ ucfirst($user->role) }}
-                            </x-badge>
+@php
+    $roleVariant = match($user->role) {
+        'superadmin' => 'danger',
+        'admin' => 'info',
+        'apoteker' => 'warning',
+        'gudang' => 'secondary',
+        'kasir' => 'success',
+        default => 'gray',
+    };
+@endphp
+<x-badge :variant="$roleVariant">
+    {{ ucfirst($user->role) }}
+</x-badge>
                         </td>
                         <td class="text-center">
                             <x-badge :variant="$user->aktif ? 'success' : 'danger'">
@@ -95,7 +113,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $users->links() }}</div>
+<div class="mt-4 pagination-container">{{ $users->links('vendor.pagination.apotek') }}</div>
 
 <x-modal-form
     id="modal-user"
@@ -117,11 +135,15 @@
     </div>
     <div>
         <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Role <span class="text-red-500">*</span></label>
+        @php $roles = config('permission.roles', []); @endphp
         <select name="role" required class="form-input">
             <option value="">Pilih role</option>
-            <option value="admin">Admin</option>
-            <option value="apoteker">Apoteker</option>
-            <option value="kasir">Kasir</option>
+            @foreach ($roles as $slug => $meta)
+                @if (($meta['kunci'] ?? false) && ! auth()->user()->isSuperAdmin())
+                    @continue
+                @endif
+                <option value="{{ $slug }}" {{ old('role') === $slug ? 'selected' : '' }}>{{ $meta['label'] }}</option>
+            @endforeach
         </select>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="role"></p>
     </div>

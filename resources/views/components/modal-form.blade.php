@@ -414,41 +414,25 @@
     */
 
     if (editBtnSel) {
+        document.addEventListener('click', function (event) {
+            var btn = event.target.closest(editBtnSel);
+            if (!btn) return;
 
-        document.querySelectorAll(editBtnSel).forEach(function (btn) {
+            event.preventDefault();
 
-            btn.addEventListener('click', function (event) {
+            var id = btn.dataset.id;
+            if (!id) {
+                console.error('Tombol edit tidak memiliki data-id.');
+                return;
+            }
 
-                event.preventDefault();
+            methodEl.value = 'PUT';
+            form.dataset.url = updateBase.replace(/\/$/, '') + '/' + id;
+            form.dataset.mode = 'edit';
 
-                var id = this.dataset.id;
-
-                if (!id) {
-
-                    console.error(
-                        'Tombol edit tidak memiliki data-id.'
-                    );
-
-                    return;
-                }
-
-                methodEl.value = 'PUT';
-
-                form.dataset.url =
-                    updateBase.replace(/\/$/, '') +
-                    '/' +
-                    id;
-
-                form.dataset.mode = 'edit';
-
-                openModal('edit');
-
-                prefillFromBtn(this);
-
-            });
-
+            openModal('edit');
+            prefillFromBtn(btn);
         });
-
     }
 
 

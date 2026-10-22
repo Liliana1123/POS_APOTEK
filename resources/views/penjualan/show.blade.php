@@ -7,9 +7,31 @@
         <h1 class="text-xl font-bold text-gray-800">Struk Penjualan</h1>
         <p class="text-xs text-gray-500 mt-0.5">Cetak bukti pembayaran transaksi kasir: <span class="font-mono font-bold">{{ $penjualan->no_faktur }}</span></p>
     </div>
-    <div class="flex gap-2">
-        <button onclick="window.print()" class="btn-primary">Print Struk</button>
-        <a href="{{ route('penjualan.index') }}" class="btn-secondary">Kembali</a>
+    <div class="flex items-center gap-2">
+        <select id="select-ukuran-kertas" onchange="changePaperSize(this.value)" class="text-xs border border-gray-300 rounded-lg px-2.5 py-2 bg-white text-gray-700 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer shadow-xs">
+            <option value="58mm">Thermal 58 mm (EPPOS)</option>
+            <option value="80mm">Thermal 80 mm (EPPOS)</option>
+        </select>
+        <button type="button" onclick="window.print()" class="btn-primary flex items-center gap-1.5 py-2 px-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Print Struk</span>
+        </button>
+
+        @php
+            $backUrl = route('penjualan.create');
+            if (request('from') === 'laporan_penjualan') {
+                $backUrl = route('laporan.penjualan', request()->except('from'));
+            } elseif (request('from') === 'laporan_diskon') {
+                $backUrl = route('laporan.diskon');
+            } elseif (request('from') === 'penjualan_index' || request('from') === 'riwayat' || request('from') === 'index') {
+                $backUrl = route('penjualan.index');
+            } elseif (request('from') === 'pelanggan' && isset($penjualan->pelanggan_id)) {
+                $backUrl = route('pelanggan.show', $penjualan->pelanggan_id);
+            }
+        @endphp
+        <a href="{{ $backUrl }}" class="btn-secondary py-2 px-4">Kembali</a>
     </div>
 </div>
 
@@ -21,67 +43,87 @@
     );
 @endphp
 
-<div class="card-base max-w-sm mx-auto text-xs font-mono bg-white border border-gray-200" id="struk">
+<div class="card-base print-struk max-w-sm mx-auto text-xs font-mono bg-white border border-gray-200" id="struk">
     <div class="text-center mb-3 pb-2.5 border-b border-dashed border-gray-300">
         @if($apotek?->logo)
             <div class="flex justify-center mb-1">
-                <img src="{{ asset('storage/' . $apotek->logo) }}" alt="Logo" class="w-10 h-10 object-contain">
+                <img src="{{ asset('storage/' . $apotek->logo) }}" alt="Logo" class="w-10 h-10 object-contain" onerror="this.parentElement.style.display='none'">
             </div>
         @endif
-        <p class="font-bold text-sm uppercase tracking-wider text-gray-900">
+        <p class="struk-title font-bold text-sm uppercase tracking-wider text-gray-900">
             {{ $apotek?->nama_apotek ?? 'POS APOTEK' }}
         </p>
-        @if($apotek?->alamat)
-            <p class="text-[10px] text-gray-500 mt-0.5 leading-tight">{{ $apotek->alamat }}</p>
-        @endif
-        @if($apotek?->telepon)
-            <p class="text-[10px] text-gray-500">Telp: {{ $apotek->telepon }}</p>
-        @endif
-        @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-            <div class="text-[9px] text-gray-400 pt-0.5 leading-tight">
-                @if($apotek?->no_izin_sia)<span>SIA: {{ $apotek->no_izin_sia }}</span>@endif
-                @if($apotek?->no_izin_sia && $apotek?->no_sipa)<span class="mx-1">•</span>@endif
-                @if($apotek?->no_sipa)<span>SIPA: {{ $apotek->no_sipa }}</span>@endif
-            </div>
-        @endif
-        @if($apotek?->nama_apoteker_pj)
-            <p class="text-[9px] text-gray-400">PJ: {{ $apotek->nama_apoteker_pj }}</p>
-        @endif
+        <div class="struk-sub text-[10px] text-gray-500 mt-0.5 leading-tight space-y-0.5">
+            @if($apotek?->alamat)
+                <p>{{ $apotek->alamat }}</p>
+            @endif
+            @if($apotek?->telepon)
+                <p>Telp: {{ $apotek->telepon }}</p>
+            @endif
+            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                <div class="text-[9px] text-gray-400 pt-0.5 leading-tight">
+                    @if($apotek?->no_izin_sia)<span>SIA: {{ $apotek->no_izin_sia }}</span>@endif
+                    @if($apotek?->no_izin_sia && $apotek?->no_sipa)<span class="mx-1">•</span>@endif
+                    @if($apotek?->no_sipa)<span>SIPA: {{ $apotek->no_sipa }}</span>@endif
+                </div>
+            @endif
+            @if($apotek?->nama_apoteker_pj)
+                <p class="text-[9px] text-gray-400">PJ: {{ $apotek->nama_apoteker_pj }}</p>
+            @endif
+        </div>
     </div>
 
-    <div class="text-[10px] text-gray-600 mb-3 space-y-1">
-        <div class="flex justify-between"><span>No. Invoice</span><span class="font-mono font-semibold text-gray-800">{{ $penjualan->no_faktur }}</span></div>
-        <div class="flex justify-between"><span>Tanggal</span><span>{{ $penjualan->tanggal->format('d M Y H:i') }}</span></div>
-        <div class="flex justify-between"><span>Kasir</span><span>{{ $penjualan->user->name }}</span></div>
-        <div class="flex justify-between">
-            <span>Pelanggan</span>
-            <span>
+    <div class="struk-meta text-[10px] text-gray-600 mb-3 space-y-1 font-bold">
+        <div class="struk-meta-row">
+            <span class="struk-meta-label">No. Invoice</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">{{ $penjualan->no_faktur }}</span>
+        </div>
+        <div class="struk-meta-row">
+            <span class="struk-meta-label">Tanggal</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">{{ $penjualan->created_at ? $penjualan->created_at->format('d M Y H:i') : $penjualan->tanggal->format('d M Y') }}</span>
+        </div>
+        <div class="struk-meta-row">
+            <span class="struk-meta-label">Kasir</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">{{ $penjualan->user->name }}</span>
+        </div>
+        <div class="struk-meta-row">
+            <span class="struk-meta-label">Pelanggan</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">
                 {{ $penjualan->pelanggan->nama ?? 'Umum' }}
                 @if (isset($penjualan->pelanggan) && $penjualan->pelanggan->is_member)
-                    <span class="font-mono text-blue-700 font-semibold">({{ $penjualan->pelanggan->member_id }})</span>
+                    <span class="font-mono font-semibold">({{ $penjualan->pelanggan->member_id }})</span>
                 @endif
             </span>
         </div>
-        <div class="flex justify-between">
-            <span>Metode Pembayaran</span>
-            <span class="font-semibold uppercase">
-                {{ $penjualan->metode_pembayaran }}
-            </span>
+        <div class="struk-meta-row">
+            <span class="struk-meta-label">Metode Pembayaran</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">{{ $penjualan->metode_pembayaran }}</span>
         </div>
+        @if (strtolower($penjualan->metode_pembayaran) === 'piutang' && $penjualan->due_date)
+            <div class="struk-meta-row">
+                <span class="struk-meta-label">Jatuh Tempo</span>
+                <span class="struk-meta-value font-semibold">{{ $penjualan->due_date->format('d M Y') }}</span>
+            </div>
+        @endif
     </div>
 
     <div class="border-t border-dashed pt-2.5 space-y-2">
         @foreach ($penjualan->detail as $item)
+            @php
+                $satuan = $item->detailPenerimaan?->barang?->satuan?->nama;
+            @endphp
             <div>
-                <div class="flex justify-between font-semibold text-gray-800">
-                    <span>{{ $item->detailPenerimaan->barang->nama }}</span>
-                    <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-                </div>
-                <div class="text-[10px] text-gray-500 mt-0.5">
-                    {{ $item->jumlah }} x Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
-                    @if ($item->diskon > 0)
-                        <span class="text-red-500 font-medium ml-1">(Diskon -Rp {{ number_format($item->diskon, 0, ',', '.') }})</span>
-                    @endif
+                <div class="struk-item font-semibold text-gray-800">
+                    <span class="item-name block leading-tight">{{ $item->detailPenerimaan->barang->nama }}</span>
+                    <div class="flex justify-between items-center mt-0.5">
+                        <span class="struk-item-sub text-[10px] text-gray-500 font-normal">
+                            {{ $item->jumlah }}{{ $satuan ? ' ' . $satuan : '' }} × Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
+                            @if ($item->diskon > 0)
+                                <span class="text-red-500"> (-{{ number_format($item->diskon, 0, ',', '.') }})</span>
+                            @endif
+                        </span>
+                        <span class="struk-item-price text-right font-semibold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                    </div>
                 </div>
             </div>
         @endforeach
@@ -105,7 +147,7 @@
     @endphp
 
     @if ($totalDiskon > 0)
-        <div class="border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
+        <div class="struk-discount border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
             <div class="flex justify-between">
                 <span>Subtotal Kotor</span>
                 <span>Rp {{ number_format($penjualan->total + $totalDiskon, 0, ',', '.') }}</span>
@@ -129,49 +171,401 @@
         </div>
     @endif
 
-    <div class="border-t border-dashed mt-2.5 pt-2.5 flex justify-between font-bold text-sm text-gray-800">
-        <span>TOTAL AKHIR</span>
-        <span>Rp {{ number_format($penjualan->total, 0, ',', '.') }}</span>
+    <div class="struk-total border-t border-dashed mt-2.5 pt-2.5 font-bold text-gray-800">
+        <div class="flex justify-between">
+            <span>TOTAL AKHIR</span>
+            <span>Rp {{ number_format($penjualan->total, 0, ',', '.') }}</span>
+        </div>
     </div>
 
-    <p class="text-center text-[10px] text-gray-400 mt-5 uppercase tracking-wider font-semibold">SEMOGA LEKAS SEMBUH</p>
+    <p class="struk-footer text-center text-[16px] text-gray-400 mt-5 uppercase tracking-wider font-semibold">SEMOGA LEKAS SEMBUH</p>
 </div>
 
-<style>
+<style id="base-thermal-print-style">
+    /* ── On-screen preview container (non-print) ── */
+    #struk {
+        max-width: 400px;
+    }
+    #struk.struk-58mm {
+        max-width: 360px;
+    }
+    #struk.struk-80mm {
+        max-width: 440px;
+    }
+
+    /* On-screen: meta rows display as label : value pairs */
+    .struk-meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        align-items: baseline;
+    }
+    .struk-meta-label {
+        flex-shrink: 0;
+        color: #6b7280;
+    }
+    .struk-meta-value {
+        text-align: right;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    /* On-screen: item price sub-row */
+    .struk-item-price {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
     @media print {
+        /*
+         * KEY FIX: Use `size: auto` so Chrome does NOT downscale the page
+         * content to fit a tiny 58mm canvas. The printer driver already knows
+         * the paper roll width. We control the physical receipt width purely
+         * via the #struk `width` property (in mm), which the printer respects
+         * without browser-level scaling.
+         */
         @page {
+            size: auto;
             margin: 0;
         }
-        /* Hide layout structural elements */
-        aside, nav, .print\:hidden, #mobile-sidebar-toggle, form, button, a {
-            display: none !important;
-        }
-        body, html {
-            background-color: white !important;
+
+        /* 1. Global Reset */
+        html,
+        body {
+            width: auto !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             margin: 0 !important;
             padding: 0 !important;
+            display: block !important;
+            position: static !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
-        /* Optimize wrapper for thermal receipt sizes (fit-content supports 58mm/80mm rolls automatically) */
-        #struk {
-            width: 72mm !important;
-            max-width: 100% !important;
-            margin: 0 auto !important;
-            padding: 4mm !important;
+
+        body > div,
+        body > div.flex-1,
+        div.flex-1.flex.flex-col,
+        main {
+            display: block !important;
+            position: static !important;
+            width: auto !important;
+            max-width: none !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            float: none !important;
+            flex: none !important;
+        }
+
+        /* 2. Hide all non-printable layout elements */
+        aside,
+        #app-sidebar,
+        #sidebar-backdrop,
+        nav,
+        header,
+        footer,
+        .app-global-footer,
+        [role="navigation"],
+        .print\:hidden,
+        .no-print,
+        #mobile-sidebar-toggle,
+        form,
+        button,
+        .btn-primary,
+        .btn-secondary,
+        a,
+        select,
+        input,
+        #toast-success,
+        #toast-error,
+        [role="status"],
+        [role="alert"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            min-height: 0 !important;
+            max-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
             border: none !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
+        }
+
+        /* 3. Base Struk Container */
+        #struk,
+        .print-struk {
+            display: block !important;
+            visibility: visible !important;
+            position: static !important;
+            top: auto !important;
+            left: auto !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            border: none !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
-            background: transparent !important;
+            background: #ffffff !important;
             font-family: 'Courier New', Courier, monospace !important;
-            color: black !important;
-            font-size: 11px !important;
+            color: #000000 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            box-sizing: border-box !important;
+            /* No transform, no zoom, no scale */
+            transform: none !important;
+            zoom: normal !important;
+        }
+
+        /* ── 58 mm Thermal (default / EPPOS EPS58M) ── */
+        #struk,
+        .print-struk,
+        #struk.struk-58mm,
+        #struk:not(.struk-80mm) {
+            width: 58mm !important;
+            max-width: 58mm !important;
+            margin: 0 !important;
+            padding: 2mm 2mm !important;
+            font-size: 8pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-58mm .struk-title,
+        #struk:not(.struk-80mm) .struk-title {
+            font-size: 9.5pt !important;
+            font-weight: bold !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        #struk.struk-58mm .struk-sub,
+        #struk:not(.struk-80mm) .struk-sub {
+            font-size: 6.5pt !important;
             line-height: 1.3 !important;
         }
+
+        #struk.struk-58mm .struk-meta,
+        #struk:not(.struk-80mm) .struk-meta {
+            font-size: 7pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-58mm .struk-item,
+        #struk:not(.struk-80mm) .struk-item {
+            font-size: 7.5pt !important;
+            line-height: 1.3 !important;
+        }
+
+        #struk.struk-58mm .struk-item-sub,
+        #struk:not(.struk-80mm) .struk-item-sub {
+            font-size: 6.5pt !important;
+        }
+
+        #struk.struk-58mm .struk-discount,
+        #struk:not(.struk-80mm) .struk-discount {
+            font-size: 6.5pt !important;
+            line-height: 1.3 !important;
+        }
+
+        #struk.struk-58mm .struk-total,
+        #struk:not(.struk-80mm) .struk-total {
+            font-size: 9pt !important;
+            font-weight: bold !important;
+        }
+
+        #struk.struk-58mm .struk-footer,
+        #struk:not(.struk-80mm) .struk-footer {
+            font-size: 6pt !important;
+        }
+
+        /* ── 80 mm Thermal (EPPOS EP-80) ── */
+        #struk.struk-80mm {
+            width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 !important;
+            padding: 2mm 3mm !important;
+            font-size: 9pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-80mm .struk-title {
+            font-size: 11pt !important;
+            font-weight: bold !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        #struk.struk-80mm .struk-sub {
+            font-size: 7.5pt !important;
+            line-height: 1.3 !important;
+        }
+
+        #struk.struk-80mm .struk-meta {
+            font-size: 8pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-80mm .struk-item {
+            font-size: 8.5pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-80mm .struk-item-sub {
+            font-size: 7.5pt !important;
+        }
+
+        #struk.struk-80mm .struk-discount {
+            font-size: 7.5pt !important;
+            line-height: 1.35 !important;
+        }
+
+        #struk.struk-80mm .struk-total {
+            font-size: 10.5pt !important;
+            font-weight: bold !important;
+        }
+
+        #struk.struk-80mm .struk-footer {
+            font-size: 7pt !important;
+        }
+
+        /* Make all #struk descendants visible & clean */
         #struk * {
-            color: black !important;
+            visibility: visible !important;
+            color: #000000 !important;
             background-color: transparent !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
         }
+
+        #struk img {
+            display: block !important;
+            margin: 0 auto 3px auto !important;
+            max-width: 35px !important;
+            height: auto !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
         .border-dashed {
-            border-top: 1px dashed black !important;
+            border-top: 1px dashed #000000 !important;
         }
+
+        /* ── Prevent content clipping: word-break on all text ── */
+        #struk,
+        #struk * {
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
+            overflow: visible !important;
+        }
+
+        /* ── Meta rows: label left, value right, no overflow ── */
+        #struk .struk-meta-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: baseline !important;
+            gap: 3mm !important;
+            width: 100% !important;
+        }
+        #struk .struk-meta-label {
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+        }
+        #struk .struk-meta-value {
+            text-align: right !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
+        }
+
+        /* ── Item rows: name on top, qty+price below ── */
+        #struk .struk-item {
+            display: block !important;
+        }
+        #struk .item-name {
+            display: block !important;
+            width: 100% !important;
+        }
+        #struk .struk-item-price {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            text-align: right !important;
+        }
+        .struk-meta-label {
+            flex-shrink: 0;
+            color: #6b7280;
+        }
+
+        .struk-meta-value {
+            text-align: right;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* ── Total row ── */
+        #struk .struk-total > div {
+            display: flex !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+        }
+        
     }
 </style>
+
+<script>
+    function changePaperSize(size) {
+        const struk = document.getElementById('struk');
+        const select = document.getElementById('select-ukuran-kertas');
+        const validSize = size === '80mm' ? '80mm' : '58mm';
+
+        if (select && select.value !== validSize) {
+            select.value = validSize;
+        }
+
+        if (struk) {
+            struk.classList.remove('struk-58mm', 'struk-80mm');
+            struk.classList.add('struk-' + validSize);
+        }
+
+        // NOTE: We do NOT inject a dynamic @page { size: Xmm } here.
+        // Setting @page size to a tiny mm value causes Chrome to downscale
+        // the entire page content to fit that canvas, making the receipt tiny.
+        // Instead, @page { size: auto } is fixed in CSS and the physical width
+        // is controlled solely by the #struk container width (58mm or 80mm).
+        try {
+            localStorage.setItem('pos_receipt_paper_size', validSize);
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        let savedSize = '58mm';
+        try {
+            savedSize = localStorage.getItem('pos_receipt_paper_size') || '58mm';
+        } catch (e) {}
+
+        changePaperSize(savedSize);
+    });
+
+    window.addEventListener('beforeprint', function () {
+        let size = '58mm';
+        const select = document.getElementById('select-ukuran-kertas');
+        if (select) {
+            size = select.value;
+        } else {
+            try {
+                size = localStorage.getItem('pos_receipt_paper_size') || '58mm';
+            } catch (e) {}
+        }
+        changePaperSize(size);
+    });
+</script>
 @endsection
