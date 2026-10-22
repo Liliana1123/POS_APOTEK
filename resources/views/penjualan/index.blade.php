@@ -87,11 +87,12 @@
     :action="route('penjualan.index')"
     :reset-url="route('penjualan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
     :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
 >
-    {{-- Cari No. Invoice (Lebar 2 Kolom) --}}
-    <div class="relative sm:col-span-2 md:col-span-2">
+    {{-- Cari No. Invoice (Dipotong 1/4 menjadi 3 dari 8 kolom) --}}
+    <div class="relative sm:col-span-2 md:col-span-3">
         <input
             type="text"
             name="cari"
@@ -106,8 +107,8 @@
         </span>
     </div>
 
-    {{-- Rentang Tanggal (Tanggal Awal - Tanggal Akhir) --}}
-    <div class="flex items-center gap-1.5">
+    {{-- Rentang Tanggal (Tanggal Awal - Tanggal Akhir, 3 dari 8 kolom) --}}
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
         <input
             type="date"
             name="tanggal_awal"

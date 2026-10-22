@@ -4,6 +4,7 @@
     'hasReset' => false,
     'grid' => false,
     'gridCols' => 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4',
+    'actionCols' => null,
     'submitLabel' => null,
     'liveSearch' => false,
     'tableTarget' => '.table-custom-container',
@@ -28,7 +29,7 @@
         @if($grid)
             <div class="grid {{ $gridCols }} gap-3 items-center">
                 {{ $slot }}
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 {{ $actionCols }}">
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"
