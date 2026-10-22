@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
+use App\Traits\GeneratesCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pelanggan extends Model
 {
+    use Filterable, GeneratesCode;
     protected $fillable = [
         'nama',
         'telepon',
@@ -44,18 +47,7 @@ class Pelanggan extends Model
 
     public static function generateMemberId(): string
     {
-        $lastNumber = self::whereNotNull('member_id')
-            ->where('member_id', 'like', 'MBR-%')
-            ->pluck('member_id')
-            ->map(function ($id) {
-                return (int) substr($id, 4);
-            })
-            ->max();
-
-        return sprintf(
-            'MBR-%06d',
-            $lastNumber === null ? 1 : $lastNumber + 1
-        );
+        return self::generateSequentialCode('MBR', 'member_id', 6);
     }
 
     public function penjualan(): HasMany

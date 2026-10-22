@@ -63,14 +63,7 @@ class WhatsAppMonitorController extends Controller
             }
         }
 
-        // Filter pencarian nama member, no whatsapp, atau isi pesan
-        if ($search !== '') {
-            $baseQuery->where(function ($q) use ($search) {
-                $q->where('nama_member', 'like', "%{$search}%")
-                  ->orWhere('nomor_whatsapp', 'like', "%{$search}%")
-                  ->orWhere('isi_pesan', 'like', "%{$search}%");
-            });
-        }
+        $baseQuery->search(['nama_member', 'nomor_whatsapp', 'isi_pesan'], $search);
 
         // Filter jenis pesan
         if (!empty($kategori) && $kategori !== 'semua') {

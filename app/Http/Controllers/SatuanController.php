@@ -9,11 +9,11 @@ class SatuanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Satuan::query();
-        if ($request->filled('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
-        }
-        $satuans = $query->orderBy('id')->paginate(15)->withQueryString();
+        $satuans = Satuan::query()
+            ->search(['nama'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('satuan.index', compact('satuans'));
     }
 

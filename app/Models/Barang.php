@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Barang extends Model
 {
+    use Filterable;
     protected $fillable = [
         'kode_apotek', 'kode_kfa', 'nama', 'merk', 'kategori_id', 'satuan_id', 'pabrik_id',
         'barcode', 'butuh_resep', 'stok_minimum', 'aktif',

@@ -9,11 +9,11 @@ class KategoriController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kategori::query();
-        if ($request->filled('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
-        }
-        $kategoris = $query->orderBy('id')->paginate(15)->withQueryString();
+        $kategoris = Kategori::query()
+            ->search(['nama'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('kategori.index', compact('kategoris'));
     }
 

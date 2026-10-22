@@ -19,32 +19,8 @@ class PenjualanController extends Controller
     {
         $query = Penjualan::with(['user', 'pelanggan', 'detail']);
 
-        // Pencarian nomor faktur
-        if ($request->filled('cari')) {
-            $query->where(
-                'no_faktur',
-                'like',
-                '%' . $request->cari . '%'
-            );
-        }
-
-        // Filter tanggal awal
-        if ($request->filled('tanggal_awal')) {
-            $query->whereDate(
-                'tanggal',
-                '>=',
-                $request->tanggal_awal
-            );
-        }
-
-        // Filter tanggal akhir
-        if ($request->filled('tanggal_akhir')) {
-            $query->whereDate(
-                'tanggal',
-                '<=',
-                $request->tanggal_akhir
-            );
-        }
+        $query->search(['no_faktur'], $request->cari);
+        $query->dateRange('tanggal', $request->tanggal_awal, $request->tanggal_akhir);
 
         // Sorting No. Invoice Fitur Penjualan
         $sort = $request->input('sort', 'no_faktur');

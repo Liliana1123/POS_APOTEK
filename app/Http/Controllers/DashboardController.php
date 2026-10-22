@@ -682,21 +682,8 @@ class DashboardController extends Controller
         $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
         $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
 
-        if ($request->filled('dari') && $request->filled('sampai')) {
-            $baseQuery->whereBetween('created_at', [$request->dari . ' 00:00:00', $request->sampai . ' 23:59:59']);
-        }
-
-        if ($request->filled('cari')) {
-            $cari = $request->cari;
-            $baseQuery->where(function($q) use ($cari) {
-                $q->where('action', 'like', '%' . $cari . '%')
-                  ->orWhere('target', 'like', '%' . $cari . '%')
-                  ->orWhere('user_name', 'like', '%' . $cari . '%')
-                  ->orWhereHas('user', function($qu) use ($cari) {
-                      $qu->where('name', 'like', '%' . $cari . '%');
-                  });
-            });
-        }
+        $baseQuery->dateRange('created_at', $request->dari, $request->sampai);
+        $baseQuery->search(['action', 'target', 'user_name', 'user.name'], $request->cari);
 
         if ($request->filled('user_id')) {
             $baseQuery->where('user_id', $request->user_id);

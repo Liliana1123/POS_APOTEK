@@ -11,12 +11,11 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
-        if ($request->filled('cari')) {
-            $query->where('name', 'like', '%' . $request->cari . '%')
-                ->orWhere('email', 'like', '%' . $request->cari . '%');
-        }
-        $users = $query->orderBy('id')->paginate(15)->withQueryString();
+        $users = User::query()
+            ->search(['name', 'email'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('user.index', compact('users'));
     }
 

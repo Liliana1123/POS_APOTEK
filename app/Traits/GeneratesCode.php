@@ -30,7 +30,9 @@ trait GeneratesCode
         }
 
         $lastRecord = static::query()
+            ->whereNotNull($column)
             ->where($column, 'like', $fullPrefix . '%')
+            ->orderByDesc($column)
             ->orderByDesc('id')
             ->first();
 

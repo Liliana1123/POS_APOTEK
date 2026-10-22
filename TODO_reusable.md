@@ -184,30 +184,29 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## Fase 4: Eloquent Model Traits (Backend Logic)
 
 ### 4.1 Trait Generator Kode Otomatis (`GeneratesCode`)
-- [x] **Lokasi**: `app/Traits/GeneratesCode.php` (Sudah dibuat)
-- [x] **Deskripsi**: Logika terpusat untuk membuat kode berurut apotek dengan prefix (contoh: `P-0001`, `TRX-20261022-0001`).
-- **Contoh Penggunaan pada Model**:
-  ```php
-  use App\Traits\GeneratesCode;
-
-  class Barang extends Model {
-      use GeneratesCode;
-      
-      public static function boot() {
-          parent::boot();
-          static::creating(function ($model) {
-              $model->kode_apotek = self::generateSequentialCode('P', 'kode_apotek', 4);
-          });
-      }
-  }
-  ```
+- [x] **Lokasi**: `app/Traits/GeneratesCode.php` (Sudah dibuat & diintegrasikan)
+- [x] **Deskripsi**: Logika terpusat untuk membuat kode berurut apotek dengan prefix (contoh: `P-0001`, `MBR-000001`, `TRX-20261022-0001`).
+- [x] **Integrasi Model**: `app/Models/Pelanggan.php` (`generateMemberId`)
 
 ### 4.2 Trait Filter Query Eloquent (`Filterable`)
-- [x] **Lokasi**: `app/Traits/Filterable.php` (Sudah dibuat)
+- [x] **Lokasi**: `app/Traits/Filterable.php` (Sudah dibuat & diintegrasikan)
 - [x] **Deskripsi**: Query scopes yang sering dipakai controller:
-  - `scopeSearch($query, $columns, $term)`
-  - `scopeDateRange($query, $column, $from, $to)`
+  - `scopeSearch($query, $columns, $term)` (Mendukung pencarian multi-kolom dan relasi bertingkat / nested relations)
+  - `scopeDateRange($query, $column, $from, $to)` (Inklusif 00:00:00 s/d 23:59:59)
   - `scopeFilterStatus($query, $column, $status)`
+- [x] **Integrasi Model & Controller (100% Selesai)**:
+  - [x] `Pelanggan` & `PelangganController` (search multi-kolom nama, telepon, member_id)
+  - [x] `Barang` & `BarangController` (search obat, kode apotek, kfa, merk, barcode & filter status aktif)
+  - [x] `Supplier` & `SupplierController` (search nama, telepon, alamat, pic)
+  - [x] `Pabrik` & `PabrikController` (search nama, telepon)
+  - [x] `Kategori` & `KategoriController` (search nama)
+  - [x] `Satuan` & `SatuanController` (search nama)
+  - [x] `User` & `UserController` (search nama, email)
+  - [x] `Penjualan` & `PenjualanController` (search no_faktur & dateRange tanggal)
+  - [x] `Penerimaan` & `PenerimaanController` (search no_faktur, supplier.nama)
+  - [x] `Rusak` & `RusakController` (search relasi nested detailPenerimaan.barang.nama, no_batch)
+  - [x] `ActivityLog` & `DashboardController` (dateRange created_at & search action, target, user_name, user.name)
+  - [x] `WhatsAppLog` & `WhatsAppMonitorController` (search nama_member, nomor_whatsapp, isi_pesan)
 
 ---
 
@@ -272,9 +271,22 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Format penanggalan berbahasa Indonesia menjadi seragam, konsisten, dan elegan di seluruh modul apotek.
   - Berhasil diuji dan lolos validasi `php artisan view:cache`.
 
-### 5. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 5. Eksekusi Target 5 (Integrasi Backend Eloquent Model Traits: GeneratesCode & Filterable)
+* **Penyempurnaan Trait Backend**:
+  - `app/Traits/GeneratesCode.php`: Diperkuat dengan `whereNotNull($column)` dan `orderByDesc($column)->orderByDesc('id')` untuk menjamin pemilihan record sequence kode tertinggi secara konsisten.
+  - `app/Traits/Filterable.php`: Ditingkatkan untuk mendukung nested relations multi-tingkat (seperti `detailPenerimaan.barang.nama` dan `user.name`) selain kolom flat biasa.
+* **Integrasi Model & Controller**:
+  - **GeneratesCode**: Diintegrasikan langsung pada model `Pelanggan` (`generateMemberId()` menghasilkan kode urut `MBR-000001` dst).
+  - **Filterable**: Diintegrasikan ke 12 model dan controller (Pelanggan, Barang, Supplier, Pabrik, Kategori, Satuan, User, Penjualan, Penerimaan, Rusak, ActivityLog, WhatsAppLog).
+* **Keuntungan**:
+  - Menghilangkan ratusan baris query boilerplate `where(function($q) { $q->where('col', 'like', ...) })` di belasan controller.
+  - Controller menjadi sangat deklaratif, bersih, dan konsisten dalam menangani pencarian, rentang tanggal, dan status aktif.
+  - Seluruh service & routing lolos verifikasi `php artisan about` dan `php artisan view:clear`.
+
+### 6. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
 * **Target 2**: Filter rentang tanggal preset dashboard dan laba rugi menggunakan `<x-date-range-filter>`.
 * **Target 3**: Rollout directive mata uang `@rupiah(...)` pada seluruh modul kasir dan faktur penerimaan.
+* **Target 4**: Rollout directive penanggalan Indonesia `@tanggalId` dan `@tanggalWaktuId` pada 20 view aplikasi.

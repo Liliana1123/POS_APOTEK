@@ -22,12 +22,14 @@ trait Filterable
         }
 
         return $query->where(function (Builder $q) use ($columns, $term) {
-            foreach ($columns as $index => $col) {
+            foreach ($columns as $col) {
                 if (str_contains($col, '.')) {
-                    // Handle relasi misal: 'kategori.nama'
-                    [$relation, $relCol] = explode('.', $col, 2);
-                    $q->orWhereHas($relation, function (Builder $rq) use ($relCol, $term) {
-                        $rq->where($relCol, 'like', "%{$term}%");
+                    // Handle relasi bertingkat misal: 'kategori.nama' atau 'detailPenerimaan.barang.nama'
+                    $parts = explode('.', $col);
+                    $finalCol = array_pop($parts);
+                    $relationPath = implode('.', $parts);
+                    $q->orWhereHas($relationPath, function (Builder $rq) use ($finalCol, $term) {
+                        $rq->where($finalCol, 'like', "%{$term}%");
                     });
                 } else {
                     $q->orWhere($col, 'like', "%{$term}%");
