@@ -246,6 +246,51 @@ class LaporanController extends Controller
         ));
     }
 
+    /**
+     * Penelusuran riwayat penjualan per batch tertentu untuk Laporan Monitoring Stok dan Kadaluarsa.
+     */
+    public function riwayatPenjualanBatch(Request $request, $id)
+    {
+        $batch = DetailPenerimaan::with('barang')->findOrFail($id);
+
+        $salesDetails = DetailPenjualan::where('detail_penerimaan_id', $batch->id)
+            ->whereHas('penjualan')
+            ->with(['penjualan.user', 'penjualan.pelanggan'])
+            ->get();
+
+        // Urutkan riwayat berdasarkan tanggal penjualan terbaru ke terlama
+        $sorted = $salesDetails->sortByDesc(function ($item) {
+            return $item->penjualan->created_at ?? $item->penjualan->tanggal;
+        })->values();
+
+        $data = $sorted->map(function ($item, $index) {
+            $p = $item->penjualan;
+            $tanggalFormatted = $p->created_at
+                ? $p->created_at->translatedFormat('d M Y, H:i')
+                : ($p->tanggal ? \Carbon\Carbon::parse($p->tanggal)->translatedFormat('d M Y') : '—');
+
+            return [
+                'no' => $index + 1,
+                'tanggal' => $tanggalFormatted,
+                'nama_pembeli' => $p->pelanggan?->nama ?: 'Umum',
+                'no_invoice' => $p->no_faktur ?: '—',
+                'petugas' => $p->user?->name ?: '—',
+                'jumlah' => (int) $item->jumlah,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'batch' => [
+                'id' => $batch->id,
+                'no_batch' => $batch->no_batch ?? '—',
+                'barang_nama' => $batch->barang?->nama ?? '—',
+            ],
+            'total_terjual' => (int) $salesDetails->sum('jumlah'),
+            'data' => $data,
+        ]);
+    }
+
     // Laporan penerimaan barang dalam rentang tanggal
     public function penerimaan(Request $request)
     {
