@@ -140,6 +140,15 @@
                 tableContainer.innerHTML = newTable.innerHTML;
             }
 
+            var summarySelectors = ['.laporan-summary-cards', '.summary-container'];
+            summarySelectors.forEach(function(sel) {
+                var oldSum = document.querySelector(sel);
+                var newSum = doc.querySelector(sel);
+                if (oldSum && newSum) {
+                    oldSum.innerHTML = newSum.innerHTML;
+                }
+            });
+
             if (pagContainer) {
                 if (newPag && newPag.innerHTML.trim() !== '') {
                     pagContainer.innerHTML = newPag.innerHTML;
@@ -155,7 +164,7 @@
             }
 
             // Sinkronisasi link export jika ada di halaman
-            var exportLinks = document.querySelectorAll('a[data-sync-filter="true"], #btn-export-barang');
+            var exportLinks = document.querySelectorAll('a[data-sync-filter="true"], #btn-export-barang, #export-excel-btn');
             exportLinks.forEach(function(link) {
                 try {
                     var currentSearch = new URL(targetUrl, window.location.origin).search;
@@ -164,6 +173,8 @@
                     link.href = linkUrl.pathname + linkUrl.search;
                 } catch (e) {}
             });
+
+            document.dispatchEvent(new CustomEvent('live-filter:updated', { detail: { url: targetUrl } }));
         })
         .catch(function(err) {
             if (err.name !== 'AbortError') {
@@ -202,11 +213,11 @@
         triggerSearch(form, false);
     });
 
-    // Change listener (immediate for select / checkbox / radio)
+    // Change listener (immediate for select / checkbox / radio / date)
     document.addEventListener('change', function(e) {
         var form = e.target.closest('form[data-live-filter="true"]');
         if (!form) return;
-        if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox' || e.target.type === 'radio') {
+        if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox' || e.target.type === 'radio' || e.target.type === 'date') {
             triggerSearch(form, true);
         }
     });

@@ -273,7 +273,8 @@
     :reset-url="route('laporan.penjualan')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
-    :has-reset="request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang'])">
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang'])"
+    :live-search="true">
     <input type="hidden" name="sort" id="filter-sort-input" value="{{ request('sort', $sort ?? 'tanggal') }}">
     <input type="hidden" name="direction" id="filter-direction-input" value="{{ request('direction', $direction ?? 'asc') }}">
 
@@ -773,9 +774,8 @@
 
 </div>
 
-@if($penjualans->count() > 0)
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+function initPenjualanTablePagination() {
     const tableBody = document.getElementById('table-laporan-body');
     let rows = Array.from(document.querySelectorAll('.penjualan-row'));
     const totalRows = rows.length;
@@ -785,6 +785,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const paginationContainer = document.getElementById('pagination-controls');
     const pageItemCountEl = document.getElementById('page-item-count');
+
+    if (!tableBody || totalRows === 0) {
+        if (paginationContainer) paginationContainer.innerHTML = '';
+        return;
+    }
 
     // Sorting state (default tanggal ascending)
     const urlParams = new URLSearchParams(window.location.search);
@@ -833,7 +838,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Terapkan ulang urutan pada DOM dan perbarui warna belang selang-seling baris
         rows.forEach((row, idx) => {
             tableBody.appendChild(row);
             row.classList.remove('bg-white', 'bg-gray-200');
@@ -861,7 +865,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Sinkronisasi tombol Ekspor Excel
         const exportBtn = document.getElementById('export-excel-btn') || document.querySelector('a[href*="export=excel"]');
         if (exportBtn) {
             try {
@@ -874,13 +877,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Sinkronisasi form filter
         const hiddenSort = document.getElementById('filter-sort-input');
         const hiddenDir = document.getElementById('filter-direction-input');
         if (hiddenSort) hiddenSort.value = currentSort === 'invoice' ? 'no_faktur' : 'tanggal';
         if (hiddenDir) hiddenDir.value = currentDirection;
 
-        // Sinkronisasi URL address bar tanpa reload
         try {
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('sort', currentSort === 'invoice' ? 'no_faktur' : 'tanggal');
@@ -891,10 +892,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Event listener tombol sort No. Invoice
     const btnInvoice = document.getElementById('btn-sort-invoice');
     if (btnInvoice) {
-        btnInvoice.addEventListener('click', function () {
+        btnInvoice.onclick = function () {
             if (currentSort === 'invoice') {
                 currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
             } else {
@@ -904,13 +904,12 @@ document.addEventListener('DOMContentLoaded', function () {
             sortRows(currentSort, currentDirection);
             updateSortVisuals();
             renderPage(1);
-        });
+        };
     }
 
-    // Event listener tombol sort Tanggal
     const btnTanggal = document.getElementById('btn-sort-tanggal');
     if (btnTanggal) {
-        btnTanggal.addEventListener('click', function () {
+        btnTanggal.onclick = function () {
             if (currentSort === 'tanggal') {
                 currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
             } else {
@@ -920,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sortRows(currentSort, currentDirection);
             updateSortVisuals();
             renderPage(1);
-        });
+        };
     }
 
     function renderPage(page) {
@@ -950,7 +949,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (totalPages <= 1) return;
 
-        // Tombol Prev
         const prevBtn = document.createElement('button');
         prevBtn.type = 'button';
         prevBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
@@ -960,12 +958,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }`;
         prevBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.08 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>';
         prevBtn.disabled = currentPage === 1;
-        prevBtn.addEventListener('click', () => {
+        prevBtn.onclick = () => {
             if (currentPage > 1) renderPage(currentPage - 1);
-        });
+        };
         paginationContainer.appendChild(prevBtn);
 
-        // Nomor Halaman
         for (let p = 1; p <= totalPages; p++) {
             const pageBtn = document.createElement('button');
             pageBtn.type = 'button';
@@ -975,11 +972,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
             }`;
             pageBtn.textContent = p;
-            pageBtn.addEventListener('click', () => renderPage(p));
+            pageBtn.onclick = () => renderPage(p);
             paginationContainer.appendChild(pageBtn);
         }
 
-        // Tombol Next
         const nextBtn = document.createElement('button');
         nextBtn.type = 'button';
         nextBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
@@ -989,19 +985,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }`;
         nextBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>';
         nextBtn.disabled = currentPage === totalPages;
-        nextBtn.addEventListener('click', () => {
+        nextBtn.onclick = () => {
             if (currentPage < totalPages) renderPage(currentPage + 1);
-        });
+        };
         paginationContainer.appendChild(nextBtn);
     }
 
-    // Jalankan sorting ascending saat load pertama
     sortRows(currentSort, currentDirection);
     updateSortVisuals();
     renderPage(1);
-});
+}
+
+document.addEventListener('DOMContentLoaded', initPenjualanTablePagination);
+document.addEventListener('live-filter:updated', initPenjualanTablePagination);
 </script>
-@endif
 
 <script>
     function printReport() {

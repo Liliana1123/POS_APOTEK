@@ -19,6 +19,7 @@
     :reset-url="route('rusak.index')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
     @if(request()->filled('tanggal'))
         <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
@@ -206,7 +207,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $rusaks->links('vendor.pagination.apotek') }}
 </div>
 

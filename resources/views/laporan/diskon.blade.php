@@ -130,7 +130,8 @@
     :reset-url="route('laporan.diskon')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
-    :has-reset="request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan'])">
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan'])"
+    :live-search="true">
     <div class="flex items-center gap-1.5">
         <input
             type="date"

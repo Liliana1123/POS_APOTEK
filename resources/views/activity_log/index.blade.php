@@ -221,7 +221,7 @@
 
 <!-- Filter Card (Tampilan Layar) -->
 <div class="print:hidden">
-    <x-card-filter :action="route('activity-log')" :reset-url="route('activity-log')" :grid="true" grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" :has-filter="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])">
+    <x-card-filter :action="route('activity-log')" :reset-url="route('activity-log')" :grid="true" grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" :has-filter="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])" :live-search="true">
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Cari Aksi / Target</label>
             <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Ketik kata kunci..." class="form-input">
@@ -341,7 +341,7 @@
     </div>
 </div>
 
-<div class="mt-4 print:hidden">
+<div class="mt-4 print:hidden pagination-container">
     {{ $logs->links() }}
 </div>
 

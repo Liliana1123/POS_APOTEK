@@ -16,6 +16,7 @@
     :reset-url="route('custom-discount.index')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'status'])">
     <div class="relative">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
@@ -122,7 +123,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $discounts->links('vendor.pagination.apotek') }}
 </div>
 

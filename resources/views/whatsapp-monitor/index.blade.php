@@ -31,6 +31,7 @@
     :reset-url="route('whatsapp-monitor.index')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :live-search="true"
     :has-reset="$hasActiveFilter">
     @if(request()->filled('per_page'))
         <input type="hidden" name="per_page" value="{{ request('per_page') }}">
@@ -237,7 +238,7 @@
 </div>
 
 <!-- Footer Pagination (Sama persis dengan Penerimaan Barang) -->
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $logs->links('vendor.pagination.apotek') }}
 </div>
 

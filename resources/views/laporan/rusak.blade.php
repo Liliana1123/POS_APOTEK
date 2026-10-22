@@ -119,7 +119,8 @@
     :reset-url="route('laporan.rusak')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
-    :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])">
+    :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])"
+    :live-search="true">
     <div class="relative">
         <input
             type="text"

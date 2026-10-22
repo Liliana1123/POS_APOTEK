@@ -128,7 +128,8 @@
     :reset-url="route('laporan.penerimaan')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
-    :has-reset="request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran'])">
+    :has-reset="request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran'])"
+    :live-search="true">
     <div class="relative">
         <input
             type="text"

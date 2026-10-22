@@ -89,6 +89,7 @@
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
     action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
 >
     {{-- Cari No. Invoice (Dipotong 1/4 menjadi 3 dari 8 kolom) --}}
@@ -277,7 +278,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $penjualans->links('vendor.pagination.apotek') }}
 </div>
 

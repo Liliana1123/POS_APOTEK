@@ -332,7 +332,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $pelanggans->links('vendor.pagination.apotek') }}</div>
+<div class="mt-4 pagination-container">{{ $pelanggans->links('vendor.pagination.apotek') }}</div>
 
 <!-- Modal Tambah Pelanggan -->
 <x-modal-form
