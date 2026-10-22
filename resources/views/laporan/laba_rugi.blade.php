@@ -406,7 +406,7 @@
 
         {{-- KOLOM KANAN: RINGKASAN PIUTANG & UTANG --}}
         <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0"
-            style="background-color: #ffffffff; border: 1px solid #d1d1d1ff;">
+            style="background-color: #ffffffff; border: 2.5px solid #d1d1d1ff;">
             <h2 class="text-xs font-bold text-slate-800 mb-3 tracking-wide">Ringkasan Piutang & Utang</h2>
 
             <div class="space-y-4 my-auto">
