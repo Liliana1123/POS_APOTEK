@@ -34,6 +34,7 @@ class PabrikController extends Controller
         Pabrik::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Pabrik berhasil ditambahkan.');
             return response()->json(['message' => 'Pabrik berhasil ditambahkan.'], 201);
         }
 
@@ -56,6 +57,7 @@ class PabrikController extends Controller
         $pabrik->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Pabrik berhasil diperbarui.');
             return response()->json(['message' => 'Pabrik berhasil diperbarui.']);
         }
 

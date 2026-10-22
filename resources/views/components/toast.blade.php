@@ -84,22 +84,8 @@
         }, 300);
     }
 
-    // Inisialisasi auto-dismiss untuk toast sesi bawaan
-    document.addEventListener('DOMContentLoaded', function () {
-        const sessionToasts = document.querySelectorAll('#global-toast-container .toast-pill');
-        sessionToasts.forEach(toast => {
-            let timeoutId = setTimeout(() => dismissToast(toast), 3800);
-
-            // Jeda timer jika cursor user sedang membaca pesan
-            toast.addEventListener('mouseenter', () => clearTimeout(timeoutId));
-            toast.addEventListener('mouseleave', () => {
-                timeoutId = setTimeout(() => dismissToast(toast), 2000);
-            });
-        });
-    });
-
     // Global helper agar JavaScript/AJAX bisa memanggil toast seragam
-    window.showToast = function (message, type = 'success', duration = 3500) {
+    window.showToast = function (message, type = 'success', duration = 3800) {
         const container = document.getElementById('global-toast-container');
         if (!container) return;
 
@@ -154,4 +140,43 @@
             timeoutId = setTimeout(() => dismissToast(toastEl), 2000);
         });
     };
+
+    // Inisialisasi auto-dismiss untuk toast sesi bawaan dan pending toast
+    function initToasts() {
+        // 1. Cek pending toast dari sessionStorage (setelah reload AJAX modal)
+        try {
+            const pending = sessionStorage.getItem('pending_toast');
+            if (pending) {
+                sessionStorage.removeItem('pending_toast');
+                const parsed = JSON.parse(pending);
+                if (parsed && parsed.message) {
+                    const alreadyRendered = Array.from(document.querySelectorAll('#global-toast-container .toast-pill span'))
+                        .some(el => el.textContent.trim() === parsed.message.trim());
+                    if (!alreadyRendered) {
+                        window.showToast(parsed.message, parsed.type || 'success', 3800);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error pending_toast:', e);
+        }
+
+        // 2. Set timer auto-dismiss untuk toast sesi Blade yang sudah ada di HTML
+        const sessionToasts = document.querySelectorAll('#global-toast-container .toast-pill');
+        sessionToasts.forEach(toast => {
+            let timeoutId = setTimeout(() => dismissToast(toast), 3800);
+
+            // Jeda timer jika cursor user sedang membaca pesan
+            toast.addEventListener('mouseenter', () => clearTimeout(timeoutId));
+            toast.addEventListener('mouseleave', () => {
+                timeoutId = setTimeout(() => dismissToast(toast), 2000);
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initToasts);
+    } else {
+        initToasts();
+    }
 </script>

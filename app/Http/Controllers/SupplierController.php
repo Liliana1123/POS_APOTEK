@@ -35,6 +35,7 @@ class SupplierController extends Controller
         Supplier::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Supplier berhasil ditambahkan.');
             return response()->json(['message' => 'Supplier berhasil ditambahkan.'], 201);
         }
 
@@ -58,6 +59,7 @@ class SupplierController extends Controller
         $supplier->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Supplier berhasil diperbarui.');
             return response()->json(['message' => 'Supplier berhasil diperbarui.']);
         }
 

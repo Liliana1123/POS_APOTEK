@@ -50,6 +50,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil ditambahkan.');
             return response()->json(['message' => 'User berhasil ditambahkan.'], 201);
         }
 
@@ -95,6 +96,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil diperbarui.');
             return response()->json(['message' => 'User berhasil diperbarui.']);
         }
 

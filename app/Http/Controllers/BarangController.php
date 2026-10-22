@@ -102,6 +102,7 @@ class BarangController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Barang berhasil ditambahkan.');
             return response()->json(['message' => 'Barang berhasil ditambahkan.'], 201);
         }
 
@@ -143,6 +144,7 @@ class BarangController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Barang berhasil diperbarui.');
             return response()->json(['message' => 'Barang berhasil diperbarui.']);
         }
 

@@ -31,6 +31,7 @@ class SatuanController extends Controller
         Satuan::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Satuan berhasil ditambahkan.');
             return response()->json(['message' => 'Satuan berhasil ditambahkan.'], 201);
         }
 
@@ -51,6 +52,7 @@ class SatuanController extends Controller
         $satuan->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Satuan berhasil diperbarui.');
             return response()->json(['message' => 'Satuan berhasil diperbarui.']);
         }
 

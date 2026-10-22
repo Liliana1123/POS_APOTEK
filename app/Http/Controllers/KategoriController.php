@@ -31,6 +31,7 @@ class KategoriController extends Controller
         Kategori::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Kategori berhasil ditambahkan.');
             return response()->json(['message' => 'Kategori berhasil ditambahkan.'], 201);
         }
 
@@ -51,6 +52,7 @@ class KategoriController extends Controller
         $kategori->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Kategori berhasil diperbarui.');
             return response()->json(['message' => 'Kategori berhasil diperbarui.']);
         }
 

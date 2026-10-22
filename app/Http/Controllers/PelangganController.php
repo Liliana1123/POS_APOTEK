@@ -242,6 +242,7 @@ class PelangganController extends Controller
         }
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Membership berhasil ditambahkan.');
             return response()->json([
                 'success' => true,
                 'message' => 'Membership berhasil ditambahkan.',
@@ -277,6 +278,7 @@ class PelangganController extends Controller
         $pelanggan->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Data pelanggan/member berhasil diperbarui.');
             return response()->json([
                 'success' => true,
                 'message' => 'Data pelanggan/member berhasil diperbarui.',
