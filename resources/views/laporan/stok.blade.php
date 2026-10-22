@@ -431,8 +431,10 @@
 
                             <!-- Status Stok -->
                             <td class="col-stok-status-stok text-center !px-2 whitespace-nowrap">
-                                @if ($sisaStok <= 0)
+                                @if ($sisaStok === 0)
                                     <span class="badge-danger">Habis</span>
+                                @elseif ($sisaStok < 0)
+                                    <span class="badge-danger">Minus ({{ $sisaStok }})</span>
                                 @elseif ($sisaStok <= $stokMinimum)
                                     <span class="badge-warning">Menipis</span>
                                 @else

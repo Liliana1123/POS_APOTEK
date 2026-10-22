@@ -32,10 +32,6 @@ class LaporanController extends Controller
         $stokPerBatch = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah')
-            ->when($request->status_stok !== 'habis', function ($query) {
-                $query->where('aktif', true)
-                    ->where('stok', '>', 0);
-            })
             ->when($request->filled('nama'), function ($query) use ($request) {
                 $query->whereHas('barang', function ($q) use ($request) {
                     $q->where('nama', 'like', '%' . $request->nama . '%');
@@ -192,8 +188,10 @@ class LaporanController extends Controller
                     $statusExpired = 'Normal';
                 }
 
-                if ($sisaStok <= 0) {
+                if ($sisaStok === 0) {
                     $statusStok = 'Habis';
+                } elseif ($sisaStok < 0) {
+                    $statusStok = 'Minus (' . $sisaStok . ')';
                 } elseif ($sisaStok <= $stokMinimum) {
                     $statusStok = 'Menipis';
                 } else {
