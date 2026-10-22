@@ -15,96 +15,28 @@
 {{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
 {{-- ========================================================= --}}
 <div class="print-only">
-
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-
-        {{-- LOGO --}}
-        @if($apotek?->logo)
-            <img
-                src="{{ asset('storage/' . $apotek->logo) }}"
-                alt="Logo {{ $apotek->nama_apotek }}"
-                class="print-kop-logo"
-            >
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN PENGGUNAAN DISKON DAN PROMO">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('jenis'))
+            &nbsp;•&nbsp; Jenis Diskon: {{ request('jenis') === 'member' ? 'Diskon Member' : 'Custom Promo' }}
         @endif
-
-        {{-- INFORMASI APOTEK --}}
-        <div class="print-kop-info">
-
-            <h1>
-                {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
-            </h1>
-
-            @if($apotek?->alamat)
-                <p>
-                    {{ $apotek->alamat }}
-                </p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-                <p>
-                    @if($apotek?->telepon)
-                        Telp: {{ $apotek->telepon }}
-                    @endif
-
-                    @if($apotek?->telepon && $apotek?->email)
-                        &nbsp; | &nbsp;
-                    @endif
-
-                    @if($apotek?->email)
-                        Email: {{ $apotek->email }}
-                    @endif
-                </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-                <p>
-                    @if($apotek?->no_izin_sia)
-                        SIA: {{ $apotek->no_izin_sia }}
-                    @endif
-
-                    @if($apotek?->no_izin_sia && $apotek?->no_sipa)
-                        &nbsp;&nbsp;•&nbsp;&nbsp;
-                    @endif
-
-                    @if($apotek?->no_sipa)
-                        SIPA: {{ $apotek->no_sipa }}
-                    @endif
-                </p>
-            @endif
-
-        </div>
-
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>
-            LAPORAN PENGGUNAAN DISKON DAN PROMO
-        </h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            @if(request('jenis'))
-                &nbsp;•&nbsp; Jenis Diskon: {{ request('jenis') === 'member' ? 'Diskon Member' : 'Custom Promo' }}
-            @endif
-            @if(request('promo_id') && ($promoAktif = $promos->firstWhere('id', request('promo_id'))))
-                &nbsp;•&nbsp; Promo: {{ $promoAktif->nama }}
-            @endif
-            @if(request('status_pelanggan'))
-                &nbsp;•&nbsp; Status:
-                {{
-                    [
-                        'pelanggan_tetap' => 'Member Pelanggan Tetap',
-                        'keluarga_nakes' => 'Member Keluarga Nakes',
-                        'member_only' => 'Member Only',
-                        'umum' => 'Umum',
-                    ][request('status_pelanggan')] ?? 'Semua Pelanggan'
-                }}
-            @endif
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
-
+        @if(request('promo_id') && ($promoAktif = $promos->firstWhere('id', request('promo_id'))))
+            &nbsp;•&nbsp; Promo: {{ $promoAktif->nama }}
+        @endif
+        @if(request('status_pelanggan'))
+            &nbsp;•&nbsp; Status:
+            {{
+                [
+                    'pelanggan_tetap' => 'Member Pelanggan Tetap',
+                    'keluarga_nakes' => 'Member Keluarga Nakes',
+                    'member_only' => 'Member Only',
+                    'umum' => 'Umum',
+                ][request('status_pelanggan')] ?? 'Semua Pelanggan'
+            }}
+        @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 </div>
 
 <!-- Page Header Pattern -->
@@ -279,47 +211,7 @@
 {{-- ========================================================= --}}
 {{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
 {{-- ========================================================= --}}
-<div class="no-break print-signature">
-    <div class="print-signature-grid">
-        {{-- KIRI: PENANGGUNG JAWAB APOTEK --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Mengetahui,</p>
-            <p class="print-signature-role">Penanggung Jawab Apotek</p>
-
-            <div class="print-signature-space"></div>
-
-            <p class="print-signature-name">
-                @if (!empty($apotek?->nama_apoteker_pj))
-                    {{ $apotek->nama_apoteker_pj }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-
-            @if (!empty($apotek?->no_sipa))
-                <p class="print-signature-sipa">
-                    SIPA: {{ $apotek->no_sipa }}
-                </p>
-            @endif
-        </div>
-
-        {{-- KANAN: PEMBUAT LAPORAN --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Dibuat oleh,</p>
-            <p class="print-signature-role">Pembuat Laporan</p>
-
-            <div class="print-signature-space"></div>
-
-            <p class="print-signature-name">
-                @if (!empty(auth()->user()?->name))
-                    {{ auth()->user()->name }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-        </div>
-    </div>
-</div>
+<x-print-signature :apotek="$apotek" />
 
 <script>
     function printReport() {

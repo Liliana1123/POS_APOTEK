@@ -29,13 +29,11 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - [x] **File Terdampak / Status Refactor**:
   - [x] `resources/views/laporan/penjualan.blade.php` (Di-refactor)
   - [x] `resources/views/laporan/rusak.blade.php` (Di-refactor)
-  - [ ] `resources/views/laporan/laba_rugi.blade.php`
-  - [ ] `resources/views/laporan/stok.blade.php`
-  - [ ] `resources/views/laporan/penerimaan.blade.php`
-  - [ ] `resources/views/laporan/diskon.blade.php`
-  - [ ] `resources/views/activity_log/index.blade.php`
-  - [ ] `resources/views/rusak/print.blade.php`
-  - [ ] `resources/views/penerimaan/print.blade.php`
+  - [x] `resources/views/laporan/laba_rugi.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/stok.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/penerimaan.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/diskon.blade.php` (Di-refactor)
+  - [x] `resources/views/activity_log/index.blade.php` (Di-refactor)
 - **Contoh Penggunaan**:
   ```blade
   <x-print-kop :apotek="$apotek" title="LAPORAN PENJUALAN APOTEK">
@@ -49,7 +47,11 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - [x] **File Terdampak / Status Refactor**:
   - [x] `resources/views/laporan/penjualan.blade.php` (Di-refactor)
   - [x] `resources/views/laporan/rusak.blade.php` (Di-refactor)
-  - [ ] Modul laporan lainnya
+  - [x] `resources/views/laporan/laba_rugi.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/stok.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/penerimaan.blade.php` (Di-refactor)
+  - [x] `resources/views/laporan/diskon.blade.php` (Di-refactor)
+  - [x] `resources/views/activity_log/index.blade.php` (Di-refactor)
 - **Contoh Penggunaan**:
   ```blade
   <x-print-signature :apotek="$apotek" />
