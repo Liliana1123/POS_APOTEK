@@ -87,7 +87,7 @@
     :action="route('penjualan.index')"
     :reset-url="route('penjualan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
     :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
 >
     {{-- Cari No. Invoice --}}

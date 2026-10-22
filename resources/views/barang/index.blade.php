@@ -27,7 +27,7 @@
     :action="route('barang.index')"
     :reset-url="route('barang.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
     <div>

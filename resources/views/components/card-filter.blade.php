@@ -26,11 +26,9 @@
           @endif
           {{ $attributes->merge(['class' => $grid ? 'space-y-0' : 'flex flex-wrap gap-2.5 items-center']) }}>
         @if($grid)
-            <div class="flex flex-col lg:flex-row lg:items-end gap-3">
-                <div class="grid {{ $gridCols }} gap-3 flex-1 min-w-0">
-                    {{ $slot }}
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
+            <div class="grid {{ $gridCols }} gap-3 items-end">
+                {{ $slot }}
+                <div class="flex items-center gap-2">
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"

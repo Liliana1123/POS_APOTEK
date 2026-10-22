@@ -17,7 +17,7 @@
     :action="route('pelanggan.index')"
     :reset-url="route('pelanggan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
     :live-search="true"
     :has-reset="request()->filled('cari') || $status !== 'semua' || $statusPiutang !== 'semua'">
     <div>
