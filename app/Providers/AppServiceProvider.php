@@ -22,6 +22,19 @@ class AppServiceProvider extends ServiceProvider
         \Carbon\Carbon::setLocale('id');
         config(['app.locale' => 'id']);
 
+        // Blade Directives: Currency & Date Formatting
+        \Illuminate\Support\Facades\Blade::directive('rupiah', function ($expression) {
+            return "<?php echo 'Rp ' . number_format((float)($expression ?? 0), 0, ',', '.'); ?>";
+        });
+
+        \Illuminate\Support\Facades\Blade::directive('tanggalId', function ($expression) {
+            return "<?php echo !empty($expression) ? \\Carbon\\Carbon::parse($expression)->translatedFormat('d M Y') : '—'; ?>";
+        });
+
+        \Illuminate\Support\Facades\Blade::directive('tanggalWaktuId', function ($expression) {
+            return "<?php echo !empty($expression) ? \\Carbon\\Carbon::parse($expression)->translatedFormat('d M Y, H:i') : '—'; ?>";
+        });
+
         // Auto-invalidate dashboard cache when transactions/stock change
         $modelsToInvalidate = [
             \App\Models\Penjualan::class,

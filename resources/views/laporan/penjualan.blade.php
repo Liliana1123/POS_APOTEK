@@ -26,52 +26,14 @@
 {{-- ========================================================= --}}
 <div class="print-only">
 
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-        @if($apotek?->logo)
-            <img
-                src="{{ asset('storage/' . $apotek->logo) }}"
-                alt="Logo {{ $apotek->nama_apotek }}"
-                class="print-kop-logo"
-            >
-        @endif
-
-        <div class="print-kop-info">
-            <h1>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
-
-            @if($apotek?->alamat)
-                <p>{{ $apotek->alamat }}</p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-                <p>
-                    @if($apotek?->telepon) Telp: {{ $apotek->telepon }} @endif
-                    @if($apotek?->telepon && $apotek?->email) &nbsp; | &nbsp; @endif
-                    @if($apotek?->email) Email: {{ $apotek->email }} @endif
-                </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-                <p>
-                    @if($apotek?->no_izin_sia) SIA: {{ $apotek->no_izin_sia }} @endif
-                    @if($apotek?->no_izin_sia && $apotek?->no_sipa) &nbsp;&nbsp;•&nbsp;&nbsp; @endif
-                    @if($apotek?->no_sipa) SIPA: {{ $apotek->no_sipa }} @endif
-                </p>
-            @endif
-        </div>
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>LAPORAN HASIL PENJUALAN</h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
-            {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            @if(request('metode_pembayaran')) &nbsp;•&nbsp; Metode: {{ ucfirst(request('metode_pembayaran')) }} @endif
-            @if(request('jenis_transaksi')) &nbsp;•&nbsp; Jenis: {{ str_replace('_', ' ', ucfirst(request('jenis_transaksi'))) }} @endif
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN HASIL PENJUALAN">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
+        {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('metode_pembayaran')) &nbsp;•&nbsp; Metode: {{ ucfirst(request('metode_pembayaran')) }} @endif
+        @if(request('jenis_transaksi')) &nbsp;•&nbsp; Jenis: {{ str_replace('_', ' ', ucfirst(request('jenis_transaksi'))) }} @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 
     {{-- TABEL CETAK: 1 baris = 1 transaksi penjualan sesuai 10 kolom wajib --}}
     <table class="table-custom table-penjualan print-table w-full">
@@ -201,37 +163,7 @@
     {{-- ========================================================= --}}
     {{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
     {{-- ========================================================= --}}
-    <div class="no-break print-signature">
-        <div class="print-signature-grid">
-            <div class="print-signature-box">
-                <p class="print-signature-title">Mengetahui,</p>
-                <p class="print-signature-role">Penanggung Jawab Apotek</p>
-                <div class="print-signature-space"></div>
-                <p class="print-signature-name">
-                    @if(!empty($apotek?->nama_apoteker_pj))
-                        {{ $apotek->nama_apoteker_pj }}
-                    @else
-                        (____________________)
-                    @endif
-                </p>
-                @if(!empty($apotek?->no_sipa))
-                    <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
-                @endif
-            </div>
-            <div class="print-signature-box">
-                <p class="print-signature-title">Dibuat oleh,</p>
-                <p class="print-signature-role">Pembuat Laporan</p>
-                <div class="print-signature-space"></div>
-                <p class="print-signature-name">
-                    @if(!empty(auth()->user()?->name))
-                        {{ auth()->user()->name }}
-                    @else
-                        (____________________)
-                    @endif
-                </p>
-            </div>
-        </div>
-    </div>
+    <x-print-signature :apotek="$apotek" />
 
 </div>
 

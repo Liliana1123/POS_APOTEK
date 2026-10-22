@@ -20,19 +20,7 @@
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
     :live-search="true"
     :has-reset="request()->filled('cari') || $status !== 'semua' || $statusPiutang !== 'semua'">
-    <div class="relative sm:col-span-2 md:col-span-2">
-        <input
-            type="text"
-            name="cari"
-            value="{{ request('cari') }}"
-            placeholder="Cari nama, nomor HP, ID..."
-            class="form-input pr-8"
-            aria-label="Cari Pelanggan / Member"
-            title="Cari Pelanggan / Member">
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
+    <x-search-input name="cari" placeholder="Cari nama, nomor HP, ID..." class="sm:col-span-2 md:col-span-2" />
 
     <select name="status" class="form-input" aria-label="Status Member" title="Status Member">
         <option value="semua" @selected($status === 'semua')>Member: Semua</option>
@@ -351,42 +339,18 @@
     create-btn="#btn-tambah-pelanggan"
     edit-btn=""
     width="max-w-md">
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Pelanggan <span class="text-red-500">*</span></label>
-        <input type="text" name="nama" required class="form-input" placeholder="Ketik nama membership...">
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
-    </div>
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nomor HP / Telepon <span class="text-red-500">*</span></label>
-        <input type="text" name="telepon" required class="form-input" placeholder="Contoh: 08123456789">
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="telepon"></p>
-    </div>
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Alamat <span class="text-red-500">*</span></label>
-        <textarea name="alamat" required class="form-input" rows="2"></textarea>
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="alamat"></p>
-    </div>
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Tanggal Lahir</label>
-        <input type="date" name="tanggal_lahir" class="form-input">
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="tanggal_lahir"></p>
-    </div>
+    <x-form.input name="nama" label="Nama Pelanggan" required placeholder="Ketik nama membership..." />
+    <x-form.input name="telepon" label="Nomor HP / Telepon" required placeholder="Contoh: 08123456789" />
+    <x-form.textarea name="alamat" label="Alamat" required rows="2" />
+    <x-form.input type="date" name="tanggal_lahir" label="Tanggal Lahir" />
     <div id="status-member-field">
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Status Member <span class="text-red-500">*</span></label>
-        <select name="status_member" required class="form-input">
-            <option value="">Pilih status member</option>
-            <option value="Member Pelanggan Tetap">Member Pelanggan Tetap</option>
-            <option value="Member Keluarga Nakes">Member Keluarga Nakes</option>
-            <option value="Member Only">Member Only</option>
-        </select>
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="status_member"></p>
+        <x-form.select name="status_member" label="Status Member" required placeholder="Pilih status member" :options="[
+            'Member Pelanggan Tetap' => 'Member Pelanggan Tetap',
+            'Member Keluarga Nakes' => 'Member Keluarga Nakes',
+            'Member Only' => 'Member Only'
+        ]" />
     </div>
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Custom Diskon (%)</label>
-        <input type="number" name="custom_discount_percentage" min="0" max="100" step="any" class="form-input" placeholder="Kosongkan untuk diskon default 10%">
-        <p class="text-[11px] text-gray-400 mt-1 font-sans">Kosongkan untuk diskon default 10%.</p>
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="custom_discount_percentage"></p>
-    </div>
+    <x-form.input type="number" name="custom_discount_percentage" label="Custom Diskon (%)" min="0" max="100" step="any" placeholder="Kosongkan untuk diskon default 10%" hint="Kosongkan untuk diskon default 10%." />
 </x-modal-form>
 
 <!-- Modal Partials -->
