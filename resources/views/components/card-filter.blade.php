@@ -32,34 +32,26 @@
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"
-                           class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
+                           class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
                            title="Reset seluruh filter">
-                            <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
                             <span>Reset</span>
                         </a>
                     @endif
-                    <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center gap-1.5 text-xs font-semibold whitespace-nowrap box-border">
-                        <x-heroicon-o-funnel class="w-4 h-4" />
+                    <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
                         <span>{{ $label }}</span>
                     </button>
                 </div>
             </div>
         @else
             {{ $slot }}
-            <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center gap-1.5 text-xs font-semibold box-border">
-                @if($label === 'Cari')
-                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                @else
-                    <x-heroicon-o-funnel class="w-4 h-4" />
-                @endif
+            <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center text-xs font-semibold box-border">
                 <span>{{ $label }}</span>
             </button>
             @if($resetUrl && ($hasReset || request()->filled('cari') || $liveSearch))
                 <a href="{{ $resetUrl }}"
                    data-role="clear-filter"
-                   class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
+                   class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
                    title="Reset pencarian">
-                    <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
                     <span>Reset</span>
                 </a>
             @endif
