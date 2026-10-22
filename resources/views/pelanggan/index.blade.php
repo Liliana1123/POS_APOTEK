@@ -18,6 +18,7 @@
     :reset-url="route('pelanggan.index')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    :live-search="true"
     :has-reset="request()->filled('cari') || $status !== 'semua' || $statusPiutang !== 'semua'">
     <div>
         <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">

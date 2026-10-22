@@ -15,7 +15,7 @@
     $label = $submitLabel ?? ($grid ? 'Filter' : 'Cari');
 @endphp
 
-<div class="card-base p-4 mb-6">
+<div class="card-base p-4 mb-6 no-print filter-card-web">
     <form method="GET"
           action="{{ $action }}"
           @if($liveSearch)
@@ -24,27 +24,31 @@
               data-table-target="{{ $tableTarget }}"
               data-pagination-target="{{ $paginationTarget }}"
           @endif
-          {{ $attributes->merge(['class' => $grid ? 'space-y-4' : 'flex flex-wrap gap-2 items-center']) }}>
+          {{ $attributes->merge(['class' => $grid ? 'space-y-0' : 'flex flex-wrap gap-2.5 items-center']) }}>
         @if($grid)
-            <div class="grid {{ $gridCols }} gap-4">
-                {{ $slot }}
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                @if($resetUrl && ($isFiltered || $liveSearch))
-                    <a href="{{ $resetUrl }}"
-                       data-role="clear-filter"
-                       class="btn-secondary py-1.5 px-4 flex items-center justify-center {{ $isFiltered ? '' : 'hidden' }}">
-                        Clear
-                    </a>
-                @endif
-                <button type="submit" class="btn-primary flex items-center gap-2">
-                    <x-heroicon-o-funnel class="w-4 h-4" />
-                    <span>{{ $label }}</span>
-                </button>
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+                <div class="grid {{ $gridCols }} gap-3 flex-1 min-w-0">
+                    {{ $slot }}
+                </div>
+                <div class="flex items-center gap-2 shrink-0 self-end lg:self-end pb-0.5">
+                    @if($resetUrl && ($isFiltered || $liveSearch))
+                        <a href="{{ $resetUrl }}"
+                           data-role="clear-filter"
+                           class="btn-secondary py-1.5 px-3.5 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap {{ $isFiltered ? '' : 'hidden' }}"
+                           title="Reset seluruh filter">
+                            <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                    <button type="submit" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap">
+                        <x-heroicon-o-funnel class="w-4 h-4" />
+                        <span>{{ $label }}</span>
+                    </button>
+                </div>
             </div>
         @else
             {{ $slot }}
-            <button type="submit" class="btn-primary flex items-center gap-2">
+            <button type="submit" class="btn-primary py-1.5 px-4 flex items-center gap-1.5 text-xs font-semibold">
                 @if($label === 'Cari')
                     <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                 @else
@@ -55,8 +59,10 @@
             @if($resetUrl && ($hasReset || request()->filled('cari') || $liveSearch))
                 <a href="{{ $resetUrl }}"
                    data-role="clear-filter"
-                   class="btn-secondary py-1.5 px-4 flex items-center justify-center {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}">
-                    Clear
+                   class="btn-secondary py-1.5 px-3.5 flex items-center gap-1.5 text-xs font-semibold {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
+                   title="Reset pencarian">
+                    <x-heroicon-o-arrow-path class="w-3.5 h-3.5" />
+                    <span>Reset</span>
                 </a>
             @endif
         @endif
