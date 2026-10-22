@@ -32,25 +32,25 @@
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"
-                           class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
+                           class="btn-secondary h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
                            title="Reset seluruh filter">
                             <span>Reset</span>
                         </a>
                     @endif
-                    <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
+                    <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
                         <span>{{ $label }}</span>
                     </button>
                 </div>
             </div>
         @else
             {{ $slot }}
-            <button type="submit" class="btn-primary h-[34px] px-4 inline-flex items-center justify-center text-xs font-semibold box-border">
+            <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold box-border">
                 <span>{{ $label }}</span>
             </button>
             @if($resetUrl && ($hasReset || request()->filled('cari') || $liveSearch))
                 <a href="{{ $resetUrl }}"
                    data-role="clear-filter"
-                   class="btn-secondary h-[34px] px-3.5 inline-flex items-center justify-center text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
+                   class="btn-secondary h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
                    title="Reset pencarian">
                     <span>Reset</span>
                 </a>
