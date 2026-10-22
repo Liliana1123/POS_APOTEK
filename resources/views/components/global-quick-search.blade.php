@@ -1,6 +1,6 @@
 {{-- Modal Spotlight Global Quick Search (Ctrl + K) --}}
 <div id="quick-search-modal"
-     class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 md:p-20 transition-all duration-200"
+     class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 md:p-20 transition-all duration-200 no-print print:hidden"
      role="dialog"
      aria-modal="true"
      aria-labelledby="quick-search-title">

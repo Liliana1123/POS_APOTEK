@@ -1719,6 +1719,10 @@ body {
         margin: 10mm;
     }
 
+    #quick-search-modal,
+    [role="dialog"],
+    [id^="modal-"],
+    .modal-backdrop,
     #sidebar-backdrop,
     #toast-success,
     #toast-error,
@@ -1791,8 +1795,9 @@ body {
 
     .table-custom-container,
     .print-table-wrapper,
-    .overflow-x-auto,
-    .overflow-y-auto {
+    .overflow-x-auto:not(#quick-search-modal, [role="dialog"]),
+    .table-custom-container .overflow-y-auto,
+    .print-table-wrapper .overflow-y-auto {
         border: none !important;
         box-shadow: none !important;
         padding: 0 !important;
