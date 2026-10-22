@@ -592,6 +592,32 @@ class DashboardController extends Controller
                 ->get();
         });
 
+        // 12. DOKTER PENYUMBANG RESEP TERBANYAK (Bulan Ini - Cached)
+        $startOfMonth = now()->startOfMonth()->toDateString();
+        $endOfMonth = now()->endOfMonth()->toDateString();
+
+        $semuaDokterResep = DashboardCacheService::remember('semua_dokter_resep_bulan_ini', [$startOfMonth, $endOfMonth], function () use ($startOfMonth, $endOfMonth) {
+            return DB::table('penjualans')
+                ->where('jenis_transaksi', 'resep')
+                ->whereNotNull('id_dokter')
+                ->where(DB::raw('TRIM(id_dokter)'), '!=', '')
+                ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+                ->select(
+                    'id_dokter',
+                    DB::raw('MAX(nama_dokter) as nama_dokter'),
+                    DB::raw('MAX(alamat_lembaga) as alamat_lembaga'),
+                    DB::raw('COUNT(id) as total_resep'),
+                    DB::raw('SUM(total) as total_transaksi')
+                )
+                ->groupBy('id_dokter')
+                ->orderByDesc('total_resep')
+                ->orderByDesc('total_transaksi')
+                ->orderBy('id_dokter', 'asc')
+                ->get();
+        });
+
+        $topDokterResep = $semuaDokterResep->take(5);
+
         return view('dashboard', compact(
             'periode',
             'periodeLabel',
@@ -643,7 +669,9 @@ class DashboardController extends Controller
             'barangHarusDibeli',
             'topSellingMedicines',
             'leastSellingMedicines',
-            'kinerjaKaryawan'
+            'kinerjaKaryawan',
+            'topDokterResep',
+            'semuaDokterResep'
         ));
     }
 
