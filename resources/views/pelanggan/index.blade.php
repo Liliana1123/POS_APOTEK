@@ -20,46 +20,34 @@
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
     :live-search="true"
     :has-reset="request()->filled('cari') || $status !== 'semua' || $statusPiutang !== 'semua'">
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Cari Pelanggan / Member
-        </label>
-        <div class="relative">
-            <input
-                type="text"
-                name="cari"
-                value="{{ request('cari') }}"
-                placeholder="Cari nama, nomor HP, ID..."
-                class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
+    <div class="relative">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari') }}"
+            placeholder="Cari nama, nomor HP, ID..."
+            class="form-input pr-8"
+            aria-label="Cari Pelanggan / Member"
+            title="Cari Pelanggan / Member">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
     </div>
 
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Status Member
-        </label>
-        <select name="status" class="form-input">
-            <option value="semua" @selected($status === 'semua')>Semua</option>
-            <option value="pelanggan_tetap" @selected($status === 'pelanggan_tetap')>Member Pelanggan Tetap</option>
-            <option value="keluarga_nakes" @selected($status === 'keluarga_nakes')>Member Keluarga Nakes</option>
-            <option value="member_only" @selected($status === 'member_only')>Member Only</option>
-        </select>
-    </div>
+    <select name="status" class="form-input" aria-label="Status Member" title="Status Member">
+        <option value="semua" @selected($status === 'semua')>Member: Semua</option>
+        <option value="pelanggan_tetap" @selected($status === 'pelanggan_tetap')>Member Pelanggan Tetap</option>
+        <option value="keluarga_nakes" @selected($status === 'keluarga_nakes')>Member Keluarga Nakes</option>
+        <option value="member_only" @selected($status === 'member_only')>Member Only</option>
+        <option value="umum" @selected($status === 'umum')>Pelanggan Umum</option>
+    </select>
 
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Status Piutang
-        </label>
-        <select name="status_piutang" class="form-input">
-            <option value="semua" @selected($statusPiutang === 'semua')>Semua</option>
-            <option value="lunas" @selected($statusPiutang === 'lunas')>Lunas</option>
-            <option value="belum_lunas" @selected($statusPiutang === 'belum_lunas')>Belum Lunas</option>
-            <option value="terlambat" @selected($statusPiutang === 'terlambat')>Terlambat</option>
-        </select>
-    </div>
+    <select name="status_piutang" class="form-input" aria-label="Status Piutang" title="Status Piutang">
+        <option value="semua" @selected($statusPiutang === 'semua')>Piutang: Semua</option>
+        <option value="lunas" @selected($statusPiutang === 'lunas')>Lunas</option>
+        <option value="belum_lunas" @selected($statusPiutang === 'belum_lunas')>Belum Lunas</option>
+        <option value="terlambat" @selected($statusPiutang === 'terlambat')>Terlambat</option>
+    </select>
 </x-card-filter>
 
 <!-- Bar Aksi Pilihan WhatsApp Massal -->

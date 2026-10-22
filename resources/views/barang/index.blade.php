@@ -30,49 +30,34 @@
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
-        <div class="relative">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
+    <div class="relative">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8" aria-label="Cari Barang" title="Cari Barang">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
     </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Kategori</label>
-        <select name="kategori_id" class="form-input">
-            <option value="">Semua Kategori</option>
-            @foreach ($kategoris as $k)
-                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
-        <select name="butuh_resep" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
-            <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
-        <select name="aktif" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
-        <select name="stok" class="form-input">
-            <option value="">Semua</option>
-            <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
-            <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
-            <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
-        </select>
-    </div>
+    <select name="kategori_id" class="form-input" aria-label="Kategori" title="Kategori">
+        <option value="">Kategori: Semua</option>
+        @foreach ($kategoris as $k)
+            <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
+        @endforeach
+    </select>
+    <select name="butuh_resep" class="form-input" aria-label="Resep" title="Resep">
+        <option value="">Resep: Semua</option>
+        <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
+        <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
+    </select>
+    <select name="aktif" class="form-input" aria-label="Status" title="Status">
+        <option value="">Status: Semua</option>
+        <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+        <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+    </select>
+    <select name="stok" class="form-input" aria-label="Stok" title="Stok">
+        <option value="">Stok: Semua</option>
+        <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
+        <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
+        <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+    </select>
 </x-card-filter>
 
 <!-- Table Custom Wrapper -->
