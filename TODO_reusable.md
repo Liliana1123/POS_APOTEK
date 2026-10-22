@@ -149,11 +149,33 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   ```
 
 ### 3.2 Directive Tanggal Indonesia (`@tanggalId` & `@tanggalWaktuId`)
-- [x] **Lokasi**: `app/Providers/AppServiceProvider.php` (Sudah didaftarkan & diuji)
-- [x] **Deskripsi**: Menyeragamkan parsing tanggal Carbon Indonesia (`d M Y` dan `d M Y, H:i`).
+- [x] **Lokasi**: `app/Providers/AppServiceProvider.php` (Sudah didaftarkan, mendukung opsi format dinamis, & diuji)
+- [x] **Deskripsi**: Menyeragamkan parsing tanggal Carbon Indonesia (`d M Y`, `d F Y`, dan `d M Y, H:i`).
+- [x] **File Terdampak / Status Integrasi (100% Selesai)**:
+  - [x] `resources/views/penjualan/show.blade.php`
+  - [x] `resources/views/penjualan/index.blade.php`
+  - [x] `resources/views/pelanggan/show.blade.php`
+  - [x] `resources/views/pelanggan/index.blade.php`
+  - [x] `resources/views/custom_discount/index.blade.php`
+  - [x] `resources/views/whatsapp-monitor/index.blade.php`
+  - [x] `resources/views/activity_log/index.blade.php`
+  - [x] `resources/views/rusak/show.blade.php`
+  - [x] `resources/views/rusak/index.blade.php`
+  - [x] `resources/views/rusak/print.blade.php`
+  - [x] `resources/views/penerimaan/index.blade.php`
+  - [x] `resources/views/penerimaan/payment.blade.php`
+  - [x] `resources/views/penerimaan/show.blade.php`
+  - [x] `resources/views/penerimaan/susulan.blade.php`
+  - [x] `resources/views/laporan/penjualan.blade.php`
+  - [x] `resources/views/laporan/penerimaan.blade.php`
+  - [x] `resources/views/laporan/rusak.blade.php`
+  - [x] `resources/views/laporan/stok.blade.php`
+  - [x] `resources/views/laporan/diskon.blade.php`
+  - [x] `resources/views/laporan/laba_rugi.blade.php`
 - **Contoh Penggunaan**:
   ```blade
   @tanggalId($penjualan->created_at)
+  @tanggalId($penerimaan->tanggal, 'd F Y')
   @tanggalWaktuId($activity->created_at)
   ```
 
@@ -235,6 +257,24 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Kode template Blade menjadi jauh lebih ringkas, bersih, dan mudah dipelihara.
   - Pengujian sintaks dan rendering berjalan 100% aman (lolos validasi `php artisan view:cache`).
 
-### 4. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 4. Eksekusi Target 4 (Rollout Directive @tanggalId & @tanggalWaktuId ke Seluruh View Aplikasi)
+* **Penyempurnaan Engine Directive**:
+  - Directive `@tanggalId` dan `@tanggalWaktuId` di `app/Providers/AppServiceProvider.php` ditingkatkan menggunakan closure dinamis yang mendukung format kustom opsional (default `'d M Y'` atau `'d F Y'`, `'d M Y, H:i'`).
+* **Target File yang Direfaktor (20 File View)**:
+  - **Penjualan & Kasir**: `penjualan/show.blade.php` (struk & due date), `penjualan/index.blade.php` (tabel riwayat & print summary).
+  - **Pelanggan & Diskon**: `pelanggan/show.blade.php` (tanggal lahir, member since, riwayat transaksi), `pelanggan/index.blade.php` (jatuh tempo aktif), `custom_discount/index.blade.php` (tanggal mulai & selesai diskon).
+  - **Monitoring & Audit**: `whatsapp-monitor/index.blade.php` (waktu kirim & follow up), `activity_log/index.blade.php` (timestamp log audit layar & cetak).
+  - **Barang Rusak**: `rusak/show.blade.php`, `rusak/index.blade.php`, `rusak/print.blade.php` (tanggal lapor & expired date batch).
+  - **Penerimaan & Faktur**: `penerimaan/index.blade.php`, `penerimaan/payment.blade.php`, `penerimaan/show.blade.php`, `penerimaan/susulan.blade.php` (tanggal terima, tanggal faktur, jatuh tempo, riwayat pembayaran).
+  - **Seluruh Laporan Eksekutif**: `laporan/penjualan.blade.php`, `laporan/penerimaan.blade.php`, `laporan/rusak.blade.php`, `laporan/stok.blade.php`, `laporan/diskon.blade.php`, `laporan/laba_rugi.blade.php`.
+* **Keuntungan**:
+  - Mengeliminasi duplikasi kode `\Carbon\Carbon::parse(...)` dan pemanggilan `translatedFormat` yang rawan error `null`.
+  - Format penanggalan berbahasa Indonesia menjadi seragam, konsisten, dan elegan di seluruh modul apotek.
+  - Berhasil diuji dan lolos validasi `php artisan view:cache`.
+
+### 5. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
+* **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
+* **Target 2**: Filter rentang tanggal preset dashboard dan laba rugi menggunakan `<x-date-range-filter>`.
+* **Target 3**: Rollout directive mata uang `@rupiah(...)` pada seluruh modul kasir dan faktur penerimaan.

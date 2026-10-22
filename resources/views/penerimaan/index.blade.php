@@ -191,7 +191,7 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-xs text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
+                            @tanggalId($penerimaan->tanggal, 'd F Y')
                         </div>
                     </td>
 
@@ -221,7 +221,7 @@
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-xs text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
+                        @tanggalId($penerimaan->jatuh_tempo, 'd F Y')
                     </td>
 
                     {{-- Status Pembayaran --}}

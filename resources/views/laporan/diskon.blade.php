@@ -132,7 +132,7 @@
                                 {{ $usage->penjualan->no_faktur ?? 'Faktur Terhapus' }}
                             </a>
                         </td>
-                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->created_at->format('d M Y H:i') }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">@tanggalWaktuId($usage->created_at)</td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->barang_nama }}</td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
                             @php

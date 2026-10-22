@@ -294,7 +294,7 @@
                                     $today = \Illuminate\Support\Carbon::today();
                                     $due = \Illuminate\Support\Carbon::parse($jatuhTempo);
                                 @endphp
-                                <div class="font-medium text-gray-800 text-xs whitespace-nowrap">{{ $due->format('d M Y') }}</div>
+                                <div class="font-medium text-gray-800 text-xs whitespace-nowrap">@tanggalId($due)</div>
                                 @if ($due->lt($today))
                                     <span class="inline-flex items-center text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded mt-0.5 whitespace-nowrap">
                                         Terlambat

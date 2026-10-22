@@ -155,7 +155,7 @@
 
                         <!-- Tanggal Kirim -->
                         <td class="font-medium text-gray-800 whitespace-nowrap">
-                            {{ $log->waktu_kirim ? $log->waktu_kirim->translatedFormat('d M Y, H:i') : '-' }}
+                            @tanggalWaktuId($log->waktu_kirim)
                         </td>
 
                         <!-- Nama Member -->
@@ -208,7 +208,7 @@
                         <!-- Terakhir Update Follow-up -->
                         <td class="whitespace-nowrap text-xs text-gray-600 font-mono">
                             <span id="row-followup-time-{{ $log->id }}">
-                                {{ $log->waktu_follow_up ? $log->waktu_follow_up->translatedFormat('d M Y, H:i') : '-' }}
+                                @tanggalWaktuId($log->waktu_follow_up)
                             </span>
                         </td>
 

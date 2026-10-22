@@ -105,7 +105,7 @@
             </div>
             <div>
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Lahir</span>
-                <span class="text-gray-800">{{ $pelanggan->tanggal_lahir ? $pelanggan->tanggal_lahir->format('d M Y') : '—' }}</span>
+                <span class="text-gray-800">@tanggalId($pelanggan->tanggal_lahir)</span>
             </div>
             <div>
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Keterangan</span>
@@ -120,7 +120,7 @@
                 </div>
                 <div>
                     <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
-                    <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
+                    <span class="text-gray-800">@tanggalId($pelanggan->member_since)</span>
                 </div>
             @endif
         </div>
@@ -180,10 +180,10 @@
                         $totalDiskon = $penjualan->detail()->sum('diskon');
                     @endphp
                     <tr>
-                        <td class="text-gray-600">{{ $penjualan->tanggal->format('d M Y') }}</td>
+                        <td class="text-gray-600">@tanggalId($penjualan->tanggal)</td>
                         <td class="font-semibold text-gray-850 font-mono">{{ $penjualan->no_faktur }}</td>
-                        <td class="table-num font-semibold text-green-600">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</td>
-                        <td class="table-num font-bold text-gray-850">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</td>
+                        <td class="table-num font-semibold text-green-600">@rupiah($totalDiskon)</td>
+                        <td class="table-num font-bold text-gray-850">@rupiah($penjualan->total)</td>
                         <td class="text-right">
                             <a href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'pelanggan']) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
                         </td>

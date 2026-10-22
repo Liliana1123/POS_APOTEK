@@ -689,7 +689,7 @@
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/60 shrink-0">
             <div>
                 <h3 class="text-sm font-bold text-slate-800">Daftar Lengkap Beban Operasional</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} s/d {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }} (Total: <strong>Rp {{ number_format($totalBeban, 0, ',', '.') }}</strong>)</p>
+                <p class="text-xs text-slate-400 mt-0.5">Periode: @tanggalId($dari) s/d @tanggalId($sampai) (Total: <strong>@rupiah($totalBeban)</strong>)</p>
             </div>
             <button
                 type="button"
@@ -721,7 +721,7 @@
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="text-center text-slate-400 py-2.5 px-2">{{ $idx + 1 }}</td>
                                 <td class="text-center font-mono text-slate-600 py-2.5 px-3 whitespace-nowrap">
-                                    {{ $item->tanggal ? $item->tanggal->format('d M Y') : '-' }}
+                                    @tanggalId($item->tanggal)
                                 </td>
                                 <td class="py-2.5 px-3">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-orange-50 text-orange-700 border border-orange-200">

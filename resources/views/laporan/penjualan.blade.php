@@ -92,7 +92,7 @@
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     {{-- 1. Tanggal --}}
                     <td class="col-penjualan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
-                        {{ $penjualan->tanggal ? $penjualan->tanggal->format('d M Y') : '—' }}
+                        @tanggalId($penjualan->tanggal)
                     </td>
 
                     {{-- 2. No. Invoice --}}
@@ -501,7 +501,7 @@
 
                         {{-- Tanggal --}}
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                            {{ $penjualan->tanggal->format('d M Y') }}
+                            @tanggalId($penjualan->tanggal)
                         </td>
 
                         {{-- Pelanggan --}}

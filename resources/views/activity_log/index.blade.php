@@ -61,7 +61,7 @@
                         @endphp
                         <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-100' }}">
                             <td class="font-mono text-center whitespace-nowrap">
-                                {{ $log->created_at->format('d/m/Y H:i:s') }}
+                                @tanggalWaktuId($log->created_at, 'd/m/Y H:i:s')
                             </td>
                             <td class="text-center whitespace-nowrap">
                                 <span class="{{ $catBadgeClass }}">
@@ -196,7 +196,7 @@
                     @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="font-mono text-gray-600 text-xs whitespace-nowrap">
-                            {{ $log->created_at->format('d M Y H:i:s') }}
+                            @tanggalWaktuId($log->created_at, 'd M Y H:i:s')
                         </td>
                         <td>
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border {{ $catBadgeClass }}">

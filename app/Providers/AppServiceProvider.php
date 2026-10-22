@@ -28,11 +28,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         \Illuminate\Support\Facades\Blade::directive('tanggalId', function ($expression) {
-            return "<?php echo !empty($expression) ? \\Carbon\\Carbon::parse($expression)->translatedFormat('d M Y') : '—'; ?>";
+            return "<?php echo call_user_func(function(\$val, \$fmt = 'd M Y') {
+                return !empty(\$val) ? \\Carbon\\Carbon::parse(\$val)->translatedFormat(\$fmt) : '—';
+            }, {$expression}); ?>";
         });
 
         \Illuminate\Support\Facades\Blade::directive('tanggalWaktuId', function ($expression) {
-            return "<?php echo !empty($expression) ? \\Carbon\\Carbon::parse($expression)->translatedFormat('d M Y, H:i') : '—'; ?>";
+            return "<?php echo call_user_func(function(\$val, \$fmt = 'd M Y, H:i') {
+                return !empty(\$val) ? \\Carbon\\Carbon::parse(\$val)->translatedFormat(\$fmt) : '—';
+            }, {$expression}); ?>";
         });
 
         // Auto-invalidate dashboard cache when transactions/stock change

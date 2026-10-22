@@ -80,7 +80,7 @@
         </div>
         <div class="struk-meta-row">
             <span class="struk-meta-label">Tanggal</span>
-            <span class="struk-meta-value font-mono font-bold text-gray-800">{{ $penjualan->created_at ? $penjualan->created_at->format('d M Y H:i') : $penjualan->tanggal->format('d M Y') }}</span>
+            <span class="struk-meta-value font-mono font-bold text-gray-800">@tanggalWaktuId($penjualan->created_at ?: $penjualan->tanggal)</span>
         </div>
         <div class="struk-meta-row">
             <span class="struk-meta-label">Kasir</span>
@@ -102,7 +102,7 @@
         @if (strtolower($penjualan->metode_pembayaran) === 'piutang' && $penjualan->due_date)
             <div class="struk-meta-row">
                 <span class="struk-meta-label">Jatuh Tempo</span>
-                <span class="struk-meta-value font-semibold">{{ $penjualan->due_date->format('d M Y') }}</span>
+                <span class="struk-meta-value font-semibold">@tanggalId($penjualan->due_date)</span>
             </div>
         @endif
     </div>

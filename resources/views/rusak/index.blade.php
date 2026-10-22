@@ -143,7 +143,7 @@
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->translatedFormat('d F Y') }}
+                        @tanggalId($rusak->tanggal, 'd F Y')
                     </td>
 
                     {{-- Barang / Obat --}}

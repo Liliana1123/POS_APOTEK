@@ -148,13 +148,13 @@
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="col-penerimaan-no table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
-                        <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $item->penerimaan->tanggal->translatedFormat('d F Y') }}</td>
+                        <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">@tanggalId($item->penerimaan->tanggal, 'd F Y')</td>
                         <td class="col-penerimaan-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->no_faktur }}</td>
                         <td class="col-penerimaan-supplier text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
                         <td class="col-penerimaan-barang font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->barang->nama ?? '—' }}</td>
                         <td class="col-penerimaan-qty table-num font-bold text-gray-800 text-right text-xs !px-2 py-3 whitespace-nowrap">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                        <td class="col-penerimaan-harga table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
-                        <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
+                        <td class="col-penerimaan-harga table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli)</td>
+                        <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli * $item->jumlah)</td>
                     </tr>
                 @empty
                     <tr>

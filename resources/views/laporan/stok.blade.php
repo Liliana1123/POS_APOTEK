@@ -262,7 +262,7 @@
 
                             <!-- Expired -->
                             <td class="col-stok-expired text-center font-mono !px-2 whitespace-nowrap">
-                                {{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}
+                                @tanggalId($expiredDate, 'd F Y')
                             </td>
 
                             <!-- Status Expired -->

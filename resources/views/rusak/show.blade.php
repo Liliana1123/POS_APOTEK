@@ -25,7 +25,7 @@
             Tanggal Lapor
         </span>
         <strong class="text-gray-800 text-sm font-sans">
-            {{ $rusak->tanggal->translatedFormat('d F Y') }}
+            @tanggalId($rusak->tanggal, 'd F Y')
         </strong>
     </div>
 
@@ -52,7 +52,7 @@
             Expired Date
         </span>
         <strong class="text-gray-800 text-sm font-mono">
-            {{ $rusak->detailPenerimaan->expired_date?->translatedFormat('d F Y') ?? '—' }}
+            @tanggalId($rusak->detailPenerimaan->expired_date, 'd F Y')
         </strong>
     </div>
 

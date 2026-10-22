@@ -223,7 +223,7 @@
 
                         {{-- Tanggal --}}
                         <td class="text-center whitespace-nowrap">
-                            {{ $penjualan->tanggal->format('d M Y') }}
+                            @tanggalId($penjualan->tanggal)
                         </td>
 
                        {{-- Pelanggan --}}
@@ -330,7 +330,7 @@
                     </td>
 
                     <td class="border p-2">
-                        {{ $penjualan->tanggal->format('d M Y') }}
+                        @tanggalId($penjualan->tanggal)
                     </td>
 
                     <td class="border p-2">

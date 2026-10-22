@@ -107,8 +107,8 @@
                         </td>
                         <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
                         <td class="text-emerald-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_selesai->format('d M Y') }}</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_mulai)</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_selesai)</td>
                         <td>
                             <x-badge type="info">{{ $discount->cakupan }}</x-badge>
                         </td>
