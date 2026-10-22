@@ -15,8 +15,13 @@ class RusakController extends Controller
         $query = Rusak::with('detailPenerimaan.barang');
 
         if ($request->filled('cari')) {
-            $query->whereHas('detailPenerimaan.barang', function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->cari . '%');
+            $keyword = $request->cari;
+            $query->where(function($q) use ($keyword) {
+                $q->whereHas('detailPenerimaan.barang', function($sub) use ($keyword) {
+                    $sub->where('nama', 'like', '%' . $keyword . '%');
+                })->orWhereHas('detailPenerimaan', function($sub) use ($keyword) {
+                    $sub->where('no_batch', 'like', '%' . $keyword . '%');
+                });
             });
         }
 

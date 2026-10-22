@@ -118,33 +118,18 @@
     :action="route('laporan.rusak')"
     :reset-url="route('laporan.rusak')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
     :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])"
     :live-search="true">
-    <div class="relative">
+    <div class="relative sm:col-span-1 md:col-span-2">
         <input
             type="text"
-            name="nama_barang"
-            value="{{ request('nama_barang') }}"
-            placeholder="Cari nama barang..."
+            name="cari"
+            value="{{ request('cari', request('nama_barang', request('no_batch'))) }}"
+            placeholder="Cari nama barang atau no. batch..."
             class="form-input pr-8"
-            aria-label="Nama Barang"
-            title="Nama Barang"
-        >
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
-
-    <div class="relative">
-        <input
-            type="text"
-            name="no_batch"
-            value="{{ request('no_batch') }}"
-            placeholder="Cari no. batch..."
-            class="form-input pr-8 font-mono"
-            aria-label="No. Batch"
-            title="No. Batch"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch"
         >
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />

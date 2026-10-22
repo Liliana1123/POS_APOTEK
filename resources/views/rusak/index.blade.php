@@ -18,37 +18,22 @@
     :action="route('rusak.index')"
     :reset-url="route('rusak.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
     @if(request()->filled('tanggal'))
         <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
     @endif
 
-    <div class="relative">
+    <div class="relative sm:col-span-1 md:col-span-2">
         <input
             type="text"
             name="cari"
-            value="{{ request('cari') }}"
-            placeholder="Cari nama barang..."
+            value="{{ request('cari', request('no_batch')) }}"
+            placeholder="Cari nama barang atau no. batch..."
             class="form-input pr-8"
-            aria-label="Nama Barang"
-            title="Nama Barang"
-        >
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
-
-    <div class="relative">
-        <input
-            type="text"
-            name="no_batch"
-            value="{{ request('no_batch') }}"
-            placeholder="Cari no. batch..."
-            class="form-input pr-8 font-mono"
-            aria-label="No. Batch"
-            title="No. Batch"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch"
         >
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
