@@ -27,10 +27,10 @@
     :action="route('barang.index')"
     :reset-url="route('barang.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
-    <div class="relative">
+    <div class="relative sm:col-span-2 md:col-span-2 lg:col-span-2">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8" aria-label="Cari Barang" title="Cari Barang">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
