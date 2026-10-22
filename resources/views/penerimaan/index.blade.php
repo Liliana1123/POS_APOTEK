@@ -211,12 +211,12 @@
 
                     {{-- Total Transaksi --}}
                     <td class="text-right font-medium">
-                        Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                        @rupiah($penerimaan->totalTagihan())
                     </td>
 
                     {{-- Piutang --}}
                     <td class="text-right font-medium">
-                        Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                        @rupiah($penerimaan->sisaTagihan())
                     </td>
 
                     {{-- Tanggal Jatuh Tempo --}}

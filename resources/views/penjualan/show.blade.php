@@ -117,12 +117,12 @@
                     <span class="item-name block leading-tight">{{ $item->detailPenerimaan->barang->nama }}</span>
                     <div class="flex justify-between items-center mt-0.5">
                         <span class="struk-item-sub text-[10px] text-gray-500 font-normal">
-                            {{ $item->jumlah }}{{ $satuan ? ' ' . $satuan : '' }} × Rp {{ number_format($item->harga_jual, 0, ',', '.') }}
+                            {{ $item->jumlah }}{{ $satuan ? ' ' . $satuan : '' }} × @rupiah($item->harga_jual)
                             @if ($item->diskon > 0)
                                 <span class="text-red-500"> (-{{ number_format($item->diskon, 0, ',', '.') }})</span>
                             @endif
                         </span>
-                        <span class="struk-item-price text-right font-semibold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                        <span class="struk-item-price text-right font-semibold">@rupiah($item->subtotal)</span>
                     </div>
                 </div>
             </div>
@@ -150,23 +150,23 @@
         <div class="struk-discount border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
             <div class="flex justify-between">
                 <span>Subtotal Kotor</span>
-                <span>Rp {{ number_format($penjualan->total + $totalDiskon, 0, ',', '.') }}</span>
+                <span>@rupiah($penjualan->total + $totalDiskon)</span>
             </div>
             @if ($diskonMember > 0)
                 <div class="flex justify-between text-green-600">
                     <span>Diskon Member</span>
-                    <span>-Rp {{ number_format($diskonMember, 0, ',', '.') }}</span>
+                    <span>-@rupiah($diskonMember)</span>
                 </div>
             @endif
             @if ($diskonPromo > 0)
                 <div class="flex justify-between text-green-600">
                     <span>Diskon Promo</span>
-                    <span>-Rp {{ number_format($diskonPromo, 0, ',', '.') }}</span>
+                    <span>-@rupiah($diskonPromo)</span>
                 </div>
             @endif
             <div class="flex justify-between font-bold text-gray-700">
                 <span>Total Diskon</span>
-                <span>-Rp {{ number_format($totalDiskon, 0, ',', '.') }}</span>
+                <span>-@rupiah($totalDiskon)</span>
             </div>
         </div>
     @endif
@@ -174,7 +174,7 @@
     <div class="struk-total border-t border-dashed mt-2.5 pt-2.5 font-bold text-gray-800">
         <div class="flex justify-between">
             <span>TOTAL AKHIR</span>
-            <span>Rp {{ number_format($penjualan->total, 0, ',', '.') }}</span>
+            <span>@rupiah($penjualan->total)</span>
         </div>
     </div>
 

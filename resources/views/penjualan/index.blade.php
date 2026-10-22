@@ -262,12 +262,12 @@
 
                         {{-- Total Diskon --}}
                         <td class="px-5 py-3.5 text-center font-semibold text-red-600">
-                            Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                            @rupiah($penjualan->detail->sum('diskon'))
                         </td>
 
                         {{-- Total Transaksi --}}
                         <td class="text-center font-semibold whitespace-nowrap">
-                            Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                            @rupiah($penjualan->total)
                         </td>
                     </tr>
                 @empty
@@ -342,11 +342,11 @@
                     </td>
 
                     <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                        @rupiah($penjualan->detail->sum('diskon'))
                     </td>
 
                     <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                        @rupiah($penjualan->total)
                     </td>
                 </tr>
             @empty
@@ -363,14 +363,14 @@
         <div>
             <span>Total Diskon</span>
             <strong>
-                Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
+                @rupiah($totalDiskonLaporan)
             </strong>
         </div>
 
         <div>
             <span>Total Transaksi</span>
             <strong>
-                Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
+                @rupiah($totalTransaksiLaporan)
             </strong>
         </div>
     </div>

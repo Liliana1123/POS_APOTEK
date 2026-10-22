@@ -161,7 +161,7 @@
                             <td></td>
                             <td></td>
                             <td class="text-right text-slate-900 font-semibold">
-                                Rp {{ number_format($subtotalObat, 0, ',', '.') }}
+                                @rupiah($subtotalObat)
                             </td>
                             <td>
                                 @if ($kekurangan === 0)
@@ -208,10 +208,10 @@
                                     <td class="text-right font-semibold text-blue-700">{{ number_format($ev['jumlah']) }}</td>
                                     <td></td>
                                     <td></td>
-                                    <td class="text-right text-slate-700">Rp {{ number_format($hargaBeli, 0, ',', '.') }}</td>
-                                    <td class="text-right text-slate-600">{{ $hargaJual > 0 ? 'Rp ' . number_format($hargaJual, 0, ',', '.') : '-' }}</td>
+                                    <td class="text-right text-slate-700">@rupiah($hargaBeli)</td>
+                                    <td class="text-right text-slate-600">@if($hargaJual > 0) @rupiah($hargaJual) @else - @endif</td>
                                     <td class="text-right font-medium text-slate-900">
-                                        Rp {{ number_format($subtotalBatch, 0, ',', '.') }}
+                                        @rupiah($subtotalBatch)
                                     </td>
                                     <td class="text-center text-slate-600 text-xs">
                                         {{ $ev['keterangan'] ?: ($isSusulan ? 'Penerimaan susulan' : 'Penerimaan') }}
@@ -270,9 +270,9 @@
                             <td class="text-right text-blue-700 font-semibold">{{ number_format($item->jumlah) }}</td>
                             <td></td>
                             <td></td>
-                            <td class="text-right">Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
-                            <td class="text-right">{{ $item->harga_jual > 0 ? 'Rp ' . number_format($item->harga_jual, 0, ',', '.') : '' }}</td>
-                            <td class="text-right font-medium">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
+                            <td class="text-right">@rupiah($item->harga_beli)</td>
+                            <td class="text-right">@if($item->harga_jual > 0) @rupiah($item->harga_jual) @endif</td>
+                            <td class="text-right font-medium">@rupiah($item->harga_beli * $item->jumlah)</td>
                             <td class="text-emerald-700 font-semibold">Lengkap</td>
                         </tr>
                     @endforeach
@@ -307,7 +307,7 @@
                             <tr>
                                 <td class="py-1.5 px-1.5 text-gray-600">{{ $p->tanggal_bayar?->translatedFormat('d F Y') ?? '' }}</td>
                                 <td class="py-1.5 px-1.5 text-right font-medium text-emerald-600">
-                                    Rp {{ number_format($p->jumlah, 0, ',', '.') }}
+                                    @rupiah($p->jumlah)
                                 </td>
                                 <td class="py-1.5 px-1.5 text-gray-600 pl-3">{{ $p->keterangan ?? 'Pembayaran' }}</td>
                                 <td class="py-1.5 px-1.5 text-gray-500 pl-2">{{ $p->user->name ?? '' }}</td>
@@ -325,28 +325,28 @@
     <div class="card-base p-3.5 space-y-2">
         <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-100">
             <span class="text-gray-500">Total Belanja (Fisik Diterima):</span>
-            <strong class="text-gray-800 text-sm">Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}</strong>
+            <strong class="text-gray-800 text-sm">@rupiah($penerimaan->totalFaktur())</strong>
         </div>
 
         <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-100">
             <span class="text-gray-500">PPN (11%):</span>
-            <strong class="text-gray-800">Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}</strong>
+            <strong class="text-gray-800">@rupiah($penerimaan->ppn)</strong>
         </div>
 
         <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-100">
             <span class="text-gray-800 font-bold">Total Tagihan Faktur:</span>
-            <strong class="text-blue-700 text-base font-bold">Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}</strong>
+            <strong class="text-blue-700 text-base font-bold">@rupiah($penerimaan->totalTagihan())</strong>
         </div>
 
         <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-100">
             <span class="text-gray-500">Total Telah Dibayar:</span>
-            <strong class="text-emerald-600 font-bold">Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}</strong>
+            <strong class="text-emerald-600 font-bold">@rupiah($penerimaan->totalDibayar())</strong>
         </div>
 
         @if ($penerimaan->sisaTagihan() > 0)
             <div class="flex justify-between items-center text-xs pt-1 text-red-600">
                 <span class="font-bold">Sisa Hutang Faktur:</span>
-                <strong class="text-base font-bold">Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}</strong>
+                <strong class="text-base font-bold">@rupiah($penerimaan->sisaTagihan())</strong>
             </div>
         @else
             <div class="flex justify-between items-center text-xs pt-1 text-emerald-600">
@@ -358,7 +358,7 @@
         @if ($penerimaan->kelebihanPembayaran() > 0)
             <div class="flex justify-between items-center text-xs pt-1 text-amber-600">
                 <span class="font-bold">Kelebihan Bayar:</span>
-                <strong class="font-bold">Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}</strong>
+                <strong class="font-bold">@rupiah($penerimaan->kelebihanPembayaran())</strong>
             </div>
         @endif
     </div>

@@ -220,6 +220,21 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Menghapus puluhan baris form manual dan styling tombol pill yang berulang.
   - Memastikan parameter URL periode dan tanggal tersinkronisasi dengan rapi.
 
-### 3. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 3. Eksekusi Target 3 (Rollout Directive @rupiah ke Modul Transaksi & Kasir)
+* **Target File**:
+  - `resources/views/penjualan/show.blade.php`: Struk kasir thermal & modal detail transaksi (harga item, subtotal, diskon obat, total akhir).
+  - `resources/views/penjualan/index.blade.php`: Tabel riwayat penjualan & ringkasan cetak rekap grand total.
+  - `resources/views/penerimaan/payment.blade.php`: Modal pembayaran faktur hutang supplier (kartu total belanja, PPN, total tagihan, total dibayar, sisa tagihan, kelebihan bayar, batas maksimal nominal input, dan riwayat cicilan).
+  - `resources/views/penerimaan/show.blade.php`: Modal rincian faktur penerimaan (subtotal obat, harga beli & jual per batch, ringkasan belanja, PPN, total tagihan, dibayar, dan sisa hutang).
+  - `resources/views/penerimaan/index.blade.php`: Tabel daftar faktur (kolom Total Transaksi dan Sisa Piutang/Hutang).
+  - `resources/views/penerimaan/print.blade.php`: Dokumen cetak faktur penerimaan (tabel detail barang, rincian biaya PPN & belanja, serta riwayat pembayaran).
+* **Perubahan yang Diterapkan**:
+  - Menggantikan seluruh formatting manual boilerplate `Rp {{ number_format(..., 0, ',', '.') }}` dengan Blade directive terpusat `@rupiah(...)`.
+* **Keuntungan**:
+  - Mencegah inkonsistensi simbol mata uang dan pemisah ribuan (`Rp ` standar Indonesia).
+  - Kode template Blade menjadi jauh lebih ringkas, bersih, dan mudah dipelihara.
+  - Pengujian sintaks dan rendering berjalan 100% aman (lolos validasi `php artisan view:cache`).
+
+### 4. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
