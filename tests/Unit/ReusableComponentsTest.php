@@ -138,4 +138,23 @@ class ReusableComponentsTest extends TestCase
         $view->assertSee('Data Tidak Ditemukan');
         $view->assertSee('Tidak ada data yang cocok dengan kata kunci &quot;Paracetamol&quot;.', false);
     }
+
+    /**
+     * Uji komponen <x-modal>
+     */
+    public function test_modal_dialog_renders_title_subtitle_and_content(): void
+    {
+        $view = $this->blade(
+            '<x-modal id="modal-test" title="Judul Modal" subtitle="Subjudul Keterangan" close-id="btn-close-test" content-id="test-content">
+                <p>Isi Konten Modal</p>
+            </x-modal>'
+        );
+
+        $view->assertSee('id="modal-test"', false);
+        $view->assertSee('Judul Modal');
+        $view->assertSee('Subjudul Keterangan');
+        $view->assertSee('id="btn-close-test"', false);
+        $view->assertSee('id="test-content"', false);
+        $view->assertSee('Isi Konten Modal');
+    }
 }

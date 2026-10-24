@@ -147,26 +147,7 @@
                         <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli * $item->jumlah)</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                                        Penerimaan Tidak Ditemukan
-                                    @else
-                                        Penerimaan Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                                        Tidak ada data penerimaan barang masuk yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ada data penerimaan barang masuk yang terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

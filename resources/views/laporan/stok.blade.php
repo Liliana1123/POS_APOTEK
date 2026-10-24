@@ -287,26 +287,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="12" class="p-0">
-                                <div class="empty-state-container">
-                                    <div class="empty-state-title">
-                                        @if(request()->anyFilled(['nama', 'kategori_id', 'status_expired', 'status_stok']))
-                                            Stok Batch Tidak Ditemukan
-                                        @else
-                                            Stok Batch Kosong
-                                        @endif
-                                    </div>
-                                    <div class="empty-state-desc">
-                                        @if(request()->anyFilled(['nama', 'kategori_id', 'status_expired', 'status_stok']))
-                                            Tidak ada data batch obat yang cocok dengan filter kriteria Anda.
-                                        @else
-                                            Belum ada data stok batch obat yang terdaftar di sistem.
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state colspan="12" />
                     @endforelse
                 </tbody>
 

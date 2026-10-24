@@ -268,58 +268,23 @@
     </div>
 
     <!-- Modal Detail Barang Rusak -->
-    <div id="modal-detail-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Detail Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Informasi pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button type="button"
-                        onclick="closeDetailRusak()"
-                        class="text-gray-400 hover:text-gray-600 text-xl">
-                    &times;
-                </button>
-            </div>
-
-            <div id="detail-rusak-content" class="p-6">
-            </div>
-
-        </div>
-    </div>
+    <x-modal
+        id="modal-detail-rusak"
+        title="Detail Barang Rusak"
+        subtitle="Informasi pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeDetailRusak()"
+        content-id="detail-rusak-content"
+        body-class="p-6" />
 
     <!-- Modal Edit Barang Rusak -->
-    <div id="modal-edit-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Edit Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Koreksi data pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    onclick="closeEditRusak()"
-                    class="text-gray-400 hover:text-gray-600 text-xl"
-                >
-                    &times;
-                </button>
-            </div>
+    <x-modal
+        id="modal-edit-rusak"
+        title="Edit Barang Rusak"
+        subtitle="Koreksi data pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeEditRusak()"
+        body-class="p-0">
 
             <form id="form-edit-rusak" class="p-6">
 
@@ -439,9 +404,7 @@
                 </div>
 
             </form>
-
-        </div>
-    </div>
+    </x-modal>
 
 
 <script>

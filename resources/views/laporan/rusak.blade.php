@@ -107,26 +107,7 @@
                         <td class="text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->keterangan ?? '-' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="7" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                                        Barang Rusak Tidak Ditemukan
-                                    @else
-                                        Barang Rusak Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                                        Tidak ditemukan data pelaporan obat rusak yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ditemukan riwayat pelaporan obat rusak yang terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

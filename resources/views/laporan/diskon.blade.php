@@ -162,26 +162,7 @@
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan']))
-                                        Riwayat Diskon Tidak Ditemukan
-                                    @else
-                                        Riwayat Diskon Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc font-sans">
-                                    @if(request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan']))
-                                        Tidak ada data riwayat audit diskon yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ada data riwayat penggunaan diskon pada periode ini.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

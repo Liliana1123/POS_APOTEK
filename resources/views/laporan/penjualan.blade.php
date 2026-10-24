@@ -141,14 +141,7 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="10" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">Transaksi Tidak Ditemukan</div>
-                            <div class="empty-state-desc">Tidak ada data transaksi penjualan pada periode yang dipilih.</div>
-                        </div>
-                    </td>
-                </tr>
+                <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
             @endforelse
         </tbody>
         <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
@@ -615,21 +608,7 @@
                     </tr>
 
                 @empty
-
-                    <tr>
-                        <td colspan="9" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    Transaksi Tidak Ditemukan
-                                </div>
-
-                                <div class="empty-state-desc">
-                                    Tidak ada data transaksi pada filter yang dipilih.
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-
+                    <x-empty-state colspan="9" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
                 @endforelse
 
             </tbody>
