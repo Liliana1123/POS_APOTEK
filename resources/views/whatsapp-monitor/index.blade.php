@@ -237,10 +237,7 @@
     </div>
 </div>
 
-<!-- Footer Pagination (Sama persis dengan Penerimaan Barang) -->
-<div class="mt-4 pagination-container">
-    {{ $logs->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$logs" />
 
 <!-- ========================================================================= -->
 <!-- MODAL 1: Detail Pengiriman WhatsApp (Dua Kolom) -->

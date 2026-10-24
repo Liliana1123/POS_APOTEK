@@ -193,9 +193,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $rusaks->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$rusaks" />
 
     @php
         $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')

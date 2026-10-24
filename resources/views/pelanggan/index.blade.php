@@ -313,7 +313,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $pelanggans->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$pelanggans" />
 
 <!-- Modal Tambah Pelanggan -->
 <x-modal-form

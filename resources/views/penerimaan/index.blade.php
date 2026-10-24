@@ -253,9 +253,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $penerimaans->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$penerimaans" />
 
 <!-- Modal Detail Penerimaan -->
 <div id="modal-detail-penerimaan"

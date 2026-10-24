@@ -266,9 +266,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $penjualans->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$penjualans" />
 
 </div>
 

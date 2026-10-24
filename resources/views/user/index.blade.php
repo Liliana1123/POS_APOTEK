@@ -99,7 +99,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $users->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$users" />
 
 <x-modal-form
     id="modal-user"

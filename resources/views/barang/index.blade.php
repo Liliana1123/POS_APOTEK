@@ -155,7 +155,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $barangs->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$barangs" />
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form

@@ -52,7 +52,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$kategoris" />
 
 <x-modal-form
     id="modal-kategori"

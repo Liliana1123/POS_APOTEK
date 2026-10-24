@@ -52,7 +52,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $satuans->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$satuans" />
 
 <x-modal-form
     id="modal-satuan"

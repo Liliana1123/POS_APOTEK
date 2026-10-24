@@ -105,9 +105,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $discounts->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$discounts" />
 
 <!-- Modal Form CRUD Promo -->
 <x-modal-form
