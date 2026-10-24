@@ -4,16 +4,42 @@ Dokumen ini berisi panduan komprehensif, metodologi audit, serta matriks periksa
 
 ---
 
-## 🎯 Tujuan Pembersihan (Goals)
+## 📊 1. Ringkasan Analisis (Analysis Summary)
 
-1. **Kebersihan Total Repositori (Full Code Hygiene)**: Menyingkirkan file sampah stray, file default framework yang tidak terpakai (seperti `welcome.blade.php`), serta folder kosong tak bertuan.
-2. **Eliminasi Logika Usang & Bertumpuk**: Memastikan tidak ada fungsi, event listener, atau modal lama yang masih hidup berdampingan dengan komponen reusable baru.
-3. **Ramping & Cepat (Optimized Build & Cache)**: Mengurangi beban parsing Blade Compiler, meringankan bundle Vite, dan mempercepat autoloading Composer.
-4. **Keamanan Eksekusi (Zero Regression)**: Menjamin 100% fungsionalitas apotek tetap berjalan normal dengan verifikasi test suite otomatis.
+Berdasarkan audit statis dan analisis dependensi di seluruh direktori `app/`, `resources/`, `routes/`, dan root repositori, berikut adalah ringkasan metrik kondisi kode:
+
+| Parameter Metrik | Nilai Analisis | Keterangan & Catatan |
+|---|---|---|
+| **Total Ruang Lingkup Audit** | **100% Proyek** | 5 Domain Bisnis, 20 Controller, 25 Model Eloquent, 21 Folder View Blade |
+| **File Sampah & Yatim (Orphaned)** | **2 File + 1 Folder** | `welcome.blade.php` (82.5 KB), `how --stat 2ece851` (1.8 KB), folder kosong `discount-events/` |
+| **Total Kapasitas Kode Mati File** | **~84.3 KB** | Langsung membebani git commit, build tool, dan indeks pencarian IDE |
+| **Boilerplate Duplikasi Dihapus** | **288 Baris** | Telah dibersihkan dari modal manual di `penerimaan`, `rusak`, dan empty-state laporan |
+| **Boilerplate Form Siap Dipisah** | **~180 Baris** | Form tambah faktur di `penerimaan/index.blade.php` siap diisolasi ke partials |
+| **Tingkat Risiko Pembersihan** | **Rendah (Low Risk)** | Dilindungi oleh 11 Unit Test (`ReusableComponentsTest`) dan validasi `php artisan view:cache` |
+| **Target Hasil Akhir** | **Zero Dead Code** | Repositori bersih, rendering Blade lebih cepat, struktur kode 100% DRY dan modular |
 
 ---
 
-## 🗺️ Peta Cakupan Proyek (Project Scope Coverage)
+## 📋 2. Daftar Inventaris Dead Code (Dead Code Inventory)
+
+Berikut adalah daftar lengkap artefak dan kode mati yang telah teridentifikasi beserta status audit dan bukti kelayakannya untuk dihapus:
+
+| ID | Lokasi File / Komponen | Kategori | Ukuran / Baris | Status | Bukti Audit & Justifikasi Pembersihan |
+|---|---|---|---|---|---|
+| **DC-01** | `how --stat 2ece851` | File Sampah Root | 1.8 KB (30 baris) | 🔴 Siap Dihapus | Sisa redirect perintah terminal `git show` yang tidak sengaja terbuat di root. Tidak ada fungsi sistem. |
+| **DC-02** | `resources/views/welcome.blade.php` | View Yatim (Orphaned) | 82.5 KB (1.000+ baris) | 🔴 Siap Dihapus | View bawaan Laravel. Tidak ada rute di `routes/web.php` dan tidak ada controller yang memanggil `view('welcome')`. Sistem langsung menggunakan `/login` atau `/dashboard`. |
+| **DC-03** | `resources/views/discount-events/` | Direktori Kosong | 0 B (0 file) | 🔴 Siap Dihapus | Direktori kosong sisa fitur lama yang tidak pernah digunakan. |
+| **DC-04** | Boilerplate Modal di `penerimaan/index.blade.php` | Duplikasi HTML | ~150 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen universal `<x-modal>` (commit `934c8e9`). |
+| **DC-05** | Boilerplate Modal di `rusak/index.blade.php` | Duplikasi HTML | ~40 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen universal `<x-modal>` (commit `934c8e9`). |
+| **DC-06** | Blok manual `@empty` di 5 View Laporan | Duplikasi HTML | ~100 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen pintar `<x-empty-state>` (commit `934c8e9`). |
+| **DC-07** | Tag header bertumpuk `<tr> <tr>` di `penerimaan/index` | HTML Bertumpuk/Salah | 2 baris | 🟢 Sudah Dihapus | Diperbaiki menjadi single `<tr>` valid (commit `643654d`). |
+| **DC-08** | Double `.card-base` di `permission/index.blade.php` | Wrapper Bertumpuk | 4 baris | 🟢 Sudah Dihapus | Dihapus karena `.table-custom-container` sudah memiliki border/shadow kartu (commit `643654d`). |
+| **DC-09** | Form faktur besar di `penerimaan/index.blade.php:372-550` | Form Monolitik | ~180 baris | 🟡 Siap Dipisah | Perlu dipindahkan ke `penerimaan/partials/modal-tambah.blade.php` agar `index.blade.php` ramping. |
+| **DC-10** | 9 Modal di `pelanggan/partials/modal-whatsapp-piutang.blade.php` | Modal Partials | 1.200+ baris | 🟡 Perlu Audit | Perlu dipilah apakah ada modal prototype/eksperimen lama yang tidak aktif. |
+
+---
+
+## 🗺️ 3. Peta Cakupan Domain Proyek (Project Scope Coverage)
 
 Pembersihan kode mati ini mencakup **seluruh modul proyek**, yang dibagi ke dalam 5 domain operasional:
 
@@ -39,7 +65,7 @@ Pembersihan kode mati ini mencakup **seluruh modul proyek**, yang dibagi ke dala
 
 ---
 
-## 🛡️ 4 Prinsip Keamanan Pembersihan (Safety First)
+## 🛡️ 4. Prinsip Keamanan Pembersihan (Safety First)
 
 Sebelum menghapus sebaris kode atau file apa pun, terapkan 4 tahapan verifikasi ini:
 
@@ -60,109 +86,75 @@ pada controller/view      di seluruh codebase        & kompilasi view           
 
 ---
 
-## 🔍 Temuan Audit Kode Mati Proyek (Project-Wide Dead Code Findings)
+## ✅ 5. Checklist Eksekusi Bertahap (Actionable Execution Checklist)
 
-### Kategori A: File Sampah & Direktori Kosong di Repositori
-File-file yatim atau sisa eksekusi yang tidak memiliki keterkaitan dengan alur sistem.
+Gunakan daftar periksa (*checklist*) ini saat mengeksekusi pembersihan langkah demi langkah:
 
-| No | Target File / Direktori | Ukuran | Status | Tindakan Pembersihan |
-|---|---|---|---|---|
-| A.1 | `how --stat 2ece851` (di root) | 1.8 KB | 🔴 File Sampah | File sisa typo output terminal `git show`. **Wajib dihapus**. |
-| A.2 | `resources/views/welcome.blade.php` | 82.5 KB | 🔴 Yatim (Orphaned) | Template bawaan Laravel. Tidak ada rute di `routes/web.php` dan tidak ada controller yang memanggil `view('welcome')`. **Wajib dihapus**. |
-| A.3 | `resources/views/discount-events/` | 0 B | 🟡 Direktori Kosong | Folder kosong tanpa file Blade apapun. **Wajib dihapus**. |
-| A.4 | File backup `.bak`, `.old`, `.tmp` | 0 B | 🟢 Bersih | Tidak ditemukan file backup liar di dalam `resources/` maupun `app/`. |
-
----
-
-### Kategori B: Blade Views & Partials (Per Domain Proyek)
-
-#### B.1. Domain Master Data
-* [x] **Modal Konfirmasi Hapus**: Sudah distandardisasi menggunakan `<x-modal-confirm-delete>` global di layout. Modal hapus individual lama di view telah dibersihkan.
-* [x] **Aksi Tabel**: Tombol aksi pada `barang`, `supplier`, `satuan`, `pabrik`, `kategori`, `user`, dan `custom_discount` sudah menggunakan `<x-table-action>`.
-* [ ] **Modal Detail Barang**: Audit `barang/index.blade.php` untuk memastikan tidak ada markup modal lama yang tidak terpakai.
-
-#### B.2. Domain Transaksi Operasional
-* [x] **Modal Penerimaan**: 4 modal AJAX di [penerimaan/index.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/penerimaan/index.blade.php) (`detail`, `payment`, `susulan`, `edit`) sudah distandardisasi menjadi `<x-modal>`.
-* [x] **Modal Barang Rusak**: Modal detail dan edit di [rusak/index.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/rusak/index.blade.php) sudah distandardisasi menjadi `<x-modal>`.
-* [ ] **Form Raksasa Tambah Penerimaan**: [penerimaan/index.blade.php:372-550](file:///c:/xampp/htdocs/pos-apotek/resources/views/penerimaan/index.blade.php#L372-L550) berisi 180 baris form faktur baru. Rencana: Pindahkan ke `penerimaan/partials/modal-tambah.blade.php` agar file index ramping.
-* [ ] **Modal Transaksi Kasir POS**: Periksa `penjualan/create.blade.php` (`#modal-pilih-member`, `#modal-daftar-member`), pastikan tidak ada selektor modal statis yang sudah usang.
-
-#### B.3. Domain Finansial & Laporan (7 Modul Laporan)
-* [x] **Kop Surat Cetak**: 7 view laporan sudah 100% menggunakan `<x-print-kop>`.
-* [x] **Tanda Tangan Dokumen**: 7 view laporan sudah 100% menggunakan `<x-print-signature>`.
-* [x] **Tombol Aksi Cetak & Excel**: 7 view laporan sudah 100% menggunakan `<x-print-actions>`.
-* [x] **Empty State Tabel Laporan**: Blok manual 20 baris `@empty` pada laporan penerimaan, rusak, diskon, stok, dan penjualan sudah digantikan oleh `<x-empty-state>`.
-
-#### B.4. Domain CRM & WhatsApp (Pelanggan & Piutang)
-* [ ] **Partials Raksasa WhatsApp**: File `resources/views/pelanggan/partials/modal-whatsapp-piutang.blade.php` berukuran **1.200+ baris** dan mendefinisikan 9 modal berbeda. Perlu diaudit apakah seluruh 9 modal tersebut benar-benar aktif atau ada modal prototype/eksperimen lama yang sudah mati.
+### 🔹 Tahap 1: Pembersihan File Sampah & Direktori Yatim (High Priority - Zero Risk)
+- [ ] **1.1 Hapus file sisa terminal di root**:
+  - Target: `how --stat 2ece851`
+  - Perintah: `Remove-Item 'how --stat 2ece851'`
+- [ ] **1.2 Hapus view yatim Laravel default**:
+  - Target: `resources/views/welcome.blade.php` (82.5 KB)
+  - Perintah: `Remove-Item 'resources/views/welcome.blade.php'`
+- [ ] **1.3 Hapus direktori kosong**:
+  - Target: `resources/views/discount-events/`
+  - Perintah: `Remove-Item -Recurse 'resources/views/discount-events'`
+- [ ] **1.4 Verifikasi & Commit**:
+  - Jalankan: `git status`
+  - Commit: `git commit -m "chore: bersihkan file sampah root dan view yatim welcome.blade.php"`
 
 ---
 
-### Kategori C: Controller Methods & Route yang Tidak Terpakai (20 Controller)
-
-Audit terhadap seluruh rute di `routes/web.php` dan 20 Controller:
-
-| Modul Controller | File | Audit Status | Temuan / Catatan |
-|---|---|---|---|
-| **Barang** | `BarangController.php` | 🟢 Aktif | Master obat, batch, riwayat stok, barcode. |
-| **Kategori, Satuan, Pabrik, Supplier** | `*Controller.php` | 🟢 Aktif | CRUD master data ringan via modal. |
-| **Pelanggan & Piutang** | `PelangganController.php`, `PembayaranPiutangController.php` | 🟡 Perlu Audit | Periksa method preview tagihan yang mungkin sudah digantikan oleh endpoint WhatsApp. |
-| **Penerimaan & Rusak** | `PenerimaanController.php`, `RusakController.php` | 🟢 Aktif | Transaksi masuk, retur, pembayaran supplier. |
-| **Penjualan (Kasir)** | `PenjualanController.php` | 🟢 Aktif | Transaksi kasir, cetak struk thermal, invoice. |
-| **Laporan & Analytics** | `LaporanController.php` (50 KB) | 🟡 Perlu Audit | Periksa apakah ada method export/laporan lama yang rutenya sudah tidak dipakai di frontend. |
-| **Dashboard** | `DashboardController.php` (34 KB) | 🟢 Aktif | Query widget ringkasan harian/bulanan. |
-| **WhatsApp Monitoring** | `WhatsAppMonitorController.php`, `WhatsAppPiutangController.php` | 🟢 Aktif | Webhook dan dispatch pesan WhatsApp. |
-| **Permission & User** | `PermissionController.php`, `UserController.php` | 🟢 Aktif | Reset hak akses default dan manajemen staf. |
-| **Quick Search** | `QuickSearchController.php` | 🟢 Aktif | Global search shortcut (`Ctrl+K`). |
-| **Pengaturan** | `PengaturanController.php` | 🟢 Aktif | Profil apotek, SIA, SIPA, logo cetak. |
+### 🔹 Tahap 2: Pemisahan Form Raksasa ke Partials (Maintainability)
+- [ ] **2.1 Ekstrak form faktur baru penerimaan**:
+  - Buat file: `resources/views/penerimaan/partials/modal-tambah.blade.php`
+  - Pindahkan baris 372–550 dari `resources/views/penerimaan/index.blade.php` ke file partial tersebut.
+  - Panggil di `index.blade.php`: `@include('penerimaan.partials.modal-tambah')`
+- [ ] **2.2 Uji form tambah faktur**:
+  - Buka halaman `/penerimaan`, klik tombol "Tambah Faktur", pastikan form modal, input batch dinamis, dan kalkulasi total berjalan normal.
+- [ ] **2.3 Verifikasi & Commit**:
+  - Jalankan: `php artisan view:cache`
+  - Commit: `git commit -m "refactor: pisahkan form modal tambah penerimaan ke subfolder partials"`
 
 ---
 
-### Kategori D: JavaScript, Event Listener & Selektor Frontend
-
-Audit pada file script di `resources/js/`:
-
-| File Script | Area Audit | Status / Tindakan |
-|---|---|---|
-| `resources/js/shared/layout.js` | Interceptor form penghapusan `DELETE` | [x] Ditambahkan guard `data-confirmed="true"` agar tidak memunculkan modal hapus bertumpuk. |
-| `resources/js/pages/penerimaan-index.js` | Modal detail, pembayaran, susulan | [x] Sudah sinkron dengan ID pada `<x-modal>`. |
-| `resources/js/pages/penjualan-create.js` (560 baris) | Logika kasir & keranjang POS | [ ] Audit fungsi lama / variabel global yang tidak pernah dipanggil. |
-| Script modal inline di Blade | Event listener manual tombol tutup | [x] Digantikan oleh class standar `.modal-close-btn` bawaan `<x-modal>`. |
-
----
-
-### Kategori E: CSS & Styling Redundan
-
-| File / Class CSS | Area Audit | Status / Temuan |
-|---|---|---|
-| `resources/css/app.css` | `.modal-backdrop-custom`, `.modal-container-custom` | [x] Fondasi modal bersih, terhubung langsung ke `<x-modal>`. |
-| `.card-base` di luar `.table-custom-container` | `permission/index.blade.php` | [x] Sudah dibersihkan dari double border / shadow bertumpuk. |
-| Inline styles tombol aksi (`style="color: ..."`) | Seluruh file index | [ ] Standardisasi ke Tailwind color classes (misal `text-blue-600`, `text-amber-500`). |
+### 🔹 Tahap 3: Audit Rute & Controller Mati (Backend Cleanliness)
+- [ ] **3.1 Audit Rute Web**:
+  - Jalankan: `php artisan route:list --columns=method,uri,name,action`
+  - Periksa apakah ada rute eksperimen atau duplikasi closure di `routes/web.php`.
+- [ ] **3.2 Audit Unused Imports di Controller & Model**:
+  - Periksa namespace import (`use ...`) yang tidak lagi digunakan di `app/Http/Controllers/` dan `app/Models/`.
+- [ ] **3.3 Verifikasi & Commit**:
+  - Jalankan: `php artisan test`
+  - Commit: `git commit -m "refactor: rapikan namespace imports dan rute yang tidak terpakai"`
 
 ---
 
-### Kategori F: Model Eloquent & Unused PHP Imports (25 Model)
-
-| File Model | Area Audit | Status |
-|---|---|---|
-| `app/Models/Penerimaan.php`, `DetailPenerimaan.php` | Helper kalkulasi subtotal & status lunas | [x] Bersih, dipakai di komponen status-badge. |
-| `app/Models/Barang.php`, `Pelanggan.php` | Scope pencarian & filter | [x] Bersih, sinkron dengan trait `Filterable`. |
-| `app/Models/*.php` (Semua model) | Unused namespace imports (`use ...`) | [ ] Jalankan audit import PHP yang tidak terpakai di baris 1–15 setiap model. |
-
----
-
-## 📋 Urutan Eksekusi Pembersihan (Actionable Roadmap)
-
-```
-[Tahap 1: Root & Yatim] ──> [Tahap 2: Partials Form] ──> [Tahap 3: Route & Controller] ──> [Tahap 4: JS & CSS] ──> [Tahap 5: Verifikasi Final]
-- Hapus file stray root    - Pisah form tambah 180 baris - Audit route:list           - Bersihkan listener usang  - php artisan test (11/11 pass)
-- Hapus welcome.blade.php    di penerimaan/index         - Rapikan method mati        - Rapikan inline styles     - php artisan view:cache
-- Hapus discount-events/                                                                                          - npm run build
-```
+### 🔹 Tahap 4: Audit JavaScript & CSS Usang (Frontend Cleanliness)
+- [ ] **4.1 Periksa event listener tombol modal usang**:
+  - Pastikan seluruh tombol tutup modal menggunakan class `.modal-close-btn` atau ID yang terdaftar di komponen `<x-modal>`.
+- [ ] **4.2 Standardisasi tombol dialog hapus**:
+  - Pastikan tidak ada lagi tag inline `onclick="return confirm(...)"` di file view tabel, seluruhnya menggunakan atribut `data-confirm-delete` bawaan `<x-table-action>`.
+- [ ] **4.3 Rebuild Asset Frontend**:
+  - Jalankan: `npm run build`
+  - Commit: `git commit -m "chore: build bundle frontend dan bersihkan listener usang"`
 
 ---
 
-## 📝 Catatan Riwayat Pembersihan (Changelog)
+### 🔹 Tahap 5: Verifikasi Final & Dokumentasi (Final Verification)
+- [ ] **5.1 Eksekusi Seluruh Test Suite**:
+  - Jalankan: `php artisan test` (Pastikan seluruh 11 test assertions lolos 100%).
+- [ ] **5.2 Kompilasi Penuh Seluruh View Blade**:
+  - Jalankan: `php artisan view:clear ; php artisan view:cache ; php artisan view:clear`
+- [ ] **5.3 Update Log Riwayat di `deadcode-removal.md`**:
+  - Catat tanggal, commit hash, dan ringkasan pembersihan pada tabel Changelog di bawah ini.
+- [ ] **5.4 Push ke Git Remote**:
+  - Jalankan: `git push origin risang-fitur-data-master`
+
+---
+
+## 📝 6. Catatan Riwayat Pembersihan (Changelog)
 
 | Tanggal | Target Pembersihan | Dampak / Hasil | Ref Commit |
 |---|---|---|---|
