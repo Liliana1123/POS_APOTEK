@@ -157,7 +157,7 @@ Gunakan daftar periksa (*checklist*) ini saat mengeksekusi pembersihan langkah d
 ## 📝 6. Catatan Riwayat Pembersihan (Changelog)
 
 | Tanggal | Target Pembersihan | Dampak / Hasil | Ref Commit |
-| **2026-10-24** | File Sampah Root & View Yatim (`welcome.blade.php` 82.5 KB) | Dihapus 84.3 KB kode mati dan folder kosong `discount-events/`. | (Tahap 1) |
+| **2026-10-24** | File Sampah Root & View Yatim (`welcome.blade.php` 82.5 KB) | Dihapus 84.3 KB kode mati dan folder kosong `discount-events/`. | `dcebc9f` |
 | **2026-10-24** | Duplikasi Modal di `penerimaan/index` & `rusak/index` | Dihapus 180+ baris HTML manual, distandardisasi ke `<x-modal>`. | `934c8e9` |
 | **2026-10-24** | Duplikasi Empty State Laporan (5 views) | Dihapus 100+ baris blok manual, distandardisasi ke `<x-empty-state>`. | `934c8e9` |
 | **2026-10-24** | Tag Header Bertumpuk `<tr> <tr>` di `penerimaan/index` | Diperbaiki sintaks HTML yang salah dan nested table row. | `643654d` |
