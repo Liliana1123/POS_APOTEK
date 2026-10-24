@@ -29,64 +29,9 @@
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
-                @php
-                    $statusMember = trim((string) $pelanggan->status_member);
-                @endphp
-
-                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #F3E8FF; 
-                            color: #7E22CE; 
-                        " 
-                    > 
-                        Member Keluarga Nakes 
-                    </span> 
-
-                @elseif($pelanggan->status_member === 'Member Only') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #FEF9C3; 
-                            color: #A16207; 
-                        " 
-                    > 
-                        Member Only 
-                    </span> 
-
-                @else 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #DCFCE7; 
-                            color: #15803D; 
-                        " 
-                    > 
-                        Member Pelanggan Tetap 
-                    </span> 
-                @endif
+                <div class="mt-1">
+                    <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" />
+                </div>
             </div>
         </div>
 

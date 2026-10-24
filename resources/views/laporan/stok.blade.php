@@ -267,27 +267,7 @@
 
                             <!-- Status Expired -->
                             <td class="col-stok-status-exp text-center !px-2 whitespace-nowrap">
-                                @if (!$expiredDate)
-                                    <span class="badge-secondary">
-                                        Tidak Ada Tanggal
-                                    </span>
-                                @elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today))
-                                    <span class="badge-danger">
-                                        KADALUARSA
-                                    </span>
-                                @elseif ($expiredDate->lt($oneMonth))
-                                    <span class="badge-orange">
-                                        < 1 Bulan
-                                    </span>
-                                @elseif ($expiredDate->lt($threeMonths))
-                                    <span class="badge-warning">
-                                        < 3 Bulan
-                                    </span>
-                                @else
-                                    <span class="badge-success">
-                                        Normal
-                                    </span>
-                                @endif
+                                <x-status-badge type="expired" :date="$expiredDate" />
                             </td>
 
                             <!-- Stok Awal -->
@@ -312,15 +292,7 @@
 
                             <!-- Status Stok -->
                             <td class="col-stok-status-stok text-center !px-2 whitespace-nowrap">
-                                @if ($sisaStok === 0)
-                                    <span class="badge-danger">Habis</span>
-                                @elseif ($sisaStok < 0)
-                                    <span class="badge-danger">Minus ({{ $sisaStok }})</span>
-                                @elseif ($sisaStok <= $stokMinimum)
-                                    <span class="badge-warning">Menipis</span>
-                                @else
-                                    <span class="badge-success">Aman</span>
-                                @endif
+                                <x-status-badge type="stok" :stok="$sisaStok" :min="$stokMinimum" />
                             </td>
                         </tr>
 

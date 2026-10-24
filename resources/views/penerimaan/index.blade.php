@@ -202,11 +202,7 @@
 
                     {{-- Status Penerimaan --}}
                     <td class="text-center">
-                        @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                            <span class="badge-success">Lengkap</span>
-                        @else
-                            <span class="badge-warning">Belum Lengkap</span>
-                        @endif
+                        <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
                     </td>
 
                     {{-- Total Transaksi --}}
@@ -226,11 +222,7 @@
 
                     {{-- Status Pembayaran --}}
                     <td class="text-center">
-                        @if ($penerimaan->lunas)
-                            <span class="badge-success">Lunas</span>
-                        @else
-                            <span class="badge-warning">Belum Lunas</span>
-                        @endif
+                        <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
                     </td>
 
                 </tr>

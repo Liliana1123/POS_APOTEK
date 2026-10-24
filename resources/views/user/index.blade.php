@@ -85,24 +85,10 @@
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
-@php
-    $roleVariant = match($user->role) {
-        'superadmin' => 'danger',
-        'admin' => 'info',
-        'apoteker' => 'warning',
-        'gudang' => 'secondary',
-        'kasir' => 'success',
-        default => 'gray',
-    };
-@endphp
-<x-badge :variant="$roleVariant">
-    {{ ucfirst($user->role) }}
-</x-badge>
+                            <x-status-badge type="role" :status="$user->role" />
                         </td>
                         <td class="text-center">
-                            <x-badge :variant="$user->aktif ? 'success' : 'danger'">
-                                {{ $user->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </x-badge>
+                            <x-status-badge type="aktif" :status="$user->aktif" />
                         </td>
                     </tr>
                 @empty

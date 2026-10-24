@@ -144,9 +144,7 @@
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
-                            <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
-                                {{ $barang->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </x-badge>
+                            <x-status-badge type="aktif" :status="$barang->aktif" />
                         </td>
                     </tr>
                 @empty

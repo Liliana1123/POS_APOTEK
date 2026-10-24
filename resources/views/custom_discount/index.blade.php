@@ -53,25 +53,6 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($discounts as $index => $discount)
-                    @php
-                        $today = now()->format('Y-m-d');
-                        $startDate = $discount->tanggal_mulai->format('Y-m-d');
-                        $endDate = $discount->tanggal_selesai->format('Y-m-d');
-
-                        if (!$discount->aktif) {
-                            $statusText = 'Non-aktif';
-                            $statusType = 'secondary';
-                        } elseif ($startDate > $today) {
-                            $statusText = 'Belum Mulai';
-                            $statusType = 'warning';
-                        } elseif ($endDate < $today) {
-                            $statusText = 'Berakhir';
-                            $statusType = 'danger';
-                        } else {
-                            $statusText = 'Aktif';
-                            $statusType = 'success';
-                        }
-                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
                             <x-table-action
@@ -113,7 +94,7 @@
                             <x-badge type="info">{{ $discount->cakupan }}</x-badge>
                         </td>
                         <td class="text-center">
-                            <x-badge :type="$statusType">{{ $statusText }}</x-badge>
+                            <x-status-badge type="promo" :value="$discount" />
                         </td>
                     </tr>
                 @empty

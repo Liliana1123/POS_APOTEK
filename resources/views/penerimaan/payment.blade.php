@@ -29,22 +29,14 @@
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Pembayaran</span>
             <div class="mt-0.5">
-                @if ($penerimaan->lunas)
-                    <span class="badge-success">Lunas</span>
-                @else
-                    <span class="badge-warning">Belum Lunas</span>
-                @endif
+                <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
             </div>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Penerimaan</span>
             <div class="mt-0.5">
-                @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                    <span class="badge-success">Lengkap</span>
-                @else
-                    <span class="badge-warning">Belum Lengkap</span>
-                @endif
+                <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
             </div>
         </div>
 

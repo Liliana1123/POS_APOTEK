@@ -234,19 +234,7 @@
                                         {{ $penjualan->pelanggan->nama }}
                                     </span>
 
-                                     @php
-                                        $statusMember = trim((string) $penjualan->pelanggan->status_member);
-
-                                        $memberVariant = match($statusMember) {
-                                            'Member Keluarga Nakes' => 'info',
-                                            'Member Only' => 'warning',
-                                            default => 'success',
-                                        };
-                                    @endphp
-
-                                    <x-badge :variant="$memberVariant">
-                                        {{ $statusMember ?: 'Member Pelanggan Tetap' }}
-                                    </x-badge>
+                                    <x-status-badge type="member" :value="$penjualan->pelanggan->status_member ?: 'Member Pelanggan Tetap'" />
                                 </div>
                             @else
                                 <span class="text-gray-600 font-medium">

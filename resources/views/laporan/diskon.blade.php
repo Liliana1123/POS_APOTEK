@@ -165,11 +165,7 @@
                             </div>
                         </td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                            @if ($usage->jenis === 'member')
-                                <span class="badge-info">Member</span>
-                            @else
-                                <span class="badge-neutral">Custom Promo</span>
-                            @endif
+                            <x-status-badge :variant="$usage->jenis === 'member' ? 'info' : 'secondary'" :label="$usage->jenis === 'member' ? 'Member' : 'Custom Promo'" />
                         </td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->persentase }}%</td>

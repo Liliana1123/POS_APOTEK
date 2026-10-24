@@ -266,24 +266,10 @@
                             <div class="text-[11px] text-gray-500 font-mono mt-0.5 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</div>
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            @php
-                                $statusMember = trim((string) $pelanggan->status_member);
-                                $memberVariant = match($statusMember) {
-                                    'Member Keluarga Nakes' => 'info',
-                                    'Member Only' => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <x-badge :variant="$memberVariant" class="whitespace-nowrap">
-                                {{ $statusMember ?: 'Member Pelanggan Tetap' }}
-                            </x-badge>
+                            <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" class="whitespace-nowrap" />
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            @if(($pelanggan->saldo_piutang ?? 0) > 0)
-                                <x-badge variant="danger" class="whitespace-nowrap">Belum Lunas</x-badge>
-                            @else
-                                <x-badge variant="success" class="whitespace-nowrap">Lunas</x-badge>
-                            @endif
+                            <x-status-badge type="pembayaran" :status="($pelanggan->saldo_piutang ?? 0) <= 0" class="whitespace-nowrap" />
                         </td>
                         <td class="text-center whitespace-nowrap">
                             @php
