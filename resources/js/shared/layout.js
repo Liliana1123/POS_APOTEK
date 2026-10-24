@@ -378,8 +378,20 @@ function initShellInteractions() {
     document.addEventListener('submit', function (e) {
         var form = e.target;
         if (form.method.toLowerCase() === 'post' && form.querySelector('input[name="_method"][value="DELETE"]')) {
+            // Jangan intercept jika form berasal dari komponen x-modal-confirm-delete atau sudah terkonfirmasi
+            if (form.id === 'modal-confirm-delete-form' || form.dataset.confirmed === 'true' || form.closest('#modal-confirm-delete')) {
+                return;
+            }
+
             if (!form.dataset.confirmed) {
                 e.preventDefault();
+
+                // Jika x-modal-confirm-delete tersedia secara global, gunakan modal tersebut
+                if (typeof window.confirmDelete === 'function') {
+                    window.confirmDelete(form.action);
+                    return;
+                }
+
                 var modal = document.createElement('div');
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (

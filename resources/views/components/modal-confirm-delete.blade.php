@@ -36,7 +36,7 @@
         </div>
 
         <!-- Form Aksi Hapus -->
-        <form id="{{ $id }}-form" method="POST" action="">
+        <form id="{{ $id }}-form" method="POST" action="" data-confirmed="true">
             @csrf
             @method('DELETE')
 
@@ -122,6 +122,18 @@
 
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', window.closeDeleteModal);
+            }
+
+            if (formEl) {
+                formEl.addEventListener('submit', function () {
+                    formEl.dataset.confirmed = 'true';
+                    const submitBtn = document.getElementById(modalId + '-btn-confirm');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                        submitBtn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Menghapus...</span>';
+                    }
+                });
             }
 
             // Tutup jika klik backdrop
