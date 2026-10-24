@@ -11,12 +11,11 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
-        if ($request->filled('cari')) {
-            $query->where('name', 'like', '%' . $request->cari . '%')
-                ->orWhere('email', 'like', '%' . $request->cari . '%');
-        }
-        $users = $query->orderBy('id')->paginate(15)->withQueryString();
+        $users = User::query()
+            ->search(['name', 'email'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('user.index', compact('users'));
     }
 
@@ -51,6 +50,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil ditambahkan.');
             return response()->json(['message' => 'User berhasil ditambahkan.'], 201);
         }
 
@@ -96,6 +96,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil diperbarui.');
             return response()->json(['message' => 'User berhasil diperbarui.']);
         }
 

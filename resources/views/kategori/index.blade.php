@@ -16,12 +16,7 @@
     :reset-url="route('kategori.index')"
     :live-search="true"
     :has-reset="request()->filled('cari')">
-    <div class="relative shrink-0 w-full sm:w-64">
-        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama kategori..." class="form-input pr-8">
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
+    <x-search-input name="cari" placeholder="Cari nama kategori..." class="shrink-0 w-full sm:w-[360px]" />
 </x-card-filter>
 
 <div class="table-custom-container">
@@ -67,10 +62,6 @@
     update-base="{{ url('kategori') }}"
     create-btn="#btn-tambah-kategori"
     edit-btn=".btn-edit-kategori">
-    <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Kategori <span class="text-red-500">*</span></label>
-        <input type="text" name="nama" required class="form-input" placeholder="Masukkan nama kategori...">
-        <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
-    </div>
+    <x-form.input name="nama" label="Nama Kategori" required placeholder="Masukkan nama kategori..." />
 </x-modal-form>
 @endsection

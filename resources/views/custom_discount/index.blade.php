@@ -11,49 +11,30 @@
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('custom-discount.index') }}" class="space-y-4" id="filter-form">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Promo
-                </label>
-                <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('custom-discount.index')"
+    :reset-url="route('custom-discount.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'status'])">
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
+            class="form-input pr-8" aria-label="Nama Promo" title="Nama Promo">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Promo
-                </label>
-                <select name="status" class="form-input">
-                    <option value="">Semua Status</option>
-                    <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
-                    <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>
-                    <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
-                    <option value="nonaktif" @selected(request('status') === 'nonaktif')>Non-aktif</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'status']))
-                <a href="{{ route('custom-discount.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
-            @endif
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <select name="status" class="form-input sm:col-span-2 md:col-span-3" aria-label="Status Promo" title="Status Promo">
+        <option value="">Status: Semua</option>
+        <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
+        <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>
+        <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
+        <option value="nonaktif" @selected(request('status') === 'nonaktif')>Non-aktif</option>
+    </select>
+</x-card-filter>
 
 <!-- Table Card -->
 <div class="table-custom-container">
@@ -126,8 +107,8 @@
                         </td>
                         <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
                         <td class="text-emerald-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_selesai->format('d M Y') }}</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_mulai)</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_selesai)</td>
                         <td>
                             <x-badge type="info">{{ $discount->cakupan }}</x-badge>
                         </td>
@@ -143,7 +124,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $discounts->links('vendor.pagination.apotek') }}
 </div>
 

@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
+    use Filterable;
+
     protected $fillable = ['name', 'email', 'password', 'role', 'aktif'];
 
     protected $hidden = ['password', 'remember_token'];

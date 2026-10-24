@@ -18,50 +18,12 @@
 {{-- ========================================================= --}}
 <div class="print-only">
 
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-        @if($apotek?->logo)
-            <img
-                src="{{ asset('storage/' . $apotek->logo) }}"
-                alt="Logo {{ $apotek->nama_apotek }}"
-                class="print-kop-logo"
-            >
-        @endif
-
-        <div class="print-kop-info">
-            <h1>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
-
-            @if($apotek?->alamat)
-                <p>{{ $apotek->alamat }}</p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-                <p>
-                    @if($apotek?->telepon) Telp: {{ $apotek->telepon }} @endif
-                    @if($apotek?->telepon && $apotek?->email) &nbsp; | &nbsp; @endif
-                    @if($apotek?->email) Email: {{ $apotek->email }} @endif
-                </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-                <p>
-                    @if($apotek?->no_izin_sia) SIA: {{ $apotek->no_izin_sia }} @endif
-                    @if($apotek?->no_izin_sia && $apotek?->no_sipa) &nbsp;&nbsp;•&nbsp;&nbsp; @endif
-                    @if($apotek?->no_sipa) SIPA: {{ $apotek->no_sipa }} @endif
-                </p>
-            @endif
-        </div>
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>LAPORAN LABA RUGI & FINANSIAL</h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
-            {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN LABA RUGI & FINANSIAL">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
+        {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 
     {{-- RINGKASAN EKSEKUTIF CETAK --}}
     <div class="print-section mb-4">
@@ -207,66 +169,24 @@
         </div>
 
         {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
-        <div class="flex flex-wrap items-center gap-2">
-            {{-- Tombol Preset Periode --}}
-            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'hari_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Hari Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'minggu_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Minggu Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'bulan_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Bulan Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'tahun_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Tahun Ini
-                </a>
-                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Custom
-                </button>
-            </div>
-
-            {{-- Form Rentang Tanggal Custom (hanya tampil saat Custom aktif) --}}
-            <form method="GET" action="{{ route('laporan.laba-rugi') }}" id="customDateContainer" class="{{ $currentPeriode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
-                <input type="hidden" name="periode" value="custom">
-                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <span class="text-xs text-gray-400">s/d</span>
-                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
-            </form>
-        </div>
+        <x-date-range-filter
+            :action="route('laporan.laba-rugi')"
+            :periode="$currentPeriode"
+            :dari="$dari"
+            :sampai="$sampai"
+        />
     </div>
 </div>
 
 {{-- Flash Notification Alerts --}}
-@if(session('success'))
-    <div class="mb-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 shadow-sm print:hidden">
-        <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-600 shrink-0" />
-        <div class="font-medium flex-1">{{ session('success') }}</div>
-        <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
-            <x-heroicon-o-x-mark class="h-4 w-4" />
-        </button>
-    </div>
-@endif
-
 @if(isset($errors) && $errors->any())
-    <div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800 shadow-sm print:hidden">
-        <div class="font-bold mb-1 flex items-center gap-2">
-            <x-heroicon-o-exclamation-triangle class="h-4 w-4 text-rose-600" />
-            <span>Terjadi kesalahan saat memproses data:</span>
-        </div>
-        <ul class="list-disc list-inside space-y-0.5 text-rose-700 pl-1">
+    <x-alert type="danger" title="Terjadi kesalahan saat memproses data:" class="print:hidden">
+        <ul class="list-disc list-inside space-y-0.5 pl-1">
             @foreach($errors->all() as $err)
                 <li>{{ $err }}</li>
             @endforeach
         </ul>
-    </div>
+    </x-alert>
 @endif
 
 {{-- ========================================================= --}}
@@ -755,7 +675,7 @@
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/60 shrink-0">
             <div>
                 <h3 class="text-sm font-bold text-slate-800">Daftar Lengkap Beban Operasional</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} s/d {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }} (Total: <strong>Rp {{ number_format($totalBeban, 0, ',', '.') }}</strong>)</p>
+                <p class="text-xs text-slate-400 mt-0.5">Periode: @tanggalId($dari) s/d @tanggalId($sampai) (Total: <strong>@rupiah($totalBeban)</strong>)</p>
             </div>
             <button
                 type="button"
@@ -787,7 +707,7 @@
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="text-center text-slate-400 py-2.5 px-2">{{ $idx + 1 }}</td>
                                 <td class="text-center font-mono text-slate-600 py-2.5 px-3 whitespace-nowrap">
-                                    {{ $item->tanggal ? $item->tanggal->format('d M Y') : '-' }}
+                                    @tanggalId($item->tanggal)
                                 </td>
                                 <td class="py-2.5 px-3">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-orange-50 text-orange-700 border border-orange-200">
@@ -854,39 +774,7 @@
 {{-- SCRIPT INTERAKSI MODAL & FILTER --}}
 {{-- ========================================================= --}}
 {{-- Signature Section for Print PDF --}}
-<div class="no-break print-signature">
-    <div class="print-signature-grid">
-        {{-- Left: Penanggung Jawab Apotek --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Mengetahui,</p>
-            <p class="print-signature-role">Penanggung Jawab Apotek</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if (!empty($apotek->nama_apoteker_pj))
-                    {{ $apotek->nama_apoteker_pj }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-            @if (!empty($apotek->no_sipa))
-                <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
-            @endif
-        </div>
-        {{-- Right: Pembuat Laporan --}}
-        <div class="print-signature-box text-right">
-            <p class="print-signature-title">Dibuat oleh,</p>
-            <p class="print-signature-role">Pembuat Laporan</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if (!empty(auth()->user()->name))
-                    {{ auth()->user()->name }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-        </div>
-    </div>
-</div>
+<x-print-signature :apotek="$apotek" />
 {{-- End of Signature Section --}}
 <script>
 // Toggle tampilan form custom date (sama dengan Dashboard)

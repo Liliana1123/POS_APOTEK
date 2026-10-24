@@ -9,11 +9,11 @@ class KategoriController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kategori::query();
-        if ($request->filled('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
-        }
-        $kategoris = $query->orderBy('id')->paginate(15)->withQueryString();
+        $kategoris = Kategori::query()
+            ->search(['nama'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('kategori.index', compact('kategoris'));
     }
 
@@ -31,6 +31,7 @@ class KategoriController extends Controller
         Kategori::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Kategori berhasil ditambahkan.');
             return response()->json(['message' => 'Kategori berhasil ditambahkan.'], 201);
         }
 
@@ -51,6 +52,7 @@ class KategoriController extends Controller
         $kategori->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Kategori berhasil diperbarui.');
             return response()->json(['message' => 'Kategori berhasil diperbarui.']);
         }
 

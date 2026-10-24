@@ -72,15 +72,7 @@ class PelangganController extends Controller
                     });
             }
 
-            if ($request->filled('cari')) {
-                $search = $request->input('cari');
-
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('telepon', 'like', "%{$search}%")
-                        ->orWhere('member_id', 'like', "%{$search}%");
-                });
-            }
+            $query->search(['nama', 'telepon', 'member_id'], $request->input('cari'));
 
             $pelanggans = $query
                 ->withCount('penjualan')
@@ -250,6 +242,7 @@ class PelangganController extends Controller
         }
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Membership berhasil ditambahkan.');
             return response()->json([
                 'success' => true,
                 'message' => 'Membership berhasil ditambahkan.',
@@ -285,6 +278,7 @@ class PelangganController extends Controller
         $pelanggan->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Data pelanggan/member berhasil diperbarui.');
             return response()->json([
                 'success' => true,
                 'message' => 'Data pelanggan/member berhasil diperbarui.',

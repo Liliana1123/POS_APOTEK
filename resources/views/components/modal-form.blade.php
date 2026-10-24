@@ -657,6 +657,19 @@
 
                 hideModal();
 
+                var successMsg = (result.body && result.body.message)
+                    ? result.body.message
+                    : (mode === 'edit' ? 'Data berhasil diperbarui.' : 'Data berhasil disimpan.');
+
+                try {
+                    sessionStorage.setItem('pending_toast', JSON.stringify({
+                        message: successMsg,
+                        type: 'success'
+                    }));
+                } catch (e) {
+                    console.error('Error saving pending_toast:', e);
+                }
+
                 window.location.reload();
 
                 return;

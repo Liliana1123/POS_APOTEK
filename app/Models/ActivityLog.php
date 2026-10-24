@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivityLog extends Model
 {
+    use Filterable;
     public const CATEGORY_PENJUALAN = 'penjualan';
     public const CATEGORY_MEMBER = 'member';
     public const CATEGORY_PROMO = 'promo';

@@ -9,14 +9,11 @@ class PabrikController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pabrik::query();
-        if ($request->filled('cari')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('nama', 'like', '%'.$request->cari.'%')
-                    ->orWhere('telepon', 'like', '%'.$request->cari.'%');
-            });
-        }
-        $pabriks = $query->orderBy('id')->paginate(15)->withQueryString();
+        $pabriks = Pabrik::query()
+            ->search(['nama', 'telepon'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pabrik.index', compact('pabriks'));
     }
@@ -37,6 +34,7 @@ class PabrikController extends Controller
         Pabrik::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Pabrik berhasil ditambahkan.');
             return response()->json(['message' => 'Pabrik berhasil ditambahkan.'], 201);
         }
 
@@ -59,6 +57,7 @@ class PabrikController extends Controller
         $pabrik->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Pabrik berhasil diperbarui.');
             return response()->json(['message' => 'Pabrik berhasil diperbarui.']);
         }
 

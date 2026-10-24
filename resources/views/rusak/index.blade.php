@@ -14,93 +14,53 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
-        @if(request()->filled('tanggal'))
-            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
-        @endif
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="cari"
-                        value="{{ request('cari') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('rusak.index')"
+    :reset-url="route('rusak.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
+    @if(request()->filled('tanggal'))
+        <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+    @endif
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Batch
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_batch"
-                        value="{{ request('no_batch') }}"
-                        placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari', request('no_batch')) }}"
+            placeholder="Cari nama barang atau no. batch..."
+            class="form-input pr-8"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
+        <input
+            type="date"
+            name="tanggal_mulai"
+            value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
+</x-card-filter>
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
@@ -183,7 +143,7 @@
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->translatedFormat('d F Y') }}
+                        @tanggalId($rusak->tanggal, 'd F Y')
                     </td>
 
                     {{-- Barang / Obat --}}
@@ -233,7 +193,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $rusaks->links('vendor.pagination.apotek') }}
 </div>
 

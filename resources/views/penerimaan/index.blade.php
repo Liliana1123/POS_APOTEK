@@ -15,111 +15,64 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('penerimaan.index') }}" class="space-y-4" id="filter-form">
-        @if(request()->filled('tanggal'))
-            <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
-        @endif
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">No. Faktur</label>
-                <div class="relative">
-                    <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
-                        class="form-input pr-8 font-mono">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('penerimaan.index')"
+    :reset-url="route('penerimaan.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal'])">
+    @if(request()->filled('tanggal'))
+        <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+    @endif
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
+    <div class="relative sm:col-span-2 lg:col-span-2">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari no. faktur..."
+            class="form-input pr-8 font-mono" aria-label="No. Faktur" title="No. Faktur">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
-                        class="form-input min-w-0"
-                    >
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="tanggal_mulai"
+            value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
 
-                    <span class="text-sm text-gray-400">-</span>
+    <select name="supplier_id" class="form-input" aria-label="Supplier" title="Supplier">
+        <option value="">Supplier: Semua</option>
+        @foreach ($suppliers as $s)
+            <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>{{ $s->nama }}</option>
+        @endforeach
+    </select>
 
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
+    <select name="status_penerimaan" class="form-input" aria-label="Status Penerimaan" title="Status Penerimaan">
+        <option value="">Penerimaan: Semua</option>
+        <option value="lengkap" @selected(request('status_penerimaan') === 'lengkap')>Lengkap</option>
+        <option value="belum_lengkap" @selected(request('status_penerimaan') === 'belum_lengkap')>Belum Lengkap</option>
+    </select>
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Supplier</label>
-                <select name="supplier_id" class="form-input">
-                    <option value="">Semua Supplier</option>
-                    @foreach ($suppliers as $s)
-                        <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>{{ $s->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
-            
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Penerimaan
-                </label>
-
-                <select name="status_penerimaan" class="form-input">
-                    <option value="">Semua Status</option>
-
-                    <option value="lengkap" @selected(request('status_penerimaan') === 'lengkap')>
-                        Lengkap
-                    </option>
-
-                    <option value="belum_lengkap" @selected(request('status_penerimaan') === 'belum_lengkap')>
-                        Belum Lengkap
-                    </option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Pembayaran
-                </label>
-
-                <select name="status_pembayaran" class="form-input">
-                    <option value="">Semua Status</option>
-                    <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>
-                        Lunas
-                    </option>
-                    <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>
-                        Belum Lunas
-                    </option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal_mulai', 'tanggal_akhir', 'status_penerimaan', 'status_pembayaran', 'tanggal']))
-                <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
-            @endif
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <select name="status_pembayaran" class="form-input" aria-label="Status Pembayaran" title="Status Pembayaran">
+        <option value="">Pembayaran: Semua</option>
+        <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>Lunas</option>
+        <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>Belum Lunas</option>
+    </select>
+</x-card-filter>
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
@@ -238,7 +191,7 @@
                             {{ $penerimaan->no_faktur }}
                         </div>
                         <div class="text-xs text-gray-500 mt-0.5">
-                            {{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}
+                            @tanggalId($penerimaan->tanggal, 'd F Y')
                         </div>
                     </td>
 
@@ -258,17 +211,17 @@
 
                     {{-- Total Transaksi --}}
                     <td class="text-right font-medium">
-                        Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                        @rupiah($penerimaan->totalTagihan())
                     </td>
 
                     {{-- Piutang --}}
                     <td class="text-right font-medium">
-                        Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                        @rupiah($penerimaan->sisaTagihan())
                     </td>
 
                     {{-- Tanggal Jatuh Tempo --}}
                     <td class="text-center text-xs text-gray-600">
-                        {{ $penerimaan->jatuh_tempo?->translatedFormat('d F Y') ?? '-' }}
+                        @tanggalId($penerimaan->jatuh_tempo, 'd F Y')
                     </td>
 
                     {{-- Status Pembayaran --}}
@@ -308,7 +261,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $penerimaans->links('vendor.pagination.apotek') }}
 </div>
 

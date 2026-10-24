@@ -9,16 +9,11 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Supplier::query();
-        if ($request->filled('cari')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('nama', 'like', '%'.$request->cari.'%')
-                    ->orWhere('telepon', 'like', '%'.$request->cari.'%')
-                    ->orWhere('alamat', 'like', '%'.$request->cari.'%')
-                    ->orWhere('pic', 'like', '%'.$request->cari.'%');
-            });
-        }
-        $suppliers = $query->orderBy('id')->paginate(15)->withQueryString();
+        $suppliers = Supplier::query()
+            ->search(['nama', 'telepon', 'alamat', 'pic'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('supplier.index', compact('suppliers'));
     }
@@ -40,6 +35,7 @@ class SupplierController extends Controller
         Supplier::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Supplier berhasil ditambahkan.');
             return response()->json(['message' => 'Supplier berhasil ditambahkan.'], 201);
         }
 
@@ -63,6 +59,7 @@ class SupplierController extends Controller
         $supplier->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Supplier berhasil diperbarui.');
             return response()->json(['message' => 'Supplier berhasil diperbarui.']);
         }
 

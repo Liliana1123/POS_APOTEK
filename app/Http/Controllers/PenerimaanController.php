@@ -23,9 +23,7 @@ class PenerimaanController extends Controller
             'detailPesanan.riwayatPenerimaan',
         ]);
 
-        if ($request->filled('cari')) {
-            $query->where('no_faktur', 'like', '%' . $request->cari . '%');
-        }
+        $query->search(['no_faktur', 'supplier.nama'], $request->cari);
 
         if ($request->filled('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);

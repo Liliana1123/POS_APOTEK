@@ -27,52 +27,32 @@
     :action="route('barang.index')"
     :reset-url="route('barang.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
     :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
-        <div class="relative">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Kategori</label>
-        <select name="kategori_id" class="form-input">
-            <option value="">Semua Kategori</option>
-            @foreach ($kategoris as $k)
-                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
-        <select name="butuh_resep" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
-            <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
-        <select name="aktif" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
-        <select name="stok" class="form-input">
-            <option value="">Semua</option>
-            <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
-            <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
-            <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
-        </select>
-    </div>
+    <x-search-input name="cari" placeholder="Cari nama, kode, KFA, merk..." class="sm:col-span-2 md:col-span-2 lg:col-span-2" />
+    <select name="kategori_id" class="form-input" aria-label="Kategori" title="Kategori">
+        <option value="">Kategori: Semua</option>
+        @foreach ($kategoris as $k)
+            <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
+        @endforeach
+    </select>
+    <select name="butuh_resep" class="form-input" aria-label="Resep" title="Resep">
+        <option value="">Resep: Semua</option>
+        <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
+        <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
+    </select>
+    <select name="aktif" class="form-input" aria-label="Status" title="Status">
+        <option value="">Status: Semua</option>
+        <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+        <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+    </select>
+    <select name="stok" class="form-input" aria-label="Stok" title="Stok">
+        <option value="">Stok: Semua</option>
+        <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
+        <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
+        <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+    </select>
 </x-card-filter>
 
 <!-- Table Custom Wrapper -->
@@ -203,68 +183,22 @@
             <input type="text" name="kode_apotek" readonly class="bg-transparent font-mono font-bold text-blue-700 text-xs text-right focus:outline-none cursor-default" title="Kode apotek dibuat otomatis oleh sistem dan tidak dapat diubah">
         </div>
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Barang / Obat <span class="text-red-500">*</span></label>
-            <input type="text" name="nama" required class="form-input" placeholder="Masukkan nama barang...">
-            <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
-        </div>
+        <x-form.input name="nama" label="Nama Barang / Obat" required placeholder="Masukkan nama barang..." />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Kode KFA (Opsional)</label>
-                <input type="text" name="kode_kfa" class="form-input" placeholder="Contoh: KFA-12345...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kode_kfa"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Merk (Opsional)</label>
-                <input type="text" name="merk" class="form-input" placeholder="Contoh: Kimia Farma, Kalbe...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="merk"></p>
-            </div>
+            <x-form.input name="kode_kfa" label="Kode KFA (Opsional)" placeholder="Contoh: KFA-12345..." />
+            <x-form.input name="merk" label="Merk (Opsional)" placeholder="Contoh: Kimia Farma, Kalbe..." />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Kategori <span class="text-red-500">*</span></label>
-                <select name="kategori_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($kategoris as $k)
-                        <option value="{{ $k->id }}">{{ $k->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kategori_id"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Satuan <span class="text-red-500">*</span></label>
-                <select name="satuan_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($satuans as $s)
-                        <option value="{{ $s->id }}">{{ $s->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="satuan_id"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Pabrik <span class="text-red-500">*</span></label>
-                <select name="pabrik_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($pabriks as $p)
-                        <option value="{{ $p->id }}">{{ $p->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="pabrik_id"></p>
-            </div>
+            <x-form.select name="kategori_id" label="Kategori" required placeholder="Pilih" :options="$kategoris->pluck('nama', 'id')" />
+            <x-form.select name="satuan_id" label="Satuan" required placeholder="Pilih" :options="$satuans->pluck('nama', 'id')" />
+            <x-form.select name="pabrik_id" label="Pabrik" required placeholder="Pilih" :options="$pabriks->pluck('nama', 'id')" />
         </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Barcode (Opsional)</label>
-                <input type="text" name="barcode" class="form-input" placeholder="Scan / ketik barcode...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="barcode"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Stok Minimum <span class="text-red-500">*</span></label>
-                <input type="number" name="stok_minimum" min="0" class="form-input" placeholder="0">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="stok_minimum"></p>
-            </div>
+            <x-form.input name="barcode" label="Barcode (Opsional)" placeholder="Scan / ketik barcode..." />
+            <x-form.input type="number" name="stok_minimum" label="Stok Minimum" required min="0" placeholder="0" />
         </div>
         <div class="space-y-2">
             <label class="flex items-start text-xs font-medium text-gray-700 cursor-pointer">

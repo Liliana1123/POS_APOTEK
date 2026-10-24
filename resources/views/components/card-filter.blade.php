@@ -4,6 +4,7 @@
     'hasReset' => false,
     'grid' => false,
     'gridCols' => 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4',
+    'actionCols' => null,
     'submitLabel' => null,
     'liveSearch' => false,
     'tableTarget' => '.table-custom-container',
@@ -15,7 +16,7 @@
     $label = $submitLabel ?? ($grid ? 'Filter' : 'Cari');
 @endphp
 
-<div class="card-base p-4 mb-6">
+<div class="card-base p-4 mb-6 no-print filter-card-web">
     <form method="GET"
           action="{{ $action }}"
           @if($liveSearch)
@@ -24,39 +25,35 @@
               data-table-target="{{ $tableTarget }}"
               data-pagination-target="{{ $paginationTarget }}"
           @endif
-          {{ $attributes->merge(['class' => $grid ? 'space-y-4' : 'flex flex-wrap gap-2 items-center']) }}>
+          {{ $attributes->merge(['class' => $grid ? 'space-y-0' : 'flex flex-wrap gap-2.5 items-center']) }}>
         @if($grid)
-            <div class="grid {{ $gridCols }} gap-4">
+            <div class="grid {{ $gridCols }} gap-3 items-center">
                 {{ $slot }}
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                @if($resetUrl && ($isFiltered || $liveSearch))
-                    <a href="{{ $resetUrl }}"
-                       data-role="clear-filter"
-                       class="btn-secondary py-1.5 px-4 flex items-center justify-center {{ $isFiltered ? '' : 'hidden' }}">
-                        Clear
-                    </a>
-                @endif
-                <button type="submit" class="btn-primary flex items-center gap-2">
-                    <x-heroicon-o-funnel class="w-4 h-4" />
-                    <span>{{ $label }}</span>
-                </button>
+                <div class="flex items-center gap-2 {{ $actionCols }}">
+                    @if($resetUrl && ($isFiltered || $liveSearch))
+                        <a href="{{ $resetUrl }}"
+                           data-role="clear-filter"
+                           class="btn-secondary h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border {{ $isFiltered ? '' : 'hidden' }}"
+                           title="Reset seluruh filter">
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                    <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
+                        <span>{{ $label }}</span>
+                    </button>
+                </div>
             </div>
         @else
             {{ $slot }}
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                @if($label === 'Cari')
-                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                @else
-                    <x-heroicon-o-funnel class="w-4 h-4" />
-                @endif
+            <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold box-border">
                 <span>{{ $label }}</span>
             </button>
             @if($resetUrl && ($hasReset || request()->filled('cari') || $liveSearch))
                 <a href="{{ $resetUrl }}"
                    data-role="clear-filter"
-                   class="btn-secondary py-1.5 px-4 flex items-center justify-center {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}">
-                    Clear
+                   class="btn-secondary h-9 px-3.5 inline-flex items-center justify-center text-xs font-semibold box-border {{ ($hasReset || request()->filled('cari')) ? '' : 'hidden' }}"
+                   title="Reset pencarian">
+                    <span>Reset</span>
                 </a>
             @endif
         @endif
@@ -143,6 +140,15 @@
                 tableContainer.innerHTML = newTable.innerHTML;
             }
 
+            var summarySelectors = ['.laporan-summary-cards', '.summary-container'];
+            summarySelectors.forEach(function(sel) {
+                var oldSum = document.querySelector(sel);
+                var newSum = doc.querySelector(sel);
+                if (oldSum && newSum) {
+                    oldSum.innerHTML = newSum.innerHTML;
+                }
+            });
+
             if (pagContainer) {
                 if (newPag && newPag.innerHTML.trim() !== '') {
                     pagContainer.innerHTML = newPag.innerHTML;
@@ -158,7 +164,7 @@
             }
 
             // Sinkronisasi link export jika ada di halaman
-            var exportLinks = document.querySelectorAll('a[data-sync-filter="true"], #btn-export-barang');
+            var exportLinks = document.querySelectorAll('a[data-sync-filter="true"], #btn-export-barang, #export-excel-btn');
             exportLinks.forEach(function(link) {
                 try {
                     var currentSearch = new URL(targetUrl, window.location.origin).search;
@@ -167,6 +173,8 @@
                     link.href = linkUrl.pathname + linkUrl.search;
                 } catch (e) {}
             });
+
+            document.dispatchEvent(new CustomEvent('live-filter:updated', { detail: { url: targetUrl } }));
         })
         .catch(function(err) {
             if (err.name !== 'AbortError') {
@@ -205,11 +213,11 @@
         triggerSearch(form, false);
     });
 
-    // Change listener (immediate for select / checkbox / radio)
+    // Change listener (immediate for select / checkbox / radio / date)
     document.addEventListener('change', function(e) {
         var form = e.target.closest('form[data-live-filter="true"]');
         if (!form) return;
-        if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox' || e.target.type === 'radio') {
+        if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox' || e.target.type === 'radio' || e.target.type === 'date') {
             triggerSearch(form, true);
         }
     });

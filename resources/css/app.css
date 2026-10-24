@@ -429,6 +429,33 @@ body {
 }
 
 /* ==========================================================================
+   Filter Card Controls Height Standardization
+   Guarantees 100% pixel-perfect height parity across text inputs, dropdowns,
+   and action buttons in card-filter.
+   ========================================================================== */
+.filter-card-web input.form-input,
+.filter-card-web select.form-input,
+.filter-card-web .btn-primary,
+.filter-card-web .btn-secondary {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    box-sizing: border-box !important;
+}
+
+.filter-card-web select.form-input {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.filter-card-web .btn-primary,
+.filter-card-web .btn-secondary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* ==========================================================================
    Badge / Status Pills System
    ========================================================================== */
 .badge-success {

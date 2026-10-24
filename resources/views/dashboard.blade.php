@@ -19,80 +19,69 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
-            {{-- Tombol Preset Periode --}}
-            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
-                <a href="{{ route('dashboard', ['periode' => 'hari_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Hari Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'minggu_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Minggu Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'bulan_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Bulan Ini
-                </a>
-                <a href="{{ route('dashboard', ['periode' => 'tahun_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Tahun Ini
-                </a>
-                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $periode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Custom
-                </button>
-            </div>
-
-            {{-- Form Rentang Tanggal Custom --}}
-            <form method="GET" action="{{ route('dashboard') }}" id="customDateContainer" class="{{ $periode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
-                <input type="hidden" name="periode" value="custom">
-                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <span class="text-xs text-gray-400">s/d</span>
-                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
-            </form>
-
-            {{-- Tombol Reset (Aktif jika sedang filter selain default Bulan Ini) --}}
-            @if(request()->filled('periode') && request('periode') !== 'bulan_ini' || request()->filled('dari') || request()->filled('sampai'))
-                <a href="{{ route('dashboard') }}"
-                   class="btn-secondary !py-1 !px-2.5 !text-xs flex items-center gap-1 text-gray-600 hover:text-red-600 hover:border-red-300 transition-colors shadow-2xs"
-                   title="Reset filter ke Bulan Ini">
-                    <x-heroicon-o-arrow-path class="w-3.5 h-3.5 text-gray-500" />
-                    <span>Reset</span>
-                </a>
-            @endif
-        </div>
+        <x-date-range-filter
+            :action="route('dashboard')"
+            :periode="$periode"
+            :dari="$dari"
+            :sampai="$sampai"
+        />
     </div>
 
     {{-- ============================================================ --}}
     {{-- 2. KPI UTAMA (6 KARTU)                                       --}}
     {{-- ============================================================ --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div class="kpi-card kpi-kotor flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Kotor</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetKotor, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Sebelum diskon</span></div>
-            <div class="kpi-icon bg-blue-50 text-blue-600 shadow-2xs"><x-heroicon-o-chart-bar class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-diskon flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Diskon</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total diskon transaksi</span></div>
-            <div class="kpi-icon bg-purple-50 text-purple-600 shadow-2xs"><x-heroicon-o-tag class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-bersih flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Omzet Bersih</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($omzetBersih, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Setelah diskon</span></div>
-            <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs"><x-heroicon-o-banknotes class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card kpi-member flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Total Member</span><div class="text-xl font-black text-gray-900 mt-1">{{ number_format($totalMember) }}</div><span class="text-[11px] text-gray-500 block mt-1">Member terdaftar</span></div>
-            <div class="kpi-icon bg-amber-50 text-amber-600 shadow-2xs"><x-heroicon-o-user-group class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Supplier</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total hutang supplier</span></div>
-            <div class="kpi-icon bg-sky-50 text-sky-600 shadow-2xs"><x-heroicon-o-building-office-2 class="w-6 h-6" /></div>
-        </div>
-        <div class="kpi-card flex items-center justify-between">
-            <div><span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Piutang Member</span><div class="text-xl font-black text-gray-900 mt-1">Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}</div><span class="text-[11px] text-gray-500 block mt-1">Total piutang member</span></div>
-            <div class="kpi-icon bg-rose-50 text-rose-600 shadow-2xs"><x-heroicon-o-credit-card class="w-6 h-6" /></div>
-        </div>
+        <x-kpi-card
+            title="Omzet Kotor"
+            :value="'Rp ' . number_format($omzetKotor, 0, ',', '.')"
+            subtitle="Sebelum diskon"
+            variant="kotor"
+            icon="heroicon-o-chart-bar"
+            icon-class="bg-blue-50 text-blue-600"
+        />
+
+        <x-kpi-card
+            title="Total Diskon"
+            :value="'Rp ' . number_format($totalDiskon, 0, ',', '.')"
+            subtitle="Total diskon transaksi"
+            variant="diskon"
+            icon="heroicon-o-tag"
+            icon-class="bg-purple-50 text-purple-600"
+        />
+
+        <x-kpi-card
+            title="Omzet Bersih"
+            :value="'Rp ' . number_format($omzetBersih, 0, ',', '.')"
+            subtitle="Setelah diskon"
+            variant="bersih"
+            icon="heroicon-o-banknotes"
+            icon-class="bg-emerald-50 text-emerald-600"
+        />
+
+        <x-kpi-card
+            title="Total Member"
+            :value="number_format($totalMember)"
+            subtitle="Member terdaftar"
+            variant="member"
+            icon="heroicon-o-user-group"
+            icon-class="bg-amber-50 text-amber-600"
+        />
+
+        <x-kpi-card
+            title="Piutang Supplier"
+            :value="'Rp ' . number_format($totalHutangSupplier, 0, ',', '.')"
+            subtitle="Total hutang supplier"
+            icon="heroicon-o-building-office-2"
+            icon-class="bg-sky-50 text-sky-600"
+        />
+
+        <x-kpi-card
+            title="Piutang Member"
+            :value="'Rp ' . number_format($totalPiutangMember, 0, ',', '.')"
+            subtitle="Total piutang member"
+            icon="heroicon-o-credit-card"
+            icon-class="bg-rose-50 text-rose-600"
+        />
     </div>
 
     {{-- ============================================================ --}}
@@ -816,87 +805,257 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 9. KINERJA KARYAWAN                                          --}}
+    {{-- 9. KINERJA KARYAWAN & DOKTER PENYUMBANG RESEP               --}}
     {{-- ============================================================ --}}
-    <div class="dashboard-card p-5 mt-5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-                    <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        {{-- 9.1 KINERJA KARYAWAN --}}
+        <div class="dashboard-card p-5 flex flex-col justify-between">
+            <div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                            <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+                        </div>
+
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
+                            <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        @if ($kinerjaKaryawan->count() > 5)
+                            <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
+                                Lihat Semua ({{ $kinerjaKaryawan->count() }})
+                            </button>
+                        @endif
+                        <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                            Kelola User &rarr;
+                        </a>
+                    </div>
                 </div>
 
-                <div>
-                    <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
-                    <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+                    <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
+                        <thead>
+                            <tr>
+                                <th class="w-12 text-center">NO</th>
+                                <th>NAMA KARYAWAN</th>
+                                <th class="text-right">PENJUALAN</th>
+                                <th class="text-center">TRANSAKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($kinerjaKaryawan as $index => $karyawan)
+                                @php
+                                    $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
+                                    $penjualan = (float) $karyawan->total_penjualan;
+                                    $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
+                                    $barWidth = $persen !== null ? min($persen, 100) : 0;
+                                    $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
+                                    $isCurrentUser = auth()->id() === $karyawan->id;
+                                    $isExtra = $index >= 5;
+                                @endphp
+                                <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
+                                    <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                    <td>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
+                                            @if ($isCurrentUser)
+                                                <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">ANDA</span>
+                                            @endif
+                                            <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
+                                            @if (!$karyawan->aktif)
+                                                <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-right font-semibold text-gray-800">
+                                        Rp {{ number_format($penjualan, 0, ',', '.') }}
+                                    </td>
+                                    <td class="text-center font-bold text-blue-600">
+                                        {{ number_format($karyawan->total_transaksi) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="py-6 text-center text-xs text-gray-400">
+                                        Belum ada data karyawan terdaftar.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                @if ($kinerjaKaryawan->count() > 5)
-                    <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
-                        Lihat Semua ({{ $kinerjaKaryawan->count() }})
-                    </button>
-                @endif
-                <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                    Kelola User &rarr;
-                </a>
             </div>
         </div>
 
-        <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
-            <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center">No</th>
-                        <th>Nama Karyawan</th>
-                        <th class="text-right">Penjualan</th>
-                        <th class="text-center">Transaksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($kinerjaKaryawan as $index => $karyawan)
-                        @php
-                            $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
-                            $penjualan = (float) $karyawan->total_penjualan;
-                            $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
-                            $barWidth = $persen !== null ? min($persen, 100) : 0;
-                            $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
-                            $isCurrentUser = auth()->id() === $karyawan->id;
-                            $isExtra = $index >= 5;
-                        @endphp
-                        <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
-                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
-                                    @if ($isCurrentUser)
-                                        <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">Anda</span>
-                                    @endif
-                                    <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
-                                    @if (!$karyawan->aktif)
-                                        <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="text-right font-semibold text-gray-800">
-                                Rp {{ number_format($penjualan, 0, ',', '.') }}
-                            </td>
-                            <td class="text-center font-bold text-blue-600">
-                                {{ number_format($karyawan->total_transaksi) }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="py-6 text-center text-xs text-gray-400">
-                                Belum ada data karyawan terdaftar.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        {{-- 9.2 DOKTER PENYUMBANG RESEP TERBANYAK --}}
+        <div class="dashboard-card p-5 flex flex-col justify-between">
+            <div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                            <x-heroicon-o-user class="w-5 h-5 text-indigo-600" />
+                        </div>
+
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900">Dokter Penyumbang Resep Terbanyak</h3>
+                            <p class="text-xs text-gray-500">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="openModalDokterResep()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 cursor-pointer">
+                            Lihat Semua &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+                    <table class="table-compact w-full text-left" id="table-dokter-resep">
+                        <thead>
+                            <tr>
+                                <th class="w-12 text-center">NO</th>
+                                <th>ID DOKTER</th>
+                                <th>NAMA DOKTER</th>
+                                <th class="text-center">TOTAL RESEP</th>
+                                <th class="text-right">TOTAL TRANSAKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($topDokterResep as $index => $dokter)
+                                <tr>
+                                    <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                    <td class="font-bold text-gray-900 font-mono">{{ $dokter->id_dokter }}</td>
+                                    <td>
+                                        <div class="font-bold text-gray-900 leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
+                                        @if (!empty($dokter->alamat_lembaga))
+                                            <div class="text-[11px] text-gray-400 capitalize leading-tight">{{ $dokter->alamat_lembaga }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="text-center font-bold text-gray-800">
+                                        {{ number_format($dokter->total_resep) }} resep
+                                    </td>
+                                    <td class="text-right font-semibold text-gray-800">
+                                        Rp {{ number_format($dokter->total_transaksi, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                                        Belum ada riwayat transaksi resep dokter pada bulan ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Note Banner at Bottom --}}
+            <div class="mt-4 p-3 rounded-lg bg-blue-50/70 border border-blue-100 flex items-center gap-2 text-xs text-blue-700">
+                <x-heroicon-s-information-circle class="w-4 h-4 text-blue-500 shrink-0" />
+                <span>Total resep dihitung berdasarkan riwayat transaksi penjualan yang berasal dari resep dokter.</span>
+            </div>
         </div>
     </div>
 
+</div>
+
+{{-- ============================================================ --}}
+{{-- MODAL LIHAT SEMUA: DOKTER PENYUMBANG RESEP                   --}}
+{{-- ============================================================ --}}
+<div id="modal-dokter-resep" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                    <x-heroicon-o-user class="w-5 h-5" />
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Dokter Penyumbang Resep Bulan Ini</h3>
+                    <p class="text-xs text-gray-500">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeModalDokterResep()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- Modal Search Input -->
+        <div class="p-4 border-b border-gray-100 bg-white">
+            <div class="relative">
+                <input
+                    type="text"
+                    id="searchDokterModal"
+                    placeholder="Cari berdasarkan ID dokter, nama dokter, atau lembaga..."
+                    class="input-base pl-9 text-xs w-full"
+                    onkeyup="filterModalDokterTable(this.value)"
+                >
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Body Table -->
+        <div class="p-4 overflow-y-auto flex-1">
+            <table class="table-compact w-full text-left" id="table-modal-dokter">
+                <thead>
+                    <tr>
+                        <th class="w-12 text-center">NO</th>
+                        <th class="w-32">ID DOKTER</th>
+                        <th>NAMA DOKTER</th>
+                        <th class="text-center w-28">TOTAL RESEP</th>
+                        <th class="text-right w-36">TOTAL TRANSAKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-modal-dokter">
+                    @forelse ($semuaDokterResep as $index => $dokter)
+                        <tr class="modal-dokter-row">
+                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                            <td class="font-bold text-gray-900 font-mono">{{ $dokter->id_dokter }}</td>
+                            <td>
+                                <div class="font-bold text-gray-900 leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
+                                @if (!empty($dokter->alamat_lembaga))
+                                    <div class="text-[11px] text-gray-400 capitalize leading-tight">{{ $dokter->alamat_lembaga }}</div>
+                                @endif
+                            </td>
+                            <td class="text-center font-bold text-gray-800">
+                                {{ number_format($dokter->total_resep) }} resep
+                            </td>
+                            <td class="text-right font-semibold text-gray-800">
+                                Rp {{ number_format($dokter->total_transaksi, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr id="empty-modal-dokter">
+                            <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                                Belum ada data resep dokter pada bulan ini.
+                            </td>
+                        </tr>
+                    @endforelse
+                    <tr id="no-search-match-dokter" class="hidden">
+                        <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                            Tidak ada dokter yang cocok dengan pencarian.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3 border-t border-gray-100 bg-slate-50/70 flex items-center justify-between">
+            <div class="text-xs text-gray-500">
+                Total dokter terdaftar bulan ini: <span class="font-bold text-gray-800">{{ $semuaDokterResep->count() }}</span> dokter
+            </div>
+            <button type="button" onclick="closeModalDokterResep()" class="btn-secondary text-xs py-1.5 px-4 cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
 </div>
 
 {{-- Script Chart.js CDN & Interaktivitas --}}
@@ -1159,6 +1318,59 @@
                 btnToggleKinerja.textContent = expanded ? 'Sembunyikan' : originalText;
             });
         }
+
+        // ==========================================
+        // MODAL LIHAT SEMUA: DOKTER PENYUMBANG RESEP
+        // ==========================================
+        const modalDokter = document.getElementById('modal-dokter-resep');
+        if (modalDokter) {
+            modalDokter.addEventListener('click', function(e) {
+                if (e.target === modalDokter) closeModalDokterResep();
+            });
+        }
+    });
+
+    function openModalDokterResep() {
+        const modal = document.getElementById('modal-dokter-resep');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            const searchInput = document.getElementById('searchDokterModal');
+            if (searchInput) {
+                searchInput.value = '';
+                filterModalDokterTable('');
+                setTimeout(() => searchInput.focus(), 100);
+            }
+        }
+    }
+
+    function closeModalDokterResep() {
+        const modal = document.getElementById('modal-dokter-resep');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    function filterModalDokterTable(keyword) {
+        const term = keyword.toLowerCase().trim();
+        const rows = document.querySelectorAll('.modal-dokter-row');
+        let visibleCount = 0;
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const match = text.includes(term);
+            row.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+
+        const noMatchRow = document.getElementById('no-search-match-dokter');
+        if (noMatchRow) {
+            noMatchRow.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModalDokterResep();
     });
 </script>
 @endsection

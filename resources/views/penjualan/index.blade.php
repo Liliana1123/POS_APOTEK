@@ -87,51 +87,45 @@
     :action="route('penjualan.index')"
     :reset-url="route('penjualan.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'tanggal_awal', 'tanggal_akhir'])"
 >
-    {{-- Cari No. Invoice --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Cari No. Invoice
-        </label>
-        <div class="relative">
-            <input
-                type="text"
-                name="cari"
-                value="{{ request('cari') }}"
-                placeholder="Cari no. invoice..."
-                class="form-input pr-8"
-            >
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
+    {{-- Cari No. Invoice (Dipotong 1/4 menjadi 3 dari 8 kolom) --}}
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari') }}"
+            placeholder="Cari no. invoice..."
+            class="form-input pr-8 font-mono"
+            aria-label="No. Invoice"
+            title="No. Invoice"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
     </div>
 
-    {{-- Tanggal Awal --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Awal
-        </label>
+    {{-- Rentang Tanggal (Tanggal Awal - Tanggal Akhir, 3 dari 8 kolom) --}}
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
         <input
             type="date"
             name="tanggal_awal"
             value="{{ request('tanggal_awal') }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
         >
-    </div>
-
-    {{-- Tanggal Akhir --}}
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-            Tanggal Akhir
-        </label>
+        <span class="text-sm text-gray-400">-</span>
         <input
             type="date"
             name="tanggal_akhir"
             value="{{ request('tanggal_akhir') }}"
-            class="form-input"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
         >
     </div>
 </x-card-filter>
@@ -229,7 +223,7 @@
 
                         {{-- Tanggal --}}
                         <td class="text-center whitespace-nowrap">
-                            {{ $penjualan->tanggal->format('d M Y') }}
+                            @tanggalId($penjualan->tanggal)
                         </td>
 
                        {{-- Pelanggan --}}
@@ -268,12 +262,12 @@
 
                         {{-- Total Diskon --}}
                         <td class="px-5 py-3.5 text-center font-semibold text-red-600">
-                            Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                            @rupiah($penjualan->detail->sum('diskon'))
                         </td>
 
                         {{-- Total Transaksi --}}
                         <td class="text-center font-semibold whitespace-nowrap">
-                            Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                            @rupiah($penjualan->total)
                         </td>
                     </tr>
                 @empty
@@ -284,7 +278,7 @@
     </div>
 </div>
 
-<div class="mt-4">
+<div class="mt-4 pagination-container">
     {{ $penjualans->links('vendor.pagination.apotek') }}
 </div>
 
@@ -336,7 +330,7 @@
                     </td>
 
                     <td class="border p-2">
-                        {{ $penjualan->tanggal->format('d M Y') }}
+                        @tanggalId($penjualan->tanggal)
                     </td>
 
                     <td class="border p-2">
@@ -348,11 +342,11 @@
                     </td>
 
                     <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->detail->sum('diskon'), 0, ',', '.') }}
+                        @rupiah($penjualan->detail->sum('diskon'))
                     </td>
 
                     <td class="border p-2 text-right">
-                        Rp {{ number_format($penjualan->total, 0, ',', '.') }}
+                        @rupiah($penjualan->total)
                     </td>
                 </tr>
             @empty
@@ -369,14 +363,14 @@
         <div>
             <span>Total Diskon</span>
             <strong>
-                Rp {{ number_format($totalDiskonLaporan, 0, ',', '.') }}
+                @rupiah($totalDiskonLaporan)
             </strong>
         </div>
 
         <div>
             <span>Total Transaksi</span>
             <strong>
-                Rp {{ number_format($totalTransaksiLaporan, 0, ',', '.') }}
+                @rupiah($totalTransaksiLaporan)
             </strong>
         </div>
     </div>

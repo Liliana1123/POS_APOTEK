@@ -24,85 +24,17 @@
 {{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
 {{-- ========================================================= --}}
 <div class="print-only">
-
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-
-        {{-- LOGO --}}
-        @if($apotek?->logo)
-            <img
-                src="{{ asset('storage/' . $apotek->logo) }}"
-                alt="Logo {{ $apotek->nama_apotek }}"
-                class="print-kop-logo"
-            >
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="Laporan Penerimaan Barang Masuk">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('supplier_id') && ($supplierAktif = $suppliers->firstWhere('id', request('supplier_id'))))
+            &nbsp;•&nbsp; Supplier: {{ $supplierAktif->nama }}
         @endif
-
-        {{-- INFORMASI APOTEK --}}
-        <div class="print-kop-info">
-
-            <h1>
-                {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
-            </h1>
-
-            @if($apotek?->alamat)
-                <p>
-                    {{ $apotek->alamat }}
-                </p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-                <p>
-                    @if($apotek?->telepon)
-                        Telp: {{ $apotek->telepon }}
-                    @endif
-
-                    @if($apotek?->telepon && $apotek?->email)
-                        &nbsp; | &nbsp;
-                    @endif
-
-                    @if($apotek?->email)
-                        Email: {{ $apotek->email }}
-                    @endif
-                </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-                <p>
-                    @if($apotek?->no_izin_sia)
-                        SIA: {{ $apotek->no_izin_sia }}
-                    @endif
-
-                    @if($apotek?->no_izin_sia && $apotek?->no_sipa)
-                        &nbsp;&nbsp;•&nbsp;&nbsp;
-                    @endif
-
-                    @if($apotek?->no_sipa)
-                        SIPA: {{ $apotek->no_sipa }}
-                    @endif
-                </p>
-            @endif
-
-        </div>
-
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>
-            Laporan Penerimaan Barang Masuk
-        </h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            @if(request('supplier_id') && ($supplierAktif = $suppliers->firstWhere('id', request('supplier_id'))))
-                &nbsp;•&nbsp; Supplier: {{ $supplierAktif->nama }}
-            @endif
-            @if(request('status_pembayaran'))
-                &nbsp;•&nbsp; Status: {{ request('status_pembayaran') === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
-            @endif
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
-
+        @if(request('status_pembayaran'))
+            &nbsp;•&nbsp; Status: {{ request('status_pembayaran') === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+        @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 </div>
 
 <!-- Page Header Pattern -->
@@ -123,124 +55,78 @@
 </div>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.penerimaan') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Faktur
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_faktur"
-                        value="{{ request('no_faktur') }}"
-                        placeholder="Cari no. faktur..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('laporan.penerimaan')"
+    :reset-url="route('laporan.penerimaan')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :has-reset="request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran'])"
+    :live-search="true">
+    <div class="relative">
+        <input
+            type="text"
+            name="no_faktur"
+            value="{{ request('no_faktur') }}"
+            placeholder="Cari no. faktur..."
+            class="form-input pr-8 font-mono"
+            aria-label="No. Faktur"
+            title="No. Faktur"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="text-sm text-gray-400">-</span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
 
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="dari"
-                        value="{{ $dari }}"
-                        class="form-input min-w-0"
-                    >
+    <select name="supplier_id" class="form-input" aria-label="Supplier" title="Supplier">
+        <option value="">Supplier: Semua</option>
+        @foreach ($suppliers as $s)
+            <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>
+                {{ $s->nama }}
+            </option>
+        @endforeach
+    </select>
 
-                    <span class="text-sm text-gray-400">-</span>
+    <div class="relative">
+        <input
+            type="text"
+            name="nama_barang"
+            value="{{ request('nama_barang') }}"
+            placeholder="Cari nama barang..."
+            class="form-input pr-8"
+            aria-label="Nama Barang"
+            title="Nama Barang"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-                    <input
-                        type="date"
-                        name="sampai"
-                        value="{{ $sampai }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Supplier
-                </label>
-                <select name="supplier_id" class="form-input">
-                    <option value="">Semua Supplier</option>
-                    @foreach ($suppliers as $s)
-                        <option value="{{ $s->id }}" @selected(request('supplier_id') == $s->id)>
-                            {{ $s->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="nama_barang"
-                        value="{{ request('nama_barang') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Pembayaran
-                </label>
-                <select name="status_pembayaran" class="form-input">
-                    <option value="">Semua Status</option>
-                    <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>
-                        Lunas
-                    </option>
-                    <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>
-                        Belum Lunas
-                    </option>
-                </select>
-            </div>
-
-            
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                <a
-                    href="{{ route('laporan.penerimaan') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <select name="status_pembayaran" class="form-input" aria-label="Status Pembayaran" title="Status Pembayaran">
+        <option value="">Pembayaran: Semua</option>
+        <option value="lunas" @selected(request('status_pembayaran') === 'lunas')>Lunas</option>
+        <option value="belum_lunas" @selected(request('status_pembayaran') === 'belum_lunas')>Belum Lunas</option>
+    </select>
+</x-card-filter>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
@@ -262,13 +148,13 @@
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="col-penerimaan-no table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
-                        <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">{{ $item->penerimaan->tanggal->translatedFormat('d F Y') }}</td>
+                        <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">@tanggalId($item->penerimaan->tanggal, 'd F Y')</td>
                         <td class="col-penerimaan-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->no_faktur }}</td>
                         <td class="col-penerimaan-supplier text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
                         <td class="col-penerimaan-barang font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->barang->nama ?? '—' }}</td>
                         <td class="col-penerimaan-qty table-num font-bold text-gray-800 text-right text-xs !px-2 py-3 whitespace-nowrap">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                        <td class="col-penerimaan-harga table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
-                        <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}</td>
+                        <td class="col-penerimaan-harga table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli)</td>
+                        <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli * $item->jumlah)</td>
                     </tr>
                 @empty
                     <tr>
@@ -306,47 +192,7 @@
 {{-- ========================================================= --}}
 {{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
 {{-- ========================================================= --}}
-<div class="no-break print-signature">
-    <div class="print-signature-grid">
-        {{-- KIRI: PENANGGUNG JAWAB APOTEK --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Mengetahui,</p>
-            <p class="print-signature-role">Penanggung Jawab Apotek</p>
-
-            <div class="print-signature-space"></div>
-
-            <p class="print-signature-name">
-                @if (!empty($apotek?->nama_apoteker_pj))
-                    {{ $apotek->nama_apoteker_pj }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-
-            @if (!empty($apotek?->no_sipa))
-                <p class="print-signature-sipa">
-                    SIPA: {{ $apotek->no_sipa }}
-                </p>
-            @endif
-        </div>
-
-        {{-- KANAN: PEMBUAT LAPORAN --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Dibuat oleh,</p>
-            <p class="print-signature-role">Pembuat Laporan</p>
-
-            <div class="print-signature-space"></div>
-
-            <p class="print-signature-name">
-                @if (!empty(auth()->user()?->name))
-                    {{ auth()->user()->name }}
-                @else
-                    (____________________)
-                @endif
-            </p>
-        </div>
-    </div>
-</div>
+<x-print-signature :apotek="$apotek" />
 
 <script>
     function printReport() {
