@@ -26,9 +26,9 @@ Berikut adalah daftar lengkap artefak dan kode mati yang telah teridentifikasi b
 
 | ID | Lokasi File / Komponen | Kategori | Ukuran / Baris | Status | Bukti Audit & Justifikasi Pembersihan |
 |---|---|---|---|---|---|
-| **DC-01** | `how --stat 2ece851` | File Sampah Root | 1.8 KB (30 baris) | 🔴 Siap Dihapus | Sisa redirect perintah terminal `git show` yang tidak sengaja terbuat di root. Tidak ada fungsi sistem. |
-| **DC-02** | `resources/views/welcome.blade.php` | View Yatim (Orphaned) | 82.5 KB (1.000+ baris) | 🔴 Siap Dihapus | View bawaan Laravel. Tidak ada rute di `routes/web.php` dan tidak ada controller yang memanggil `view('welcome')`. Sistem langsung menggunakan `/login` atau `/dashboard`. |
-| **DC-03** | `resources/views/discount-events/` | Direktori Kosong | 0 B (0 file) | 🔴 Siap Dihapus | Direktori kosong sisa fitur lama yang tidak pernah digunakan. |
+| **DC-01** | `how --stat 2ece851` | File Sampah Root | 1.8 KB (30 baris) | 🟢 Sudah Dihapus | Sisa redirect perintah terminal `git show` yang tidak sengaja terbuat di root. Berhasil dibersihkan. |
+| **DC-02** | `resources/views/welcome.blade.php` | View Yatim (Orphaned) | 82.5 KB (1.000+ baris) | 🟢 Sudah Dihapus | View bawaan Laravel yang tidak memiliki route/controller. Berhasil dibersihkan (menghemat 82.5 KB). |
+| **DC-03** | `resources/views/discount-events/` | Direktori Kosong | 0 B (0 file) | 🟢 Sudah Dihapus | Direktori kosong sisa fitur lama yang tidak pernah digunakan. Berhasil dibersihkan. |
 | **DC-04** | Boilerplate Modal di `penerimaan/index.blade.php` | Duplikasi HTML | ~150 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen universal `<x-modal>` (commit `934c8e9`). |
 | **DC-05** | Boilerplate Modal di `rusak/index.blade.php` | Duplikasi HTML | ~40 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen universal `<x-modal>` (commit `934c8e9`). |
 | **DC-06** | Blok manual `@empty` di 5 View Laporan | Duplikasi HTML | ~100 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen pintar `<x-empty-state>` (commit `934c8e9`). |
@@ -91,16 +91,16 @@ pada controller/view      di seluruh codebase        & kompilasi view           
 Gunakan daftar periksa (*checklist*) ini saat mengeksekusi pembersihan langkah demi langkah:
 
 ### 🔹 Tahap 1: Pembersihan File Sampah & Direktori Yatim (High Priority - Zero Risk)
-- [ ] **1.1 Hapus file sisa terminal di root**:
+- [x] **1.1 Hapus file sisa terminal di root**:
   - Target: `how --stat 2ece851`
   - Perintah: `Remove-Item 'how --stat 2ece851'`
-- [ ] **1.2 Hapus view yatim Laravel default**:
+- [x] **1.2 Hapus view yatim Laravel default**:
   - Target: `resources/views/welcome.blade.php` (82.5 KB)
   - Perintah: `Remove-Item 'resources/views/welcome.blade.php'`
-- [ ] **1.3 Hapus direktori kosong**:
+- [x] **1.3 Hapus direktori kosong**:
   - Target: `resources/views/discount-events/`
   - Perintah: `Remove-Item -Recurse 'resources/views/discount-events'`
-- [ ] **1.4 Verifikasi & Commit**:
+- [x] **1.4 Verifikasi & Commit**:
   - Jalankan: `git status`
   - Commit: `git commit -m "chore: bersihkan file sampah root dan view yatim welcome.blade.php"`
 
@@ -157,7 +157,7 @@ Gunakan daftar periksa (*checklist*) ini saat mengeksekusi pembersihan langkah d
 ## 📝 6. Catatan Riwayat Pembersihan (Changelog)
 
 | Tanggal | Target Pembersihan | Dampak / Hasil | Ref Commit |
-|---|---|---|---|
+| **2026-10-24** | File Sampah Root & View Yatim (`welcome.blade.php` 82.5 KB) | Dihapus 84.3 KB kode mati dan folder kosong `discount-events/`. | (Tahap 1) |
 | **2026-10-24** | Duplikasi Modal di `penerimaan/index` & `rusak/index` | Dihapus 180+ baris HTML manual, distandardisasi ke `<x-modal>`. | `934c8e9` |
 | **2026-10-24** | Duplikasi Empty State Laporan (5 views) | Dihapus 100+ baris blok manual, distandardisasi ke `<x-empty-state>`. | `934c8e9` |
 | **2026-10-24** | Tag Header Bertumpuk `<tr> <tr>` di `penerimaan/index` | Diperbaiki sintaks HTML yang salah dan nested table row. | `643654d` |
