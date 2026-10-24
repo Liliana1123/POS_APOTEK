@@ -107,6 +107,7 @@
                                     'aktif' => (int) $barang->aktif
                                 ] : null"
                                 :delete-url="$canManageBarang ? route('barang.destroy', $barang) : null"
+                                :delete-item="$barang->nama"
                                 delete-confirm="Yakin ingin menghapus barang ini?">
                                 
                                 <button type="button"

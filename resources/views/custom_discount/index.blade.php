@@ -69,6 +69,7 @@
                                     'barang_ids' => $discount->barangs->pluck('id')->toArray(),
                                 ]"
                                 :delete-url="route('custom-discount.destroy', $discount)"
+                                :delete-item="$discount->nama"
                                 delete-confirm="Yakin ingin menghapus promo diskon ini?"
                             >
                                 <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">

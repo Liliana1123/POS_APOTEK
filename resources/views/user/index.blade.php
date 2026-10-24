@@ -58,6 +58,7 @@
                                 :edit-id="$canEditUser ? $user->id : null"
                                 :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
                                 :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
+                                :delete-item="$user->name"
                                 delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
                                 
                                 @if($canToggleUser)

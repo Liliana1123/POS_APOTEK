@@ -724,22 +724,16 @@
                                     {{ $item->user->name ?? 'Admin' }}
                                 </td>
                                 <td class="text-center py-2.5 px-2">
-                                    <form
-                                        action="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Yakin ingin menghapus catatan beban Rp {{ number_format($item->nominal, 0, ',', '.') }}?');"
-                                        class="inline"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                            title="Hapus beban"
-                                        >
-                                            <x-heroicon-o-trash class="w-4 h-4" />
-                                        </button>
-                                    </form>
+                                    <button
+                                        type="button"
+                                        class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                        title="Hapus beban"
+                                        aria-label="Hapus beban"
+                                        data-confirm-delete="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
+                                        data-item-name="{{ $item->nama_beban }} (Rp {{ number_format($item->nominal, 0, ',', '.') }})"
+                                        data-confirm-message="Yakin ingin menghapus catatan beban operasional ini?">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
                                 </td>
                             </tr>
                         @empty

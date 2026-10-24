@@ -41,6 +41,7 @@
                                 :edit-id="auth()->user()->canManage('master.supplier') ? $supplier->id : null"
                                 :edit-data="auth()->user()->canManage('master.supplier') ? ['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic] : null"
                                 :delete-url="auth()->user()->canManage('master.supplier') ? route('supplier.destroy', $supplier) : null"
+                                :delete-item="$supplier->nama"
                                 delete-confirm="Yakin ingin menghapus supplier ini?"
                             />
                         </td>

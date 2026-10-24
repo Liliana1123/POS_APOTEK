@@ -119,24 +119,17 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('rusak.destroy', $rusak) }}"
-                                method="POST"
-                                class="inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')"
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus"
-                                >
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('rusak.destroy', $rusak) }}"
+                                data-item-name="{{ $rusak->detailPenerimaan?->barang?->nama ?? 'Barang Rusak' }} (Batch: {{ $rusak->detailPenerimaan?->no_batch ?? '-' }})"
+                                data-confirm-message="Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch terkait.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>

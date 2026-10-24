@@ -38,6 +38,7 @@
                                 :edit-id="auth()->user()->canManage('master.kategori') ? $kategori->id : null"
                                 :edit-data="auth()->user()->canManage('master.kategori') ? ['nama' => $kategori->nama] : null"
                                 :delete-url="auth()->user()->canManage('master.kategori') ? route('kategori.destroy', $kategori) : null"
+                                :delete-item="$kategori->nama"
                                 delete-confirm="Yakin ingin menghapus kategori ini?"
                             />
                         </td>

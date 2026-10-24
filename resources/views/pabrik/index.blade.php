@@ -40,6 +40,7 @@
                                 :edit-id="auth()->user()->canManage('master.pabrik') ? $pabrik->id : null"
                                 :edit-data="auth()->user()->canManage('master.pabrik') ? ['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat] : null"
                                 :delete-url="auth()->user()->canManage('master.pabrik') ? route('pabrik.destroy', $pabrik) : null"
+                                :delete-item="$pabrik->nama"
                                 delete-confirm="Yakin ingin menghapus pabrik ini?"
                             />
                         </td>

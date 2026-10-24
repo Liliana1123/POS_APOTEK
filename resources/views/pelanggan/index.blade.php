@@ -243,18 +243,17 @@
 
                                 <!-- 6. Delete Button -->
                                 @if($canManagePelanggan)
-                                    <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" onsubmit="return confirm('Hapus data pelanggan ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="btn-secondary !p-1.5"
-                                            style="color: #DC2626;"
-                                            title="Hapus"
-                                            aria-label="Hapus">
-                                            <x-heroicon-o-trash class="w-4 h-4" />
-                                        </button>
-                                    </form>
+                                    <button
+                                        type="button"
+                                        class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                        style="color: #DC2626;"
+                                        title="Hapus"
+                                        aria-label="Hapus"
+                                        data-confirm-delete="{{ route('pelanggan.destroy', $pelanggan) }}"
+                                        data-item-name="{{ $pelanggan->nama }}"
+                                        data-confirm-message="Yakin ingin menghapus data pelanggan ini?">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
                                 @endif
                             </div>
                         </td>

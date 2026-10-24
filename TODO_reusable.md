@@ -15,7 +15,7 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## 📌 Status Tahapan Implementasi
 
 ```
-[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI
+[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI
 ```
 
 ---
@@ -149,6 +149,32 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - **Contoh Penggunaan**:
   ```blade
   <x-pagination :paginator="$barangs" />
+  ```
+
+### 2.6 Komponen Modal Konfirmasi Hapus Reusable (`<x-modal-confirm-delete>`)
+- [x] **Lokasi**: `resources/views/components/modal-confirm-delete.blade.php` (Dibuat & terpasang global di `layouts/app.blade.php`)
+- [x] **Deskripsi**: Dialog konfirmasi penghapusan data seragam yang menggantikan popup default browser `window.confirm()`. Menampilkan ikon trash merah ber-ring lembut, judul, pesan peringatan tindakan tidak dapat dibatalkan, kotak sorotan nama item yang akan dihapus, tombol batal, dan tombol eksekusi hapus merah. Mendukung API global `window.confirmDelete(actionUrl, itemName, message)` dan otomatisasi pemicu klik atribut `data-confirm-delete`.
+- [x] **File Terdampak / Status Integrasi**:
+  - [x] `resources/views/layouts/app.blade.php`: Terpasang global.
+  - [x] `resources/views/components/table-action.blade.php`: Terintegrasi dengan prop `:delete-item` dan event delegation.
+  - [x] `resources/views/kategori/index.blade.php`: Mengirimkan `:delete-item="$kategori->nama"`.
+  - [x] `resources/views/barang/index.blade.php`: Mengirimkan `:delete-item="$barang->nama"`.
+  - [x] `resources/views/satuan/index.blade.php`: Mengirimkan `:delete-item="$satuan->nama"`.
+  - [x] `resources/views/supplier/index.blade.php`: Mengirimkan `:delete-item="$supplier->nama"`.
+  - [x] `resources/views/pabrik/index.blade.php`: Mengirimkan `:delete-item="$pabrik->nama"`.
+  - [x] `resources/views/user/index.blade.php`: Mengirimkan `:delete-item="$user->name"`.
+  - [x] `resources/views/custom_discount/index.blade.php`: Mengirimkan `:delete-item="$discount->nama"`.
+  - [x] `resources/views/pelanggan/index.blade.php`: Tombol hapus terintegrasi modal dengan nama pelanggan.
+  - [x] `resources/views/penerimaan/index.blade.php`: Tombol hapus terintegrasi modal dengan nomor faktur penerimaan.
+  - [x] `resources/views/rusak/index.blade.php`: Tombol hapus terintegrasi modal dengan nama obat & batch.
+  - [x] `resources/views/laporan/laba_rugi.blade.php`: Tombol hapus beban terintegrasi modal dengan rincian biaya.
+- **Contoh Penggunaan**:
+  ```blade
+  <button type="button"
+      data-confirm-delete="{{ route('barang.destroy', $barang) }}"
+      data-item-name="{{ $barang->nama }}">
+      Hapus
+  </button>
   ```
 
 ---
@@ -418,7 +444,32 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Tampilan rapi dan bersih saat data sedikit (tidak ada sisa container/margin pagination).
   - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
 
-### 9. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 9. Eksekusi Target 9 (Komponen Modal Konfirmasi Hapus Reusable - x-modal-confirm-delete)
+* **Komponen Baru**:
+  - `resources/views/components/modal-confirm-delete.blade.php` (`<x-modal-confirm-delete />`): Dialog modal konfirmasi penghapusan seragam berdesain modern (backdrop blur, kartu putih dengan border halus, icon tempat sampah merah dengan ring lembut, teks peringatan jelas, kotak sorotan nama item yang akan dihapus, tombol batal abu-abu, dan tombol eksekusi merah).
+  - Dipasang secara global pada `resources/views/layouts/app.blade.php` sehingga otomatis aktif di semua modul aplikasi.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Mengintegrasikan komponen `<x-table-action>`: tombol hapus diubah dari form inline nested dengan popup JavaScript jadul `window.confirm()` menjadi tombol modern yang memanfaatkan event listener global `data-confirm-delete` dan prop `:delete-item`.
+  - Mengirimkan `:delete-item` pada seluruh modul Master Data & Promo:
+    1. `kategori/index.blade.php`: `:delete-item="$kategori->nama"`
+    2. `barang/index.blade.php`: `:delete-item="$barang->nama"`
+    3. `satuan/index.blade.php`: `:delete-item="$satuan->nama"`
+    4. `supplier/index.blade.php`: `:delete-item="$supplier->nama"`
+    5. `pabrik/index.blade.php`: `:delete-item="$pabrik->nama"`
+    6. `user/index.blade.php`: `:delete-item="$user->name"`
+    7. `custom_discount/index.blade.php`: `:delete-item="$discount->nama"`
+  - Merefaktor form delete manual pada modul operasional & laporan:
+    8. `pelanggan/index.blade.php`: Mengganti form delete manual dengan tombol `data-confirm-delete` & nama member.
+    9. `penerimaan/index.blade.php`: Mengganti tombol submit tanpa konfirmasi dengan modal konfirmasi aman berisi nomor faktur penerimaan.
+    10. `rusak/index.blade.php`: Mengganti form delete manual dengan modal konfirmasi berisi nama obat & nomor batch.
+    11. `laporan/laba_rugi.blade.php`: Mengganti form delete manual beban operasional dengan modal konfirmasi berisi nama beban & nominal rupiah.
+* **Keuntungan**:
+  - Mengeliminasi dialog default browser (`window.confirm`) yang kaku, memblokir thread antarmuka, dan tidak konsisten antar sistem operasi.
+  - Pengguna mendapatkan kejelasan visual (*visual reassurance*) mengenai item apa yang sedang dihapus sebelum menekan tombol konfirmasi.
+  - Menghapus form tag nested yang tidak valid di dalam sel tabel (`<td>`).
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 10. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
@@ -429,6 +480,8 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 * **Target 6**: Komponen notifikasi reusable `<x-toast>` (Top-Center) & `<x-alert>`.
 * **Target 7**: Komponen status badge cerdas `<x-status-badge>`.
 * **Target 8**: Komponen pagination wrapper `<x-pagination>`.
+* **Target 9**: Komponen modal konfirmasi hapus `<x-modal-confirm-delete>`.
+
 
 
 

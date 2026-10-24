@@ -165,22 +165,17 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('penerimaan.destroy', $penerimaan) }}"
-                                method="POST"
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus"
-                                >
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('penerimaan.destroy', $penerimaan) }}"
+                                data-item-name="Faktur: {{ $penerimaan->no_faktur }}"
+                                data-confirm-message="Yakin ingin menghapus data faktur penerimaan barang ini? Stok barang terkait akan disesuaikan.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>
