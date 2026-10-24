@@ -101,14 +101,7 @@
 <!-- Page Header (Tampilan Layar) -->
 <div class="print:hidden">
     <x-page-header title="Log Audit Aktivitas User" subtitle="Riwayat tindakan dan jejak audit lengkap yang dilakukan oleh kasir dan administrator.">
-        <a href="{{ route('activity-log', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary flex items-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            <span>Ekspor Excel</span>
-        </a>
-        <button type="button" onclick="printReport()" class="btn-primary flex items-center gap-1.5">
-            <x-heroicon-o-printer class="w-4 h-4" />
-            <span>Cetak Log</span>
-        </button>
+        <x-print-actions print-label="Cetak Log" />
     </x-page-header>
 </div>
 

@@ -92,4 +92,17 @@ class ReusableComponentsTest extends TestCase
         $viewTanggal = $this->blade("@tanggalId('2026-10-24')");
         $viewTanggal->assertSee('24 Okt 2026');
     }
+
+    /**
+     * Uji komponen <x-print-actions>
+     */
+    public function test_print_actions_renders_excel_and_print_buttons(): void
+    {
+        $view = $this->blade('<x-print-actions excel-url="/laporan/export" print-label="Cetak Faktur" />');
+
+        $view->assertSee('Ekspor Excel');
+        $view->assertSee('/laporan/export');
+        $view->assertSee('Cetak Faktur');
+        $view->assertSee('print:hidden');
+    }
 }

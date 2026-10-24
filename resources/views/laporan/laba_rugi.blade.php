@@ -142,26 +142,11 @@
     class="print:hidden lg:items-start">
     <div class="flex flex-col items-end gap-2">
         {{-- Baris 1: Ekspor Excel & Cetak Laporan --}}
-        <div class="flex gap-2 shrink-0">
-            <a
-                id="btn-export-excel"
-                href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
-                class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-            >
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                Ekspor Excel
-            </a>
-
-            <button
-                type="button"
-                id="btn-cetak-laporan"
-                onclick="window.print()"
-                class="btn-primary py-2 px-4 flex items-center gap-1.5"
-            >
-                <x-heroicon-o-printer class="w-4 h-4" />
-                Cetak Laporan
-            </button>
-        </div>
+        <x-print-actions
+            excel-id="btn-export-excel"
+            print-id="btn-cetak-laporan"
+            print-action="window.print()"
+        />
 
         {{-- Baris 2: Filter Periode --}}
         <x-date-range-filter

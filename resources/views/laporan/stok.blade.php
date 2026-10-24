@@ -50,21 +50,7 @@
     title="Laporan Monitoring Stok dan Kadaluarsa"
     subtitle="Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa."
     class="print:hidden no-print page-header-web">
-    <a
-        href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'excel'])) }}"
-        class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-    >
-        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-        Ekspor Excel
-    </a>
-
-    <button
-        onclick="printReport()"
-        class="btn-primary py-2 px-4 flex items-center gap-1.5"
-    >
-        <x-heroicon-o-printer class="w-4 h-4" />
-        Cetak Laporan
-    </button>
+    <x-print-actions />
 </x-page-header>
 
 <!-- Filter & Search Card -->

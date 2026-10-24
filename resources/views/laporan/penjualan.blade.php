@@ -171,23 +171,7 @@
     title="Laporan Penjualan"
     subtitle="Analisis ringkasan transaksi dan perolehan keuntungan penjualan."
     class="print:hidden">
-    <a
-        id="export-excel-btn"
-        href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'excel', 'sort' => request('sort', $sort ?? 'tanggal'), 'direction' => request('direction', $direction ?? 'asc')])) }}"
-        class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-    >
-        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-        Ekspor Excel
-    </a>
-
-    <button
-        type="button"
-        onclick="printReport()"
-        class="btn-primary py-2 px-4 flex items-center gap-1.5"
-    >
-        <x-heroicon-o-printer class="w-4 h-4" />
-        Cetak Laporan
-    </button>
+    <x-print-actions excel-id="export-excel-btn" />
 </x-page-header>
 
 <!-- Filter & Search Card -->

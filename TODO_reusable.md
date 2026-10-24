@@ -15,7 +15,7 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## 📌 Status Tahapan Implementasi
 
 ```
-[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI ──> [Phase 9: Header Halaman] ✅ SELESAI
+[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI ──> [Phase 9: Header Halaman] ✅ SELESAI ──> [Phase 10: Tombol Cetak & Ekspor] ✅ SELESAI
 ```
 
 ---
@@ -55,6 +55,22 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - **Contoh Penggunaan**:
   ```blade
   <x-print-signature :apotek="$apotek" />
+  ```
+
+### 1.3 Komponen Tombol Aksi Cetak & Ekspor (`<x-print-actions>`)
+- [x] **Lokasi**: `resources/views/components/print-actions.blade.php` (Dibuat & diuji)
+- [x] **Deskripsi**: Menyeragamkan sepasang tombol aksi **Ekspor Excel** (ikon unduh) dan **Cetak Laporan** (ikon printer) yang otomatis tersembunyi saat dokumen dicetak (`print:hidden`). Otomatis mendeteksi query string pencarian/filter saat ini via `request()->fullUrlWithQuery(['export' => 'excel'])`.
+- [x] **File Terdampak / Status Integrasi (100% Selesai di 7 Modul Laporan)**:
+  - [x] `resources/views/laporan/stok.blade.php`
+  - [x] `resources/views/laporan/rusak.blade.php`
+  - [x] `resources/views/laporan/penjualan.blade.php`
+  - [x] `resources/views/laporan/penerimaan.blade.php`
+  - [x] `resources/views/laporan/diskon.blade.php`
+  - [x] `resources/views/laporan/laba_rugi.blade.php`
+  - [x] `resources/views/activity_log/index.blade.php`
+- **Contoh Penggunaan**:
+  ```blade
+  <x-print-actions />
   ```
 
 ---
@@ -507,7 +523,26 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Menghilangkan puluhan baris HTML boilerplate di modul laporan dan transaksi.
   - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
 
-### 11. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 11. Eksekusi Target 11 (Komponen Tombol Cetak & Ekspor Standar - x-print-actions)
+* **Komponen Baru**:
+  - `resources/views/components/print-actions.blade.php` (`<x-print-actions />`): Komponen reusable yang menyatukan sepasang tombol aksi **Ekspor Excel** dan **Cetak Laporan** dengan layout flexwrap responsif.
+  - Memiliki fitur deteksi query URL otomatis: secara default `excelUrl` langsung diisi dengan `request()->fullUrlWithQuery(['export' => 'excel'])` sehingga otomatis membawa seluruh filter tanggal, kata kunci pencarian, dan sorting yang sedang aktif di halaman tanpa perlu dirakit manual.
+  - Otomatis memiliki class `print:hidden` sehingga tidak akan ikut tercetak pada kertas fisik maupun PDF.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Merefaktor 7 modul laporan & audit log:
+    1. `resources/views/laporan/stok.blade.php`: `<x-print-actions />`
+    2. `resources/views/laporan/rusak.blade.php`: `<x-print-actions />`
+    3. `resources/views/laporan/penjualan.blade.php`: `<x-print-actions excel-id="export-excel-btn" />`
+    4. `resources/views/laporan/penerimaan.blade.php`: `<x-print-actions />`
+    5. `resources/views/laporan/diskon.blade.php`: `<x-print-actions />`
+    6. `resources/views/laporan/laba_rugi.blade.php`: `<x-print-actions excel-id="btn-export-excel" print-id="btn-cetak-laporan" print-action="window.print()" />`
+    7. `resources/views/activity_log/index.blade.php`: `<x-print-actions print-label="Cetak Log" />`
+* **Keuntungan**:
+  - Menghapus lebih dari 80 baris kode HTML tombol cetak yang berulang di 7 file view.
+  - URL ekspor Excel 100% konsisten dan dinamis mengikuti parameter filter aktif.
+  - Tervalidasi lulus unit test `ReusableComponentsTest` dan Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 12. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
@@ -520,6 +555,8 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 * **Target 8**: Komponen pagination wrapper `<x-pagination>`.
 * **Target 9**: Komponen modal konfirmasi hapus `<x-modal-confirm-delete>`.
 * **Target 10**: Komponen header halaman standar `<x-page-header>`.
+* **Target 11**: Komponen tombol aksi cetak & ekspor `<x-print-actions>`.
+
 
 
 

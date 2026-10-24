@@ -43,14 +43,7 @@
     title="Laporan Penggunaan Diskon dan Promo"
     subtitle="Pantau riwayat audit dan diskon rupiah dari promo/membership."
     class="print:hidden">
-    <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-        Ekspor Excel
-    </a>
-    <button onclick="printReport()" class="btn-primary py-2 px-4 flex items-center gap-1.5">
-        <x-heroicon-o-printer class="w-4 h-4" />
-        Cetak Laporan
-    </button>
+    <x-print-actions />
 </x-page-header>
 
 <!-- Filter & Search Card -->
