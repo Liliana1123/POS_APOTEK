@@ -156,26 +156,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Barang Rusak Tidak Ditemukan
-                                @else
-                                    Barang Rusak Kosong
-                                @endif
-                            </div>
-                            <div class="empty-state-desc">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
-                                @else
-                                    Belum ada data pelaporan obat atau barang rusak.
-                                @endif
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
         </table>

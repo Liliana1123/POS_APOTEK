@@ -105,4 +105,37 @@ class ReusableComponentsTest extends TestCase
         $view->assertSee('Cetak Faktur');
         $view->assertSee('print:hidden');
     }
+
+    /**
+     * Uji komponen <x-empty-state>
+     */
+    public function test_empty_state_renders_default_message(): void
+    {
+        $view = $this->blade('<x-empty-state colspan="6" />');
+
+        $view->assertSee('colspan="6"', false);
+        $view->assertSee('Data Kosong');
+        $view->assertSee('Belum ada data terdaftar di sistem.');
+    }
+
+    public function test_empty_state_renders_custom_props_and_description(): void
+    {
+        $view = $this->blade(
+            '<x-empty-state colspan="4" title="Diskon Kosong" description="Tidak ada promo diskon saat ini." />'
+        );
+
+        $view->assertSee('colspan="4"', false);
+        $view->assertSee('Diskon Kosong');
+        $view->assertSee('Tidak ada promo diskon saat ini.');
+    }
+
+    public function test_empty_state_renders_search_term(): void
+    {
+        $view = $this->blade(
+            '<x-empty-state colspan="8" search="Paracetamol" />'
+        );
+
+        $view->assertSee('Data Tidak Ditemukan');
+        $view->assertSee('Tidak ada data yang cocok dengan kata kunci &quot;Paracetamol&quot;.', false);
+    }
 }

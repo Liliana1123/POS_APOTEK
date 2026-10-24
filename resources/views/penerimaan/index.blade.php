@@ -75,7 +75,6 @@
        <table class="table-custom min-w-[100rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <tr>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
@@ -84,7 +83,6 @@
                     <th scope="col" class="text-right">Piutang</th>
                     <th scope="col" class="text-center">Tgl Jatuh Tempo</th>
                     <th scope="col" class="text-center">Status Pembayaran</th>
-                </tr>
                 </tr>
             </thead>
             <tbody class="table-custom-body ">
@@ -217,26 +215,7 @@
 
                 </tr>
                 @empty
-                    <tr>
-                        <td colspan="9" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
-                                        Penerimaan Tidak Ditemukan
-                                    @else
-                                        Penerimaan Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
-                                        Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Belum ada data faktur masuk terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
         </table>

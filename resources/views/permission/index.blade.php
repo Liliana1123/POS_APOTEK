@@ -7,8 +7,7 @@
 <form method="POST" action="{{ route('permission.update') }}">
     @csrf
 
-    <div class="card-base overflow-hidden">
-        <div class="table-custom-container">
+    <div class="table-custom-container">
             <table class="table-custom min-w-[56rem]">
                 <thead class="table-custom-header">
                     <tr>
@@ -57,7 +56,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
     <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
         <button type="submit"
