@@ -13,12 +13,14 @@ use App\Models\Penjualan;
 use App\Models\Penerimaan;
 use App\Models\Pelanggan;
 use App\Models\ActivityLog;
+use App\Models\InfoApotek;
 use App\Services\DashboardCacheService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Options;
 use OpenSpout\Writer\XLSX\Writer;
 
 class LaporanController extends Controller
@@ -245,18 +247,19 @@ class LaporanController extends Controller
     }
 
     /**
-     * Penelusuran riwayat penjualan per batch tertentu untuk Laporan Monitoring Stok dan Kadaluarsa.
+     * Ambil data detail riwayat penjualan untuk batch tertentu (DetailPenerimaan).
+     * Menjamin integritas relasi dan konsistensi data antara tampilan layar, cetak, dan Excel.
      */
-    public function riwayatPenjualanBatch(Request $request, $id)
+    private function getBatchSalesHistory($id): array
     {
-        $batch = DetailPenerimaan::with('barang')->findOrFail($id);
+        $batch = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])->findOrFail($id);
 
         $salesDetails = DetailPenjualan::where('detail_penerimaan_id', $batch->id)
             ->whereHas('penjualan')
             ->with(['penjualan.user', 'penjualan.pelanggan'])
             ->get();
 
-        // Urutkan riwayat berdasarkan tanggal penjualan terbaru ke terlama
+        // Urutkan riwayat berdasarkan tanggal & waktu transaksi terbaru ke terlama
         $sorted = $salesDetails->sortByDesc(function ($item) {
             return $item->penjualan->created_at ?? $item->penjualan->tanggal;
         })->values();
@@ -267,26 +270,160 @@ class LaporanController extends Controller
                 ? $p->created_at->translatedFormat('d M Y, H:i')
                 : ($p->tanggal ? \Carbon\Carbon::parse($p->tanggal)->translatedFormat('d M Y') : '—');
 
+            $namaPembeli = $p->pelanggan?->nama ?: ($p->pelanggan_nama ?: 'Umum');
+
             return [
                 'no' => $index + 1,
                 'tanggal' => $tanggalFormatted,
-                'nama_pembeli' => $p->pelanggan?->nama ?: 'Umum',
+                'nama_pembeli' => $namaPembeli,
                 'no_invoice' => $p->no_faktur ?: '—',
                 'petugas' => $p->user?->name ?: '—',
                 'jumlah' => (int) $item->jumlah,
             ];
         });
 
+        return [
+            'batch' => $batch,
+            'salesDetails' => $salesDetails,
+            'data' => $data,
+            'total_transaksi' => $sorted->count(),
+            'total_terjual' => (int) $salesDetails->sum('jumlah'),
+        ];
+    }
+
+    /**
+     * Penelusuran riwayat penjualan per batch tertentu untuk Laporan Monitoring Stok dan Kadaluarsa (JSON/Export/Cetak).
+     */
+    public function riwayatPenjualanBatch(Request $request, $id)
+    {
+        if (in_array($request->query('export'), ['excel', 'xlsx'])) {
+            return $this->exportRiwayatPenjualanBatch($request, $id);
+        }
+
+        if ($request->query('print') == 1 || $request->query('cetak') == 1) {
+            return $this->cetakRiwayatPenjualanBatch($request, $id);
+        }
+
+        $history = $this->getBatchSalesHistory($id);
+        $batch = $history['batch'];
+
         return response()->json([
             'success' => true,
             'batch' => [
                 'id' => $batch->id,
-                'no_batch' => $batch->no_batch ?? '—',
-                'barang_nama' => $batch->barang?->nama ?? '—',
+                'no_batch' => $batch->no_batch ?: '—',
+                'barang_nama' => $batch->barang?->nama ?: '—',
+                'no_rak' => $batch->no_rak ?: '—',
+                'expired_date' => $batch->expired_date ? \Carbon\Carbon::parse($batch->expired_date)->translatedFormat('d M Y') : '—',
             ],
-            'total_terjual' => (int) $salesDetails->sum('jumlah'),
-            'data' => $data,
+            'total_transaksi' => $history['total_transaksi'],
+            'total_terjual' => $history['total_terjual'],
+            'data' => $history['data'],
         ]);
+    }
+
+    /**
+     * Tampilan cetak khusus riwayat penjualan dari batch yang sedang dipilih.
+     */
+    public function cetakRiwayatPenjualanBatch(Request $request, $id)
+    {
+        $history = $this->getBatchSalesHistory($id);
+
+        $apotek = \Illuminate\Support\Facades\Cache::remember(
+            'info_apotek',
+            now()->addHours(6),
+            fn () => InfoApotek::first()
+        );
+
+        return view('laporan.print_riwayat_batch', [
+            'batch' => $history['batch'],
+            'data' => $history['data'],
+            'totalTransaksi' => $history['total_transaksi'],
+            'totalTerjual' => $history['total_terjual'],
+            'apotek' => $apotek,
+        ]);
+    }
+
+    /**
+     * Ekspor Excel (.xlsx) khusus riwayat penjualan dari batch yang sedang dipilih.
+     * Menggunakan helper exportXlsx yang konsisten dengan format ekspor Laporan Stok.
+     */
+    public function exportRiwayatPenjualanBatch(Request $request, $id)
+    {
+        $history = $this->getBatchSalesHistory($id);
+        $batch = $history['batch'];
+        $salesData = $history['data'];
+        $totalTransaksi = $history['total_transaksi'];
+        $totalTerjual = $history['total_terjual'];
+
+        // Bersihkan nama file agar informatif dan aman untuk filesystem
+        $rawBarang = $batch->barang?->nama ?? 'Barang';
+        $rawBatch = $batch->no_batch ?? 'Batch';
+        $safeBarang = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rawBarang);
+        $safeBarang = trim(preg_replace('/_+/', '_', $safeBarang), '_');
+        $safeBatch = preg_replace('/[^A-Za-z0-9_\-]/', '_', $rawBatch);
+        $safeBatch = trim(preg_replace('/_+/', '_', $safeBatch), '_');
+
+        $filename = 'Riwayat_Penjualan_' . ($safeBarang ? $safeBarang . '_' : '') . 'Batch_' . ($safeBatch ?: 'Batch') . '.xlsx';
+
+        $headers = [
+            'No',
+            'Barang',
+            'No. Batch',
+            'No. Rak',
+            'Expired',
+            'Tanggal Penjualan',
+            'Nama Pembeli',
+            'No. Invoice',
+            'Petugas',
+            'Jumlah Terjual',
+        ];
+
+        $data = [];
+        if ($salesData->isEmpty()) {
+            $data[] = [
+                1,
+                $batch->barang?->nama ?? '—',
+                $batch->no_batch ?? '—',
+                $batch->no_rak ?: '—',
+                $batch->expired_date ? \Carbon\Carbon::parse($batch->expired_date)->format('d M Y') : '—',
+                '—',
+                'Belum ada riwayat penjualan untuk batch ini',
+                '—',
+                '—',
+                0,
+            ];
+        } else {
+            foreach ($salesData as $item) {
+                $data[] = [
+                    $item['no'],
+                    $batch->barang?->nama ?? '—',
+                    $batch->no_batch ?? '—',
+                    $batch->no_rak ?: '—',
+                    $batch->expired_date ? \Carbon\Carbon::parse($batch->expired_date)->format('d M Y') : '—',
+                    $item['tanggal'],
+                    $item['nama_pembeli'],
+                    $item['no_invoice'],
+                    $item['petugas'],
+                    (int) $item['jumlah'],
+                ];
+            }
+        }
+
+        $totalRow = [
+            '',
+            'Total',
+            '',
+            '',
+            '',
+            $totalTransaksi . ' Transaksi',
+            '',
+            '',
+            '',
+            (int) $totalTerjual,
+        ];
+
+        return $this->exportXlsx($filename, $headers, $data, $totalRow);
     }
 
     // Laporan penerimaan barang dalam rentang tanggal

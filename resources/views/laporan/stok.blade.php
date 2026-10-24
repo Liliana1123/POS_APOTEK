@@ -569,22 +569,48 @@
         ` : '';
 
         container.innerHTML = `
-            <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-1">
                 <div class="flex items-center gap-2">
-                    <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0"></div>
                     <h4 class="text-xs sm:text-sm font-bold text-gray-800">
                         Riwayat Penjualan Batch: <span class="text-blue-700 font-extrabold">${escapeHtml(bNama)}</span> <span class="text-gray-500 font-normal">(Batch: ${escapeHtml(bNo)})</span>
                     </h4>
                 </div>
-                <button 
-                    type="button" 
-                    onclick="event.stopPropagation(); closeBatchHistory(${batchId})" 
-                    class="text-gray-400 hover:text-gray-700 hover:bg-gray-200/70 p-1.5 rounded-md transition-colors text-xs font-semibold flex items-center gap-1 cursor-pointer" 
-                    title="Tutup Riwayat"
-                >
-                    <span class="text-[10px] uppercase font-bold text-gray-500 mr-0.5">Tutup</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <!-- Tombol Ekspor Excel -->
+                    <a 
+                        href="/laporan/stok/batch/${batchId}/riwayat-penjualan/export" 
+                        class="btn-secondary !py-1.5 !px-3 text-xs flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 shadow-xs" 
+                        title="Ekspor Excel Riwayat Penjualan Batch Ini (.xlsx)"
+                    >
+                        <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+                        </svg>
+                        <span class="font-semibold text-gray-700">Ekspor Excel</span>
+                    </a>
+
+                    <!-- Tombol Cetak Riwayat -->
+                    <a 
+                        href="/laporan/stok/batch/${batchId}/riwayat-penjualan/cetak" 
+                        target="_blank" 
+                        class="btn-primary !py-1.5 !px-3 text-xs flex items-center justify-center cursor-pointer text-white shadow-xs" 
+                        title="Cetak Laporan Riwayat Penjualan Batch Ini"
+                    >
+                        <span class="font-semibold text-white">Cetak Riwayat</span>
+                    </a>
+
+                    <!-- Tombol Tutup -->
+                    <button 
+                        type="button" 
+                        onclick="event.stopPropagation(); closeBatchHistory(${batchId})" 
+                        class="btn-secondary !py-1.5 !px-2.5 text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 cursor-pointer shadow-xs" 
+                        title="Tutup Riwayat"
+                    >
+                        <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto rounded-lg border border-blue-200 shadow-sm bg-white">

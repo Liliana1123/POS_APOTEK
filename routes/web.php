@@ -159,6 +159,8 @@ Route::middleware(['auth', 'permission:transaksi.rusak'])->group(function () {
 Route::middleware(['auth', 'permission:laporan.stok'])->prefix('laporan')->name('laporan.')->group(function () {
     Route::get('/stok', [LaporanController::class, 'stok'])->name('stok');
     Route::get('/stok/batch/{id}/riwayat-penjualan', [LaporanController::class, 'riwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan');
+    Route::get('/stok/batch/{id}/riwayat-penjualan/cetak', [LaporanController::class, 'cetakRiwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan.cetak');
+    Route::get('/stok/batch/{id}/riwayat-penjualan/export', [LaporanController::class, 'exportRiwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan.export');
 });
 
 Route::middleware(['auth', 'permission:laporan.penerimaan'])->prefix('laporan')->name('laporan.')->group(function () {
