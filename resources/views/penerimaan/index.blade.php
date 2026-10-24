@@ -2,17 +2,12 @@
 @section('title', 'Penerimaan Barang')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Penerimaan Barang</h1>
-        <p class="text-caption mt-1">Kelola data faktur obat masuk, supplier, dan status pembayaran.</p>
-    </div>
+<x-page-header title="Daftar Penerimaan Barang" subtitle="Kelola data faktur obat masuk, supplier, dan status pembayaran.">
     <button type="button" id="btn-tambah-penerimaan" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Faktur Penerimaan Baru</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -80,7 +75,6 @@
        <table class="table-custom min-w-[100rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <tr>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">No. Faktur dan Tanggal Terima</th>
                     <th scope="col">Supplier</th>
@@ -89,7 +83,6 @@
                     <th scope="col" class="text-right">Piutang</th>
                     <th scope="col" class="text-center">Tgl Jatuh Tempo</th>
                     <th scope="col" class="text-center">Status Pembayaran</th>
-                </tr>
                 </tr>
             </thead>
             <tbody class="table-custom-body ">
@@ -165,22 +158,17 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('penerimaan.destroy', $penerimaan) }}"
-                                method="POST"
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus"
-                                >
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('penerimaan.destroy', $penerimaan) }}"
+                                data-item-name="Faktur: {{ $penerimaan->no_faktur }}"
+                                data-confirm-message="Yakin ingin menghapus data faktur penerimaan barang ini? Stok barang terkait akan disesuaikan.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>
@@ -202,11 +190,7 @@
 
                     {{-- Status Penerimaan --}}
                     <td class="text-center">
-                        @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                            <span class="badge-success">Lengkap</span>
-                        @else
-                            <span class="badge-warning">Belum Lengkap</span>
-                        @endif
+                        <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
                     </td>
 
                     {{-- Total Transaksi --}}
@@ -226,189 +210,67 @@
 
                     {{-- Status Pembayaran --}}
                     <td class="text-center">
-                        @if ($penerimaan->lunas)
-                            <span class="badge-success">Lunas</span>
-                        @else
-                            <span class="badge-warning">Belum Lunas</span>
-                        @endif
+                        <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
                     </td>
 
                 </tr>
                 @empty
-                    <tr>
-                        <td colspan="9" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
-                                        Penerimaan Tidak Ditemukan
-                                    @else
-                                        Penerimaan Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['cari', 'supplier_id', 'tanggal', 'tanggal_mulai', 'tanggal_akhir', 'status_pembayaran', 'status_penerimaan']))
-                                        Tidak ada faktur penerimaan yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Belum ada data faktur masuk terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $penerimaans->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$penerimaans" />
 
 <!-- Modal Detail Penerimaan -->
-<div id="modal-detail-penerimaan"
-    class="modal-backdrop-custom hidden"
-    aria-hidden="true">
-
-    <div class="modal-container-custom max-w-15xl modal-dialog-large">
-
-        <div class="modal-header-custom">
-            <div>
-                <h2>Detail Penerimaan</h2>
-                <p class="text-caption mt-1">
-                    Informasi lengkap faktur penerimaan barang.
-                </p>
-            </div>
-
-            <button type="button"
-                id="btn-tutup-detail"
-                class="btn-secondary !p-1.5"
-                title="Tutup"
-                aria-label="Tutup">
-                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
-            </button>
-        </div>
-
-        <div
-            id="detail-penerimaan-content"
-            class="modal-body-custom overflow-y-auto modal-body-scroll"
-        >
-            <div class="text-center py-8 text-gray-500">
-                Memuat detail...
-            </div>
-        </div>
-
+<x-modal
+    id="modal-detail-penerimaan"
+    title="Detail Penerimaan"
+    subtitle="Informasi lengkap faktur penerimaan barang."
+    close-id="btn-tutup-detail"
+    content-id="detail-penerimaan-content">
+    <div class="text-center py-8 text-gray-500">
+        Memuat detail...
     </div>
-</div>
-
+</x-modal>
 
 <!-- Modal Pembayaran Penerimaan -->
-<div id="modal-payment-penerimaan"
-    class="modal-backdrop-custom hidden"
-    aria-hidden="true">
-
-    <div class="modal-container-custom max-w-15xl modal-dialog-large">
-
-        <div class="modal-header-custom">
-            <div>
-                <h2>Pembayaran Penerimaan</h2>
-                <p class="text-caption mt-1">
-                    Catat pembayaran untuk faktur penerimaan.
-                </p>
-            </div>
-
-            <button type="button"
-                id="btn-tutup-payment"
-                class="btn-secondary !p-1.5"
-                title="Tutup"
-                aria-label="Tutup">
-                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
-            </button>
-        </div>
-
-        <div id="payment-penerimaan-content"
-             class="modal-body-custom overflow-y-auto modal-body-scroll">
-            <div class="text-center py-8 text-gray-500">
-                Memuat pembayaran...
-            </div>
-        </div>
-
+<x-modal
+    id="modal-payment-penerimaan"
+    title="Pembayaran Penerimaan"
+    subtitle="Catat pembayaran untuk faktur penerimaan."
+    close-id="btn-tutup-payment"
+    content-id="payment-penerimaan-content">
+    <div class="text-center py-8 text-gray-500">
+        Memuat pembayaran...
     </div>
-</div>
-
+</x-modal>
 
 <!-- Modal Penerimaan Susulan -->
-<div
+<x-modal
     id="modal-susulan-penerimaan"
-    class="modal-backdrop-custom hidden"
-    aria-hidden="true"
->
-    <div class="modal-container-custom max-w-15xl modal-dialog-large">
-        <div class="modal-header-custom">
-            <div>
-                <h2>Penerimaan Susulan</h2>
-                <p class="text-caption mt-1">
-                    Catat penerimaan barang susulan atau pembatalan kekurangan faktur.
-                </p>
-            </div>
-
-            <button
-                type="button"
-                id="close-susulan-penerimaan"
-                class="btn-secondary !p-1.5"
-                title="Tutup"
-                aria-label="Tutup"
-            >
-                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
-            </button>
-        </div>
-
-        <div
-            id="susulan-penerimaan-content"
-            class="modal-body-custom overflow-y-auto modal-body-scroll"
-        >
-            <div class="text-center py-8 text-gray-500">
-                Memuat formulir penerimaan susulan...
-            </div>
-        </div>
+    title="Penerimaan Susulan"
+    subtitle="Catat penerimaan barang susulan atau pembatalan kekurangan faktur."
+    close-id="close-susulan-penerimaan"
+    content-id="susulan-penerimaan-content">
+    <div class="text-center py-8 text-gray-500">
+        Memuat formulir penerimaan susulan...
     </div>
-</div>
+</x-modal>
 
 <!-- Modal Edit Penerimaan -->
-<div id="modal-edit-penerimaan"
-    class="modal-backdrop-custom hidden"
-    aria-hidden="true"
->
-    <div class="modal-container-custom max-w-15xl modal-dialog-large">
-        <div class="modal-header-custom">
-            <div>
-                <h2>Edit Penerimaan</h2>
-                <p class="text-caption mt-1">
-                    Ubah informasi faktur dan detail penerimaan barang.
-                </p>
-            </div>
-
-            <button
-                type="button"
-                id="btn-tutup-edit"
-                class="btn-secondary !p-1.5"
-                title="Tutup"
-                aria-label="Tutup"
-            >
-                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
-            </button>
-        </div>
-
-        <div
-            id="edit-penerimaan-content"
-            class="modal-body-custom overflow-y-auto modal-body-scroll"
-        >
-            <div class="text-center py-8 text-gray-500">
-                Memuat form edit...
-            </div>
-        </div>
+<x-modal
+    id="modal-edit-penerimaan"
+    title="Edit Penerimaan"
+    subtitle="Ubah informasi faktur dan detail penerimaan barang."
+    close-id="btn-tutup-edit"
+    content-id="edit-penerimaan-content">
+    <div class="text-center py-8 text-gray-500">
+        Memuat form edit...
     </div>
-</div>
+</x-modal>
 
 <!-- Modal Tambah Faktur Penerimaan Baru -->
 <div id="modal-tambah-penerimaan" class="modal-backdrop-custom hidden" aria-hidden="true">

@@ -39,22 +39,12 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Penggunaan Diskon dan Promo</h1>
-        <p class="text-caption mt-1">Pantau riwayat audit dan diskon rupiah dari promo/membership.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-        <button onclick="printReport()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+<x-page-header
+    title="Laporan Penggunaan Diskon dan Promo"
+    subtitle="Pantau riwayat audit dan diskon rupiah dari promo/membership."
+    class="print:hidden">
+    <x-print-actions />
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -165,37 +155,14 @@
                             </div>
                         </td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                            @if ($usage->jenis === 'member')
-                                <span class="badge-info">Member</span>
-                            @else
-                                <span class="badge-neutral">Custom Promo</span>
-                            @endif
+                            <x-status-badge :variant="$usage->jenis === 'member' ? 'info' : 'secondary'" :label="$usage->jenis === 'member' ? 'Member' : 'Custom Promo'" />
                         </td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->persentase }}%</td>
                         <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan']))
-                                        Riwayat Diskon Tidak Ditemukan
-                                    @else
-                                        Riwayat Diskon Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc font-sans">
-                                    @if(request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan']))
-                                        Tidak ada data riwayat audit diskon yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ada data riwayat penggunaan diskon pada periode ini.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

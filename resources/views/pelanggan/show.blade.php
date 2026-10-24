@@ -2,21 +2,15 @@
 @section('title', 'Profil Pelanggan / Member')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Detail Profil Pelanggan / Member</h1>
-        <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4">
-            Kembali
-        </a>
-        <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4">
-            Edit Profil
-        </a>
-    </div>
-</div>
+<x-page-header
+    title="Detail Profil Pelanggan / Member"
+    subtitle="Detail profil, statistik belanja, dan riwayat transaksi."
+    :back-url="route('pelanggan.index')">
+    <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4 flex items-center gap-1.5">
+        <x-heroicon-o-pencil-square class="w-4 h-4" />
+        <span>Edit Profil</span>
+    </a>
+</x-page-header>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
     <!-- Status Member -->
@@ -29,64 +23,9 @@
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
-                @php
-                    $statusMember = trim((string) $pelanggan->status_member);
-                @endphp
-
-                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #F3E8FF; 
-                            color: #7E22CE; 
-                        " 
-                    > 
-                        Member Keluarga Nakes 
-                    </span> 
-
-                @elseif($pelanggan->status_member === 'Member Only') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #FEF9C3; 
-                            color: #A16207; 
-                        " 
-                    > 
-                        Member Only 
-                    </span> 
-
-                @else 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #DCFCE7; 
-                            color: #15803D; 
-                        " 
-                    > 
-                        Member Pelanggan Tetap 
-                    </span> 
-                @endif
+                <div class="mt-1">
+                    <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" />
+                </div>
             </div>
         </div>
 

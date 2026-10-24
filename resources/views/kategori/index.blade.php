@@ -38,6 +38,7 @@
                                 :edit-id="auth()->user()->canManage('master.kategori') ? $kategori->id : null"
                                 :edit-data="auth()->user()->canManage('master.kategori') ? ['nama' => $kategori->nama] : null"
                                 :delete-url="auth()->user()->canManage('master.kategori') ? route('kategori.destroy', $kategori) : null"
+                                :delete-item="$kategori->nama"
                                 delete-confirm="Yakin ingin menghapus kategori ini?"
                             />
                         </td>
@@ -52,7 +53,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $kategoris->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$kategoris" />
 
 <x-modal-form
     id="modal-kategori"

@@ -38,6 +38,7 @@
                                 :edit-id="auth()->user()->canManage('master.satuan') ? $satuan->id : null"
                                 :edit-data="auth()->user()->canManage('master.satuan') ? ['nama' => $satuan->nama] : null"
                                 :delete-url="auth()->user()->canManage('master.satuan') ? route('satuan.destroy', $satuan) : null"
+                                :delete-item="$satuan->nama"
                                 delete-confirm="Yakin ingin menghapus satuan ini?"
                             />
                         </td>
@@ -52,7 +53,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $satuans->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$satuans" />
 
 <x-modal-form
     id="modal-satuan"

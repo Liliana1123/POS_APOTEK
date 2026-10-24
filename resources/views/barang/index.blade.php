@@ -107,6 +107,7 @@
                                     'aktif' => (int) $barang->aktif
                                 ] : null"
                                 :delete-url="$canManageBarang ? route('barang.destroy', $barang) : null"
+                                :delete-item="$barang->nama"
                                 delete-confirm="Yakin ingin menghapus barang ini?">
                                 
                                 <button type="button"
@@ -144,9 +145,7 @@
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
-                            <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
-                                {{ $barang->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </x-badge>
+                            <x-status-badge type="aktif" :status="$barang->aktif" />
                         </td>
                     </tr>
                 @empty
@@ -157,7 +156,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $barangs->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$barangs" />
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form

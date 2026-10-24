@@ -28,22 +28,12 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Barang Rusak</h1>
-        <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.rusak', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-        <button onclick="printReport()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+<x-page-header
+    title="Laporan Barang Rusak"
+    subtitle="Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch."
+    class="print:hidden">
+    <x-print-actions />
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -117,26 +107,7 @@
                         <td class="text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->keterangan ?? '-' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="7" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                                        Barang Rusak Tidak Ditemukan
-                                    @else
-                                        Barang Rusak Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan']))
-                                        Tidak ditemukan data pelaporan obat rusak yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ditemukan riwayat pelaporan obat rusak yang terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

@@ -136,39 +136,19 @@
 {{-- TAMPILAN LAYAR APLIKASI (SCREEN UI) --}}
 {{-- ========================================================= --}}
 
-{{-- Header Halaman & Filter Controls --}}
-<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6 print:hidden">
-    <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Laporan Laba Rugi</h1>
-        <p class="text-xs text-slate-500 mt-0.5">Ringkasan keuangan apotek berdasarkan periode yang dipilih</p>
-    </div>
-
-    {{-- Tombol Ekspor/Cetak + Filter Periode (sebelah kanan, vertikal) --}}
+<x-page-header
+    title="Laporan Laba Rugi"
+    subtitle="Ringkasan keuangan apotek berdasarkan periode yang dipilih"
+    class="print:hidden lg:items-start">
     <div class="flex flex-col items-end gap-2">
         {{-- Baris 1: Ekspor Excel & Cetak Laporan --}}
-        <div class="flex gap-2 shrink-0">
-            {{-- Ekspor Excel --}}
-            <a
-                id="btn-export-excel"
-                href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
-                class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-            >
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                Ekspor Excel
-            </a>
+        <x-print-actions
+            excel-id="btn-export-excel"
+            print-id="btn-cetak-laporan"
+            print-action="window.print()"
+        />
 
-            {{-- Cetak Laporan --}}
-            <button
-                type="button"
-                id="btn-cetak-laporan"
-                onclick="window.print()"
-                class="btn-primary py-2 px-4"
-            >
-                Cetak Laporan
-            </button>
-        </div>
-
-        {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
+        {{-- Baris 2: Filter Periode --}}
         <x-date-range-filter
             :action="route('laporan.laba-rugi')"
             :periode="$currentPeriode"
@@ -176,7 +156,7 @@
             :sampai="$sampai"
         />
     </div>
-</div>
+</x-page-header>
 
 {{-- Flash Notification Alerts --}}
 @if(isset($errors) && $errors->any())
@@ -724,22 +704,16 @@
                                     {{ $item->user->name ?? 'Admin' }}
                                 </td>
                                 <td class="text-center py-2.5 px-2">
-                                    <form
-                                        action="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Yakin ingin menghapus catatan beban Rp {{ number_format($item->nominal, 0, ',', '.') }}?');"
-                                        class="inline"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                            title="Hapus beban"
-                                        >
-                                            <x-heroicon-o-trash class="w-4 h-4" />
-                                        </button>
-                                    </form>
+                                    <button
+                                        type="button"
+                                        class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                        title="Hapus beban"
+                                        aria-label="Hapus beban"
+                                        data-confirm-delete="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
+                                        data-item-name="{{ $item->nama_beban }} (Rp {{ number_format($item->nominal, 0, ',', '.') }})"
+                                        data-confirm-message="Yakin ingin menghapus catatan beban operasional ini?">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
                                 </td>
                             </tr>
                         @empty

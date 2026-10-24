@@ -2,16 +2,12 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Pencatatan Barang Rusak</h1>
-        <p class="text-caption mt-1">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
-    </div>
+<x-page-header title="Daftar Pencatatan Barang Rusak" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -119,24 +115,17 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('rusak.destroy', $rusak) }}"
-                                method="POST"
-                                class="inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')"
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus"
-                                >
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('rusak.destroy', $rusak) }}"
+                                data-item-name="{{ $rusak->detailPenerimaan?->barang?->nama ?? 'Barang Rusak' }} (Batch: {{ $rusak->detailPenerimaan?->no_batch ?? '-' }})"
+                                data-confirm-message="Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch terkait.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>
@@ -167,35 +156,14 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Barang Rusak Tidak Ditemukan
-                                @else
-                                    Barang Rusak Kosong
-                                @endif
-                            </div>
-                            <div class="empty-state-desc">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
-                                @else
-                                    Belum ada data pelaporan obat atau barang rusak.
-                                @endif
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4 pagination-container">
-    {{ $rusaks->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$rusaks" />
 
     @php
         $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
@@ -300,58 +268,23 @@
     </div>
 
     <!-- Modal Detail Barang Rusak -->
-    <div id="modal-detail-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Detail Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Informasi pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button type="button"
-                        onclick="closeDetailRusak()"
-                        class="text-gray-400 hover:text-gray-600 text-xl">
-                    &times;
-                </button>
-            </div>
-
-            <div id="detail-rusak-content" class="p-6">
-            </div>
-
-        </div>
-    </div>
+    <x-modal
+        id="modal-detail-rusak"
+        title="Detail Barang Rusak"
+        subtitle="Informasi pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeDetailRusak()"
+        content-id="detail-rusak-content"
+        body-class="p-6" />
 
     <!-- Modal Edit Barang Rusak -->
-    <div id="modal-edit-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Edit Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Koreksi data pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    onclick="closeEditRusak()"
-                    class="text-gray-400 hover:text-gray-600 text-xl"
-                >
-                    &times;
-                </button>
-            </div>
+    <x-modal
+        id="modal-edit-rusak"
+        title="Edit Barang Rusak"
+        subtitle="Koreksi data pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeEditRusak()"
+        body-class="p-0">
 
             <form id="form-edit-rusak" class="p-6">
 
@@ -471,9 +404,7 @@
                 </div>
 
             </form>
-
-        </div>
-    </div>
+    </x-modal>
 
 
 <script>

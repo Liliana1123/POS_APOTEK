@@ -141,14 +141,7 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="10" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">Transaksi Tidak Ditemukan</div>
-                            <div class="empty-state-desc">Tidak ada data transaksi penjualan pada periode yang dipilih.</div>
-                        </div>
-                    </td>
-                </tr>
+                <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
             @endforelse
         </tbody>
         <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
@@ -167,37 +160,12 @@
 
 </div>
 
-<!-- Page Header (layar) -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-                <div>
-                    <h1>Laporan Penjualan</h1>
-                    <p class="text-caption mt-1">Analisis ringkasan transaksi dan perolehan keuntungan penjualan.</p>
-                </div>
-
-        {{-- Tombol Aksi --}}
-        <div class="flex gap-2 shrink-0">
-        {{-- Ekspor Excel --}}
-        <a
-            id="export-excel-btn"
-            href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'excel', 'sort' => request('sort', $sort ?? 'tanggal'), 'direction' => request('direction', $direction ?? 'asc')])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-
-        {{-- Cetak Laporan --}}
-        <button
-            type="button"
-            onclick="printReport()"
-            class="btn-primary py-2 px-4"
-        >
-            Cetak Laporan
-        </button>
-
-    </div>
-
-</div>
+<x-page-header
+    title="Laporan Penjualan"
+    subtitle="Analisis ringkasan transaksi dan perolehan keuntungan penjualan."
+    class="print:hidden">
+    <x-print-actions excel-id="export-excel-btn" />
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -640,21 +608,7 @@
                     </tr>
 
                 @empty
-
-                    <tr>
-                        <td colspan="9" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    Transaksi Tidak Ditemukan
-                                </div>
-
-                                <div class="empty-state-desc">
-                                    Tidak ada data transaksi pada filter yang dipilih.
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-
+                    <x-empty-state colspan="9" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
                 @endforelse
 
             </tbody>

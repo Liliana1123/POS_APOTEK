@@ -68,8 +68,12 @@ class PaginationViewTest extends TestCase
     public function test_custom_discount_index_declares_shared_indonesian_pagination(): void
     {
         $contents = file_get_contents(resource_path('views/custom_discount/index.blade.php'));
+        $componentContents = file_get_contents(resource_path('views/components/pagination.blade.php'));
 
-        $this->assertStringContainsString("links('vendor.pagination.apotek')", $contents);
+        $this->assertTrue(
+            str_contains($contents, '<x-pagination') || str_contains($contents, "links('vendor.pagination.apotek')")
+        );
+        $this->assertStringContainsString('vendor.pagination.apotek', $componentContents);
     }
 }
 

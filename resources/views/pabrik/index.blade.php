@@ -40,6 +40,7 @@
                                 :edit-id="auth()->user()->canManage('master.pabrik') ? $pabrik->id : null"
                                 :edit-data="auth()->user()->canManage('master.pabrik') ? ['nama' => $pabrik->nama, 'telepon' => $pabrik->telepon, 'alamat' => $pabrik->alamat] : null"
                                 :delete-url="auth()->user()->canManage('master.pabrik') ? route('pabrik.destroy', $pabrik) : null"
+                                :delete-item="$pabrik->nama"
                                 delete-confirm="Yakin ingin menghapus pabrik ini?"
                             />
                         </td>
@@ -56,7 +57,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $pabriks->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$pabriks" />
 
 <x-modal-form
     id="modal-pabrik"

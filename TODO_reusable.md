@@ -15,7 +15,7 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## 📌 Status Tahapan Implementasi
 
 ```
-[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI
+[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI ──> [Phase 9: Header Halaman] ✅ SELESAI ──> [Phase 10: Tombol Cetak & Ekspor] ✅ SELESAI
 ```
 
 ---
@@ -55,6 +55,22 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - **Contoh Penggunaan**:
   ```blade
   <x-print-signature :apotek="$apotek" />
+  ```
+
+### 1.3 Komponen Tombol Aksi Cetak & Ekspor (`<x-print-actions>`)
+- [x] **Lokasi**: `resources/views/components/print-actions.blade.php` (Dibuat & diuji)
+- [x] **Deskripsi**: Menyeragamkan sepasang tombol aksi **Ekspor Excel** (ikon unduh) dan **Cetak Laporan** (ikon printer) yang otomatis tersembunyi saat dokumen dicetak (`print:hidden`). Otomatis mendeteksi query string pencarian/filter saat ini via `request()->fullUrlWithQuery(['export' => 'excel'])`.
+- [x] **File Terdampak / Status Integrasi (100% Selesai di 7 Modul Laporan)**:
+  - [x] `resources/views/laporan/stok.blade.php`
+  - [x] `resources/views/laporan/rusak.blade.php`
+  - [x] `resources/views/laporan/penjualan.blade.php`
+  - [x] `resources/views/laporan/penerimaan.blade.php`
+  - [x] `resources/views/laporan/diskon.blade.php`
+  - [x] `resources/views/laporan/laba_rugi.blade.php`
+  - [x] `resources/views/activity_log/index.blade.php`
+- **Contoh Penggunaan**:
+  ```blade
+  <x-print-actions />
   ```
 
 ---
@@ -128,6 +144,67 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
       :dari="$dari"
       :sampai="$sampai"
   />
+  ```
+
+### 2.5 Komponen Pagination Wrapper (`<x-pagination>`)
+- [x] **Lokasi**: `resources/views/components/pagination.blade.php` (Sudah dibuat & diuji)
+- [x] **Deskripsi**: Wrapper cerdas untuk tautan pagination Laravel yang mengenkapsulasi container `.mt-4.pagination-container`, template apotek (`vendor.pagination.apotek`), dan otomatis menyembunyikan kontainer kosong jika hanya ada 1 halaman.
+- [x] **File Terdampak / Status Integrasi (12 Modul)**:
+  - [x] `resources/views/kategori/index.blade.php`
+  - [x] `resources/views/barang/index.blade.php`
+  - [x] `resources/views/satuan/index.blade.php`
+  - [x] `resources/views/supplier/index.blade.php`
+  - [x] `resources/views/pabrik/index.blade.php`
+  - [x] `resources/views/pelanggan/index.blade.php`
+  - [x] `resources/views/user/index.blade.php`
+  - [x] `resources/views/penjualan/index.blade.php`
+  - [x] `resources/views/penerimaan/index.blade.php`
+  - [x] `resources/views/rusak/index.blade.php`
+  - [x] `resources/views/custom_discount/index.blade.php`
+  - [x] `resources/views/whatsapp-monitor/index.blade.php`
+- **Contoh Penggunaan**:
+  ```blade
+  <x-pagination :paginator="$barangs" />
+  ```
+
+### 2.6 Komponen Modal Konfirmasi Hapus Reusable (`<x-modal-confirm-delete>`)
+- [x] **Lokasi**: `resources/views/components/modal-confirm-delete.blade.php` (Dibuat & terpasang global di `layouts/app.blade.php`)
+- [x] **Deskripsi**: Dialog konfirmasi penghapusan data seragam yang menggantikan popup default browser `window.confirm()`. Menampilkan ikon trash merah ber-ring lembut, judul, pesan peringatan tindakan tidak dapat dibatalkan, kotak sorotan nama item yang akan dihapus, tombol batal, dan tombol eksekusi hapus merah. Mendukung API global `window.confirmDelete(actionUrl, itemName, message)` dan otomatisasi pemicu klik atribut `data-confirm-delete`.
+- [x] **File Terdampak / Status Integrasi**:
+  - [x] `resources/views/layouts/app.blade.php`: Terpasang global.
+  - [x] `resources/views/components/table-action.blade.php`: Terintegrasi dengan prop `:delete-item` dan event delegation.
+  - [x] `resources/views/kategori/index.blade.php`: Mengirimkan `:delete-item="$kategori->nama"`.
+  - [x] `resources/views/barang/index.blade.php`: Mengirimkan `:delete-item="$barang->nama"`.
+  - [x] `resources/views/satuan/index.blade.php`: Mengirimkan `:delete-item="$satuan->nama"`.
+  - [x] `resources/views/supplier/index.blade.php`: Mengirimkan `:delete-item="$supplier->nama"`.
+  - [x] `resources/views/pabrik/index.blade.php`: Mengirimkan `:delete-item="$pabrik->nama"`.
+  - [x] `resources/views/user/index.blade.php`: Mengirimkan `:delete-item="$user->name"`.
+  - [x] `resources/views/custom_discount/index.blade.php`: Mengirimkan `:delete-item="$discount->nama"`.
+  - [x] `resources/views/pelanggan/index.blade.php`: Tombol hapus terintegrasi modal dengan nama pelanggan.
+  - [x] `resources/views/penerimaan/index.blade.php`: Tombol hapus terintegrasi modal dengan nomor faktur penerimaan.
+  - [x] `resources/views/rusak/index.blade.php`: Tombol hapus terintegrasi modal dengan nama obat & batch.
+  - [x] `resources/views/laporan/laba_rugi.blade.php`: Tombol hapus beban terintegrasi modal dengan rincian biaya.
+- **Contoh Penggunaan**:
+  ```blade
+  <button type="button"
+      data-confirm-delete="{{ route('barang.destroy', $barang) }}"
+      data-item-name="{{ $barang->nama }}">
+      Hapus
+  </button>
+  ```
+
+### 2.7 Komponen Header Halaman Standar (`<x-page-header>`)
+- [x] **Lokasi**: `resources/views/components/page-header.blade.php` (Ditingkatkan & diuji)
+- [x] **Deskripsi**: Menyeragamkan header judul halaman `h1`, subtitle/deskripsi, tombol panah kembali opsional (`:back-url`), merge attribute class/ID, dan slot tombol aksi (Tambah Data, Cetak Laporan, Ekspor Excel).
+- [x] **File Terdampak / Status Integrasi (100% Seluruh View)**:
+  - [x] Modul Master: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, `pelanggan`, `user`, `custom_discount`, `permission`, `pengaturan`.
+  - [x] Modul Transaksi & Kasir: `penjualan/index`, `penjualan/create`, `penjualan/show`, `penerimaan/index`, `penerimaan/create`, `rusak/index`, `rusak/create`, `rusak/show`.
+  - [x] Modul Laporan & Monitoring: `laporan/penjualan`, `laporan/penerimaan`, `laporan/rusak`, `laporan/stok`, `laporan/diskon`, `laporan/laba_rugi`, `whatsapp-monitor/index`, `activity_log/index`.
+- **Contoh Penggunaan**:
+  ```blade
+  <x-page-header title="Daftar Penerimaan Barang" subtitle="Kelola data faktur obat masuk." :back-url="route('penerimaan.index')">
+      <button class="btn-primary">Tambah</button>
+  </x-page-header>
   ```
 
 ---
@@ -233,6 +310,37 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 
 ---
 
+## Fase 6: Komponen Status Badge Cerdas (`<x-status-badge>`)
+*Badge status bisnis apotek terpusat (Pembayaran, Penerimaan, Stok, Kadaluarsa, Resep, Aktif/Nonaktif, Role, Member, Promo).*
+
+### 6.1 Komponen Status Badge Cerdas (`<x-status-badge>`)
+- [x] **Lokasi**: `resources/views/components/status-badge.blade.php` (Dibuat & diuji)
+- [x] **Deskripsi**: Mengabstraksi seluruh logika penentuan warna badge, border, dan label berdasarkan domain bisnis apotek:
+  - `type="pembayaran"`: "Lunas" (Hijau `badge-success`) vs "Belum Lunas" / "Piutang" (Kuning `badge-warning`).
+  - `type="penerimaan"`: "Lengkap" (Hijau) vs "Belum Lengkap" (Kuning).
+  - `type="stok"`: "Aman" (Hijau), "Menipis" (Kuning), "Habis" / "Minus" (Merah `badge-danger`).
+  - `type="expired"`: "Normal" (Hijau), "< 3 Bulan" (Kuning), "< 1 Bulan" (Orange `badge-orange`), "KADALUARSA" (Merah).
+  - `type="aktif"`: "Aktif" (Hijau) vs "Nonaktif" (Merah).
+  - `type="resep"`: "Wajib Resep" (Biru/Sky `badge-info`) vs "Bebas" (Abu-abu `badge-secondary`).
+  - `type="role"`: Superadmin (Merah), Admin (Biru), Apoteker (Kuning), Kasir (Hijau), Gudang (Abu-abu).
+  - `type="member"`: Nakes (Indigo), Member Only (Kuning), Pelanggan Tetap (Biru/Hijau), Umum (Abu-abu).
+  - `type="promo"`: Aktif, Belum Mulai, Berakhir, Non-aktif.
+- [x] **File Terdampak / Status Refactor**:
+  - [x] `resources/views/penerimaan/index.blade.php`: Status penerimaan & status pembayaran.
+  - [x] `resources/views/penerimaan/show.blade.php`: Status penerimaan, pembayaran, & tagihan lunas.
+  - [x] `resources/views/penerimaan/payment.blade.php`: Status penerimaan & pembayaran.
+  - [x] `resources/views/penerimaan/susulan.blade.php`: Status penerimaan & pembayaran.
+  - [x] `resources/views/barang/index.blade.php`: Status aktif obat/barang.
+  - [x] `resources/views/user/index.blade.php`: Role pengguna & status aktif.
+  - [x] `resources/views/custom_discount/index.blade.php`: Status promo diskon.
+  - [x] `resources/views/laporan/stok.blade.php`: Status kadaluarsa & status sisa stok.
+  - [x] `resources/views/penjualan/index.blade.php`: Status membership pelanggan.
+  - [x] `resources/views/laporan/diskon.blade.php`: Jenis penggunaan diskon.
+  - [x] `resources/views/pelanggan/index.blade.php`: Status member & piutang.
+  - [x] `resources/views/pelanggan/show.blade.php`: Mengganti 57 baris style inline dengan komponen badge.
+
+---
+
 ## 📊 Laporan Hasil Eksekusi Refaktorisasi
 
 ### 1. Eksekusi Target 1 (Dashboard KPI Cards)
@@ -321,7 +429,120 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Semua pesan AJAX dan flash session Laravel (`success`, `error`, `warning`, `info`) terpusat dalam satu siklus hidup komponen dengan dukungan auto-dismiss dan pause on hover.
   - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
 
-### 7. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 7. Eksekusi Target 7 (Komponen Status Badge Cerdas - x-status-badge)
+* **Komponen Baru**:
+  - `resources/views/components/status-badge.blade.php` (`<x-status-badge />`): Komponen cerdas serbaguna yang mengenkapsulasi seluruh aturan pewarnaan, border, dan label badge di apotek (pembayaran, penerimaan, stok, kadaluarsa, resep, aktif, role, member, promo).
+* **Perubahan yang Diterapkan**:
+  - Merefaktor 12 view template:
+    1. `resources/views/penerimaan/index.blade.php`: Status penerimaan (Lengkap / Belum Lengkap) & status pembayaran (Lunas / Belum Lunas).
+    2. `resources/views/penerimaan/show.blade.php`: Status header penerimaan, status pembayaran, dan status tagihan faktur.
+    3. `resources/views/penerimaan/payment.blade.php`: Status penerimaan & status pembayaran faktur.
+    4. `resources/views/penerimaan/susulan.blade.php`: Status penerimaan & pembayaran penerimaan susulan.
+    5. `resources/views/barang/index.blade.php`: Status aktif/nonaktif produk obat.
+    6. `resources/views/user/index.blade.php`: Role akun (superadmin, admin, apoteker, kasir, gudang) dan status aktif user.
+    7. `resources/views/custom_discount/index.blade.php`: Status promo diskon (Aktif, Belum Mulai, Berakhir, Non-aktif) tanpa logika if-else manual.
+    8. `resources/views/laporan/stok.blade.php`: Status kadaluarsa batch obat (Normal, < 3 Bulan, < 1 Bulan, Kadaluarsa) dan status sisa stok (Aman, Menipis, Habis, Minus).
+    9. `resources/views/penjualan/index.blade.php`: Status membership pelanggan transaksi.
+    10. `resources/views/laporan/diskon.blade.php`: Jenis penggunaan diskon member vs promo.
+    11. `resources/views/pelanggan/index.blade.php`: Status tipe member dan status piutang.
+    12. `resources/views/pelanggan/show.blade.php`: Menghapus 57 baris style inline manual dan menggantikannya dengan 1 baris `<x-status-badge>`.
+* **Keuntungan**:
+  - Menghapus lebih dari 120 baris kode boilerplate `if-else` dan duplikasi `match(...)` di belasan template tampilan.
+  - Memastikan warna badge status di seluruh aplikasi 100% seragam dan konsisten.
+  - Pengujian template berhasil dan lolos validasi `php artisan view:cache` & `php artisan view:clear`.
+
+### 8. Eksekusi Target 8 (Komponen Pagination Wrapper - x-pagination)
+* **Komponen Baru**:
+  - `resources/views/components/pagination.blade.php` (`<x-pagination />`): Wrapper cerdas untuk tautan paginasi Laravel (`LengthAwarePaginator`) yang otomatis membungkus link dengan container `.mt-4.pagination-container` dan template standar `vendor.pagination.apotek`. Memiliki proteksi kondisional otomatis `@if ($paginator && method_exists($paginator, 'hasPages') && $paginator->hasPages())` sehingga kontainer div kosong dan margin berlebih tidak akan dirender jika data hanya 1 halaman.
+* **Perubahan yang Diterapkan**:
+  - Merefaktor 12 view template index yang menggunakan paginasi:
+    1. `resources/views/kategori/index.blade.php`: `<x-pagination :paginator="$kategoris" />`
+    2. `resources/views/barang/index.blade.php`: `<x-pagination :paginator="$barangs" />`
+    3. `resources/views/satuan/index.blade.php`: `<x-pagination :paginator="$satuans" />`
+    4. `resources/views/supplier/index.blade.php`: `<x-pagination :paginator="$suppliers" />`
+    5. `resources/views/pabrik/index.blade.php`: `<x-pagination :paginator="$pabriks" />`
+    6. `resources/views/pelanggan/index.blade.php`: `<x-pagination :paginator="$pelanggans" />`
+    7. `resources/views/user/index.blade.php`: `<x-pagination :paginator="$users" />`
+    8. `resources/views/penjualan/index.blade.php`: `<x-pagination :paginator="$penjualans" />`
+    9. `resources/views/penerimaan/index.blade.php`: `<x-pagination :paginator="$penerimaans" />`
+    10. `resources/views/rusak/index.blade.php`: `<x-pagination :paginator="$rusaks" />`
+    11. `resources/views/custom_discount/index.blade.php`: `<x-pagination :paginator="$discounts" />`
+    12. `resources/views/whatsapp-monitor/index.blade.php`: `<x-pagination :paginator="$logs" />`
+* **Keuntungan**:
+  - Menghilangkan duplikasi markup container pagination dan pemanggilan template view paginasi di 12 file.
+  - Jika ada perubahan desain pagination di kemudian hari, cukup perbarui satu file komponen saja atau ganti prop `:view="..."`.
+  - Tampilan rapi dan bersih saat data sedikit (tidak ada sisa container/margin pagination).
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 9. Eksekusi Target 9 (Komponen Modal Konfirmasi Hapus Reusable - x-modal-confirm-delete)
+* **Komponen Baru**:
+  - `resources/views/components/modal-confirm-delete.blade.php` (`<x-modal-confirm-delete />`): Dialog modal konfirmasi penghapusan seragam berdesain modern (backdrop blur, kartu putih dengan border halus, icon tempat sampah merah dengan ring lembut, teks peringatan jelas, kotak sorotan nama item yang akan dihapus, tombol batal abu-abu, dan tombol eksekusi merah).
+  - Dipasang secara global pada `resources/views/layouts/app.blade.php` sehingga otomatis aktif di semua modul aplikasi.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Mengintegrasikan komponen `<x-table-action>`: tombol hapus diubah dari form inline nested dengan popup JavaScript jadul `window.confirm()` menjadi tombol modern yang memanfaatkan event listener global `data-confirm-delete` dan prop `:delete-item`.
+  - Mengirimkan `:delete-item` pada seluruh modul Master Data & Promo:
+    1. `kategori/index.blade.php`: `:delete-item="$kategori->nama"`
+    2. `barang/index.blade.php`: `:delete-item="$barang->nama"`
+    3. `satuan/index.blade.php`: `:delete-item="$satuan->nama"`
+    4. `supplier/index.blade.php`: `:delete-item="$supplier->nama"`
+    5. `pabrik/index.blade.php`: `:delete-item="$pabrik->nama"`
+    6. `user/index.blade.php`: `:delete-item="$user->name"`
+    7. `custom_discount/index.blade.php`: `:delete-item="$discount->nama"`
+  - Merefaktor form delete manual pada modul operasional & laporan:
+    8. `pelanggan/index.blade.php`: Mengganti form delete manual dengan tombol `data-confirm-delete` & nama member.
+    9. `penerimaan/index.blade.php`: Mengganti tombol submit tanpa konfirmasi dengan modal konfirmasi aman berisi nomor faktur penerimaan.
+    10. `rusak/index.blade.php`: Mengganti form delete manual dengan modal konfirmasi berisi nama obat & nomor batch.
+    11. `laporan/laba_rugi.blade.php`: Mengganti form delete manual beban operasional dengan modal konfirmasi berisi nama beban & nominal rupiah.
+* **Keuntungan**:
+  - Mengeliminasi dialog default browser (`window.confirm`) yang kaku, memblokir thread antarmuka, dan tidak konsisten antar sistem operasi.
+  - Pengguna mendapatkan kejelasan visual (*visual reassurance*) mengenai item apa yang sedang dihapus sebelum menekan tombol konfirmasi.
+  - Menghapus form tag nested yang tidak valid di dalam sel tabel (`<td>`).
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 10. Eksekusi Target 10 (Komponen Header Halaman Standar - x-page-header)
+* **Penyempurnaan Komponen**:
+  - `resources/views/components/page-header.blade.php`: Ditingkatkan dengan `$attributes->merge(...)`, tipografi responsif `text-xl sm:text-2xl font-bold font-sans`, dan dukungan prop `:back-url` otomatis yang merender tombol panah kembali elegan (`<x-heroicon-o-arrow-left />`) sebelum judul.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Merefaktor 10 view yang sebelumnya masih memakai header manual `<h1>`:
+    1. `resources/views/whatsapp-monitor/index.blade.php`: Mengganti div header manual dengan `<x-page-header>`.
+    2. `resources/views/penerimaan/index.blade.php`: Header daftar penerimaan beserta tombol "Tambah Faktur Penerimaan Baru".
+    3. `resources/views/penerimaan/create.blade.php`: Header form faktur baru dengan tombol kembali `:back-url="route('penerimaan.index')"`.
+    4. `resources/views/rusak/index.blade.php`: Header daftar barang rusak beserta tombol aksi "Catat Barang Rusak".
+    5. `resources/views/rusak/create.blade.php`: Header form barang rusak dengan tombol kembali `:back-url`.
+    6. `resources/views/rusak/show.blade.php`: Header detail barang rusak dengan tombol kembali `:back-url`.
+    7. `resources/views/pelanggan/show.blade.php`: Header detail profil member dengan tombol kembali `:back-url` dan tombol Edit Profil.
+    8. `resources/views/penjualan/show.blade.php`: Header struk kasir dengan tombol kembali cerdas `:back-url="$backUrl"`, selector ukuran thermal (58mm/80mm), dan tombol print.
+    9. `resources/views/laporan/stok.blade.php`: Header monitoring stok dengan tombol Ekspor Excel dan Cetak Laporan.
+    10. `resources/views/laporan/rusak.blade.php`: Header laporan rusak dengan tombol Ekspor Excel dan Cetak Laporan.
+    11. `resources/views/laporan/penjualan.blade.php`: Header laporan penjualan dengan tombol Ekspor Excel dan Cetak Laporan.
+    12. `resources/views/laporan/penerimaan.blade.php`: Header laporan penerimaan dengan tombol Ekspor Excel dan Cetak Laporan.
+    13. `resources/views/laporan/diskon.blade.php`: Header laporan diskon dengan tombol Ekspor Excel dan Cetak Laporan.
+    14. `resources/views/laporan/laba_rugi.blade.php`: Header laporan laba rugi dengan tombol Ekspor Excel, Cetak, dan Filter Periode `<x-date-range-filter>`.
+* **Keuntungan**:
+  - 100% halaman aplikasi apotek kini memiliki hierarki judul (`h1`), deskripsi, dan tombol aksi seragam dan responsif.
+  - Menghilangkan puluhan baris HTML boilerplate di modul laporan dan transaksi.
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 11. Eksekusi Target 11 (Komponen Tombol Cetak & Ekspor Standar - x-print-actions)
+* **Komponen Baru**:
+  - `resources/views/components/print-actions.blade.php` (`<x-print-actions />`): Komponen reusable yang menyatukan sepasang tombol aksi **Ekspor Excel** dan **Cetak Laporan** dengan layout flexwrap responsif.
+  - Memiliki fitur deteksi query URL otomatis: secara default `excelUrl` langsung diisi dengan `request()->fullUrlWithQuery(['export' => 'excel'])` sehingga otomatis membawa seluruh filter tanggal, kata kunci pencarian, dan sorting yang sedang aktif di halaman tanpa perlu dirakit manual.
+  - Otomatis memiliki class `print:hidden` sehingga tidak akan ikut tercetak pada kertas fisik maupun PDF.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Merefaktor 7 modul laporan & audit log:
+    1. `resources/views/laporan/stok.blade.php`: `<x-print-actions />`
+    2. `resources/views/laporan/rusak.blade.php`: `<x-print-actions />`
+    3. `resources/views/laporan/penjualan.blade.php`: `<x-print-actions excel-id="export-excel-btn" />`
+    4. `resources/views/laporan/penerimaan.blade.php`: `<x-print-actions />`
+    5. `resources/views/laporan/diskon.blade.php`: `<x-print-actions />`
+    6. `resources/views/laporan/laba_rugi.blade.php`: `<x-print-actions excel-id="btn-export-excel" print-id="btn-cetak-laporan" print-action="window.print()" />`
+    7. `resources/views/activity_log/index.blade.php`: `<x-print-actions print-label="Cetak Log" />`
+* **Keuntungan**:
+  - Menghapus lebih dari 80 baris kode HTML tombol cetak yang berulang di 7 file view.
+  - URL ekspor Excel 100% konsisten dan dinamis mengikuti parameter filter aktif.
+  - Tervalidasi lulus unit test `ReusableComponentsTest` dan Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 12. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
@@ -330,4 +551,14 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 * **Target 4**: Rollout directive penanggalan Indonesia `@tanggalId` dan `@tanggalWaktuId` pada 20 view aplikasi.
 * **Target 5**: Integrasi backend Eloquent Model Traits `GeneratesCode` & `Filterable`.
 * **Target 6**: Komponen notifikasi reusable `<x-toast>` (Top-Center) & `<x-alert>`.
+* **Target 7**: Komponen status badge cerdas `<x-status-badge>`.
+* **Target 8**: Komponen pagination wrapper `<x-pagination>`.
+* **Target 9**: Komponen modal konfirmasi hapus `<x-modal-confirm-delete>`.
+* **Target 10**: Komponen header halaman standar `<x-page-header>`.
+* **Target 11**: Komponen tombol aksi cetak & ekspor `<x-print-actions>`.
+
+
+
+
+
 

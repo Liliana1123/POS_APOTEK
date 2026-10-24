@@ -58,6 +58,7 @@
                                 :edit-id="$canEditUser ? $user->id : null"
                                 :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
                                 :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
+                                :delete-item="$user->name"
                                 delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
                                 
                                 @if($canToggleUser)
@@ -85,24 +86,10 @@
                         <td class="font-medium text-gray-800">{{ $user->name }}</td>
                         <td class="text-gray-600">{{ $user->email }}</td>
                         <td>
-@php
-    $roleVariant = match($user->role) {
-        'superadmin' => 'danger',
-        'admin' => 'info',
-        'apoteker' => 'warning',
-        'gudang' => 'secondary',
-        'kasir' => 'success',
-        default => 'gray',
-    };
-@endphp
-<x-badge :variant="$roleVariant">
-    {{ ucfirst($user->role) }}
-</x-badge>
+                            <x-status-badge type="role" :status="$user->role" />
                         </td>
                         <td class="text-center">
-                            <x-badge :variant="$user->aktif ? 'success' : 'danger'">
-                                {{ $user->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </x-badge>
+                            <x-status-badge type="aktif" :status="$user->aktif" />
                         </td>
                     </tr>
                 @empty
@@ -113,7 +100,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $users->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$users" />
 
 <x-modal-form
     id="modal-user"

@@ -2,13 +2,10 @@
 @section('title', 'WhatsApp Monitor')
 
 @section('content')
-<!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 font-sans">WhatsApp Monitor</h1>
-        <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member dan perkembangan follow-up.</p>
-    </div>
-</div>
+<x-page-header
+    title="WhatsApp Monitor"
+    subtitle="Pantau riwayat pengiriman pesan WhatsApp kepada member dan perkembangan follow-up."
+/>
 
 @php
     $hasActiveFilter = !empty($search)
@@ -218,29 +215,18 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="10" class="text-center py-12 text-gray-500">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
-                                    <x-heroicon-o-chat-bubble-left-right class="w-6 h-6 opacity-70" />
-                                </div>
-                                <h3 class="text-sm font-bold text-gray-800">Belum ada riwayat pengiriman</h3>
-                                <p class="text-xs text-gray-500 mt-1 max-w-sm">
-                                    Riwayat pengiriman pesan WhatsApp akan muncul secara otomatis saat admin mengirim pesan perorangan maupun massal.
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state
+                        colspan="10"
+                        title="Belum ada riwayat pengiriman"
+                        description="Riwayat pengiriman pesan WhatsApp akan muncul secara otomatis saat admin mengirim pesan perorangan maupun massal."
+                    />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Footer Pagination (Sama persis dengan Penerimaan Barang) -->
-<div class="mt-4 pagination-container">
-    {{ $logs->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$logs" />
 
 <!-- ========================================================================= -->
 <!-- MODAL 1: Detail Pengiriman WhatsApp (Dua Kolom) -->

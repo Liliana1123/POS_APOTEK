@@ -2,38 +2,33 @@
 @section('title', 'Struk Penjualan')
 
 @section('content')
-<div class="flex justify-between items-center mb-6 print:hidden">
-    <div>
-        <h1 class="text-xl font-bold text-gray-800">Struk Penjualan</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Cetak bukti pembayaran transaksi kasir: <span class="font-mono font-bold">{{ $penjualan->no_faktur }}</span></p>
-    </div>
-    <div class="flex items-center gap-2">
-        <select id="select-ukuran-kertas" onchange="changePaperSize(this.value)" class="text-xs border border-gray-300 rounded-lg px-2.5 py-2 bg-white text-gray-700 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer shadow-xs">
-            <option value="58mm">Thermal 58 mm (EPPOS)</option>
-            <option value="80mm">Thermal 80 mm (EPPOS)</option>
-        </select>
-        <button type="button" onclick="window.print()" class="btn-primary flex items-center gap-1.5 py-2 px-4">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print Struk</span>
-        </button>
+@php
+    $backUrl = route('penjualan.create');
+    if (request('from') === 'laporan_penjualan') {
+        $backUrl = route('laporan.penjualan', request()->except('from'));
+    } elseif (request('from') === 'laporan_diskon') {
+        $backUrl = route('laporan.diskon');
+    } elseif (request('from') === 'penjualan_index' || request('from') === 'riwayat' || request('from') === 'index') {
+        $backUrl = route('penjualan.index');
+    } elseif (request('from') === 'pelanggan' && isset($penjualan->pelanggan_id)) {
+        $backUrl = route('pelanggan.show', $penjualan->pelanggan_id);
+    }
+@endphp
 
-        @php
-            $backUrl = route('penjualan.create');
-            if (request('from') === 'laporan_penjualan') {
-                $backUrl = route('laporan.penjualan', request()->except('from'));
-            } elseif (request('from') === 'laporan_diskon') {
-                $backUrl = route('laporan.diskon');
-            } elseif (request('from') === 'penjualan_index' || request('from') === 'riwayat' || request('from') === 'index') {
-                $backUrl = route('penjualan.index');
-            } elseif (request('from') === 'pelanggan' && isset($penjualan->pelanggan_id)) {
-                $backUrl = route('pelanggan.show', $penjualan->pelanggan_id);
-            }
-        @endphp
-        <a href="{{ $backUrl }}" class="btn-secondary py-2 px-4">Kembali</a>
-    </div>
-</div>
+<x-page-header
+    title="Struk Penjualan"
+    subtitle="Cetak bukti pembayaran transaksi kasir: {{ $penjualan->no_faktur }}"
+    :back-url="$backUrl"
+    class="print:hidden">
+    <select id="select-ukuran-kertas" onchange="changePaperSize(this.value)" class="text-xs border border-gray-300 rounded-lg px-2.5 py-2 bg-white text-gray-700 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer shadow-xs">
+        <option value="58mm">Thermal 58 mm (EPPOS)</option>
+        <option value="80mm">Thermal 80 mm (EPPOS)</option>
+    </select>
+    <button type="button" onclick="window.print()" class="btn-primary flex items-center gap-1.5 py-2 px-4">
+        <x-heroicon-o-printer class="w-4 h-4" />
+        <span>Print Struk</span>
+    </button>
+</x-page-header>
 
 @php
     $apotek = \Illuminate\Support\Facades\Cache::remember(

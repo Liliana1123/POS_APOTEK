@@ -37,22 +37,12 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Penerimaan Barang</h1>
-        <p class="text-caption mt-1">Ringkasan barang masuk dan akumulasi nilai pembelian dari supplier.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.penerimaan', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-        <button onclick="printReport()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+<x-page-header
+    title="Laporan Penerimaan Barang"
+    subtitle="Ringkasan barang masuk dan akumulasi nilai pembelian dari supplier."
+    class="print:hidden">
+    <x-print-actions />
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -157,26 +147,7 @@
                         <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli * $item->jumlah)</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                                        Penerimaan Tidak Ditemukan
-                                    @else
-                                        Penerimaan Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran']))
-                                        Tidak ada data penerimaan barang masuk yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ada data penerimaan barang masuk yang terdaftar di sistem.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">

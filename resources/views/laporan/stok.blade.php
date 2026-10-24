@@ -46,33 +46,12 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden no-print page-header-web">
-    <div>
-        <h1>Laporan Monitoring Stok dan Kadaluarsa</h1>
-
-        <p class="text-caption mt-1">
-            Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa.
-        </p>
-    </div>
-
-    <div class="flex gap-2 shrink-0">
-        <a
-            href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'excel'])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-
-        <button
-            onclick="printReport()"
-            class="btn-primary py-2 px-4"
-        >
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+<x-page-header
+    title="Laporan Monitoring Stok dan Kadaluarsa"
+    subtitle="Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa."
+    class="print:hidden no-print page-header-web">
+    <x-print-actions />
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
@@ -267,27 +246,7 @@
 
                             <!-- Status Expired -->
                             <td class="col-stok-status-exp text-center !px-2 whitespace-nowrap">
-                                @if (!$expiredDate)
-                                    <span class="badge-secondary">
-                                        Tidak Ada Tanggal
-                                    </span>
-                                @elseif ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today))
-                                    <span class="badge-danger">
-                                        KADALUARSA
-                                    </span>
-                                @elseif ($expiredDate->lt($oneMonth))
-                                    <span class="badge-orange">
-                                        < 1 Bulan
-                                    </span>
-                                @elseif ($expiredDate->lt($threeMonths))
-                                    <span class="badge-warning">
-                                        < 3 Bulan
-                                    </span>
-                                @else
-                                    <span class="badge-success">
-                                        Normal
-                                    </span>
-                                @endif
+                                <x-status-badge type="expired" :date="$expiredDate" />
                             </td>
 
                             <!-- Stok Awal -->
@@ -312,15 +271,7 @@
 
                             <!-- Status Stok -->
                             <td class="col-stok-status-stok text-center !px-2 whitespace-nowrap">
-                                @if ($sisaStok === 0)
-                                    <span class="badge-danger">Habis</span>
-                                @elseif ($sisaStok < 0)
-                                    <span class="badge-danger">Minus ({{ $sisaStok }})</span>
-                                @elseif ($sisaStok <= $stokMinimum)
-                                    <span class="badge-warning">Menipis</span>
-                                @else
-                                    <span class="badge-success">Aman</span>
-                                @endif
+                                <x-status-badge type="stok" :stok="$sisaStok" :min="$stokMinimum" />
                             </td>
                         </tr>
 
@@ -336,26 +287,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="12" class="p-0">
-                                <div class="empty-state-container">
-                                    <div class="empty-state-title">
-                                        @if(request()->anyFilled(['nama', 'kategori_id', 'status_expired', 'status_stok']))
-                                            Stok Batch Tidak Ditemukan
-                                        @else
-                                            Stok Batch Kosong
-                                        @endif
-                                    </div>
-                                    <div class="empty-state-desc">
-                                        @if(request()->anyFilled(['nama', 'kategori_id', 'status_expired', 'status_stok']))
-                                            Tidak ada data batch obat yang cocok dengan filter kriteria Anda.
-                                        @else
-                                            Belum ada data stok batch obat yang terdaftar di sistem.
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state colspan="12" />
                     @endforelse
                 </tbody>
 

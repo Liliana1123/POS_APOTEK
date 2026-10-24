@@ -243,18 +243,17 @@
 
                                 <!-- 6. Delete Button -->
                                 @if($canManagePelanggan)
-                                    <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="POST" onsubmit="return confirm('Hapus data pelanggan ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="btn-secondary !p-1.5"
-                                            style="color: #DC2626;"
-                                            title="Hapus"
-                                            aria-label="Hapus">
-                                            <x-heroicon-o-trash class="w-4 h-4" />
-                                        </button>
-                                    </form>
+                                    <button
+                                        type="button"
+                                        class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                        style="color: #DC2626;"
+                                        title="Hapus"
+                                        aria-label="Hapus"
+                                        data-confirm-delete="{{ route('pelanggan.destroy', $pelanggan) }}"
+                                        data-item-name="{{ $pelanggan->nama }}"
+                                        data-confirm-message="Yakin ingin menghapus data pelanggan ini?">
+                                        <x-heroicon-o-trash class="w-4 h-4" />
+                                    </button>
                                 @endif
                             </div>
                         </td>
@@ -266,24 +265,10 @@
                             <div class="text-[11px] text-gray-500 font-mono mt-0.5 whitespace-nowrap">{{ $pelanggan->telepon ?? '-' }}</div>
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            @php
-                                $statusMember = trim((string) $pelanggan->status_member);
-                                $memberVariant = match($statusMember) {
-                                    'Member Keluarga Nakes' => 'info',
-                                    'Member Only' => 'warning',
-                                    default => 'success',
-                                };
-                            @endphp
-                            <x-badge :variant="$memberVariant" class="whitespace-nowrap">
-                                {{ $statusMember ?: 'Member Pelanggan Tetap' }}
-                            </x-badge>
+                            <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" class="whitespace-nowrap" />
                         </td>
                         <td class="text-center whitespace-nowrap">
-                            @if(($pelanggan->saldo_piutang ?? 0) > 0)
-                                <x-badge variant="danger" class="whitespace-nowrap">Belum Lunas</x-badge>
-                            @else
-                                <x-badge variant="success" class="whitespace-nowrap">Lunas</x-badge>
-                            @endif
+                            <x-status-badge type="pembayaran" :status="($pelanggan->saldo_piutang ?? 0) <= 0" class="whitespace-nowrap" />
                         </td>
                         <td class="text-center whitespace-nowrap">
                             @php
@@ -327,7 +312,7 @@
     </div>
 </div>
 
-<div class="mt-4 pagination-container">{{ $pelanggans->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$pelanggans" />
 
 <!-- Modal Tambah Pelanggan -->
 <x-modal-form
