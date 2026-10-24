@@ -29,6 +29,15 @@
             break;
 
         case 'stok':
+            if (is_string($val) && in_array(strtolower($val), ['aman', 'menipis', 'habis'])) {
+                $computedLabel = ucfirst(strtolower($val));
+                $computedVariant = match(strtolower($val)) {
+                    'aman' => 'success',
+                    'menipis' => 'warning',
+                    default => 'danger'
+                };
+                break;
+            }
             $stokVal = (float)($stok ?? $val ?? 0);
             $minVal = (float)$min;
             if ($stokVal === 0.0) {
