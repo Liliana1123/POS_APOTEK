@@ -2,16 +2,11 @@
 @section('title', 'Faktur Penerimaan Baru')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Faktur Penerimaan Barang Baru</h1>
-        <p class="text-caption mt-1">Catat faktur masuk obat dari supplier beserta detail expired date batch.</p>
-    </div>
-    <a href="{{ route('penerimaan.index') }}" class="btn-secondary py-2 px-4">
-        &larr; Kembali
-    </a>
-</div>
+<x-page-header
+    title="Faktur Penerimaan Barang Baru"
+    subtitle="Catat faktur masuk obat dari supplier beserta detail expired date batch."
+    :back-url="route('penerimaan.index')"
+/>
 
 <form action="{{ route('penerimaan.store') }}" method="POST" id="form-penerimaan" class="space-y-6">
     @csrf

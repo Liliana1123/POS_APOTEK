@@ -136,18 +136,13 @@
 {{-- TAMPILAN LAYAR APLIKASI (SCREEN UI) --}}
 {{-- ========================================================= --}}
 
-{{-- Header Halaman & Filter Controls --}}
-<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6 print:hidden">
-    <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Laporan Laba Rugi</h1>
-        <p class="text-xs text-slate-500 mt-0.5">Ringkasan keuangan apotek berdasarkan periode yang dipilih</p>
-    </div>
-
-    {{-- Tombol Ekspor/Cetak + Filter Periode (sebelah kanan, vertikal) --}}
+<x-page-header
+    title="Laporan Laba Rugi"
+    subtitle="Ringkasan keuangan apotek berdasarkan periode yang dipilih"
+    class="print:hidden lg:items-start">
     <div class="flex flex-col items-end gap-2">
         {{-- Baris 1: Ekspor Excel & Cetak Laporan --}}
         <div class="flex gap-2 shrink-0">
-            {{-- Ekspor Excel --}}
             <a
                 id="btn-export-excel"
                 href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
@@ -157,18 +152,18 @@
                 Ekspor Excel
             </a>
 
-            {{-- Cetak Laporan --}}
             <button
                 type="button"
                 id="btn-cetak-laporan"
                 onclick="window.print()"
-                class="btn-primary py-2 px-4"
+                class="btn-primary py-2 px-4 flex items-center gap-1.5"
             >
+                <x-heroicon-o-printer class="w-4 h-4" />
                 Cetak Laporan
             </button>
         </div>
 
-        {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
+        {{-- Baris 2: Filter Periode --}}
         <x-date-range-filter
             :action="route('laporan.laba-rugi')"
             :periode="$currentPeriode"
@@ -176,7 +171,7 @@
             :sampai="$sampai"
         />
     </div>
-</div>
+</x-page-header>
 
 {{-- Flash Notification Alerts --}}
 @if(isset($errors) && $errors->any())

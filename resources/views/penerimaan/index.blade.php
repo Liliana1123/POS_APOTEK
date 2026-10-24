@@ -2,17 +2,12 @@
 @section('title', 'Penerimaan Barang')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Penerimaan Barang</h1>
-        <p class="text-caption mt-1">Kelola data faktur obat masuk, supplier, dan status pembayaran.</p>
-    </div>
+<x-page-header title="Daftar Penerimaan Barang" subtitle="Kelola data faktur obat masuk, supplier, dan status pembayaran.">
     <button type="button" id="btn-tambah-penerimaan" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah Faktur Penerimaan Baru</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter

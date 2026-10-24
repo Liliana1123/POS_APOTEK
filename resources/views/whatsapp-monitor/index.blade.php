@@ -2,13 +2,10 @@
 @section('title', 'WhatsApp Monitor')
 
 @section('content')
-<!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900 font-sans">WhatsApp Monitor</h1>
-        <p class="text-caption mt-1">Pantau riwayat pengiriman pesan WhatsApp kepada member dan perkembangan follow-up.</p>
-    </div>
-</div>
+<x-page-header
+    title="WhatsApp Monitor"
+    subtitle="Pantau riwayat pengiriman pesan WhatsApp kepada member dan perkembangan follow-up."
+/>
 
 @php
     $hasActiveFilter = !empty($search)

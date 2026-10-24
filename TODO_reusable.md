@@ -15,7 +15,7 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 ## 📌 Status Tahapan Implementasi
 
 ```
-[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI
+[Phase 1: Cetak Dokumen] ✅ SELESAI ──> [Phase 2: Form & UI] ✅ SELESAI ──> [Phase 3: Directives] ✅ SELESAI ──> [Phase 4: Eloquent Traits] ✅ SELESAI ──> [Phase 5: Notifikasi & Toast] ✅ SELESAI ──> [Phase 6: Status Badge Cerdas] ✅ SELESAI ──> [Phase 7: Pagination Wrapper] ✅ SELESAI ──> [Phase 8: Modal Konfirmasi Hapus] ✅ SELESAI ──> [Phase 9: Header Halaman] ✅ SELESAI
 ```
 
 ---
@@ -175,6 +175,20 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
       data-item-name="{{ $barang->nama }}">
       Hapus
   </button>
+  ```
+
+### 2.7 Komponen Header Halaman Standar (`<x-page-header>`)
+- [x] **Lokasi**: `resources/views/components/page-header.blade.php` (Ditingkatkan & diuji)
+- [x] **Deskripsi**: Menyeragamkan header judul halaman `h1`, subtitle/deskripsi, tombol panah kembali opsional (`:back-url`), merge attribute class/ID, dan slot tombol aksi (Tambah Data, Cetak Laporan, Ekspor Excel).
+- [x] **File Terdampak / Status Integrasi (100% Seluruh View)**:
+  - [x] Modul Master: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, `pelanggan`, `user`, `custom_discount`, `permission`, `pengaturan`.
+  - [x] Modul Transaksi & Kasir: `penjualan/index`, `penjualan/create`, `penjualan/show`, `penerimaan/index`, `penerimaan/create`, `rusak/index`, `rusak/create`, `rusak/show`.
+  - [x] Modul Laporan & Monitoring: `laporan/penjualan`, `laporan/penerimaan`, `laporan/rusak`, `laporan/stok`, `laporan/diskon`, `laporan/laba_rugi`, `whatsapp-monitor/index`, `activity_log/index`.
+- **Contoh Penggunaan**:
+  ```blade
+  <x-page-header title="Daftar Penerimaan Barang" subtitle="Kelola data faktur obat masuk." :back-url="route('penerimaan.index')">
+      <button class="btn-primary">Tambah</button>
+  </x-page-header>
   ```
 
 ---
@@ -469,7 +483,31 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
   - Menghapus form tag nested yang tidak valid di dalam sel tabel (`<td>`).
   - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
 
-### 10. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
+### 10. Eksekusi Target 10 (Komponen Header Halaman Standar - x-page-header)
+* **Penyempurnaan Komponen**:
+  - `resources/views/components/page-header.blade.php`: Ditingkatkan dengan `$attributes->merge(...)`, tipografi responsif `text-xl sm:text-2xl font-bold font-sans`, dan dukungan prop `:back-url` otomatis yang merender tombol panah kembali elegan (`<x-heroicon-o-arrow-left />`) sebelum judul.
+* **Perubahan & Integrasi yang Diterapkan**:
+  - Merefaktor 10 view yang sebelumnya masih memakai header manual `<h1>`:
+    1. `resources/views/whatsapp-monitor/index.blade.php`: Mengganti div header manual dengan `<x-page-header>`.
+    2. `resources/views/penerimaan/index.blade.php`: Header daftar penerimaan beserta tombol "Tambah Faktur Penerimaan Baru".
+    3. `resources/views/penerimaan/create.blade.php`: Header form faktur baru dengan tombol kembali `:back-url="route('penerimaan.index')"`.
+    4. `resources/views/rusak/index.blade.php`: Header daftar barang rusak beserta tombol aksi "Catat Barang Rusak".
+    5. `resources/views/rusak/create.blade.php`: Header form barang rusak dengan tombol kembali `:back-url`.
+    6. `resources/views/rusak/show.blade.php`: Header detail barang rusak dengan tombol kembali `:back-url`.
+    7. `resources/views/pelanggan/show.blade.php`: Header detail profil member dengan tombol kembali `:back-url` dan tombol Edit Profil.
+    8. `resources/views/penjualan/show.blade.php`: Header struk kasir dengan tombol kembali cerdas `:back-url="$backUrl"`, selector ukuran thermal (58mm/80mm), dan tombol print.
+    9. `resources/views/laporan/stok.blade.php`: Header monitoring stok dengan tombol Ekspor Excel dan Cetak Laporan.
+    10. `resources/views/laporan/rusak.blade.php`: Header laporan rusak dengan tombol Ekspor Excel dan Cetak Laporan.
+    11. `resources/views/laporan/penjualan.blade.php`: Header laporan penjualan dengan tombol Ekspor Excel dan Cetak Laporan.
+    12. `resources/views/laporan/penerimaan.blade.php`: Header laporan penerimaan dengan tombol Ekspor Excel dan Cetak Laporan.
+    13. `resources/views/laporan/diskon.blade.php`: Header laporan diskon dengan tombol Ekspor Excel dan Cetak Laporan.
+    14. `resources/views/laporan/laba_rugi.blade.php`: Header laporan laba rugi dengan tombol Ekspor Excel, Cetak, dan Filter Periode `<x-date-range-filter>`.
+* **Keuntungan**:
+  - 100% halaman aplikasi apotek kini memiliki hierarki judul (`h1`), deskripsi, dan tombol aksi seragam dan responsif.
+  - Menghilangkan puluhan baris HTML boilerplate di modul laporan dan transaksi.
+  - Lolos pengujian sintaks Blade compiler `php artisan view:cache` & `php artisan view:clear`.
+
+### 11. Ringkasan Modul Sebelumnya yang Sudah Terintegrasi:
 * **Master Data (Opsi 1)**: `kategori`, `barang`, `satuan`, `supplier`, `pabrik`, dan `pelanggan` sudah 100% menggunakan `<x-search-input>` dan `<x-form.*>`.
 * **Laporan & Cetak Dokumen (Opsi 2)**: `laporan/penjualan`, `laporan/rusak`, `laporan/laba_rugi`, `laporan/stok`, `laporan/penerimaan`, `laporan/diskon`, dan `activity_log` sudah 100% menggunakan `<x-print-kop>` dan `<x-print-signature>` (memangkas >570 baris duplikat).
 * **Target 1**: Executive KPI Cards dashboard menggunakan `<x-kpi-card>`.
@@ -481,6 +519,8 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 * **Target 7**: Komponen status badge cerdas `<x-status-badge>`.
 * **Target 8**: Komponen pagination wrapper `<x-pagination>`.
 * **Target 9**: Komponen modal konfirmasi hapus `<x-modal-confirm-delete>`.
+* **Target 10**: Komponen header halaman standar `<x-page-header>`.
+
 
 
 

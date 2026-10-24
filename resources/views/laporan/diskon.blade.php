@@ -39,22 +39,19 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Penggunaan Diskon dan Promo</h1>
-        <p class="text-caption mt-1">Pantau riwayat audit dan diskon rupiah dari promo/membership.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-        <button onclick="printReport()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+<x-page-header
+    title="Laporan Penggunaan Diskon dan Promo"
+    subtitle="Pantau riwayat audit dan diskon rupiah dari promo/membership."
+    class="print:hidden">
+    <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'excel'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
+        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+        Ekspor Excel
+    </a>
+    <button onclick="printReport()" class="btn-primary py-2 px-4 flex items-center gap-1.5">
+        <x-heroicon-o-printer class="w-4 h-4" />
+        Cetak Laporan
+    </button>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter

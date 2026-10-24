@@ -2,16 +2,12 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Pencatatan Barang Rusak</h1>
-        <p class="text-caption mt-1">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
-    </div>
+<x-page-header title="Daftar Pencatatan Barang Rusak" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter

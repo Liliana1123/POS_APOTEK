@@ -2,21 +2,15 @@
 @section('title', 'Profil Pelanggan / Member')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Detail Profil Pelanggan / Member</h1>
-        <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4">
-            Kembali
-        </a>
-        <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4">
-            Edit Profil
-        </a>
-    </div>
-</div>
+<x-page-header
+    title="Detail Profil Pelanggan / Member"
+    subtitle="Detail profil, statistik belanja, dan riwayat transaksi."
+    :back-url="route('pelanggan.index')">
+    <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4 flex items-center gap-1.5">
+        <x-heroicon-o-pencil-square class="w-4 h-4" />
+        <span>Edit Profil</span>
+    </a>
+</x-page-header>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
     <!-- Status Member -->

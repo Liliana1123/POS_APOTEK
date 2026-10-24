@@ -46,33 +46,26 @@
     </x-print-kop>
 </div>
 
-<!-- Page Header -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden no-print page-header-web">
-    <div>
-        <h1>Laporan Monitoring Stok dan Kadaluarsa</h1>
+<x-page-header
+    title="Laporan Monitoring Stok dan Kadaluarsa"
+    subtitle="Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa."
+    class="print:hidden no-print page-header-web">
+    <a
+        href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'excel'])) }}"
+        class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
+    >
+        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+        Ekspor Excel
+    </a>
 
-        <p class="text-caption mt-1">
-            Analisis ketersediaan stok obat serta deteksi dini batch kadaluarsa.
-        </p>
-    </div>
-
-    <div class="flex gap-2 shrink-0">
-        <a
-            href="{{ route('laporan.stok', array_merge(request()->query(), ['export' => 'excel'])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-
-        <button
-            onclick="printReport()"
-            class="btn-primary py-2 px-4"
-        >
-            Cetak Laporan
-        </button>
-    </div>
-</div>
+    <button
+        onclick="printReport()"
+        class="btn-primary py-2 px-4 flex items-center gap-1.5"
+    >
+        <x-heroicon-o-printer class="w-4 h-4" />
+        Cetak Laporan
+    </button>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter

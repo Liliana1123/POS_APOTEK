@@ -4,18 +4,11 @@
 
 @section('content')
 
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="text-xl font-bold text-gray-800">Detail Barang Rusak</h1>
-        <p class="text-xs text-gray-500 mt-0.5">
-            Informasi pencatatan barang rusak.
-        </p>
-    </div>
-
-    <a href="{{ route('rusak.index') }}" class="btn-secondary">
-        Kembali
-    </a>
-</div>
+<x-page-header
+    title="Detail Barang Rusak"
+    subtitle="Informasi pencatatan barang rusak."
+    :back-url="route('rusak.index')"
+/>
 
 <!-- Info Cards -->
 <div class="card-base p-6 mb-6 grid grid-cols-2 md:grid-cols-3 gap-6 text-xs">

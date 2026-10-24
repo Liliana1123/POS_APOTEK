@@ -167,37 +167,28 @@
 
 </div>
 
-<!-- Page Header (layar) -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-                <div>
-                    <h1>Laporan Penjualan</h1>
-                    <p class="text-caption mt-1">Analisis ringkasan transaksi dan perolehan keuntungan penjualan.</p>
-                </div>
+<x-page-header
+    title="Laporan Penjualan"
+    subtitle="Analisis ringkasan transaksi dan perolehan keuntungan penjualan."
+    class="print:hidden">
+    <a
+        id="export-excel-btn"
+        href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'excel', 'sort' => request('sort', $sort ?? 'tanggal'), 'direction' => request('direction', $direction ?? 'asc')])) }}"
+        class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
+    >
+        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+        Ekspor Excel
+    </a>
 
-        {{-- Tombol Aksi --}}
-        <div class="flex gap-2 shrink-0">
-        {{-- Ekspor Excel --}}
-        <a
-            id="export-excel-btn"
-            href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'excel', 'sort' => request('sort', $sort ?? 'tanggal'), 'direction' => request('direction', $direction ?? 'asc')])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5"
-        >
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
-
-        {{-- Cetak Laporan --}}
-        <button
-            type="button"
-            onclick="printReport()"
-            class="btn-primary py-2 px-4"
-        >
-            Cetak Laporan
-        </button>
-
-    </div>
-
-</div>
+    <button
+        type="button"
+        onclick="printReport()"
+        class="btn-primary py-2 px-4 flex items-center gap-1.5"
+    >
+        <x-heroicon-o-printer class="w-4 h-4" />
+        Cetak Laporan
+    </button>
+</x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
