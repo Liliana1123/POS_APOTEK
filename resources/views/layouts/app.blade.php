@@ -155,12 +155,14 @@
                         || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                         || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
                         || request()->routeIs('whatsapp-monitor.*')
-                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*');
+                        || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
+                        || request()->routeIs('backup.*');
                     $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                         || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
                         || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
                         || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan')
-                        || $u->isSuperAdmin();
+                        || $u->isSuperAdmin()
+                        || $u->isAdmin();
                 @endphp
 
                 <!-- Group: Master Data -->
@@ -211,6 +213,9 @@
                         @endif
                         @if ($u->hasPermission('sistem.pengaturan'))
                             <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
+                        @endif
+                        @if ($u->isAdmin() || $u->isSuperAdmin())
+                            <x-nav-link route="backup.index" pattern="backup.*" icon="circle-stack" label="Backup Database" />
                         @endif
                     </x-sidebar-group>
                 @endif

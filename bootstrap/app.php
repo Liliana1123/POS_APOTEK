@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckAdminOrSuperAdmin;
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\CheckSuperAdmin;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'permission' => CheckPermission::class,
             'superadmin' => CheckSuperAdmin::class,
+            'admin_or_superadmin' => CheckAdminOrSuperAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

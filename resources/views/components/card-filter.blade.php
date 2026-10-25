@@ -30,6 +30,9 @@
             <div class="grid {{ $gridCols }} gap-3 items-center">
                 {{ $slot }}
                 <div class="flex items-center gap-2 {{ $actionCols }}">
+                    <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
+                        <span>{{ $label }}</span>
+                    </button>
                     @if($resetUrl && ($isFiltered || $liveSearch))
                         <a href="{{ $resetUrl }}"
                            data-role="clear-filter"
@@ -38,9 +41,6 @@
                             <span>Reset</span>
                         </a>
                     @endif
-                    <button type="submit" class="btn-primary h-9 px-4 inline-flex items-center justify-center text-xs font-semibold whitespace-nowrap box-border">
-                        <span>{{ $label }}</span>
-                    </button>
                 </div>
             </div>
         @else

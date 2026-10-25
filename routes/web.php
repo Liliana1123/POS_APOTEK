@@ -16,6 +16,7 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\CustomDiscountController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\PengaturanController;
 use App\Http\Controllers\QuickSearchController;
 
@@ -208,4 +209,13 @@ Route::middleware(['auth', 'superadmin'])->prefix('izin-akses')->name('permissio
     Route::get('/', [PermissionController::class, 'index'])->name('index');
     Route::post('/', [PermissionController::class, 'update'])->name('update');
     Route::post('reset', [PermissionController::class, 'reset'])->name('reset');
+});
+
+// Backup & Restore Database (Khusus Admin dan Superadmin)
+Route::middleware(['auth', 'admin_or_superadmin'])->prefix('backup')->name('backup.')->group(function () {
+    Route::get('/', [BackupController::class, 'index'])->name('index');
+    Route::post('/', [BackupController::class, 'store'])->name('store');
+    Route::get('/download/{filename}', [BackupController::class, 'download'])->name('download');
+    Route::post('/restore', [BackupController::class, 'restore'])->name('restore');
+    Route::delete('/{filename}', [BackupController::class, 'destroy'])->name('destroy');
 });
