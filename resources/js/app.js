@@ -21,4 +21,5 @@ window.loadQRCode = function () {
 };
 
 import './shared/layout';
+import './shared/universal-loading';
 
