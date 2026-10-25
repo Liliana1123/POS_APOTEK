@@ -12,22 +12,25 @@
 
     {{-- TAB SWITCHER --}}
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-gray-200">
-        <div class="inline-flex p-1 bg-gray-100 rounded-xl space-x-1 border border-gray-200">
+        <div class="relative inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200" id="permission-tab-container">
+            <!-- Sliding spring indicator pill -->
+            <div id="permission-tab-indicator" class="absolute bg-white rounded-lg shadow-xs pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]" style="top: 4px; bottom: 4px;"></div>
+
             <button type="button" 
                     id="tab-btn-pages" 
                     onclick="switchPermissionTab('pages')"
-                    class="px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 bg-white text-blue-700 shadow-xs">
+                    class="relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-blue-700">
                 <x-heroicon-o-squares-2x2 class="w-4 h-4" />
                 <span>Izin Menu & Halaman</span>
-                <span class="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-800 font-extrabold">{{ $pagePermissions->count() }}</span>
+                <span id="tab-badge-pages" class="px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-800 font-extrabold transition-colors">{{ $pagePermissions->count() }}</span>
             </button>
             <button type="button" 
                     id="tab-btn-dashboard" 
                     onclick="switchPermissionTab('dashboard')"
-                    class="px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                    class="relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-gray-600 hover:text-gray-900">
                 <x-heroicon-o-chart-bar class="w-4 h-4" />
                 <span>Widget Dashboard</span>
-                <span class="px-2 py-0.5 text-[10px] rounded-full bg-gray-200 text-gray-700 font-extrabold">{{ $dashboardPermissions->flatten()->count() }}</span>
+                <span id="tab-badge-dashboard" class="px-2 py-0.5 text-[10px] rounded-full bg-gray-200 text-gray-700 font-extrabold transition-colors">{{ $dashboardPermissions->flatten()->count() }}</span>
             </button>
         </div>
 
@@ -197,11 +200,20 @@
 </form>
 
 <script>
+function updateTabIndicator(activeBtn) {
+    const indicator = document.getElementById('permission-tab-indicator');
+    if (!indicator || !activeBtn) return;
+    indicator.style.left = activeBtn.offsetLeft + 'px';
+    indicator.style.width = activeBtn.offsetWidth + 'px';
+}
+
 function switchPermissionTab(tab) {
     const tabPages = document.getElementById('tab-content-pages');
     const tabDashboard = document.getElementById('tab-content-dashboard');
     const btnPages = document.getElementById('tab-btn-pages');
     const btnDashboard = document.getElementById('tab-btn-dashboard');
+    const badgePages = document.getElementById('tab-badge-pages');
+    const badgeDashboard = document.getElementById('tab-badge-dashboard');
     const descPages = document.getElementById('tab-desc-pages');
     const descDashboard = document.getElementById('tab-desc-dashboard');
 
@@ -211,8 +223,13 @@ function switchPermissionTab(tab) {
         descPages.classList.remove('hidden');
         descDashboard.classList.add('hidden');
 
-        btnPages.className = 'px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 bg-white text-blue-700 shadow-xs';
-        btnDashboard.className = 'px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 text-gray-600 hover:text-gray-900';
+        btnPages.className = 'relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-blue-700';
+        btnDashboard.className = 'relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-gray-600 hover:text-gray-900';
+
+        if (badgePages) badgePages.className = 'px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-800 font-extrabold transition-colors';
+        if (badgeDashboard) badgeDashboard.className = 'px-2 py-0.5 text-[10px] rounded-full bg-gray-200 text-gray-700 font-extrabold transition-colors';
+
+        updateTabIndicator(btnPages);
         localStorage.setItem('permission_active_tab', 'pages');
     } else {
         tabPages.classList.add('hidden');
@@ -220,18 +237,26 @@ function switchPermissionTab(tab) {
         descPages.classList.add('hidden');
         descDashboard.classList.remove('hidden');
 
-        btnDashboard.className = 'px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 bg-white text-blue-700 shadow-xs';
-        btnPages.className = 'px-4 py-2 text-xs font-bold rounded-lg transition-all inline-flex items-center gap-2 text-gray-600 hover:text-gray-900';
+        btnDashboard.className = 'relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-blue-700';
+        btnPages.className = 'relative z-10 px-4 py-2 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-2 text-gray-600 hover:text-gray-900';
+
+        if (badgeDashboard) badgeDashboard.className = 'px-2 py-0.5 text-[10px] rounded-full bg-blue-100 text-blue-800 font-extrabold transition-colors';
+        if (badgePages) badgePages.className = 'px-2 py-0.5 text-[10px] rounded-full bg-gray-200 text-gray-700 font-extrabold transition-colors';
+
+        updateTabIndicator(btnDashboard);
         localStorage.setItem('permission_active_tab', 'dashboard');
     }
 }
 
 // Restore saved tab on load
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTab = localStorage.getItem('permission_active_tab');
-    if (savedTab === 'dashboard') {
-        switchPermissionTab('dashboard');
-    }
+    const savedTab = localStorage.getItem('permission_active_tab') || 'pages';
+    switchPermissionTab(savedTab);
+    window.addEventListener('resize', () => {
+        const activeTab = localStorage.getItem('permission_active_tab') || 'pages';
+        const activeBtn = document.getElementById(activeTab === 'pages' ? 'tab-btn-pages' : 'tab-btn-dashboard');
+        updateTabIndicator(activeBtn);
+    });
 });
 </script>
 @endsection

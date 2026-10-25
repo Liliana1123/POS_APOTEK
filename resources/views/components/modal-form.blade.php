@@ -141,7 +141,7 @@
         });
 
         form.querySelectorAll('.form-input, select, textarea').forEach(function (el) {
-            el.classList.remove('border-red-500');
+            el.classList.remove('border-red-500', 'input-error-shake');
         });
 
         errorEl.classList.add('hidden');
@@ -175,6 +175,9 @@
 
         if (input) {
             input.classList.add('border-red-500');
+            input.classList.remove('input-error-shake');
+            void input.offsetWidth; // Force DOM reflow to re-trigger CSS keyframe
+            input.classList.add('input-error-shake');
         }
     }
 
