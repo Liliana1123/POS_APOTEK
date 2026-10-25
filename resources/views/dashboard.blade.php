@@ -4,6 +4,36 @@
 @section('content')
 
 
+@php
+    // 1. KPI Cards (6 Kartu)
+    $canKpiOmzetKotor   = auth()->user()->hasPermission('dashboard.kpi-omzet-kotor');
+    $canKpiTotalDiskon  = auth()->user()->hasPermission('dashboard.kpi-total-diskon');
+    $canKpiOmzetBersih  = auth()->user()->hasPermission('dashboard.kpi-omzet-bersih');
+    $canKpiTotalMember  = auth()->user()->hasPermission('dashboard.kpi-total-member');
+    $canKpiHutang       = auth()->user()->hasPermission('dashboard.kpi-hutang-supplier');
+    $canKpiPiutang      = auth()->user()->hasPermission('dashboard.kpi-piutang-member');
+
+    // 2. Grafik & Analisis
+    $canGrafikOmzet     = auth()->user()->hasPermission('dashboard.grafik-omzet');
+    $canGrafikProfit    = auth()->user()->hasPermission('dashboard.grafik-profit');
+    $canKondisiBisnis   = auth()->user()->hasPermission('dashboard.kondisi-bisnis');
+    $canTombolKasir     = auth()->user()->hasPermission('dashboard.tombol-buka-kasir') && auth()->user()->canManage('transaksi.penjualan');
+    $hasAlerts          = !empty($actionCenter);
+    $showActionCol      = $hasAlerts || $canTombolKasir;
+
+    // 3. Stok & Inventory
+    $canPemantauanStok  = auth()->user()->hasPermission('dashboard.pemantauan-stok');
+    $canNilaiPersediaan = auth()->user()->hasPermission('dashboard.nilai-persediaan');
+    $canBarangBeli      = auth()->user()->hasPermission('dashboard.barang-harus-dibeli');
+
+    // 4. Obat & Karyawan
+    $canObatTerlaris    = auth()->user()->hasPermission('dashboard.obat-terlaris');
+    $canObatTerendah    = auth()->user()->hasPermission('dashboard.obat-terendah');
+    $canOmzetObat       = auth()->user()->hasPermission('dashboard.omzet-obat');
+    $canKinerja         = auth()->user()->hasPermission('dashboard.kinerja-karyawan');
+    $canDokterResep     = auth()->user()->hasPermission('dashboard.dokter-resep');
+@endphp
+
 <div class="dashboard-container dashboard-reference space-y-5">
 
     {{-- ============================================================ --}}
@@ -28,99 +58,116 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 2. KPI UTAMA (6 KARTU)                                       --}}
+    {{-- 2. KPI UTAMA (KARTU STATISTIK)                               --}}
     {{-- ============================================================ --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <x-kpi-card
-            title="Omzet Kotor"
-            :value="'Rp ' . number_format($omzetKotor, 0, ',', '.')"
-            subtitle="Sebelum diskon"
-            variant="kotor"
-            icon="heroicon-o-chart-bar"
-            icon-class="bg-blue-50 text-blue-600"
-        />
+    @if ($canKpiOmzetKotor || $canKpiTotalDiskon || $canKpiOmzetBersih || $canKpiTotalMember || $canKpiHutang || $canKpiPiutang)
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+        @if ($canKpiOmzetKotor)
+            <x-kpi-card
+                title="Omzet Kotor"
+                :value="'Rp ' . number_format($omzetKotor, 0, ',', '.')"
+                subtitle="Sebelum diskon"
+                variant="kotor"
+                icon="heroicon-o-chart-bar"
+                icon-class="bg-blue-50 text-blue-600"
+            />
+        @endif
 
-        <x-kpi-card
-            title="Total Diskon"
-            :value="'Rp ' . number_format($totalDiskon, 0, ',', '.')"
-            subtitle="Total diskon transaksi"
-            variant="diskon"
-            icon="heroicon-o-tag"
-            icon-class="bg-purple-50 text-purple-600"
-        />
+        @if ($canKpiTotalDiskon)
+            <x-kpi-card
+                title="Total Diskon"
+                :value="'Rp ' . number_format($totalDiskon, 0, ',', '.')"
+                subtitle="Total diskon transaksi"
+                variant="diskon"
+                icon="heroicon-o-tag"
+                icon-class="bg-purple-50 text-purple-600"
+            />
+        @endif
 
-        <x-kpi-card
-            title="Omzet Bersih"
-            :value="'Rp ' . number_format($omzetBersih, 0, ',', '.')"
-            subtitle="Setelah diskon"
-            variant="bersih"
-            icon="heroicon-o-banknotes"
-            icon-class="bg-emerald-50 text-emerald-600"
-        />
+        @if ($canKpiOmzetBersih)
+            <x-kpi-card
+                title="Omzet Bersih"
+                :value="'Rp ' . number_format($omzetBersih, 0, ',', '.')"
+                subtitle="Setelah diskon"
+                variant="bersih"
+                icon="heroicon-o-banknotes"
+                icon-class="bg-emerald-50 text-emerald-600"
+            />
+        @endif
 
-        <x-kpi-card
-            title="Total Member"
-            :value="number_format($totalMember)"
-            subtitle="Member terdaftar"
-            variant="member"
-            icon="heroicon-o-user-group"
-            icon-class="bg-amber-50 text-amber-600"
-        />
+        @if ($canKpiTotalMember)
+            <x-kpi-card
+                title="Total Member"
+                :value="number_format($totalMember)"
+                subtitle="Member terdaftar"
+                variant="member"
+                icon="heroicon-o-user-group"
+                icon-class="bg-amber-50 text-amber-600"
+            />
+        @endif
 
-        <x-kpi-card
-            title="Piutang Supplier"
-            :value="'Rp ' . number_format($totalHutangSupplier, 0, ',', '.')"
-            subtitle="Total hutang supplier"
-            icon="heroicon-o-building-office-2"
-            icon-class="bg-sky-50 text-sky-600"
-        />
+        @if ($canKpiHutang)
+            <x-kpi-card
+                title="Piutang Supplier"
+                :value="'Rp ' . number_format($totalHutangSupplier, 0, ',', '.')"
+                subtitle="Total hutang supplier"
+                icon="heroicon-o-building-office-2"
+                icon-class="bg-sky-50 text-sky-600"
+            />
+        @endif
 
-        <x-kpi-card
-            title="Piutang Member"
-            :value="'Rp ' . number_format($totalPiutangMember, 0, ',', '.')"
-            subtitle="Total piutang member"
-            icon="heroicon-o-credit-card"
-            icon-class="bg-rose-50 text-rose-600"
-        />
+        @if ($canKpiPiutang)
+            <x-kpi-card
+                title="Piutang Member"
+                :value="'Rp ' . number_format($totalPiutangMember, 0, ',', '.')"
+                subtitle="Total piutang member"
+                icon="heroicon-o-credit-card"
+                icon-class="bg-rose-50 text-rose-600"
+            />
+        @endif
     </div>
+    @endif
 
     {{-- ============================================================ --}}
     {{-- 3. GRAFIK + BUSINESS HEALTH + ACTION CENTER                  --}}
     {{-- ============================================================ --}}
+    @if ($canGrafikOmzet || $canKondisiBisnis || $showActionCol)
     <div class="main-dashboard-grid grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
-        <div class="main-graph-card xl:col-span-5"><div class="dashboard-card p-4 h-full">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
-            <div>
-                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
-                <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
+        @if ($canGrafikOmzet)
+            <div class="main-graph-card {{ ($canKondisiBisnis && $showActionCol) ? 'xl:col-span-5' : (($canKondisiBisnis || $showActionCol) ? 'xl:col-span-7' : 'xl:col-span-12') }}">
+                <div class="dashboard-card p-4 h-full">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
+                        </div>
+                        <div class="flex items-center gap-4 text-xs font-medium">
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                <span class="text-gray-600">Omzet Kotor</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                                <span class="text-gray-600">Omzet Bersih</span>
+                            </span>
+                            @if ($canGrafikProfit)
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span class="text-gray-600">Gross Profit</span>
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="relative w-full" style="min-height: 280px; max-height: 340px;">
+                        <canvas id="salesPerformanceChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-4 text-xs font-medium">
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                    <span class="text-gray-600">Omzet Kotor</span>
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-blue-600"></span>
-                    <span class="text-gray-600">Omzet Bersih</span>
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                    <span class="text-gray-600">Gross Profit</span>
-                </span>
-            </div>
-        </div>
+        @endif
 
-        <div class="relative w-full" style="min-height: 280px; max-height: 340px;">
-            <canvas id="salesPerformanceChart"></canvas>
-        </div>
-
-
-
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- ============================================================ --}}</div>
-    <div class="main-health-card xl:col-span-4">
+        @if ($canKondisiBisnis)
+            <div class="main-health-card {{ ($canGrafikOmzet && $showActionCol) ? 'xl:col-span-4' : ((!$canGrafikOmzet && $showActionCol) ? 'xl:col-span-7' : (($canGrafikOmzet && !$showActionCol) ? 'xl:col-span-7' : 'xl:col-span-12')) }}">
         @php
             // =========================
             // BUSINESS HEALTH
@@ -225,191 +272,205 @@
                 {{-- RIGHT : BUSINESS METRICS --}}
                 <div class="space-y-1.5">
 
-                    {{-- Penjualan --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-banknotes class="w-4 h-4" />
-                        </div>
+                    @if ($canKpiOmzetBersih || $canGrafikOmzet)
+                        {{-- Penjualan --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </div>
 
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Penjualan
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Penjualan
+                                </div>
+                            </div>
+
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($omzetBersih, 0, ',', '.') }}
+                            </div>
+
+                            <div class="w-[42px] text-right text-[9px] font-bold
+                                {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                                {{ ($deltaOmzetBersih ?? 0) >= 0 ? '↑' : '↓' }}
+                                {{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '-' }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($canGrafikProfit)
+                        {{-- Gross Profit --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                <x-heroicon-o-chart-bar class="w-4 h-4" />
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Gross Profit
+                                </div>
+                            </div>
+
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($grossProfitHealth, 0, ',', '.') }}
+                            </div>
+
+                            <div class="w-[42px] text-right text-[9px] font-bold
+                                {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
+                                {{ ($deltaGrossProfit ?? 0) >= 0 ? '↑' : '↓' }}
+                                {{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '-' }}
                             </div>
                         </div>
 
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($omzetBersih, 0, ',', '.') }}
-                        </div>
+                        {{-- Margin --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                                <span class="text-sm font-black">%</span>
+                            </div>
 
-                        <div class="w-[42px] text-right text-[9px] font-bold
-                            {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
-                            {{ ($deltaOmzetBersih ?? 0) >= 0 ? '↑' : '↓' }}
-                            {{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '-' }}
-                        </div>
-                    </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Margin
+                                </div>
+                            </div>
 
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                {{ number_format($marginHealth, 1, ',', '.') }}%
+                            </div>
 
-                    {{-- Gross Profit --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-chart-bar class="w-4 h-4" />
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Gross Profit
+                            <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                                —
                             </div>
                         </div>
+                    @endif
 
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($grossProfitHealth, 0, ',', '.') }}
-                        </div>
+                    @if ($canKpiHutang)
+                        {{-- Hutang Supplier --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <x-heroicon-o-building-office-2 class="w-4 h-4" />
+                            </div>
 
-                        <div class="w-[42px] text-right text-[9px] font-bold
-                            {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
-                            {{ ($deltaGrossProfit ?? 0) >= 0 ? '↑' : '↓' }}
-                            {{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '-' }}
-                        </div>
-                    </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Hutang Supplier
+                                </div>
+                            </div>
 
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}
+                            </div>
 
-                    {{-- Margin --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
-                            <span class="text-sm font-black">%</span>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Margin
+                            <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                                —
                             </div>
                         </div>
+                    @endif
 
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            {{ number_format($marginHealth, 1, ',', '.') }}%
-                        </div>
+                    @if ($canKpiPiutang)
+                        {{-- Piutang Member --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                                <x-heroicon-o-users class="w-4 h-4" />
+                            </div>
 
-                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
-                            —
-                        </div>
-                    </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Piutang Member
+                                </div>
+                            </div>
 
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}
+                            </div>
 
-                    {{-- Hutang Supplier --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-building-office-2 class="w-4 h-4" />
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Hutang Supplier
+                            <div class="w-[42px] text-right text-[9px] font-bold text-rose-500">
+                                —
                             </div>
                         </div>
+                    @endif
 
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($totalHutangSupplier, 0, ',', '.') }}
-                        </div>
+                    @if ($canNilaiPersediaan)
+                        {{-- Nilai Persediaan --}}
+                        <div class="flex items-center gap-2.5 py-1.5">
+                            <div class="w-7 h-7 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                                <x-heroicon-o-cube class="w-4 h-4" />
+                            </div>
 
-                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
-                            —
-                        </div>
-                    </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-gray-600">
+                                    Nilai Persediaan
+                                </div>
+                            </div>
 
+                            <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                            </div>
 
-                    {{-- Piutang Member --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-users class="w-4 h-4" />
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Piutang Member
+                            <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
+                                —
                             </div>
                         </div>
-
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($totalPiutangMember, 0, ',', '.') }}
-                        </div>
-
-                        <div class="w-[42px] text-right text-[9px] font-bold text-rose-500">
-                            —
-                        </div>
-                    </div>
-
-
-                    {{-- Nilai Persediaan --}}
-                    <div class="flex items-center gap-2.5 py-1.5">
-                        <div class="w-7 h-7 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-cube class="w-4 h-4" />
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[10px] font-bold text-gray-600">
-                                Nilai Persediaan
-                            </div>
-                        </div>
-
-                        <div class="text-[10px] font-extrabold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($nilaiPersediaan, 0, ',', '.') }}
-                        </div>
-
-                        <div class="w-[42px] text-right text-[9px] font-bold text-emerald-500">
-                            —
-                        </div>
-                    </div>
+                    @endif
 
                 </div>
             </div>
         </div>
     </div>
-        <div class="main-action-column xl:col-span-3 space-y-3">
-            <div class="dashboard-card p-4">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-gray-900">Tindak Lanjut</h3>
-    </div>
-    <div class="space-y-2">
-        @php
-            $acakWarna = [
-                'critical' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'critical'],
-                'attention' => ['bg-amber-100 text-amber-700', 'text-amber-400', 'attention'],
-                'monitoring' => ['bg-sky-100 text-sky-700', 'text-sky-400', 'monitoring'],
-                'overdue' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'overdue'],
-                'piutang' => ['bg-purple-100 text-purple-700', 'text-purple-400', 'piutang'],
-            ];
-            $actionCenterLabels = [
-                'critical' => 'Kritis',
-                'attention' => 'Perlu Perhatian',
-                'monitoring' => 'Dalam Pemantauan',
-                'overdue' => 'Terlambat',
-                'piutang' => 'Piutang',
-            ];
-        @endphp
-        @foreach ($actionCenter as $kunci => $item)
-            @php [$chip, $ikon, $kelas] = $acakWarna[$kunci]; @endphp
-            <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="badge-chip {{ $chip }}">{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
-                        <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
+        @endif
+
+        @if ($showActionCol)
+            <div class="main-action-column {{ ($canGrafikOmzet && $canKondisiBisnis) ? 'xl:col-span-3' : (($canGrafikOmzet || $canKondisiBisnis) ? 'xl:col-span-5' : 'xl:col-span-12') }} space-y-3">
+                @if ($hasAlerts)
+                    <div class="dashboard-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-bold text-gray-900">Tindak Lanjut</h3>
+                        </div>
+                        <div class="space-y-2">
+                            @php
+                                $acakWarna = [
+                                    'critical' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'critical'],
+                                    'attention' => ['bg-amber-100 text-amber-700', 'text-amber-400', 'attention'],
+                                    'monitoring' => ['bg-sky-100 text-sky-700', 'text-sky-400', 'monitoring'],
+                                    'overdue' => ['bg-rose-100 text-rose-700', 'text-rose-400', 'overdue'],
+                                    'piutang' => ['bg-purple-100 text-purple-700', 'text-purple-400', 'piutang'],
+                                ];
+                                $actionCenterLabels = [
+                                    'critical' => 'Kritis',
+                                    'attention' => 'Perlu Perhatian',
+                                    'monitoring' => 'Dalam Pemantauan',
+                                    'overdue' => 'Terlambat',
+                                    'piutang' => 'Piutang',
+                                ];
+                            @endphp
+                            @foreach ($actionCenter as $kunci => $item)
+                                @php [$chip, $ikon, $kelas] = $acakWarna[$kunci]; @endphp
+                                <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="badge-chip {{ $chip }}">{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
+                                            <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
+                                        </div>
+                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
-                </div>
-            </a>
-        @endforeach
+                @endif
+
+                @if ($canTombolKasir)
+                    <div class="cashier-card dashboard-card p-3 bg-blue-700 text-white">
+                        <a href="{{ route('penjualan.create') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors">
+                            <x-heroicon-o-calculator class="w-4 h-4" />
+                            Buka Kasir
+                            <x-heroicon-o-chevron-right class="w-4 h-4 ml-auto" />
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
-</div>
-@if (auth()->user()->canManage('transaksi.penjualan'))
-<div class="cashier-card dashboard-card p-3 bg-blue-700 text-white">
-    <a href="{{ route('penjualan.create') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-blue-700 font-bold text-xs hover:bg-blue-50 transition-colors">
-        <x-heroicon-o-calculator class="w-4 h-4" />
-        Buka Kasir
-        <x-heroicon-o-chevron-right class="w-4 h-4 ml-auto" />
-    </a>
-</div></div>
-@endif
-    </div>
+    @endif
 
     {{-- ============================================================ --}}
     {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
@@ -417,7 +478,9 @@
     {{-- ============================================================ --}}
     {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
     {{-- ============================================================ --}}
-    <div class="inventory-row grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+    @if ($canPemantauanStok || $canBarangBeli)
+    <div class="inventory-row grid grid-cols-1 {{ ($canPemantauanStok && $canBarangBeli) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5 items-stretch">
+        @if ($canPemantauanStok)
         {{-- ============================================================ --}}
         {{-- KOLOM KIRI: INVENTORY CONTROL CENTER + KONDISI STOK + EXPIRY HEALTH --}}
         {{-- ============================================================ --}}
@@ -438,7 +501,7 @@
                 {{-- 1. Baris Metrik: Total Stok & Nilai Persediaan --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {{-- Total Stok --}}
-                    <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
+                    <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3 {{ $canNilaiPersediaan ? '' : 'sm:col-span-2' }}">
                         <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
                             <x-heroicon-o-cube class="w-6 h-6" />
                         </div>
@@ -451,21 +514,23 @@
                         </div>
                     </div>
 
-                    {{-- Nilai Persediaan --}}
-                    <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
-                            <x-heroicon-o-circle-stack class="w-6 h-6" />
-                        </div>
-                       <div class="min-w-0 flex-1">
-                            <span class="text-xs font-semibold text-gray-500 block">Nilai Persediaan</span>
-
-                            <div class="text-lg font-black text-gray-900 leading-tight mt-0.5 whitespace-nowrap">
-                                Rp{{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                    @if ($canNilaiPersediaan)
+                        {{-- Nilai Persediaan --}}
+                        <div class="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+                                <x-heroicon-o-circle-stack class="w-6 h-6" />
                             </div>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-xs font-semibold text-gray-500 block">Nilai Persediaan</span>
 
-                            <span class="text-[11px] text-gray-400 font-medium">Estimasi valuasi</span>
+                                <div class="text-lg font-black text-gray-900 leading-tight mt-0.5 whitespace-nowrap">
+                                    Rp{{ number_format($nilaiPersediaan, 0, ',', '.') }}
+                                </div>
+
+                                <span class="text-[11px] text-gray-400 font-medium">Estimasi valuasi</span>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
                 {{-- 2. Kondisi Stok dengan Doughnut Chart & Legend --}}
@@ -621,7 +686,9 @@
                 </div>
             </div>
         </div>
+        @endif
 
+        @if ($canBarangBeli)
         {{-- ============================================================ --}}
         {{-- KOLOM KANAN: BARANG YANG HARUS DIBELI                        --}}
         {{-- ============================================================ --}}
@@ -691,14 +758,18 @@
                 </table>
             </div>
         </div>
+        @endif
     </div>
+    @endif
 
     {{-- ============================================================ --}}
     {{-- 5. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
     {{-- ============================================================ --}}
 {{-- 8. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
     {{-- ============================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    @if ($canObatTerlaris || $canObatTerendah)
+    <div class="grid grid-cols-1 {{ ($canObatTerlaris && $canObatTerendah) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5">
+        @if ($canObatTerlaris)
         {{-- 10 Obat Terlaris --}}
         <div class="dashboard-card p-5">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
@@ -725,7 +796,9 @@
                             <th>Nama Obat</th>
                             <th>Kategori</th>
                             <th class="text-center">Terjual</th>
-                            <th class="text-right">Omzet</th>
+                            @if ($canOmzetObat)
+                                <th class="text-right">Omzet</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -735,11 +808,13 @@
                                 <td class="font-bold text-gray-900">{{ $medicine->nama }}</td>
                                 <td class="text-gray-600">{{ $medicine->kategori ?? '-' }}</td>
                                 <td class="text-center font-bold text-blue-600">{{ number_format($medicine->total_terjual) }} unit</td>
-                                <td class="text-right font-semibold text-gray-800">Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}</td>
+                                @if ($canOmzetObat)
+                                    <td class="text-right font-semibold text-gray-800">Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}</td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-xs text-gray-400">
+                                <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-6 text-center text-xs text-gray-400">
                                     Belum ada transaksi penjualan pada periode ini.
                                 </td>
                             </tr>
@@ -748,7 +823,9 @@
                 </table>
             </div>
         </div>
+        @endif
 
+        @if ($canObatTerendah)
         {{-- 10 Obat Paling Sedikit Terjual --}}
         <div class="dashboard-card p-5">
             <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
@@ -775,7 +852,9 @@
                             <th>Nama Obat</th>
                             <th>Kategori</th>
                             <th class="text-center">Terjual</th>
-                            <th class="text-right">Omzet</th>
+                            @if ($canOmzetObat)
+                                <th class="text-right">Omzet</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -787,13 +866,15 @@
                                 <td class="text-center font-bold {{ $medicine->total_terjual == 0 ? 'text-gray-400' : 'text-amber-600' }}">
                                     {{ number_format($medicine->total_terjual) }} unit
                                 </td>
-                                <td class="text-right font-semibold text-gray-800">
-                                    Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}
-                                </td>
+                                @if ($canOmzetObat)
+                                    <td class="text-right font-semibold text-gray-800">
+                                        Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}
+                                    </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-6 text-center text-xs text-gray-400">
+                                <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-6 text-center text-xs text-gray-400">
                                     Belum ada data obat.
                                 </td>
                             </tr>
@@ -802,94 +883,100 @@
                 </table>
             </div>
         </div>
+        @endif
     </div>
+    @endif
 
     {{-- ============================================================ --}}
     {{-- 9. KINERJA KARYAWAN & DOKTER PENYUMBANG RESEP               --}}
     {{-- ============================================================ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-        {{-- 9.1 KINERJA KARYAWAN --}}
-        <div class="dashboard-card p-5 flex flex-col justify-between">
-            <div>
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-                            <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+    @if ($canKinerja || $canDokterResep)
+    <div class="grid grid-cols-1 {{ ($canKinerja && $canDokterResep) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5 mt-5">
+        @if ($canKinerja)
+            {{-- 9.1 KINERJA KARYAWAN --}}
+            <div class="dashboard-card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
+                                <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+                            </div>
+
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
+                                <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                            </div>
                         </div>
 
-                        <div>
-                            <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
-                            <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                        <div class="flex items-center gap-2">
+                            @if ($kinerjaKaryawan->count() > 5)
+                                <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
+                                    Lihat Semua ({{ $kinerjaKaryawan->count() }})
+                                </button>
+                            @endif
+                            <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                                Kelola User &rarr;
+                            </a>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        @if ($kinerjaKaryawan->count() > 5)
-                            <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
-                                Lihat Semua ({{ $kinerjaKaryawan->count() }})
-                            </button>
-                        @endif
-                        <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                            Kelola User &rarr;
-                        </a>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
-                    <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
-                        <thead>
-                            <tr>
-                                <th class="w-12 text-center">NO</th>
-                                <th>NAMA KARYAWAN</th>
-                                <th class="text-right">PENJUALAN</th>
-                                <th class="text-center">TRANSAKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($kinerjaKaryawan as $index => $karyawan)
-                                @php
-                                    $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
-                                    $penjualan = (float) $karyawan->total_penjualan;
-                                    $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
-                                    $barWidth = $persen !== null ? min($persen, 100) : 0;
-                                    $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
-                                    $isCurrentUser = auth()->id() === $karyawan->id;
-                                    $isExtra = $index >= 5;
-                                @endphp
-                                <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
-                                    <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                                    <td>
-                                        <div class="flex items-center gap-2">
-                                            <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
-                                            @if ($isCurrentUser)
-                                                <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">ANDA</span>
-                                            @endif
-                                            <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
-                                            @if (!$karyawan->aktif)
-                                                <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="text-right font-semibold text-gray-800">
-                                        Rp {{ number_format($penjualan, 0, ',', '.') }}
-                                    </td>
-                                    <td class="text-center font-bold text-blue-600">
-                                        {{ number_format($karyawan->total_transaksi) }}
-                                    </td>
-                                </tr>
-                            @empty
+                    <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+                        <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
+                            <thead>
                                 <tr>
-                                    <td colspan="4" class="py-6 text-center text-xs text-gray-400">
-                                        Belum ada data karyawan terdaftar.
-                                    </td>
+                                    <th class="w-12 text-center">NO</th>
+                                    <th>NAMA KARYAWAN</th>
+                                    <th class="text-right">PENJUALAN</th>
+                                    <th class="text-center">TRANSAKSI</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($kinerjaKaryawan as $index => $karyawan)
+                                    @php
+                                        $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
+                                        $penjualan = (float) $karyawan->total_penjualan;
+                                        $persen = $target ? round(($penjualan / $target) * 100, 1) : null;
+                                        $barWidth = $persen !== null ? min($persen, 100) : 0;
+                                        $barColor = $persen >= 100 ? 'bg-emerald-500' : ($persen >= 75 ? 'bg-blue-600' : ($persen >= 50 ? 'bg-amber-500' : 'bg-rose-500'));
+                                        $isCurrentUser = auth()->id() === $karyawan->id;
+                                        $isExtra = $index >= 5;
+                                    @endphp
+                                    <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
+                                        <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                        <td>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
+                                                @if ($isCurrentUser)
+                                                    <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">ANDA</span>
+                                                @endif
+                                                <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
+                                                @if (!$karyawan->aktif)
+                                                    <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="text-right font-semibold text-gray-800">
+                                            Rp {{ number_format($penjualan, 0, ',', '.') }}
+                                        </td>
+                                        <td class="text-center font-bold text-blue-600">
+                                            {{ number_format($karyawan->total_transaksi) }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="py-6 text-center text-xs text-gray-400">
+                                            Belum ada data karyawan terdaftar.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
 
+        @if ($canDokterResep)
         {{-- 9.2 DOKTER PENYUMBANG RESEP TERBANYAK --}}
         <div class="dashboard-card p-5 flex flex-col justify-between">
             <div>
@@ -959,7 +1046,9 @@
                 <span>Total resep dihitung berdasarkan riwayat transaksi penjualan yang berasal dari resep dokter.</span>
             </div>
         </div>
+        @endif
     </div>
+    @endif
 
 </div>
 
@@ -1117,6 +1206,7 @@
                         pointBackgroundColor: '#2563eb',
                         fill: true,
                     },
+                    @if ($canGrafikProfit)
                     {
                         label: 'Gross Profit',
                         data: dataProfit,
@@ -1130,6 +1220,7 @@
                         pointBackgroundColor: '#10b981',
                         fill: false,
                     }
+                    @endif
                 ]
             },
             options: {

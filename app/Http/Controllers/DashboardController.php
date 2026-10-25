@@ -460,46 +460,46 @@ class DashboardController extends Controller
         $expiryWarning = $expiry['expiryWarning'];
         $expiryAman = $expiry['expiryAman'];
 
-        // 8. ACTION CENTER (Alerts Dinamis dengan Link Cepat)
+        // 8. ACTION CENTER (Alerts Dinamis Granular sesuai Izin Super Admin)
         $actionCenter = [
             'critical' => [
                 'count' => $stokHabisCount,
                 'title' => 'Kritis',
                 'label' => 'Barang stok habis',
-                'izin' => 'laporan.stok',
+                'izin' => 'dashboard.alert-stok-habis',
                 'route' => route('laporan.stok', ['status_stok' => 'habis']),
             ],
             'attention' => [
                 'count' => $stokMenipisCount,
                 'title' => 'Perlu Perhatian',
                 'label' => 'Barang stok menipis',
-                'izin' => 'laporan.stok',
+                'izin' => 'dashboard.alert-stok-menipis',
                 'route' => route('laporan.stok', ['status_stok' => 'menipis']),
             ],
             'monitoring' => [
                 'count' => $expiryCritical,
                 'title' => 'Dalam Pemantauan',
                 'label' => 'Mendekati expired (< 30 hari)',
-                'izin' => 'laporan.stok',
+                'izin' => 'dashboard.alert-expired',
                 'route' => route('laporan.stok', ['status_expired' => '1_bulan']),
             ],
             'overdue' => [
                 'count' => $countHutangOverdue,
                 'title' => 'Terlambat',
                 'label' => 'Hutang supplier jatuh tempo',
-                'izin' => 'transaksi.penerimaan',
+                'izin' => 'dashboard.alert-hutang-tempo',
                 'route' => route('penerimaan.index', ['status_pembayaran' => 'belum_lunas']),
             ],
             'piutang' => [
                 'count' => $memberBerpiutangCount,
                 'title' => 'Piutang',
                 'label' => 'Member memiliki piutang',
-                'izin' => 'master.pelanggan',
+                'izin' => 'dashboard.alert-piutang-member',
                 'route' => route('pelanggan.index', ['status_piutang' => 'belum_lunas']),
             ],
         ];
 
-        // Sembunyikan alert yang targetnya tidak bisa dibuka user ini.
+        // Sembunyikan alert yang tidak diizinkan oleh Super Admin untuk role ini
         $actionCenter = array_filter(
             $actionCenter,
             fn ($item) => $request->user()->hasPermission($item['izin'])
