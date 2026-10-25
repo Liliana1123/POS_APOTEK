@@ -364,11 +364,8 @@
     <!-- Global Reusable Toast Notification (Top-Center) -->
     <x-toast />
 
-    <!-- Global Reusable Delete Confirmation Modal -->
-    <x-modal-confirm-delete />
-
-    <!-- Global Reusable Action Confirmation Modal -->
-    <x-modal-confirm-action />
+    <!-- Global Reusable Universal Confirmation Modal (Delete & Actions) -->
+    <x-modal-confirm />
 
     {{-- Global Quick Search Modal (Ctrl + K) --}}
     <x-global-quick-search />
