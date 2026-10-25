@@ -175,8 +175,8 @@
 
                     {{-- No Faktur & Tanggal Terima --}}
                     <td>
-                        <div class="font-semibold text-gray-800 font-mono">
-                            {{ $penerimaan->no_faktur }}
+                        <div class="font-semibold text-gray-800">
+                            <x-copyable :text="$penerimaan->no_faktur" />
                         </div>
                         <div class="text-xs text-gray-500 mt-0.5">
                             @tanggalId($penerimaan->tanggal, 'd F Y')

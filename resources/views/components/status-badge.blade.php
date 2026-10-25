@@ -7,6 +7,7 @@
     'date' => null,
     'variant' => null,
     'label' => null,
+    'dot' => true,
 ])
 
 @php
@@ -150,6 +151,6 @@
     $finalLabel = $label ?? $computedLabel;
 @endphp
 
-<x-badge :variant="$finalVariant" {{ $attributes->except(['type', 'value', 'status', 'stok', 'min', 'date', 'variant', 'label', 'aktif', 'start', 'end']) }}>
+<x-badge :variant="$finalVariant" :dot="$dot" {{ $attributes->except(['type', 'value', 'status', 'stok', 'min', 'date', 'variant', 'label', 'aktif', 'start', 'end', 'dot']) }}>
     {{ $slot->isNotEmpty() ? $slot : $finalLabel }}
 </x-badge>

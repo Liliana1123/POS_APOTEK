@@ -447,10 +447,16 @@
                                 <a href="{{ $item['route'] }}" class="action-alert-card {{ $kelas }} block !p-3">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <span class="badge-chip {{ $chip }}">{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
+                                            <span class="badge-chip {{ $chip }} inline-flex items-center gap-1.5">
+                                                <span class="relative flex h-2 w-2">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $kunci === 'critical' || $kunci === 'overdue' ? 'bg-rose-400' : ($kunci === 'attention' ? 'bg-amber-400' : ($kunci === 'piutang' ? 'bg-purple-400' : 'bg-sky-400')) }}"></span>
+                                                    <span class="relative inline-flex rounded-full h-2 w-2 {{ $kunci === 'critical' || $kunci === 'overdue' ? 'bg-rose-500' : ($kunci === 'attention' ? 'bg-amber-500' : ($kunci === 'piutang' ? 'bg-purple-500' : 'bg-sky-500')) }}"></span>
+                                                </span>
+                                                <span>{{ $actionCenterLabels[$kunci] ?? ($item['title'] ?? ucfirst($kunci)) }}</span>
+                                            </span>
                                             <div class="text-xs font-bold text-gray-700 mt-1">{{ $item['count'] }} · {{ $item['label'] }}</div>
                                         </div>
-                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }}" />
+                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $ikon }} action-arrow transition-transform duration-200" />
                                     </div>
                                 </a>
                             @endforeach
@@ -507,7 +513,10 @@
                         </div>
                         <div class="min-w-0">
                             <span class="text-xs font-semibold text-gray-500 block">Total Stok</span>
-                            <div class="text-xl font-black text-gray-900 leading-tight mt-0.5">
+                            <div class="text-xl font-black text-gray-900 leading-tight mt-0.5 tracking-tight"
+                                 data-countup="true"
+                                 data-target="{{ (float) preg_replace('/[^0-9]/', '', (string)$totalStok) }}"
+                                 data-suffix=" Unit">
                                 {{ number_format($totalStok) }} <span class="text-xs font-medium text-gray-400">Unit</span>
                             </div>
                             <span class="text-[11px] text-gray-400 font-medium">Fisik persediaan</span>
@@ -523,7 +532,10 @@
                             <div class="min-w-0 flex-1">
                                 <span class="text-xs font-semibold text-gray-500 block">Nilai Persediaan</span>
 
-                                <div class="text-lg font-black text-gray-900 leading-tight mt-0.5 whitespace-nowrap">
+                                <div class="text-lg font-black text-gray-900 leading-tight mt-0.5 whitespace-nowrap tracking-tight"
+                                     data-countup="true"
+                                     data-target="{{ (float) preg_replace('/[^0-9]/', '', (string)$nilaiPersediaan) }}"
+                                     data-prefix="Rp ">
                                     Rp{{ number_format($nilaiPersediaan, 0, ',', '.') }}
                                 </div>
 
@@ -1226,6 +1238,10 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 1100,
+                    easing: 'easeOutQuart',
+                },
                 interaction: {
                     intersect: false,
                     mode: 'index',
@@ -1235,11 +1251,13 @@
                         display: false,
                     },
                     tooltip: {
-                        backgroundColor: '#0f172a',
+                        backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                        borderColor: 'rgba(255, 255, 255, 0.12)',
+                        borderWidth: 1,
                         titleColor: '#ffffff',
                         bodyColor: '#e2e8f0',
                         padding: 12,
-                        cornerRadius: 8,
+                        cornerRadius: 10,
                         titleFont: {
                             weight: 'bold',
                             size: 12,
@@ -1247,6 +1265,7 @@
                         bodyFont: {
                             size: 11,
                         },
+                        boxPadding: 4,
                         callbacks: {
                             label: function (context) {
                                 return context.dataset.label + ': ' + formatRupiah(context.parsed.y);
@@ -1312,24 +1331,33 @@
                         backgroundColor: totalKondisi > 0 ? ['#ef4444', '#f59e0b', '#10b981'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
-                        hoverOffset: 3
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '70%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1000,
+                        easing: 'easeOutCubic'
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
                             enabled: totalKondisi > 0,
-                            backgroundColor: '#0f172a',
+                            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                            borderColor: 'rgba(255, 255, 255, 0.12)',
+                            borderWidth: 1,
                             titleColor: '#ffffff',
                             bodyColor: '#e2e8f0',
-                            padding: 8,
-                            cornerRadius: 6,
+                            padding: 10,
+                            cornerRadius: 8,
                             titleFont: { size: 11, weight: 'bold' },
                             bodyFont: { size: 10 },
+                            boxPadding: 4,
                             callbacks: {
                                 label: function(context) {
                                     const val = context.parsed;
@@ -1363,24 +1391,33 @@
                         backgroundColor: totalExpiry > 0 ? ['#10b981', '#eab308', '#f97316', '#ef4444'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
-                        hoverOffset: 4
+                        hoverOffset: 5
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '72%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1100,
+                        easing: 'easeOutCubic'
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
                             enabled: totalExpiry > 0,
-                            backgroundColor: '#0f172a',
+                            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                            borderColor: 'rgba(255, 255, 255, 0.12)',
+                            borderWidth: 1,
                             titleColor: '#ffffff',
                             bodyColor: '#e2e8f0',
                             padding: 10,
                             cornerRadius: 8,
                             titleFont: { size: 12, weight: 'bold' },
                             bodyFont: { size: 11 },
+                            boxPadding: 4,
                             callbacks: {
                                 label: function(context) {
                                     const val = context.parsed;
@@ -1393,6 +1430,7 @@
                 }
             });
         }
+
 
         // ==========================================
         // TOGGLE LIHAT SEMUA: KINERJA KARYAWAN

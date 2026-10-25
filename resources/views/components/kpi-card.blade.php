@@ -27,6 +27,11 @@
     };
 
     $finalIconClass = $iconClass ?? $defaultIconClass;
+
+    $rawString = trim((string)$value);
+    $hasPrefixRp = str_starts_with($rawString, 'Rp');
+    $numericOnly = preg_replace('/[^0-9]/', '', $rawString);
+    $hasCountUp = is_numeric($numericOnly) && (float)$numericOnly > 0;
 @endphp
 
 <div {{ $attributes->merge(['class' => "kpi-card $variantClass flex items-center justify-between"]) }}>
@@ -34,7 +39,12 @@
         <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
             {{ $title }}
         </span>
-        <div class="text-xl font-black text-gray-900 mt-1">
+        <div class="text-xl font-black text-gray-900 mt-1 tracking-tight"
+             @if($hasCountUp)
+                 data-countup="true"
+                 data-target="{{ $numericOnly }}"
+                 data-prefix="{{ $hasPrefixRp ? 'Rp ' : '' }}"
+             @endif>
             {{ $value }}
         </div>
         @if($subtitle)

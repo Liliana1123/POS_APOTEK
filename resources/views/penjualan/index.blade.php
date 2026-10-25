@@ -217,8 +217,8 @@
                         </td>
 
                         {{-- No. Invoice --}}
-                        <td class="text-center font-mono font-semibold text-gray-800 whitespace-nowrap">
-                            {{ $penjualan->no_faktur }}
+                        <td class="text-center font-semibold text-gray-800 whitespace-nowrap">
+                            <x-copyable :text="$penjualan->no_faktur" />
                         </td>
 
                         {{-- Tanggal --}}

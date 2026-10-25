@@ -138,8 +138,8 @@
                                 </button>
                             </x-table-action>
                         </td>
-                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
-                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
+                        <td><x-copyable :text="$barang->kode_apotek" /></td>
+                        <td><x-copyable :text="$barang->kode_kfa" /></td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>

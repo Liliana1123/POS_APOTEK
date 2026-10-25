@@ -15,14 +15,14 @@
     $hasAnyAction = $showUrl || $hasEdit || $deleteUrl || !empty(trim((string)$slot));
 @endphp
 
-<div class="flex items-center {{ $align }} gap-1">
+<div class="flex items-center {{ $align }} gap-1" data-table-action="true">
     @if(!$hasAnyAction)
         <span class="text-xs text-gray-400 font-mono">—</span>
     @else
         {{-- 1. Tombol Detail (Eye) --}}
         @if($showUrl)
             <a href="{{ $showUrl }}"
-                class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transform hover:scale-110 active:scale-95 transition-all duration-150 hover:shadow-xs"
                 style="color: #2563EB;"
                 title="Lihat Detail"
                 aria-label="Lihat Detail">
@@ -33,7 +33,7 @@
         {{-- 2. Tombol Edit (Pencil) --}}
         @if($editUrl)
             <a href="{{ $editUrl }}"
-                class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transition-colors"
+                class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transform hover:scale-110 active:scale-95 transition-all duration-150 hover:shadow-xs"
                 style="color: #F59E0B;"
                 title="Edit"
                 aria-label="Edit">
@@ -41,7 +41,7 @@
             </a>
         @elseif($editClass && ($editId !== null || $editData !== null))
             <button type="button"
-                class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transition-colors {{ $editClass }}"
+                class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transform hover:scale-110 active:scale-95 transition-all duration-150 hover:shadow-xs {{ $editClass }}"
                 style="color: #F59E0B;"
                 title="Edit"
                 aria-label="Edit"
@@ -57,7 +57,7 @@
         {{-- 4. Tombol Hapus (Trash) --}}
         @if($deleteUrl)
             <button type="button"
-                class="btn-secondary !p-1.5 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+                class="btn-secondary !p-1.5 hover:bg-red-50 hover:border-red-300 transform hover:scale-110 active:scale-95 transition-all duration-150 hover:shadow-xs cursor-pointer"
                 style="color: #DC2626;"
                 title="Hapus"
                 aria-label="Hapus"

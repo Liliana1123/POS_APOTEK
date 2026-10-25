@@ -302,6 +302,39 @@ body {
     pointer-events: none;
 }
 
+/* ==========================================================================
+   Table Action Buttons Spring Hover & Magnetic Pop (Global Coverage)
+   ========================================================================== */
+.btn-secondary.\!p-1\.5,
+.table-custom td .btn-secondary,
+.table-custom-body td .btn-secondary,
+.table-compact td .btn-secondary,
+[data-table-action] button,
+[data-table-action] a {
+    transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+.btn-secondary.\!p-1\.5:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-custom td .btn-secondary:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-custom-body td .btn-secondary:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-compact td .btn-secondary:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+[data-table-action] button:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+[data-table-action] a:hover:not(:disabled):not([disabled]):not(.cursor-not-allowed) {
+    transform: scale(1.12);
+    box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.12);
+    z-index: 10;
+}
+
+.btn-secondary.\!p-1\.5:active:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-custom td .btn-secondary:active:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-custom-body td .btn-secondary:active:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+.table-compact td .btn-secondary:active:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+[data-table-action] button:active:not(:disabled):not([disabled]):not(.cursor-not-allowed),
+[data-table-action] a:active:not(:disabled):not([disabled]):not(.cursor-not-allowed) {
+    transform: scale(0.94);
+}
+
+
 .btn-destructive {
     display: inline-flex;
     align-items: center;
@@ -628,12 +661,60 @@ body {
 }
 
 .table-custom-body tr {
-    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
 
 .table-custom-body tr:hover {
-    background-color: #f8fafc;
-    /* slate-50 */
+    background: linear-gradient(90deg, rgba(239, 246, 255, 0.85) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+    box-shadow: inset 3.5px 0 0 #2563eb;
+}
+
+/* ==========================================================================
+   Interactive Click-to-Copy & Tooltip Bubble
+   ========================================================================== */
+.copyable {
+    cursor: pointer;
+    transition: color 150ms ease, background-color 150ms ease;
+    border-radius: 0.25rem;
+    padding: 0.1rem 0.25rem;
+    margin: -0.1rem -0.25rem;
+}
+
+.copyable:hover {
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+.copy-tooltip-bubble {
+    position: absolute;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.35rem 0.65rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.25), 0 2px 4px -1px rgba(15, 23, 42, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px) scale(0.94);
+    transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.copy-tooltip-bubble.copy-tooltip-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.copy-tooltip-bubble.copy-tooltip-leaving {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
 }
 
 /* Indent sub-menu links inside collapsible sidebar groups for hierarchy */
@@ -1056,12 +1137,32 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.07);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+}
+
+.kpi-kotor:hover {
+    box-shadow: 0 14px 28px -4px rgba(245, 158, 11, 0.18), 0 4px 8px -2px rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.kpi-diskon:hover {
+    box-shadow: 0 14px 28px -4px rgba(16, 185, 129, 0.18), 0 4px 8px -2px rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.kpi-bersih:hover {
+    box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.18), 0 4px 8px -2px rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.4);
+}
+
+.kpi-member:hover {
+    box-shadow: 0 14px 28px -4px rgba(139, 92, 246, 0.18), 0 4px 8px -2px rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.4);
 }
 
 .kpi-card::before {
@@ -1097,7 +1198,13 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.kpi-card:hover .kpi-icon {
+    transform: scale(1.12) rotate(2deg);
+}
+
 
 /* =========================================
    3. DASHBOARD GENERAL CARDS / PANELS
@@ -1108,6 +1215,7 @@ body {
     border-radius: 0.875rem;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
     overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* =========================================
@@ -1118,14 +1226,14 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 0.75rem;
     padding: 1rem 1.15rem;
-    transition: all 0.15s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: block;
     text-decoration: none;
 }
 
 .action-alert-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-3px) scale(1.008);
+    box-shadow: 0 8px 20px -3px rgba(15, 23, 42, 0.08);
 }
 
 .action-alert-card.critical {
@@ -1133,9 +1241,19 @@ body {
     background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
 }
 
+.action-alert-card.critical:hover {
+    box-shadow: 0 10px 22px -3px rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
 .action-alert-card.attention {
     border-left: 4px solid #f59e0b;
     background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.action-alert-card.attention:hover {
+    box-shadow: 0 10px 22px -3px rgba(245, 158, 11, 0.22);
+    border-color: rgba(245, 158, 11, 0.4);
 }
 
 .action-alert-card.monitoring {
@@ -1143,14 +1261,42 @@ body {
     background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
 }
 
+.action-alert-card.monitoring:hover {
+    box-shadow: 0 10px 22px -3px rgba(2, 132, 199, 0.22);
+    border-color: rgba(2, 132, 199, 0.4);
+}
+
 .action-alert-card.overdue {
     border-left: 4px solid #dc2626;
     background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
 }
 
+.action-alert-card.overdue:hover {
+    box-shadow: 0 10px 22px -3px rgba(220, 38, 38, 0.22);
+    border-color: rgba(220, 38, 38, 0.4);
+}
+
 .action-alert-card.piutang {
     border-left: 4px solid #8b5cf6;
     background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.action-alert-card.piutang:hover {
+    box-shadow: 0 10px 22px -3px rgba(139, 92, 246, 0.22);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.action-alert-card:hover .action-arrow {
+    transform: translateX(4px);
+}
+
+.cashier-card {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cashier-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 26px -4px rgba(37, 99, 235, 0.35);
 }
 
 .badge-chip {
@@ -1188,12 +1334,16 @@ body {
     white-space: nowrap;
 }
 
-.table-compact tr:last-child td {
-    border-bottom: none;
+.table-compact tbody tr {
+    transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 
 .table-compact tr:hover td {
-    background-color: #f8fafc;
+    background: linear-gradient(90deg, rgba(239, 246, 255, 0.75) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+}
+
+.table-compact tbody tr:hover {
+    box-shadow: inset 3px 0 0 #2563eb;
 }
 
 .table-compact th.sticky-header {

@@ -103,7 +103,22 @@
             width: 0%;
         }
     }
+    @keyframes toastSpringIn {
+        0% {
+            transform: translateY(-26px) scale(0.92);
+            opacity: 0;
+        }
+        65% {
+            transform: translateY(4px) scale(1.015);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
     .toast-card {
+        animation: toastSpringIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
         transition: all 350ms cubic-bezier(0.16, 1, 0.3, 1);
     }
     .toast-card:hover .toast-progress-bar {
