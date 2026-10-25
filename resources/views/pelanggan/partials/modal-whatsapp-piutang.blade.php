@@ -2773,31 +2773,38 @@ function simpanTemplateCustom() {
 }
 
 function hapusTemplateItem(id) {
-    if (!confirm('Yakin ingin menghapus template custom ini?')) return;
+    window.confirmAction({
+        title: 'Hapus Template Pesan',
+        message: 'Apakah Anda yakin ingin menghapus template custom ini? Tindakan ini tidak dapat dibatalkan.',
+        type: 'danger',
+        confirmText: 'Ya, Hapus Template',
+        cancelText: 'Batal',
+        onConfirm: () => {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-    fetch(`{{ url('whatsapp-templates') }}/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        credentials: 'same-origin'
-    })
-    .then(async r => {
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.status) {
-            throw new Error(data.message || 'Gagal menghapus template.');
+            fetch(`{{ url('whatsapp-templates') }}/${encodeURIComponent(id)}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(async r => {
+                const data = await r.json().catch(() => ({}));
+                if (!r.ok || !data.status) {
+                    throw new Error(data.message || 'Gagal menghapus template.');
+                }
+                return data;
+            })
+            .then(data => {
+                fetchAllTemplates();
+            })
+            .catch(err => {
+                alert(err.message || 'Gagal menghapus template.');
+            });
         }
-        return data;
-    })
-    .then(data => {
-        fetchAllTemplates();
-    })
-    .catch(err => {
-        alert(err.message || 'Gagal menghapus template.');
     });
 }
 
@@ -2815,8 +2822,18 @@ function lanjutKePratinjauMassal() {
     if (currentKategoriPesan !== 'pengingat_piutang') {
         const hasPiutangPlaceholder = /\{(nomor_faktur|total_piutang|tanggal_jatuh_tempo)\}/.test(pesanTemplate);
         if (hasPiutangPlaceholder) {
-            const konfirmasi = confirm('Peringatan: Pesan Anda memuat placeholder tagihan ({total_piutang}, {nomor_faktur}, atau {tanggal_jatuh_tempo}) padahal kategori pesan bukan Pengingat Piutang. Placeholder ini akan bernilai strip (-) untuk member yang tidak memiliki piutang. Lanjutkan?');
-            if (!konfirmasi) return;
+            window.confirmAction({
+                title: 'Perhatian Placeholder Tagihan',
+                message: 'Pesan Anda memuat placeholder tagihan (<code>{total_piutang}</code>, <code>{nomor_faktur}</code>, atau <code>{tanggal_jatuh_tempo}</code>) padahal kategori pesan bukan <strong>Pengingat Piutang</strong>. Placeholder ini akan bernilai strip (-) untuk member yang tidak memiliki piutang. Lanjutkan?',
+                type: 'warning',
+                confirmText: 'Tetap Lanjutkan',
+                cancelText: 'Kembali Edit',
+                onConfirm: () => {
+                    closeWhatsAppEditorModal();
+                    openBulkWhatsAppConfirmModal();
+                }
+            });
+            return;
         }
     }
 

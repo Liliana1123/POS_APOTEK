@@ -590,30 +590,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnReset) {
         btnReset.addEventListener('click', (e) => {
             e.preventDefault();
-            const konfirmasi = confirm('Apakah Anda yakin ingin mengosongkan seluruh kolom form pengaturan ini?');
-            if (konfirmasi) {
-                document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
-                    el.value = '';
-                    el.dispatchEvent(new Event('input'));
-                });
+            window.confirmAction({
+                title: 'Kosongkan Form Pengaturan',
+                message: 'Apakah Anda yakin ingin mengosongkan seluruh kolom form pengaturan ini? Perubahan belum tersimpan sampai Anda menekan tombol Simpan.',
+                type: 'warning',
+                confirmText: 'Ya, Kosongkan Form',
+                cancelText: 'Batal',
+                onConfirm: () => {
+                    document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
+                        el.value = '';
+                        el.dispatchEvent(new Event('input'));
+                    });
 
-                if (inputLogo) inputLogo.value = '';
+                    if (inputLogo) inputLogo.value = '';
 
-                if (prevLogoImg) {
-                    prevLogoImg.src = '';
-                    prevLogoImg.classList.add('hidden');
+                    if (prevLogoImg) {
+                        prevLogoImg.src = '';
+                        prevLogoImg.classList.add('hidden');
+                    }
+                    if (prevLogoPlaceholder) prevLogoPlaceholder.classList.remove('hidden');
+                    if (formLogoPreview) {
+                        formLogoPreview.src = '';
+                        formLogoPreview.classList.add('hidden');
+                    }
+                    if (formLogoPlaceholder) formLogoPlaceholder.classList.remove('hidden');
+                    if (receiptLogo) {
+                        receiptLogo.src = '';
+                        receiptLogo.classList.add('hidden');
+                    }
                 }
-                if (prevLogoPlaceholder) prevLogoPlaceholder.classList.remove('hidden');
-                if (formLogoPreview) {
-                    formLogoPreview.src = '';
-                    formLogoPreview.classList.add('hidden');
-                }
-                if (formLogoPlaceholder) formLogoPlaceholder.classList.remove('hidden');
-                if (receiptLogo) {
-                    receiptLogo.src = '';
-                    receiptLogo.classList.add('hidden');
-                }
-            }
+            });
         });
     }
 });

@@ -234,14 +234,6 @@ function toggleModalCakupanFields(cakupanVal) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Confirmation on toggle promo status
-    document.querySelectorAll('.toggle-promo-form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            if (!confirm('Yakin ingin mengubah status keaktifan promo ini?')) {
-                e.preventDefault();
-            }
-        });
-    });
 
     // Reset cakupan view when Create button clicked
     const btnTambah = document.getElementById('btn-tambah-promo');

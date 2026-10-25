@@ -176,9 +176,14 @@
         <span class="text-xs text-gray-500">Perubahan izin akses langsung aktif seketika setelah disimpan.</span>
         
         <div class="flex items-center gap-3">
-            <button type="submit"
-                    formaction="{{ route('permission.reset') }}"
-                    onclick="return confirm('Reset semua izin akses ke default sistem? Tindakan ini menimpa pengaturan saat ini.')"
+            <button type="button"
+                    data-confirm-action="{{ route('permission.reset') }}"
+                    data-confirm-title="Reset Izin Akses ke Default"
+                    data-confirm-message="Apakah Anda yakin ingin mereset seluruh izin akses ke default sistem? Pengaturan menu, hak akses CRUD, dan visibilitas widget dashboard saat ini akan ditimpa dengan konfigurasi bawaan."
+                    data-confirm-detail="Semua Role (Superadmin, Admin, Apoteker, Kasir, Gudang)"
+                    data-confirm-detail-label="Cakupan:"
+                    data-confirm-type="warning"
+                    data-confirm-btn-text="Ya, Reset ke Default"
                     class="btn-secondary">
                 Reset ke Default
             </button>

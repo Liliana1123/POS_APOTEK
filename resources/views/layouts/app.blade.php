@@ -367,6 +367,9 @@
     <!-- Global Reusable Delete Confirmation Modal -->
     <x-modal-confirm-delete />
 
+    <!-- Global Reusable Action Confirmation Modal -->
+    <x-modal-confirm-action />
+
     {{-- Global Quick Search Modal (Ctrl + K) --}}
     <x-global-quick-search />
 
