@@ -31,7 +31,19 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">Pilih File CSV <span class="text-red-500">*</span></label>
-                    <input type="file" name="file" accept=".csv,text/csv,text/plain" required class="block w-full text-xs text-gray-700 file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-200 rounded-lg p-1.5 bg-gray-50/50">
+                    <div class="dropzone-modern p-5 text-center cursor-pointer group" onclick="document.getElementById('input-file-import-csv').click()">
+                        <input type="file" id="input-file-import-csv" name="file" accept=".csv,text/csv,text/plain" required class="sr-only">
+                        <div class="dropzone-default-content flex flex-col items-center justify-center space-y-1.5 transition-opacity">
+                            <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+                            </div>
+                            <div class="text-xs font-semibold text-slate-700">
+                                <span class="text-blue-600 underline">Klik untuk unggah</span> atau seret file ke sini
+                            </div>
+                            <p class="text-[11px] text-slate-400">Format .csv (Maks. 10 MB)</p>
+                        </div>
+                        <div class="dropzone-preview hidden mt-2 text-xs font-bold text-emerald-700 bg-emerald-50 py-1 px-2.5 rounded-lg border border-emerald-200 inline-block"></div>
+                    </div>
                 </div>
 
                 <div class="pt-1">

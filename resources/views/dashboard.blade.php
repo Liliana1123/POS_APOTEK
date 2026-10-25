@@ -70,6 +70,7 @@
                 variant="kotor"
                 icon="heroicon-o-chart-bar"
                 icon-class="bg-blue-50 text-blue-600"
+                :trend="$deltaOmzetKotor !== null ? ($deltaOmzetKotor >= 0 ? '+' : '') . $deltaOmzetKotor . '%' : null"
             />
         @endif
 
@@ -81,6 +82,7 @@
                 variant="diskon"
                 icon="heroicon-o-tag"
                 icon-class="bg-purple-50 text-purple-600"
+                :trend="$deltaTotalDiskon !== null ? ($deltaTotalDiskon >= 0 ? '+' : '') . $deltaTotalDiskon . '%' : null"
             />
         @endif
 
@@ -92,6 +94,7 @@
                 variant="bersih"
                 icon="heroicon-o-banknotes"
                 icon-class="bg-emerald-50 text-emerald-600"
+                :trend="$deltaOmzetBersih !== null ? ($deltaOmzetBersih >= 0 ? '+' : '') . $deltaOmzetBersih . '%' : null"
             />
         @endif
 
@@ -103,6 +106,7 @@
                 variant="member"
                 icon="heroicon-o-user-group"
                 icon-class="bg-amber-50 text-amber-600"
+                :trend="$deltaMember !== null ? ($deltaMember >= 0 ? '+' : '') . $deltaMember . '%' : null"
             />
         @endif
 

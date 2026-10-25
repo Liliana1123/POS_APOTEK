@@ -115,6 +115,7 @@
                         value="{{ old('jumlah') }}"
                         class="form-input font-mono text-right"
                         placeholder="0"
+                        data-terbilang="true"
                         required
                     >
                     <span class="text-[11px] text-gray-400 mt-1 block">Maks. @rupiah($penerimaan->sisaTagihan())</span>

@@ -2768,3 +2768,83 @@ body {
         color: #333 !important;
     }
 }
+
+/* ==========================================================================
+   Modern Drag-and-Drop Area with Marching Ants Border Animation
+   ========================================================================== */
+.dropzone-modern {
+    position: relative;
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.875rem;
+    background-color: #f8fafc;
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.dropzone-modern:hover,
+.dropzone-modern.is-dragover {
+    border-color: #3b82f6;
+    background-color: rgba(239, 246, 255, 0.7);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.dropzone-modern.is-dragover {
+    background-image: repeating-linear-gradient(0deg, #2563eb, #2563eb 8px, transparent 8px, transparent 16px),
+                      repeating-linear-gradient(90deg, #2563eb, #2563eb 8px, transparent 8px, transparent 16px),
+                      repeating-linear-gradient(180deg, #2563eb, #2563eb 8px, transparent 8px, transparent 16px),
+                      repeating-linear-gradient(270deg, #2563eb, #2563eb 8px, transparent 8px, transparent 16px);
+    background-size: 2px 100%, 100% 2px, 2px 100%, 100% 2px;
+    background-position: 0 0, 0 0, 100% 0, 0 100%;
+    background-repeat: no-repeat;
+    border-color: transparent;
+    animation: marchingAnts 1.2s linear infinite;
+}
+
+@keyframes marchingAnts {
+    0% {
+        background-position: 0 0, 0 0, 100% 100%, 0 100%;
+    }
+    100% {
+        background-position: 0 -32px, 32px 0, 100% 32px, -32px 100%;
+    }
+}
+
+/* ==========================================================================
+   Metric Trend Micro-Badges & Interactive Jumping Arrow (Pilar 1 Item 5)
+   ========================================================================== */
+.kpi-trend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpi-trend-pill.trend-up {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.kpi-trend-pill.trend-down {
+    background-color: #fef2f2;
+    color: #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.kpi-trend-icon {
+    display: inline-block;
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpi-card:hover .kpi-trend-pill.trend-up .kpi-trend-icon {
+    transform: translateY(-2.5px);
+}
+
+.kpi-card:hover .kpi-trend-pill.trend-down .kpi-trend-icon {
+    transform: translateY(2.5px);
+}

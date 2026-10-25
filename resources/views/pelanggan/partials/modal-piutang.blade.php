@@ -193,7 +193,8 @@
                                     min="0.01"
                                     step="0.01"
                                     class="block w-full min-w-0 rounded-lg border-gray-300 px-1 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Masukkan jumlah pembayaran">
+                                    placeholder="Masukkan jumlah pembayaran"
+                                    data-terbilang="true">
                             </div>
                         </div>
 

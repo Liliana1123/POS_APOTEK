@@ -5,6 +5,8 @@
     'variant' => null,
     'icon' => null,
     'iconClass' => null,
+    'trend' => null,
+    'trendType' => null,
 ])
 
 @php
@@ -32,6 +34,8 @@
     $hasPrefixRp = str_starts_with($rawString, 'Rp');
     $numericOnly = preg_replace('/[^0-9]/', '', $rawString);
     $hasCountUp = is_numeric($numericOnly) && (float)$numericOnly > 0;
+
+    $isTrendUp = $trendType === 'up' || ($trend && (str_starts_with($trend, '+') || !str_starts_with($trend, '-')));
 @endphp
 
 <div {{ $attributes->merge(['class' => "kpi-card $variantClass flex items-center justify-between"]) }}>
@@ -39,13 +43,21 @@
         <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
             {{ $title }}
         </span>
-        <div class="text-xl font-black text-gray-900 mt-1 tracking-tight"
-             @if($hasCountUp)
-                 data-countup="true"
-                 data-target="{{ $numericOnly }}"
-                 data-prefix="{{ $hasPrefixRp ? 'Rp ' : '' }}"
-             @endif>
-            {{ $value }}
+        <div class="flex items-baseline gap-2 mt-1">
+            <div class="text-xl font-black text-gray-900 tracking-tight"
+                 @if($hasCountUp)
+                     data-countup="true"
+                     data-target="{{ $numericOnly }}"
+                     data-prefix="{{ $hasPrefixRp ? 'Rp ' : '' }}"
+                 @endif>
+                {{ $value }}
+            </div>
+            @if($trend)
+                <span class="kpi-trend-pill {{ $isTrendUp ? 'trend-up' : 'trend-down' }}" title="Tren performa metrik">
+                    <span class="kpi-trend-icon">{!! $isTrendUp ? '&#8599;' : '&#8600;' !!}</span>
+                    <span>{{ $trend }}</span>
+                </span>
+            @endif
         </div>
         @if($subtitle)
             <span class="text-[11px] text-gray-500 block mt-1">

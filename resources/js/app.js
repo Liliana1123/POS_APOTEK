@@ -24,4 +24,6 @@ import './shared/layout';
 import './shared/universal-loading';
 import './shared/count-up';
 import './shared/copy-to-clipboard';
+import './shared/terbilang';
+import './shared/dropzone';
 

@@ -169,13 +169,24 @@
                 <label for="file_sql" class="form-label block text-xs font-semibold text-gray-700 mb-1.5">
                     File SQL Backup <span class="text-red-500">*</span>
                 </label>
-                <input type="file"
-                       name="file_sql"
-                       id="file_sql"
-                       accept=".sql"
-                       required
-                       class="form-input text-xs sm:text-sm py-2 px-3 w-full border-gray-300 rounded-lg file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                <p class="text-[11px] text-gray-400 mt-1">Format file harus .sql (Maks. 100 MB)</p>
+                <div class="dropzone-modern p-5 text-center cursor-pointer group" onclick="document.getElementById('file_sql').click()">
+                    <input type="file"
+                           name="file_sql"
+                           id="file_sql"
+                           accept=".sql"
+                           required
+                           class="sr-only">
+                    <div class="dropzone-default-content flex flex-col items-center justify-center space-y-1.5 transition-opacity">
+                        <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+                        </div>
+                        <div class="text-xs font-semibold text-slate-700">
+                            <span class="text-blue-600 underline">Pilih file SQL</span> atau seret file ke sini
+                        </div>
+                        <p class="text-[11px] text-gray-400">Format file harus .sql (Maks. 100 MB)</p>
+                    </div>
+                    <div class="dropzone-preview hidden mt-2 text-xs font-bold text-emerald-700 bg-emerald-50 py-1 px-2.5 rounded-lg border border-emerald-200 inline-block"></div>
+                </div>
             </div>
 
             <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3 mb-5 text-xs text-amber-800 leading-relaxed flex items-start gap-2">

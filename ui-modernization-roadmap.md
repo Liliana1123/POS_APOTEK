@@ -64,8 +64,9 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
 * **Saran Peningkatan:**
   Batang diagram penjualan tumbuh bertahap dari kiri ke kanan (*staggered bar growth*), dipadukan dengan tooltip hover bergaya *frosted glass* (latar hitam transparan blur dengan teks monospaced kontras tinggi).
 
-### 5. Metric Trend Micro-Badges Dinamis
+### 5. Metric Trend Micro-Badges Dinamis `[SELESAI]`
 * **Prioritas:** ⭐⭐ (Sedang) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan di `kpi-card.blade.php` dengan badge pill tren hijau/merah dinamis, kurva pegas, dan ikon panah melompat halus (`translate-y`) saat kartu disorot kursor, terintegrasi langsung dengan delta perbandingan periode di `DashboardController`.
 * **Kondisi Saat Ini:** Perbandingan omset hari ini vs kemarin hanya angka teks biasa.
 * **Saran Peningkatan:**
   Menambahkan pill badge persentase kecil (+12.4% atau -3.2%) dengan panah indikator yang sedikit melompat halus saat kartu disorot mouse.
@@ -151,14 +152,16 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
 * **Saran Peningkatan:**
   Ikon mata membuka dan menutup dengan transisi rotasi halus 180 derajat saat disorot/diklik.
 
-### 16. Drag-and-Drop Area dengan Animasi Dash Border
+### 16. Drag-and-Drop Area dengan Animasi Dash Border `[SELESAI]`
 * **Prioritas:** ⭐ (Rendah) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan di `app.css` dengan keyframe `@keyframes marchingAnts`, modul `dropzone.js`, dan dropzone responsif pada modal import CSV barang dan modal restore SQL database lengkap dengan live file name preview.
 * **Kondisi Saat Ini:** Kotak unggah file logo apotek atau file restore database berbentuk garis putus-putus statis.
 * **Saran Peningkatan:**
   Saat file ditarik (*drag over*) ke atas kotak, garis putus-putus berputar lambat mengelilingi kotak (*rotating marching ants border animation*).
 
-### 17. Live Currency Auto-Format dengan Terbilang Real-Time
+### 17. Live Currency Auto-Format dengan Terbilang Real-Time `[SELESAI]`
 * **Prioritas:** ⭐⭐ (Sedang) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan dengan engine `terbilang.js` dan selector `[data-terbilang="true"]`, otomatis menampilkan micro-card teks terbilang real-time (contoh: *"Lima belas juta rupiah"*) pada input pembayaran penerimaan, modal piutang member, dan biaya operasional.
 * **Kondisi Saat Ini:** Kasir/admin mengetik angka harga/bayar tanpa indikator pengucapan.
 * **Saran Peningkatan:**
   Saat mengetik nominal uang besar (misal penerimaan faktur supplier Rp 15.000.000), di bawah kolom input muncul teks terbilang berjalan: *"Lima belas juta rupiah"*.

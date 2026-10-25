@@ -605,6 +605,7 @@
                         step="any"
                         placeholder="Contoh: 150000"
                         required
+                        data-terbilang="true"
                         class="form-input text-xs pl-9 font-mono font-semibold"
                     >
                 </div>
