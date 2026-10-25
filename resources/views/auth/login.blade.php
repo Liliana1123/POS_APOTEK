@@ -70,10 +70,10 @@
                             <input type="password" name="password" id="password" required
                                 class="form-input h-11 w-full border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 pr-11">
                             <button type="button" id="password-toggle" tabindex="-1"
-                                class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600"
+                                class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600 transition-all duration-200 transform hover:scale-115 active:scale-90 cursor-pointer"
                                 aria-label="Tampilkan password">
-                                <x-heroicon-o-eye class="h-5 w-5 show-icon" />
-                                <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden" />
+                                <x-heroicon-o-eye class="h-5 w-5 show-icon transition-transform duration-200" />
+                                <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden transition-transform duration-200" />
                             </button>
                         </div>
                     </div>
@@ -110,8 +110,12 @@
             btn.addEventListener('click', () => {
                 const isText = input.type === 'text';
                 input.type = isText ? 'password' : 'text';
-                btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
-                btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+                btn.style.transform = 'scale(0.88) rotate(180deg)';
+                setTimeout(() => {
+                    btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
+                    btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+                    btn.style.transform = '';
+                }, 100);
                 clearTimeout(timer);
                 if (!isText) {
                     timer = setTimeout(() => {

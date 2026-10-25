@@ -370,6 +370,9 @@
     {{-- Global Quick Search Modal (Ctrl + K) --}}
     <x-global-quick-search />
 
+    {{-- Global Keyboard Shortcuts Guide Modal (?) --}}
+    <x-keyboard-shortcut-modal />
+
     @stack('scripts')
 </body>
 

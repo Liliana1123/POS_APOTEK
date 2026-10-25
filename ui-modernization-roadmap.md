@@ -144,8 +144,9 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
 * **Saran Peningkatan:**
   Jika user lupa mengisi field wajib atau format email salah: input bergetar horizontal halus selama 0,3 detik (*gentle horizontal shake animation*) untuk memanggil perhatian pengguna secara ergonomis.
 
-### 15. Smooth Password Visibility Toggle
+### 15. Smooth Password Visibility Toggle `[SELESAI]`
 * **Prioritas:** ⭐ (Rendah) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan di `login.blade.php` dengan transisi rotasi 180° berdaya pegas dan hover scaling.
 * **Kondisi Saat Ini:** Ikon mata ganti seketika.
 * **Saran Peningkatan:**
   Ikon mata membuka dan menutup dengan transisi rotasi halus 180 derajat saat disorot/diklik.
@@ -180,21 +181,24 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
 * **Saran Peningkatan:**
   Submenu bergulir membuka ke bawah dengan transisi ketinggian halus (*smooth height expansion*) dan panah panji berputar lembut 90 derajat.
 
-### 20. Enhanced Modal Backdrop Blur & 3D Scale In
+### 20. Enhanced Modal Backdrop Blur & 3D Scale In `[SELESAI]`
 * **Prioritas:** ⭐⭐ (Sedang) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan di `app.css` (`backdrop-filter: blur(5px)` dan `@keyframes modalScaleIn`) berlaku otomatis untuk semua modal sistem.
 * **Kondisi Saat Ini:** Modal muncul dengan skala zoom standar.
 * **Saran Peningkatan:**
   Latar belakang menggunakan efek blur kabut yang lebih dalam (`backdrop-blur-md bg-slate-950/60`), dan kartu modal masuk dari skala 0.96 ke 1.0 dengan pantulan pegas halus.
 
-### 21. Toast Notification dengan Spring Bounce & Countdown Bar
+### 21. Toast Notification dengan Spring Bounce & Countdown Bar `[SELESAI]`
 * **Prioritas:** ⭐⭐⭐ (Tinggi) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan di `toast.blade.php` dengan animasi `@keyframes toastSpringIn` dan garis timer bar menyusut 4 detik.
 * **Kondisi Saat Ini:** Toast notifikasi muncul dan hilang secara standar.
 * **Saran Peningkatan:**
   - Toast jatuh dari atas layar dengan efek membal lembut (*soft spring entrance*).
   - Di tepi paling bawah toast terdapat garis tipis yang menyusut perlahan selama 4 detik (*timer progress countdown*), memberi tahu pengguna kapan notifikasi akan tertutup otomatis.
 
-### 22. Interactive Keyboard Shortcut Guide (`?` or `Ctrl + /`)
+### 22. Interactive Keyboard Shortcut Guide (`?` or `Ctrl + /`) `[SELESAI]`
 * **Prioritas:** ⭐ (Rendah) | **Kompleksitas:** Rendah
+* **Status:** Selesai diimplementasikan dengan komponen `<x-keyboard-shortcut-modal>` di layout utama, deteksi shortcut tombol `?` dan `Ctrl + /`, serta kartu tuts `<kbd>` fisik.
 * **Kondisi Saat Ini:** Pengguna tidak tahu shortcut apa saja yang tersedia (kecuali Ctrl+K).
 * **Saran Peningkatan:**
   Menekan tanda tanya (`?`) membuka modal panduan shortcut elegan bergaya kartu tuts keyboard Mac/Windows.
