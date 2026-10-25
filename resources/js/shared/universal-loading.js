@@ -114,9 +114,23 @@
         btn.disabled = true;
         btn.classList.add('opacity-80', 'cursor-not-allowed', 'pointer-events-none');
 
+        function getSmartLoadingText(btn, customText = null) {
+            if (customText) return customText;
+            const attrText = btn.getAttribute('data-loading-text');
+            if (attrText) return attrText;
+
+            const original = (btn.textContent || '').trim().toLowerCase();
+            if (original.includes('hapus') || btn.classList.contains('btn-destructive')) return 'Menghapus...';
+            if (original.includes('simpan')) return 'Menyimpan...';
+            if (original.includes('reset')) return 'Mereset...';
+            if (original.includes('unggah') || original.includes('upload')) return 'Mengunggah...';
+            if (original.includes('buat') || original.includes('tambah')) return 'Membuat...';
+            if (original.includes('restore') || original.includes('pulihkan')) return 'Memulihkan...';
+            return 'Memproses...';
+        }
+
         const isDelete = btn.classList.contains('btn-destructive') || btn.classList.contains('bg-red-600');
-        const defaultText = isDelete ? 'Menghapus...' : 'Menyimpan...';
-        const loadingText = customText || btn.getAttribute('data-loading-text') || defaultText;
+        const loadingText = getSmartLoadingText(btn, customText);
 
         btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0 mr-2 align-middle"></span><span class="align-middle">' + loadingText + '</span>';
     }
@@ -152,11 +166,24 @@
             }
         });
 
-        // Intercept form submission biasa (hanya untuk aksi di luar modal)
+        // Intercept form submission biasa (hanya untuk form mutasi data: POST / PUT / PATCH / DELETE)
         document.addEventListener('submit', function (e) {
             const form = e.target;
+            const method = (form.getAttribute('method') || 'GET').toUpperCase();
 
-            // Lewati jika form berada di dalam modal (modal-confirm atau modal-form)
+            // 1. Lewati form GET (Pencarian, Filter, Card-Filter, dll.)
+            // Form pencarian tidak boleh diubah menjadi "Menyimpan..."
+            if (
+                method === 'GET' ||
+                form.hasAttribute('data-live-filter') ||
+                form.closest('[data-live-filter]') ||
+                form.classList.contains('card-filter') ||
+                form.closest('.filter-card-web')
+            ) {
+                return;
+            }
+
+            // 2. Lewati jika form berada di dalam modal (modal-confirm atau modal-form)
             // Modal sudah memiliki progress bar terpadu sendiri pada kartu modalnya
             if (
                 form.id === 'modal-confirm-form' ||
@@ -168,7 +195,7 @@
                 return;
             }
 
-            // Lewati jika form meminta no-loading
+            // 3. Lewati jika form meminta no-loading
             if (form.hasAttribute('data-no-loading')) return;
 
             // Cari tombol submit
@@ -180,8 +207,16 @@
                 lockSubmitButton(submitBtn);
             }
 
-            // Nyalakan top progress bar hanya untuk form halaman biasa
+            // Nyalakan top progress bar
             topProgress.start();
+
+            // 4. Pengaman jika ada script lain yang memanggil e.preventDefault() (AJAX atau validasi gagal)
+            setTimeout(function () {
+                if (e.defaultPrevented) {
+                    if (submitBtn) unlockSubmitButton(submitBtn);
+                    topProgress.done();
+                }
+            }, 0);
         });
 
         // Tangkap perpindahan halaman via link internal (GET navigation)
