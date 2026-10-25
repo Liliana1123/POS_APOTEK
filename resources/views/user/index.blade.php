@@ -72,6 +72,7 @@
                                         data-confirm-detail-label="User:"
                                         data-confirm-type="{{ $user->aktif ? 'warning' : 'info' }}"
                                         data-confirm-btn-text="{{ $user->aktif ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan' }}"
+                                        data-confirm-loading-text="{{ $user->aktif ? 'Menonaktifkan...' : 'Mengaktifkan...' }}"
                                         class="btn-secondary !p-1.5 {{ $user->aktif ? 'hover:bg-red-50 hover:border-red-300' : 'hover:bg-green-50 hover:border-green-300' }} transition-colors"
                                         style="color: {{ $user->aktif ? '#DC2626' : '#16A34A' }};"
                                         title="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"

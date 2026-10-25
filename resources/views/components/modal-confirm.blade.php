@@ -14,9 +14,14 @@
     aria-modal="true"
     aria-labelledby="{{ $id }}-title">
 
-    <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 text-center transform transition-all duration-200 scale-95 opacity-0 modal-confirm-content">
+    <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full p-6 text-center transform transition-all duration-200 scale-95 opacity-0 modal-confirm-content relative overflow-hidden">
+        <!-- Top Indeterminate Progress Bar (Aktif saat loading) -->
+        <div id="{{ $id }}-progress-bar" class="absolute top-0 left-0 right-0 h-1 hidden overflow-hidden bg-slate-100">
+            <div id="{{ $id }}-progress-indicator" class="h-full w-1/2 rounded-full modal-progress-running bg-amber-500"></div>
+        </div>
+
         <!-- Icon Container dengan varian tema -->
-        <div id="{{ $id }}-icon-wrapper" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 ring-8 transition-colors bg-amber-50 text-amber-600 ring-amber-50/50">
+        <div id="{{ $id }}-icon-wrapper" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 ring-8 transition-all bg-amber-50 text-amber-600 ring-amber-50/50">
             <div id="{{ $id }}-icon-trash" class="modal-confirm-icon hidden">
                 <x-heroicon-o-trash class="w-7 h-7" />
             </div>
@@ -34,20 +39,23 @@
             </div>
         </div>
 
-        <!-- Judul Dialog -->
-        <h3 id="{{ $id }}-title" class="text-lg font-bold text-gray-900 mb-2">
-            {{ $title }}
-        </h3>
+        <!-- Konten Teks Modal -->
+        <div id="{{ $id }}-body-content" class="transition-opacity duration-200">
+            <!-- Judul Dialog -->
+            <h3 id="{{ $id }}-title" class="text-lg font-bold text-gray-900 mb-2">
+                {{ $title }}
+            </h3>
 
-        <!-- Pesan Deskripsi -->
-        <p id="{{ $id }}-message" class="text-sm text-gray-500 mb-4 leading-relaxed">
-            {{ $defaultMessage }}
-        </p>
+            <!-- Pesan Deskripsi -->
+            <p id="{{ $id }}-message" class="text-sm text-gray-500 mb-4 leading-relaxed">
+                {{ $defaultMessage }}
+            </p>
 
-        <!-- Kotak Detail Opsional (Nama item yang dihapus atau catatan peringatan) -->
-        <div id="{{ $id }}-detail-box" class="hidden mb-5 p-3 rounded-xl text-xs font-medium border text-gray-700 break-words flex items-center gap-2 justify-center bg-gray-50 border-gray-200">
-            <span id="{{ $id }}-detail-label" class="shrink-0 text-gray-500">Info:</span>
-            <span id="{{ $id }}-detail-text" class="font-bold text-gray-900 truncate max-w-[280px]"></span>
+            <!-- Kotak Detail Opsional (Nama item yang dihapus atau catatan peringatan) -->
+            <div id="{{ $id }}-detail-box" class="hidden mb-5 p-3 rounded-xl text-xs font-medium border text-gray-700 break-words flex items-center gap-2 justify-center bg-gray-50 border-gray-200">
+                <span id="{{ $id }}-detail-label" class="shrink-0 text-gray-500">Info:</span>
+                <span id="{{ $id }}-detail-text" class="font-bold text-gray-900 truncate max-w-[280px]"></span>
+            </div>
         </div>
 
         <!-- Form Aksi Konfirmasi Terpadu -->
@@ -58,7 +66,7 @@
             <div class="flex items-center justify-center gap-3">
                 <button type="button"
                     id="{{ $id }}-btn-cancel"
-                    class="btn-secondary w-1/2 py-2.5 px-4 text-xs sm:text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-100 transition-colors">
+                    class="btn-secondary w-1/2 py-2.5 px-4 text-xs sm:text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-100 transition-all">
                     {{ $cancelText }}
                 </button>
                 <button type="submit"
@@ -71,37 +79,56 @@
     </div>
 </div>
 
+<style>
+    @keyframes modalProgressSlide {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(50%); }
+        100% { transform: translateX(200%); }
+    }
+    .modal-progress-running {
+        animation: modalProgressSlide 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+</style>
+
 <script>
     (function () {
         const modalId = '{{ $id }}';
-        let modalEl, contentEl, formEl, titleEl, messageEl, detailBoxEl, detailLabelEl, detailTextEl;
+        let modalEl, contentEl, formEl, titleEl, messageEl, bodyContentEl, detailBoxEl, detailLabelEl, detailTextEl;
         let iconWrapperEl, btnCancelEl, btnConfirmEl, btnConfirmTextEl, methodInputEl;
+        let progressBarEl, progressIndicatorEl;
         let currentCallback = null;
+        let currentConfirmText = '{{ $confirmText }}';
+        let currentLoadingText = '';
+        let isLoading = false;
 
         const themeStyles = {
             warning: {
                 wrapper: ['bg-amber-50', 'text-amber-600', 'ring-amber-50/50'],
                 btn: ['bg-amber-600', 'hover:bg-amber-700', 'shadow-amber-500/20', 'focus:ring-amber-500', 'text-white'],
                 detailBox: ['bg-amber-50/60', 'border-amber-200'],
-                detailLabel: ['text-amber-700']
+                detailLabel: ['text-amber-700'],
+                progressBar: ['bg-amber-500']
             },
             danger: {
                 wrapper: ['bg-red-50', 'text-red-600', 'ring-red-50/50'],
                 btn: ['bg-red-600', 'hover:bg-red-700', 'shadow-red-500/20', 'focus:ring-red-500', 'text-white'],
                 detailBox: ['bg-red-50/50', 'border-red-100'],
-                detailLabel: ['text-red-600']
+                detailLabel: ['text-red-600'],
+                progressBar: ['bg-red-600']
             },
             info: {
                 wrapper: ['bg-blue-50', 'text-blue-600', 'ring-blue-50/50'],
                 btn: ['bg-blue-600', 'hover:bg-blue-700', 'shadow-blue-500/20', 'focus:ring-blue-500', 'text-white'],
                 detailBox: ['bg-blue-50/60', 'border-blue-200'],
-                detailLabel: ['text-blue-700']
+                detailLabel: ['text-blue-700'],
+                progressBar: ['bg-blue-600']
             },
             success: {
                 wrapper: ['bg-emerald-50', 'text-emerald-600', 'ring-emerald-50/50'],
                 btn: ['bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-500/20', 'focus:ring-emerald-500', 'text-white'],
                 detailBox: ['bg-emerald-50/60', 'border-emerald-200'],
-                detailLabel: ['text-emerald-700']
+                detailLabel: ['text-emerald-700'],
+                progressBar: ['bg-emerald-600']
             }
         };
 
@@ -112,6 +139,7 @@
             formEl = document.getElementById(modalId + '-form');
             titleEl = document.getElementById(modalId + '-title');
             messageEl = document.getElementById(modalId + '-message');
+            bodyContentEl = document.getElementById(modalId + '-body-content');
             detailBoxEl = document.getElementById(modalId + '-detail-box');
             detailLabelEl = document.getElementById(modalId + '-detail-label');
             detailTextEl = document.getElementById(modalId + '-detail-text');
@@ -120,6 +148,8 @@
             btnConfirmEl = document.getElementById(modalId + '-btn-confirm');
             btnConfirmTextEl = document.getElementById(modalId + '-btn-confirm-text');
             methodInputEl = document.getElementById(modalId + '-method');
+            progressBarEl = document.getElementById(modalId + '-progress-bar');
+            progressIndicatorEl = document.getElementById(modalId + '-progress-indicator');
             return true;
         }
 
@@ -136,7 +166,7 @@
 
             // Reset class wrapper
             if (iconWrapperEl) {
-                iconWrapperEl.className = 'mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 ring-8 transition-colors ' +
+                iconWrapperEl.className = 'mx-auto flex items-center justify-center h-14 w-14 rounded-full mb-4 ring-8 transition-all ' +
                     themeStyles[targetType].wrapper.join(' ');
             }
 
@@ -155,6 +185,79 @@
             if (detailLabelEl) {
                 detailLabelEl.className = 'shrink-0 font-semibold ' + themeStyles[targetType].detailLabel.join(' ');
             }
+
+            // Reset progress bar class
+            if (progressIndicatorEl) {
+                progressIndicatorEl.className = 'h-full w-1/2 rounded-full modal-progress-running ' + themeStyles[targetType].progressBar.join(' ');
+            }
+        }
+
+        function startLoading(customText = null) {
+            isLoading = true;
+
+            // 1. Kunci tombol Batal (disable + fade)
+            if (btnCancelEl) {
+                btnCancelEl.disabled = true;
+                btnCancelEl.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+            }
+
+            // 2. Kunci tombol Konfirmasi, tampilkan spinner + teks kontekstual
+            if (btnConfirmEl) {
+                btnConfirmEl.disabled = true;
+                btnConfirmEl.classList.add('opacity-80', 'cursor-not-allowed');
+                const isDelete = (methodInputEl && methodInputEl.value === 'DELETE');
+                const defaultText = isDelete ? 'Menghapus...' : 'Memproses...';
+                const text = customText || currentLoadingText || defaultText;
+                btnConfirmEl.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>' + text + '</span>';
+            }
+
+            // 3. Tampilkan top progress bar
+            if (progressBarEl) {
+                progressBarEl.classList.remove('hidden');
+            }
+
+            // 4. Denyut halus pada icon
+            if (iconWrapperEl) {
+                iconWrapperEl.classList.add('animate-pulse');
+            }
+
+            // 5. Redupkan konten teks agar fokus ke proses
+            if (bodyContentEl) {
+                bodyContentEl.classList.add('opacity-50');
+            }
+        }
+
+        function stopLoading() {
+            isLoading = false;
+
+            // 1. Aktifkan kembali tombol Batal
+            if (btnCancelEl) {
+                btnCancelEl.disabled = false;
+                btnCancelEl.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+            }
+
+            // 2. Aktifkan kembali tombol Konfirmasi
+            if (btnConfirmEl) {
+                btnConfirmEl.disabled = false;
+                btnConfirmEl.classList.remove('opacity-80', 'cursor-not-allowed');
+                btnConfirmEl.innerHTML = '<span id="' + modalId + '-btn-confirm-text">' + currentConfirmText + '</span>';
+                btnConfirmTextEl = document.getElementById(modalId + '-btn-confirm-text');
+            }
+
+            // 3. Sembunyikan top progress bar
+            if (progressBarEl) {
+                progressBarEl.classList.add('hidden');
+            }
+
+            // 4. Hentikan denyut icon
+            if (iconWrapperEl) {
+                iconWrapperEl.classList.remove('animate-pulse');
+            }
+
+            // 5. Kembalikan opasitas konten
+            if (bodyContentEl) {
+                bodyContentEl.classList.remove('opacity-50');
+            }
         }
 
         /**
@@ -162,6 +265,9 @@
          */
         window.confirmAction = function (options = {}) {
             if (!initElements()) return;
+
+            // Pastikan state loading sebelumnya bersih
+            stopLoading();
 
             const config = {
                 title: options.title || '{{ $title }}',
@@ -171,6 +277,7 @@
                 type: options.type || '{{ $type }}',
                 icon: options.icon || null,
                 confirmText: options.confirmText || '{{ $confirmText }}',
+                loadingText: options.loadingText || '',
                 cancelText: options.cancelText || '{{ $cancelText }}',
                 action: options.action || '',
                 formId: options.formId || '',
@@ -179,6 +286,8 @@
             };
 
             currentCallback = config.onConfirm;
+            currentConfirmText = config.confirmText;
+            currentLoadingText = config.loadingText;
 
             // Atur teks
             if (titleEl) titleEl.textContent = config.title;
@@ -228,7 +337,7 @@
         /**
          * Backward-compatible Delete Confirmation
          */
-        window.confirmDelete = function (actionUrl, itemName = '', customMessage = '') {
+        window.confirmDelete = function (actionUrl, itemName = '', customMessage = '', customLoadingText = '') {
             window.confirmAction({
                 action: actionUrl,
                 title: 'Konfirmasi Hapus',
@@ -239,12 +348,15 @@
                 icon: 'trash',
                 method: 'DELETE',
                 confirmText: 'Ya, Hapus Data',
+                loadingText: customLoadingText || 'Menghapus Data...',
                 cancelText: 'Batal'
             });
         };
 
         window.closeConfirmModal = function () {
             if (!initElements()) return;
+            if (isLoading) return; // Mencegah modal tertutup saat sedang loading
+
             if (contentEl) {
                 contentEl.classList.remove('scale-100', 'opacity-100');
                 contentEl.classList.add('scale-95', 'opacity-0');
@@ -253,32 +365,33 @@
             setTimeout(() => {
                 modalEl.classList.add('hidden');
                 currentCallback = null;
-                if (btnConfirmEl) {
-                    btnConfirmEl.disabled = false;
-                    btnConfirmEl.classList.remove('opacity-75', 'cursor-not-allowed');
-                    if (btnConfirmTextEl) btnConfirmTextEl.textContent = '{{ $confirmText }}';
-                }
+                stopLoading();
             }, 200);
         };
 
         // Aliases for backward compatibility
         window.closeDeleteModal = window.closeConfirmModal;
         window.closeActionModal = window.closeConfirmModal;
+        window.resetConfirmLoading = stopLoading;
 
         document.addEventListener('DOMContentLoaded', function () {
             initElements();
 
             if (btnCancelEl) {
-                btnCancelEl.addEventListener('click', window.closeConfirmModal);
+                btnCancelEl.addEventListener('click', function () {
+                    if (!isLoading) window.closeConfirmModal();
+                });
             }
 
             if (formEl) {
                 formEl.addEventListener('submit', function (e) {
+                    // Mulai animasi loading penuh & kunci interaksi
+                    startLoading();
+
                     // Jika ada custom JavaScript callback
                     if (currentCallback) {
                         e.preventDefault();
                         const cb = currentCallback;
-                        window.closeConfirmModal();
                         cb();
                         return;
                     }
@@ -292,7 +405,6 @@
                         e.preventDefault();
                         const extForm = document.querySelector(targetFormId);
                         if (extForm) {
-                            window.closeConfirmModal();
                             extForm.submit();
                         }
                         return;
@@ -305,29 +417,22 @@
                         return;
                     }
 
-                    // Form modal submit (POST/PATCH/DELETE)
-                    if (btnConfirmEl) {
-                        btnConfirmEl.disabled = true;
-                        btnConfirmEl.classList.add('opacity-75', 'cursor-not-allowed');
-                        const isDelete = (methodInputEl && methodInputEl.value === 'DELETE');
-                        const loadingText = isDelete ? 'Menghapus...' : 'Memproses...';
-                        btnConfirmEl.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>' + loadingText + '</span>';
-                    }
+                    // Form modal submit (POST/PATCH/DELETE) berjalan otomatis secara default
                 });
             }
 
-            // Tutup jika klik backdrop
+            // Tutup jika klik backdrop (Hanya jika TIDAK sedang loading)
             if (modalEl) {
                 modalEl.addEventListener('click', function (e) {
-                    if (e.target === modalEl) {
+                    if (e.target === modalEl && !isLoading) {
                         window.closeConfirmModal();
                     }
                 });
             }
 
-            // Tutup jika tekan tombol Escape
+            // Tutup jika tekan tombol Escape (Hanya jika TIDAK sedang loading)
             document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && modalEl && !modalEl.classList.contains('hidden')) {
+                if (e.key === 'Escape' && modalEl && !modalEl.classList.contains('hidden') && !isLoading) {
                     window.closeConfirmModal();
                 }
             });
@@ -340,8 +445,9 @@
                     const actionUrl = trigger.getAttribute('data-confirm-delete') || trigger.getAttribute('href') || trigger.getAttribute('data-url');
                     const itemName = trigger.getAttribute('data-item-name') || '';
                     const message = trigger.getAttribute('data-confirm-message') || '';
+                    const loadingText = trigger.getAttribute('data-confirm-loading-text') || 'Menghapus Data...';
                     if (actionUrl) {
-                        window.confirmDelete(actionUrl, itemName, message);
+                        window.confirmDelete(actionUrl, itemName, message, loadingText);
                     }
                 }
             });
@@ -359,6 +465,7 @@
                     const detailLabel = trigger.getAttribute('data-confirm-detail-label') || 'Info:';
                     const type = trigger.getAttribute('data-confirm-type') || 'warning';
                     const confirmText = trigger.getAttribute('data-confirm-btn-text') || 'Ya, Lanjutkan';
+                    const loadingText = trigger.getAttribute('data-confirm-loading-text') || '';
                     const cancelText = trigger.getAttribute('data-confirm-cancel-text') || 'Batal';
                     const method = trigger.getAttribute('data-confirm-method') || 'POST';
 
@@ -371,6 +478,7 @@
                         detailLabel: detailLabel,
                         type: type,
                         confirmText: confirmText,
+                        loadingText: loadingText,
                         cancelText: cancelText,
                         method: method
                     });

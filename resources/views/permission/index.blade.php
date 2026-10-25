@@ -184,6 +184,7 @@
                     data-confirm-detail-label="Cakupan:"
                     data-confirm-type="warning"
                     data-confirm-btn-text="Ya, Reset ke Default"
+                    data-confirm-loading-text="Mereset Izin Akses..."
                     class="btn-secondary">
                 Reset ke Default
             </button>
