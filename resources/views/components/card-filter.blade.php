@@ -108,10 +108,20 @@
         }
         abortController = new AbortController();
 
+        function isPaginationElement(el) {
+            if (!el) return false;
+            if (el.matches && el.matches('.pagination-container, [data-pagination-container], nav[aria-label]')) return true;
+            if (el.classList && el.classList.contains('pagination-container')) return true;
+            return false;
+        }
+
         var tableSel = form.dataset.tableTarget || '.table-custom-container';
         var pagSel = form.dataset.paginationTarget || '.pagination-container';
         var tableContainer = document.querySelector(tableSel);
-        var pagContainer = document.querySelector(pagSel) || (tableContainer ? tableContainer.nextElementSibling : null);
+        var pagContainer = document.querySelector(pagSel);
+        if (!pagContainer && tableContainer && isPaginationElement(tableContainer.nextElementSibling)) {
+            pagContainer = tableContainer.nextElementSibling;
+        }
 
         if (tableContainer) {
             tableContainer.classList.add('is-filtering');
@@ -139,7 +149,10 @@
             var doc = parser.parseFromString(html, 'text/html');
 
             var newTable = doc.querySelector(tableSel);
-            var newPag = doc.querySelector(pagSel) || (newTable ? newTable.nextElementSibling : null);
+            var newPag = doc.querySelector(pagSel);
+            if (!newPag && newTable && isPaginationElement(newTable.nextElementSibling)) {
+                newPag = newTable.nextElementSibling;
+            }
 
             if (newTable && tableContainer) {
                 tableContainer.innerHTML = newTable.innerHTML;
@@ -154,7 +167,7 @@
                 }
             });
 
-            if (pagContainer) {
+            if (pagContainer && isPaginationElement(pagContainer)) {
                 if (newPag && newPag.innerHTML.trim() !== '') {
                     pagContainer.innerHTML = newPag.innerHTML;
                     pagContainer.classList.remove('hidden');
@@ -162,6 +175,11 @@
                     pagContainer.innerHTML = '';
                     pagContainer.classList.add('hidden');
                 }
+            } else if (newPag && isPaginationElement(newPag) && newPag.innerHTML.trim() !== '' && tableContainer) {
+                var freshPag = document.createElement('div');
+                freshPag.className = 'mt-4 pagination-container';
+                freshPag.innerHTML = newPag.innerHTML;
+                tableContainer.parentNode.insertBefore(freshPag, tableContainer.nextSibling);
             }
 
             if (pushState !== false) {

@@ -13,39 +13,41 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // MODAL DETAIL PENERIMAAN
     // =========================
-    document.querySelectorAll('.btn-detail-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const url = button.dataset.url;
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.btn-detail-penerimaan');
+        if (!button) return;
 
-            if (modal) modal.classList.remove('hidden');
+        const url = button.dataset.url;
+        if (!url) return;
 
-            if (content) {
-                content.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        Memuat detail...
-                    </div>
-                `;
+        if (modal) modal.classList.remove('hidden');
 
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Gagal mengambil detail penerimaan.');
-                        }
-                        return response.text();
-                    })
-                    .then(html => {
-                        content.innerHTML = html;
-                    })
-                    .catch(error => {
-                        content.innerHTML = `
-                            <div class="text-center py-8 text-red-600">
-                                Gagal memuat detail penerimaan.
-                            </div>
-                        `;
-                        console.error(error);
-                    });
-            }
-        });
+        if (content) {
+            content.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat detail...
+                </div>
+            `;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil detail penerimaan.');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    content.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat detail penerimaan.
+                        </div>
+                    `;
+                    console.error(error);
+                });
+        }
     });
 
     // Edit Penerimaan
@@ -140,36 +142,39 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // MODAL PEMBAYARAN
     // =========================
-    document.querySelectorAll('.btn-payment-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-            if (paymentModal) paymentModal.classList.remove('hidden');
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.btn-payment-penerimaan');
+        if (!button) return;
 
-            if (paymentContent) {
-                paymentContent.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        Memuat pembayaran...
-                    </div>
-                `;
+        const id = button.dataset.id;
+        if (!id) return;
 
-                fetch(`/penerimaan/${id}/payment-form`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Gagal mengambil form pembayaran.');
-                        return response.text();
-                    })
-                    .then(html => {
-                        paymentContent.innerHTML = html;
-                    })
-                    .catch(error => {
-                        paymentContent.innerHTML = `
-                            <div class="text-center py-8 text-red-600">
-                                Gagal memuat form pembayaran.
-                            </div>
-                        `;
-                        console.error(error);
-                    });
-            }
-        });
+        if (paymentModal) paymentModal.classList.remove('hidden');
+
+        if (paymentContent) {
+            paymentContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat pembayaran...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/payment-form`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Gagal mengambil form pembayaran.');
+                    return response.text();
+                })
+                .then(html => {
+                    paymentContent.innerHTML = html;
+                })
+                .catch(error => {
+                    paymentContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            Gagal memuat form pembayaran.
+                        </div>
+                    `;
+                    console.error(error);
+                });
+        }
     });
 
     // =========================
@@ -179,36 +184,39 @@ document.addEventListener('DOMContentLoaded', function () {
     const susulanContent = document.getElementById('susulan-penerimaan-content');
     const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
 
-    document.querySelectorAll('.btn-susulan-penerimaan').forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.dataset.id;
-            if (susulanModal) susulanModal.classList.remove('hidden');
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.btn-susulan-penerimaan');
+        if (!button) return;
 
-            if (susulanContent) {
-                susulanContent.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        Memuat formulir penerimaan susulan...
-                    </div>
-                `;
+        const id = button.dataset.id;
+        if (!id) return;
 
-                fetch(`/penerimaan/${id}/susulan-form`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Gagal memuat formulir penerimaan susulan.');
-                        return response.text();
-                    })
-                    .then(html => {
-                        susulanContent.innerHTML = html;
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        susulanContent.innerHTML = `
-                            <div class="text-center py-8 text-red-600">
-                                ${error.message}
-                            </div>
-                        `;
-                    });
-            }
-        });
+        if (susulanModal) susulanModal.classList.remove('hidden');
+
+        if (susulanContent) {
+            susulanContent.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    Memuat formulir penerimaan susulan...
+                </div>
+            `;
+
+            fetch(`/penerimaan/${id}/susulan-form`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Gagal memuat formulir penerimaan susulan.');
+                    return response.text();
+                })
+                .then(html => {
+                    susulanContent.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error(error);
+                    susulanContent.innerHTML = `
+                        <div class="text-center py-8 text-red-600">
+                            ${error.message}
+                        </div>
+                    `;
+                });
+        }
     });
 
     if (closeSusulanButton) {
@@ -273,10 +281,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                if (content) content.innerHTML = '';
+            }
+        });
+    }
+
     if (btnTutupPayment && paymentModal) {
         btnTutupPayment.addEventListener('click', function () {
             paymentModal.classList.add('hidden');
             if (paymentContent) paymentContent.innerHTML = '';
+        });
+    }
+
+    if (paymentModal) {
+        paymentModal.addEventListener('click', function (e) {
+            if (e.target === paymentModal) {
+                paymentModal.classList.add('hidden');
+                if (paymentContent) paymentContent.innerHTML = '';
+            }
         });
     }
 
