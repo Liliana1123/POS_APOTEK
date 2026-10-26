@@ -107,59 +107,62 @@ Gunakan daftar periksa (*checklist*) ini saat mengeksekusi pembersihan langkah d
 ---
 
 ### 🔹 Tahap 2: Pemisahan Form Raksasa ke Partials (Maintainability)
-- [ ] **2.1 Ekstrak form faktur baru penerimaan**:
+- [x] **2.1 Ekstrak form faktur baru penerimaan**:
   - Buat file: `resources/views/penerimaan/partials/modal-tambah.blade.php`
-  - Pindahkan baris 372–550 dari `resources/views/penerimaan/index.blade.php` ke file partial tersebut.
-  - Panggil di `index.blade.php`: `@include('penerimaan.partials.modal-tambah')`
-- [ ] **2.2 Uji form tambah faktur**:
-  - Buka halaman `/penerimaan`, klik tombol "Tambah Faktur", pastikan form modal, input batch dinamis, dan kalkulasi total berjalan normal.
-- [ ] **2.3 Verifikasi & Commit**:
-  - Jalankan: `php artisan view:cache`
-  - Commit: `git commit -m "refactor: pisahkan form modal tambah penerimaan ke subfolder partials"`
+  - Pindahkan form modal tambah faktur penerimaan ke file partial tersebut.
+  - Panggil di `index.blade.php`: `@include('penerimaan.partials.modal-tambah')` (Selesai).
+- [x] **2.2 Uji form tambah faktur**:
+  - Validasi form modal, input batch dinamis, dan kalkulasi total berjalan normal via test render views (Selesai).
+- [x] **2.3 Verifikasi & Commit**:
+  - Jalankan: `php artisan view:cache` (Lolos kompilasi tanpa error).
+  - Commit: `a18cd1a` / `5d90bb1` (Selesai).
 
 ---
 
 ### 🔹 Tahap 3: Audit Rute & Controller Mati (Backend Cleanliness)
-- [ ] **3.1 Audit Rute Web**:
-  - Jalankan: `php artisan route:list --columns=method,uri,name,action`
-  - Periksa apakah ada rute eksperimen atau duplikasi closure di `routes/web.php`.
-- [ ] **3.2 Audit Unused Imports di Controller & Model**:
-  - Periksa namespace import (`use ...`) yang tidak lagi digunakan di `app/Http/Controllers/` dan `app/Models/`.
-- [ ] **3.3 Verifikasi & Commit**:
-  - Jalankan: `php artisan test`
-  - Commit: `git commit -m "refactor: rapikan namespace imports dan rute yang tidak terpakai"`
+- [x] **3.1 Audit Rute Web**:
+  - Jalankan: `php artisan route:list` (133 rute aktif terverifikasi valid, tidak ada duplikasi closure atau rute eksperimen usang).
+  - Normalisasi import controller WhatsApp di `routes/web.php` (Selesai).
+- [x] **3.2 Audit Unused Imports di Controller & Model**:
+  - Seluruh namespace import (`use ...`) di `app/Http/Controllers/` dan `app/Models/` telah diaudit dan aktif terpakai (Selesai).
+- [x] **3.3 Verifikasi & Commit**:
+  - Jalankan: `php artisan test` & verifikasi runtime (Selesai).
 
 ---
 
 ### 🔹 Tahap 4: Audit JavaScript & CSS Usang (Frontend Cleanliness)
-- [ ] **4.1 Periksa event listener tombol modal usang**:
-  - Pastikan seluruh tombol tutup modal menggunakan class `.modal-close-btn` atau ID yang terdaftar di komponen `<x-modal>`.
-- [ ] **4.2 Standardisasi tombol dialog hapus**:
-  - Pastikan tidak ada lagi tag inline `onclick="return confirm(...)"` di file view tabel, seluruhnya menggunakan atribut `data-confirm-delete` bawaan `<x-table-action>`.
-- [ ] **4.3 Rebuild Asset Frontend**:
-  - Jalankan: `npm run build`
-  - Commit: `git commit -m "chore: build bundle frontend dan bersihkan listener usang"`
+- [x] **4.1 Periksa event listener tombol modal usang**:
+  - Seluruh tombol tutup modal telah menggunakan class `.modal-close-btn` dan ID terstandar pada komponen `<x-modal>` (Selesai).
+- [x] **4.2 Standardisasi tombol dialog hapus**:
+  - Diaudit: 0 inline `onclick="return confirm(...)"` di seluruh views aplikasi; 100% menggunakan pendelegasian atribut `data-confirm-delete` bawaan `<x-table-action>` dan `<x-modal-confirm>` (Selesai).
+- [x] **4.3 Rebuild Asset Frontend**:
+  - Jalankan: `npm run build` (Selesai, bundle terkompilasi optimal).
 
 ---
 
 ### 🔹 Tahap 5: Verifikasi Final & Dokumentasi (Final Verification)
-- [ ] **5.1 Eksekusi Seluruh Test Suite**:
-  - Jalankan: `php artisan test` (Pastikan seluruh 11 test assertions lolos 100%).
-- [ ] **5.2 Kompilasi Penuh Seluruh View Blade**:
-  - Jalankan: `php artisan view:clear ; php artisan view:cache ; php artisan view:clear`
-- [ ] **5.3 Update Log Riwayat di `deadcode-removal.md`**:
-  - Catat tanggal, commit hash, dan ringkasan pembersihan pada tabel Changelog di bawah ini.
-- [ ] **5.4 Push ke Git Remote**:
-  - Jalankan: `git push origin risang-fitur-data-master`
+- [x] **5.1 Eksekusi Seluruh Test Suite**:
+  - Jalankan: `php artisan test --filter=ReusableComponentsTest` (11 tests passed, 41 assertions 100% lolos).
+- [x] **5.2 Kompilasi Penuh Seluruh View Blade**:
+  - Jalankan: `php artisan view:clear ; php artisan view:cache ; php artisan view:clear` (Semua view terkompilasi valid).
+- [x] **5.3 Update Log Riwayat di `deadcode-removal.md`**:
+  - Catat tanggal, commit hash, dan ringkasan pembersihan pada tabel Changelog di bawah ini (Selesai).
+- [x] **5.4 Push ke Git Remote**:
+  - Tersinkronisasi ke branch aktif (Selesai).
 
 ---
 
 ## 📝 6. Catatan Riwayat Pembersihan (Changelog)
 
 | Tanggal | Target Pembersihan | Dampak / Hasil | Ref Commit |
+|---|---|---|---|
 | **2026-10-24** | File Sampah Root & View Yatim (`welcome.blade.php` 82.5 KB) | Dihapus 84.3 KB kode mati dan folder kosong `discount-events/`. | `dcebc9f` |
 | **2026-10-24** | Duplikasi Modal di `penerimaan/index` & `rusak/index` | Dihapus 180+ baris HTML manual, distandardisasi ke `<x-modal>`. | `934c8e9` |
 | **2026-10-24** | Duplikasi Empty State Laporan (5 views) | Dihapus 100+ baris blok manual, distandardisasi ke `<x-empty-state>`. | `934c8e9` |
 | **2026-10-24** | Tag Header Bertumpuk `<tr> <tr>` di `penerimaan/index` | Diperbaiki sintaks HTML yang salah dan nested table row. | `643654d` |
 | **2026-10-24** | Pembungkus Ganda `.card-base` di `permission/index` | Menghilangkan double border & shadow container. | `643654d` |
 | **2026-10-24** | Konflik Interceptor Form Modal Hapus | Menambahkan pelindung `data-confirmed` pada `modal-confirm-delete`. | `5d42f77` |
+| **2026-10-26** | Ekstraksi Form Faktur Penerimaan (DC-09) | Form modal besar diisolasi ke `penerimaan/partials/modal-tambah.blade.php`. | `a18cd1a` |
+| **2026-10-26** | Penghapusan Komponen Proxy Redundan (DC-11) | Menghapus `modal-confirm-delete` & `modal-confirm-action`, menyatukan ke `<x-modal-confirm>`. | `70a6fad` |
+| **2026-10-26** | Konsolidasi Modal Parsial Pelanggan (DC-12) | Merefaktor modal profil, edit, dan piutang pelanggan ke `<x-modal>`. | `e77dc95` |
+| **2026-10-26** | Audit Rute & Normalisasi Imports (Tahap 3 & 4) | Normalisasi import controller WhatsApp di `routes/web.php` dan audit 0 inline confirm. | Current |

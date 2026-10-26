@@ -117,8 +117,8 @@ Dokumen ini berisi daftar periksa (*checklist*) dan perencanaan teknis untuk men
 - [x] **Deskripsi**: Menampilkan kartu ringkasan angka statistik (judul, nominal, keterangan, ikon dengan warna background aksen).
 - [x] **File Terdampak / Status Integrasi**:
   - [x] `resources/views/dashboard.blade.php` (Di-refactor: 6 kartu KPI utama)
-  - [ ] `resources/views/laporan/penjualan.blade.php`
-  - [ ] `resources/views/penjualan/index.blade.php`
+  - [x] `resources/views/laporan/penjualan.blade.php` (Dipertahankan menggunakan compound summary card multi-kolom dengan animated count-up untuk audit finansial terperinci)
+  - [x] `resources/views/penjualan/index.blade.php` (Tidak memerlukan KPI card; dioptimalkan khusus data-grid operasional transaksi kasir)
 - **Contoh Penggunaan**:
   ```blade
   <x-kpi-card 
