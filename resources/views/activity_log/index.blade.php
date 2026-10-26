@@ -135,7 +135,9 @@
 
         <div class="flex items-center gap-1.5 sm:col-span-2 lg:col-span-2">
             <input type="date" name="dari" value="{{ $dari }}" class="form-input min-w-0" aria-label="Tanggal Awal" title="Tanggal Awal">
-            <span class="text-sm text-gray-400">-</span>
+            <span class="inline-flex items-center text-gray-400 shrink-0">
+                <x-heroicon-m-minus class="w-3.5 h-3.5" />
+            </span>
             <input type="date" name="sampai" value="{{ $sampai }}" class="form-input min-w-0" aria-label="Tanggal Akhir" title="Tanggal Akhir">
         </div>
     </x-card-filter>

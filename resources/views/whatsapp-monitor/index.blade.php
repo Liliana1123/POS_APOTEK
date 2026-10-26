@@ -61,7 +61,9 @@
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
         >
-        <span class="text-sm text-gray-400">-</span>
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
         <input
             type="date"
             name="tanggal_akhir"

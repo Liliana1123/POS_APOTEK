@@ -56,7 +56,9 @@
             @endif
         @endforeach
         <input type="date" name="dari" id="inputDari_{{ $containerId }}" value="{{ $valDari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-        <span class="text-xs text-gray-400">s/d</span>
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3 h-3" />
+        </span>
         <input type="date" name="sampai" id="inputSampai_{{ $containerId }}" value="{{ $valSampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
         <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
     </form>
