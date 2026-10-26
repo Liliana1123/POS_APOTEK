@@ -120,11 +120,10 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
   - Teks otomatis tersalin ke *clipboard*.
   - Muncul mini-tooltip melayang *"Tersalin! ✓"* selama 1 detik dengan animasi melompat ke atas.
 
-### 12. Floating Batch Action Bar (*Bilah Aksi Mengambang*)
+### 12. Floating Batch Action Bar (*Bilah Aksi Mengambang*) `[SELESAI]`
 * **Prioritas:** ⭐ (Rendah) | **Kompleksitas:** Sedang
-* **Kondisi Saat Ini:** Checkbox hapus/cetak massal belum memiliki wadah aksi yang elegan.
-* **Saran Peningkatan:**
-  Saat 1 atau lebih checkbox tabel dicentang, bilah hitam mengambang meluncur mulus dari bawah layar (*slide-up floating dock*): menampilkan jumlah item terpilih dan tombol aksi massal (*Hapus Terpilih*, *Cetak Label Terpilih*).
+* **Status:** Selesai diimplementasikan di `app.css` dengan kelas `.floating-batch-bar`, keyframe `@keyframes floatingBatchSlideUp`, dark frosted glass pill dock, dan integrasi dinamis pada aksi massal pesan WhatsApp & piutang di `pelanggan/index.blade.php`.
+* **Kondisi Saat Ini:** Saat 1 atau lebih checkbox tabel dicentang, bilah gelap elegan meluncur mulus dari bawah layar (*slide-up floating dock*): menampilkan counter jumlah terpilih, akumulasi saldo piutang, tombol aksi kirim WhatsApp, dan tombol batal.
 
 ---
 
