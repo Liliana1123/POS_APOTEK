@@ -20,6 +20,7 @@
     <link rel="icon" type="{{ pathinfo($apotek?->logo, PATHINFO_EXTENSION) == 'png' ? 'image/png' : 'image/x-icon' }}" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('vendor/captcha/css/captcha.css') }}">
     @stack('styles')
 </head>
 
@@ -126,6 +127,15 @@
                 }
             });
         })();
+    </script>
+
+    <script>
+        if (typeof window.LaravelCaptcha === 'undefined') {
+            window.LaravelCaptcha = function(id, options) {
+                this.id = id;
+                this.options = options || {};
+            };
+        }
     </script>
 
     @stack('scripts')
