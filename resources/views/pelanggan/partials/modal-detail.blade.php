@@ -1,48 +1,37 @@
 <!-- Modal Detail Pelanggan -->
-<div id="modal-detail-pelanggan"
-    class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
+<x-modal
+    id="modal-detail-pelanggan"
+    size="w-full max-w-4xl"
+    close-action="closeDetailModal()">
 
-   <div class="modal-container-custom w-full mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden" style="width: 50vw; max-width: 900px;">
-
-        <!-- HEADER -->
-        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
-            <div class="flex items-start gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                    <x-heroicon-o-user class="w-5 h-5" />
-                </div>
-
-                <div>
-                    <h3 class="text-base font-semibold text-gray-800">
-                        Detail Pelanggan / Member
-                    </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Informasi lengkap pelanggan dan riwayat transaksi.
-                    </p>
-                </div>
+    <x-slot:header>
+        <div class="flex items-start gap-3">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <x-heroicon-o-user class="w-5 h-5" />
             </div>
 
-            <button
-                type="button"
-                onclick="closeDetailModal()"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
-                title="Tutup"
-                aria-label="Tutup"
-            >
-                <x-heroicon-o-x-mark class="w-5 h-5" />
-            </button>
+            <div>
+                <h3 class="text-base font-semibold text-gray-800">
+                    Detail Pelanggan / Member
+                </h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Informasi lengkap pelanggan dan riwayat transaksi.
+                </p>
+            </div>
         </div>
+    </x-slot:header>
 
-        <!-- CONTENT -->
-        <div class="overflow-y-auto max-h-[calc(92vh-128px)]">
+    <!-- CONTENT -->
+    <div class="space-y-4">
 
-            <!-- INFORMASI PELANGGAN + RINGKASAN -->
-            <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 px-5 py-5">
+        <!-- INFORMASI PELANGGAN + RINGKASAN -->
+        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 p-1">
 
-                <!-- KIRI -->
-                <div class="space-y-4">
+            <!-- KIRI -->
+            <div class="space-y-4">
 
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                             <x-heroicon-o-user class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -231,23 +220,48 @@
                 </div>
             </div>
 
-        </div>
+    </div>
 
-        <!-- FOOTER -->
-        <div class="flex justify-end items-center px-5 py-3 border-t border-gray-100 bg-gray-50">
+    <x-slot:footer>
+        <div class="flex justify-between items-center w-full">
+            <button
+                type="button"
+                id="btn-detail-print-card"
+                onclick="openCardModalFromCurrentDetail()"
+                class="btn-secondary !text-xs inline-flex items-center gap-1.5 px-3 py-2 text-gray-700 hover:text-blue-600 hover:border-blue-300 transition"
+                title="Cetak Kartu Member">
+                <x-heroicon-o-printer class="w-4 h-4" />
+                <span>Cetak Kartu Member</span>
+            </button>
             <button
                 type="button"
                 onclick="closeDetailModal()"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
-            >
-                Tutup
+                class="btn-secondary !text-xs px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100 transition">
+                <span>Tutup</span>
             </button>
         </div>
-
-    </div>
-</div>
+    </x-slot:footer>
+</x-modal>
 
 <script>
+let currentDetailPelanggan = null;
+
+function openCardModalFromCurrentDetail() {
+    if (!currentDetailPelanggan) return;
+    const p = currentDetailPelanggan;
+    if (typeof window.openCardModal === 'function') {
+        const isActive = Boolean(p.is_member && p.member_aktif);
+        window.openCardModal(
+            p.nama || '',
+            p.member_id || '',
+            p.total_belanja || 0,
+            p.status_member || '',
+            p.custom_discount_percentage,
+            isActive,
+            p.diskon_percent
+        );
+    }
+}
 function formatDetailRupiah(angka) {
     return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
 }
@@ -321,6 +335,11 @@ function openDetailModal(pelangganId) {
     })
     .then(data => {
         const pelanggan = data.pelanggan || {};
+        currentDetailPelanggan = pelanggan;
+        const printCardBtn = document.getElementById('btn-detail-print-card');
+        if (printCardBtn) {
+            printCardBtn.style.display = (pelanggan.member_id) ? 'inline-flex' : 'none';
+        }
         const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
 
         document.getElementById('detail-nama').textContent = pelanggan.nama || '-';

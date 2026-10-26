@@ -78,9 +78,10 @@ Seluruh kebutuhan antarmuka popup di aplikasi POS Apotek distandarisasi ke dalam
 - [x] **Langkah 1.3:** Perbarui pengujian di [tests/Unit/ReusableComponentsTest.php](file:///c:/xampp/htdocs/pos-apotek/tests/Unit/ReusableComponentsTest.php) dari semula menguji `x-modal-confirm-delete` menjadi langsung menguji komponen utama `<x-modal-confirm>` (Selesai).
 - [x] **Langkah 1.4:** Jalankan `php artisan test --filter=ReusableComponentsTest` untuk memastikan seluruh 11 pengujian tetap lulus 100% (41 assertions passed).
 
-### Fase 2: Konsolidasi Parsial Modul Pelanggan (Opsional / Iteratif)
-- [ ] **Langkah 2.1:** Analisis integrasi `modal-card.blade.php` ke dalam `modal-detail.blade.php` dengan tata letak visual tab (Profil Member & Kartu Digital).
-- [ ] **Langkah 2.2:** Verifikasi event JavaScript pemanggil modal kartu agar tetap merespons tombol preview kartu member di tabel data.
+### Fase 2: Konsolidasi Parsial Modul Pelanggan (Selesai)
+- [x] **Langkah 2.1:** Refactoring `modal-detail.blade.php`, `modal-edit.blade.php`, dan `modal-piutang.blade.php` ke komponen universal `<x-modal>` (Selesai).
+- [x] **Langkah 2.2:** Integrasi tombol "Cetak Kartu Member" langsung di dalam footer modal detail pelanggan untuk alur kerja yang mulus (Selesai).
+- [x] **Langkah 2.3:** Verifikasi event JavaScript pemanggil seluruh modal pelanggan tetap merespons aksi tabel data tanpa regresi (Selesai).
 
 ### Fase 3: Dokumentasi & Pembaruan Deadcode Tracker
 - [x] **Langkah 3.1:** Catat penghapusan file proxy ke dalam [deadcode-removal.md](file:///c:/xampp/htdocs/pos-apotek/deadcode-removal.md) sebagai item terselesaikan (DC-11).

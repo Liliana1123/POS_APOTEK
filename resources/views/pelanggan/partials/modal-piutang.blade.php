@@ -1,36 +1,27 @@
 {{-- Modal Pembayaran Piutang --}}
-<div id="piutangPaymentModal"
-    class="modal-backdrop-custom hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+<x-modal
+    id="piutangPaymentModal"
+    size="w-full max-w-4xl"
+    close-action="closePiutangPaymentModal()">
 
-    {{-- Popup / modal yang dapat di-scroll --}}
-   <div class="modal-container-custom flex w-full max-w-4xl max-h-[90vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        {{-- Header --}}
-        <div class="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-5">
-            <div class="flex items-center gap-4">
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
-                    <x-heroicon-o-credit-card class="h-6 w-6" />
-                </div>
-
-                <div>
-                    <h3 class="text-xl font-bold text-gray-800">
-                        Pembayaran Piutang
-                    </h3>
-                    <p class="mt-0.5 text-sm text-gray-500">
-                        Kelola pembayaran piutang member
-                    </p>
-                </div>
+    <x-slot:header>
+        <div class="flex items-center gap-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shrink-0">
+                <x-heroicon-o-credit-card class="h-5 w-5" />
             </div>
 
-            <button type="button"
-                onclick="closePiutangPaymentModal()"
-                class="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Tutup">
-                <x-heroicon-o-x-mark class="h-6 w-6" />
-            </button>
+            <div>
+                <h3 class="text-lg font-bold text-gray-800">
+                    Pembayaran Piutang
+                </h3>
+                <p class="mt-0.5 text-xs text-gray-500">
+                    Kelola pembayaran piutang member
+                </p>
+            </div>
         </div>
+    </x-slot:header>
 
-        {{-- Isi popup yang di-scroll --}}
-        <div class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+    <div>
 
             {{-- Ringkasan Member --}}
             <div class="grid grid-cols-2 gap-2 rounded-xl border border-blue-100 bg-blue-50/50 p-2.5 sm:grid-cols-4">
@@ -282,21 +273,18 @@
                 </div>
             </div>
 
-        </div>
+    </div>
 
-        {{-- Footer --}}
-        <div class="modal-footer-custom flex shrink-0 justify-end border-t border-gray-200 bg-white px-6 py-4">
-
+    <x-slot:footer>
+        <div class="flex justify-end w-full">
             <button type="button"
                 onclick="closePiutangPaymentModal()"
-                class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                Tutup
+                class="btn-secondary !text-xs px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100 transition">
+                <span>Tutup</span>
             </button>
-
         </div>
-
-    </div>
-</div>
+    </x-slot:footer>
+</x-modal>
 
 <script>
 let currentPiutangPelangganId = null;
