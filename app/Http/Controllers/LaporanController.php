@@ -911,14 +911,20 @@ class LaporanController extends Controller
             case 'hari_ini':
                 $dari = now()->startOfDay()->format('Y-m-d');
                 $sampai = now()->endOfDay()->format('Y-m-d');
+                $prevDari = now()->subDay()->startOfDay()->format('Y-m-d');
+                $prevSampai = now()->subDay()->endOfDay()->format('Y-m-d');
                 break;
             case 'minggu_ini':
                 $dari = now()->startOfWeek()->format('Y-m-d');
                 $sampai = now()->endOfWeek()->format('Y-m-d');
+                $prevDari = now()->subWeek()->startOfWeek()->format('Y-m-d');
+                $prevSampai = now()->subWeek()->endOfWeek()->format('Y-m-d');
                 break;
             case 'tahun_ini':
                 $dari = now()->startOfYear()->format('Y-m-d');
                 $sampai = now()->endOfYear()->format('Y-m-d');
+                $prevDari = now()->subYear()->startOfYear()->format('Y-m-d');
+                $prevSampai = now()->subYear()->endOfYear()->format('Y-m-d');
                 break;
             case 'custom':
                 $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
@@ -926,15 +932,23 @@ class LaporanController extends Controller
                 if ($dari > $sampai) {
                     [$dari, $sampai] = [$sampai, $dari];
                 }
+                $daysDiff = Carbon::parse($dari)->diffInDays(Carbon::parse($sampai)) + 1;
+                $prevDari = Carbon::parse($dari)->subDays($daysDiff)->format('Y-m-d');
+                $prevSampai = Carbon::parse($dari)->subDay()->format('Y-m-d');
                 break;
             case 'bulan_lalu':
                 $dari = now()->subMonth()->startOfMonth()->format('Y-m-d');
                 $sampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
+                $prevDari = now()->subMonths(2)->startOfMonth()->format('Y-m-d');
+                $prevSampai = now()->subMonths(2)->endOfMonth()->format('Y-m-d');
                 break;
             case 'semua':
                 $minTanggal = Penjualan::min('tanggal') ?? now()->startOfYear()->format('Y-m-d');
                 $dari = Carbon::parse($minTanggal)->format('Y-m-d');
                 $sampai = now()->endOfDay()->format('Y-m-d');
+                // Tidak ada periode sebelumnya yang bermakna untuk 'semua'
+                $prevDari = null;
+                $prevSampai = null;
                 break;
             case 'bulan_ini':
             default:
@@ -945,10 +959,15 @@ class LaporanController extends Controller
                     if ($dari > $sampai) {
                         [$dari, $sampai] = [$sampai, $dari];
                     }
+                    $daysDiff = Carbon::parse($dari)->diffInDays(Carbon::parse($sampai)) + 1;
+                    $prevDari = Carbon::parse($dari)->subDays($daysDiff)->format('Y-m-d');
+                    $prevSampai = Carbon::parse($dari)->subDay()->format('Y-m-d');
                 } else {
                     $periode = 'bulan_ini';
                     $dari = now()->startOfMonth()->format('Y-m-d');
                     $sampai = now()->endOfMonth()->format('Y-m-d');
+                    $prevDari = now()->subMonth()->startOfMonth()->format('Y-m-d');
+                    $prevSampai = now()->subMonth()->endOfMonth()->format('Y-m-d');
                 }
                 break;
         }
@@ -979,6 +998,47 @@ class LaporanController extends Controller
         // 3. Beban Operasional dalam rentang tanggal
         $totalBeban = (float) Beban::whereBetween('tanggal', [$dari, $sampai])->sum('nominal');
         $labaBersih = $labaKotor - $totalBeban;
+
+        // 3a. Laba Bersih periode sebelumnya & delta (untuk indikator persentase & kenaikan/penurunan)
+        $deltaLabaBersih = null; // null = tidak ada komparasi atau pembagi nol
+        $prevLabaBersih = null;
+        $labaBersihStatus = 'netral'; // 'naik', 'turun', 'netral'
+        $selisihNominalLabaBersih = 0;
+
+        if ($prevDari && $prevSampai) {
+            $prevSalesData = DB::table('detail_penjualans as dp')
+                ->join('penjualans as p', 'dp.penjualan_id', '=', 'p.id')
+                ->join('detail_penerimaans as dr', 'dp.detail_penerimaan_id', '=', 'dr.id')
+                ->whereBetween('p.tanggal', [$prevDari, $prevSampai])
+                ->selectRaw('
+                    COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as omzet_kotor,
+                    COALESCE(SUM(dp.diskon), 0) as total_diskon,
+                    COALESCE(SUM(dr.harga_beli * dp.jumlah), 0) as total_hpp
+                ')
+                ->first();
+            $prevOmzetKotor   = (float) ($prevSalesData->omzet_kotor ?? 0);
+            $prevTotalDiskon  = (float) ($prevSalesData->total_diskon ?? 0);
+            $prevPenjualanBersih = max(0, $prevOmzetKotor - $prevTotalDiskon);
+            $prevHpp          = (float) ($prevSalesData->total_hpp ?? 0);
+            $prevLabaKotor    = $prevPenjualanBersih - $prevHpp;
+            $prevTotalBeban   = (float) Beban::whereBetween('tanggal', [$prevDari, $prevSampai])->sum('nominal');
+            $prevLabaBersih   = $prevLabaKotor - $prevTotalBeban;
+            $selisihNominalLabaBersih = $labaBersih - $prevLabaBersih;
+
+            if ($selisihNominalLabaBersih > 0) {
+                $labaBersihStatus = 'naik';
+            } elseif ($selisihNominalLabaBersih < 0) {
+                $labaBersihStatus = 'turun';
+            } else {
+                $labaBersihStatus = 'netral';
+            }
+
+            // Hitung persentase jika basis komparasi (prevLabaBersih) != 0
+            // Gunakan abs($prevLabaBersih) sebagai pembagi agar persentase pada laba negatif tetap merefleksikan arah secara benar
+            if ($prevLabaBersih != 0) {
+                $deltaLabaBersih = round(($selisihNominalLabaBersih / abs($prevLabaBersih)) * 100, 1);
+            }
+        }
 
         $bebanPerKategori = Beban::whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw('kategori, SUM(nominal) as total, COUNT(*) as jumlah_transaksi')
@@ -1134,6 +1194,10 @@ class LaporanController extends Controller
             'labaKotor',
             'totalBeban',
             'labaBersih',
+            'prevLabaBersih',
+            'deltaLabaBersih',
+            'labaBersihStatus',
+            'selisihNominalLabaBersih',
             'marginKotorPersen',
             'marginBersihPersen',
             'hppPersen',

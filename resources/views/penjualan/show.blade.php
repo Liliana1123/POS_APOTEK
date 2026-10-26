@@ -159,15 +159,18 @@
                     <span>-@rupiah($diskonPromo)</span>
                 </div>
             @endif
-            <div class="flex justify-between font-bold text-gray-700">
-                <span>Total Diskon</span>
-                <span>-@rupiah($totalDiskon)</span>
-            </div>
+
         </div>
     @endif
 
     <div class="struk-total border-t border-dashed mt-2.5 pt-2.5 font-bold text-gray-800">
-        <div class="flex justify-between">
+        @if ($totalDiskon > 0)
+            <div class="flex justify-between text-green-600 text-[10px] mb-1">
+                <span>TOTAL DISKON</span>
+                <span>-@rupiah($totalDiskon)</span>
+            </div>
+        @endif
+        <div class="flex justify-between text-sm">
             <span>TOTAL AKHIR</span>
             <span>@rupiah($penjualan->total)</span>
         </div>
