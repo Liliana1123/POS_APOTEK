@@ -204,7 +204,7 @@
                 
                 {{-- 1. Omzet Kotor --}}
                 <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                    style="background-color: #ffffff; border: 2.5px solid #bfdbfe !important;">
+                    style="background-color: #ffffff; border: 2px solid #bfdbfe !important;">
                     <div>
                         <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
                             Omzet Kotor
@@ -222,7 +222,7 @@
 
                 {{-- 2. Total Diskon --}}
                 <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                    style="background-color: #ffffff; border: 2.5px solid #eabffeff !important;">
+                    style="background-color: #ffffff; border: 2px solid #eabffeff !important;">
                     <div>
                         <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
                             Total Diskon
@@ -238,7 +238,7 @@
                 
                 {{-- 3. Penjualan Bersih --}}
                 <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                    style="background-color: #ffffff; border: 2.5px solid #bffee1ff !important;">
+                    style="background-color: #ffffff; border: 2px solid #bffee1ff !important;">
                     <div>
                         <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
                             Penjualan Bersih
@@ -254,7 +254,7 @@
                 
                 {{-- 4. HPP --}}
                 <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                    style="background-color: #ffffff; border: 2.5px solid #ffedd5 !important;">
+                    style="background-color: #ffffff; border: 2px solid #ffedd5 !important;">
                     <div>
                         <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
                             HPP (Harga Pokok Penjualan)
@@ -274,7 +274,7 @@
 
             {{-- 5. Laba Kotor --}}
             <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                style="background-color: #ffffff; border: 2.5px solid #bfdbfe !important;">
+                style="background-color: #ffffff; border: 2px solid #bfdbfe !important;">
                 <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         Laba Kotor
@@ -290,7 +290,7 @@
 
             {{-- 6. Total Beban Operasional --}}
             <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                style="background-color: #ffffff; border: 2.5px solid #ffb6ccff !important;">
+                style="background-color: #ffffff; border: 2px solid #ffb6ccff !important;">
                 <div>
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         Total Beban Operasional
@@ -307,17 +307,71 @@
 
             {{-- 7. Laba Bersih --}}
             <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
-                style="background-color: #ffffff; border: 2.5px solid #bffee1ff !important;">
-                <div>
+                style="background-color: #ffffff; border: 2px solid #bffee1ff !important;">
+                <div class="flex-1 min-w-0">
                     <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         Laba Bersih
                     </span>
-                    <div class="mt-1 text-xl font-black text-gray-900">
-                        Rp {{ number_format($labaBersih, 0, ',', '.') }}
+                    <div class="mt-1 flex items-baseline gap-2 flex-wrap">
+                        <span class="text-xl font-black text-gray-900">
+                            Rp {{ number_format($labaBersih, 0, ',', '.') }}
+                        </span>
+
+                        {{-- Indikator Persentase Kenaikan / Penurunan Laba Bersih (selaras dengan Dashboard) --}}
+                        @if ($labaBersihStatus === 'naik')
+                            <span class="text-[10px] font-bold text-emerald-500 inline-flex items-center gap-0.5">
+                                <span>↑</span>
+                                <span>
+                                    @if ($deltaLabaBersih !== null)
+                                        {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
+                                    @else
+                                        Rp {{ number_format(abs($selisihNominalLabaBersih), 0, ',', '.') }}
+                                    @endif
+                                </span>
+                            </span>
+                        @elseif ($labaBersihStatus === 'turun')
+                            <span class="text-[10px] font-bold text-rose-500 inline-flex items-center gap-0.5">
+                                <span>↓</span>
+                                <span>
+                                    @if ($deltaLabaBersih !== null)
+                                        {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
+                                    @else
+                                        Rp {{ number_format(abs($selisihNominalLabaBersih), 0, ',', '.') }}
+                                    @endif
+                                </span>
+                            </span>
+                        @else
+                            {{-- Tampilan netral: tidak ada perubahan atau persentase tidak dapat dihitung --}}
+                            <span class="text-[10px] font-bold text-gray-400 inline-flex items-center gap-0.5">
+                                <span>—</span>
+                                @if ($deltaLabaBersih !== null)
+                                    <span>0,0%</span>
+                                @endif
+                            </span>
+                        @endif
                     </div>
+
+                    @if ($prevLabaBersih !== null)
+                        <div class="mt-0.5 text-[9px] text-gray-400">
+                            vs periode lalu: Rp {{ number_format($prevLabaBersih, 0, ',', '.') }}
+                            @if ($prevLabaBersih < 0 && $labaBersih > 0)
+                                <span class="text-emerald-600 font-semibold">(Berbalik Untung)</span>
+                            @elseif ($prevLabaBersih > 0 && $labaBersih < 0)
+                                <span class="text-rose-600 font-semibold">(Berbalik Rugi)</span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 shadow-sm">
-                    <x-heroicon-o-arrow-trending-up class="h-6 w-6" />
+
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm
+                    {{ $labaBersihStatus === 'naik' ? 'bg-emerald-50 text-emerald-600' : ($labaBersihStatus === 'turun' ? 'bg-rose-50 text-rose-500' : 'bg-gray-100 text-gray-400') }}">
+                    @if ($labaBersihStatus === 'naik')
+                        <x-heroicon-o-arrow-trending-up class="h-6 w-6" />
+                    @elseif ($labaBersihStatus === 'turun')
+                        <x-heroicon-o-arrow-trending-down class="h-6 w-6" />
+                    @else
+                        <x-heroicon-o-minus class="h-5 w-5" />
+                    @endif
                 </div>
             </div>
             </div>
@@ -326,7 +380,7 @@
 
         {{-- KOLOM KANAN: RINGKASAN PIUTANG & UTANG --}}
         <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0"
-            style="background-color: #ffffffff; border: 2.5px solid #d1d1d1ff;">
+            style="background-color: #ffffffff; border: 2px solid #d1d1d1ff;">
             <h2 class="text-xs font-bold text-slate-800 mb-3 tracking-wide">Ringkasan Piutang & Utang</h2>
 
             <div class="space-y-4 my-auto">
@@ -359,7 +413,7 @@
                 </div>
             </div>
 
-            <div class="text-[10px] text-slate-400 pt-2.5 border-t border-slate-200 mt-3 flex justify-between items-center">
+            <div class="text-[10px] text-blue-600 pt-2.5 border-t border-slate-200 mt-3 flex justify-between items-center">
                 <span>{{ $memberBerpiutangCount }} Member aktif</span>
                 <span>{{ $countHutangBelumLunas }} Faktur belum lunas</span>
             </div>

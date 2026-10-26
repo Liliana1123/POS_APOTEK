@@ -141,9 +141,9 @@
 
 
                     <!-- TOTAL PIUTANG -->
-                    <div class="rounded-lg bg-blue-50 border border-blue-100 px-3.5 py-3">
+                    <div class="rounded-lg bg-red-50 border border-red-200 px-3.5 py-3" style="background-color: #fef2f2; border: 1px solid #fca5a5;">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-red-600 shadow-2xs">
                                 <x-heroicon-o-banknotes class="w-4 h-4" />
                             </div>
 

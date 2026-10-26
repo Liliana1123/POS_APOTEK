@@ -391,6 +391,9 @@ function renderDaftarBarang(filter = '') {
                 return kat.includes('alat');
             } else if (activeKategori === 'vitamin') {
                 return kat.includes('vitamin') || kat.includes('suplemen') || nama.includes('vitamin');
+            } else if (activeKategori === 'kecantikan') {
+                return kat.includes('kecantikan') || kat.includes('perawatan')
+                    || nama.includes('kecantikan') || nama.includes('perawatan');
             }
             return true;
         });

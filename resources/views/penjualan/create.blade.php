@@ -177,6 +177,10 @@
                             class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer">
                             Vitamin dan Suplemen
                         </button>
+                        <button type="button" data-kategori="kecantikan"
+                            class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer whitespace-nowrap">
+                            Kecantikan &amp; Perawatan
+                        </button>
                     </div>
 
                     <button type="button" id="btn-refresh-barang" class="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-semibold cursor-pointer shrink-0 transition-colors">
