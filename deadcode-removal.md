@@ -35,6 +35,7 @@ Berikut adalah daftar lengkap artefak dan kode mati yang telah teridentifikasi b
 | **DC-07** | Tag header bertumpuk `<tr> <tr>` di `penerimaan/index` | HTML Bertumpuk/Salah | 2 baris | 🟢 Sudah Dihapus | Diperbaiki menjadi single `<tr>` valid (commit `643654d`). |
 | **DC-09** | Form faktur besar di `penerimaan/index.blade.php` | Form Monolitik | ~180 baris | 🟢 Sudah Dipisah | Berhasil diisolasi ke `penerimaan/partials/modal-tambah.blade.php` menggunakan komponen `<x-modal>`, membuat `index.blade.php` lebih ramping dan terstruktur. |
 | **DC-10** | 9 Modal di `pelanggan/partials/modal-whatsapp-piutang.blade.php` | Modal Partials | 1.200+ baris | 🟢 Teraudit Aktif | Seluruh modal terikat aktif dengan engine monitoring WhatsApp CRM dan penagihan piutang otomatis. |
+| **DC-11** | `modal-confirm-delete.blade.php` & `modal-confirm-action.blade.php` | Komponen Proxy Redundan | 2 File (10 baris) | 🟢 Sudah Dihapus | File wrapper proxy redundan dihapus, seluruh aplikasi dan unit test distandarisasi ke `<x-modal-confirm>`. |
 
 ---
 

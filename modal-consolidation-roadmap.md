@@ -73,18 +73,18 @@ Seluruh kebutuhan antarmuka popup di aplikasi POS Apotek distandarisasi ke dalam
 ## 🚀 5. Rencana Tahapan Eksekusi (Action Plan)
 
 ### Fase 1: Peleburan Komponen Global Redundan (Prioritas Utama)
-- [ ] **Langkah 1.1:** Hapus file proxy [modal-confirm-delete.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/components/modal-confirm-delete.blade.php).
-- [ ] **Langkah 1.2:** Hapus file proxy [modal-confirm-action.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/components/modal-confirm-action.blade.php).
-- [ ] **Langkah 1.3:** Perbarui pengujian di [tests/Unit/ReusableComponentsTest.php](file:///c:/xampp/htdocs/pos-apotek/tests/Unit/ReusableComponentsTest.php) dari semula menguji `x-modal-confirm-delete` menjadi langsung menguji komponen utama `<x-modal-confirm>`.
-- [ ] **Langkah 1.4:** Jalankan `php artisan test --filter=ReusableComponentsTest` untuk memastikan seluruh 11 pengujian tetap lulus 100%.
+- [x] **Langkah 1.1:** Hapus file proxy [modal-confirm-delete.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/components/modal-confirm-delete.blade.php) (Selesai).
+- [x] **Langkah 1.2:** Hapus file proxy [modal-confirm-action.blade.php](file:///c:/xampp/htdocs/pos-apotek/resources/views/components/modal-confirm-action.blade.php) (Selesai).
+- [x] **Langkah 1.3:** Perbarui pengujian di [tests/Unit/ReusableComponentsTest.php](file:///c:/xampp/htdocs/pos-apotek/tests/Unit/ReusableComponentsTest.php) dari semula menguji `x-modal-confirm-delete` menjadi langsung menguji komponen utama `<x-modal-confirm>` (Selesai).
+- [x] **Langkah 1.4:** Jalankan `php artisan test --filter=ReusableComponentsTest` untuk memastikan seluruh 11 pengujian tetap lulus 100% (41 assertions passed).
 
 ### Fase 2: Konsolidasi Parsial Modul Pelanggan (Opsional / Iteratif)
 - [ ] **Langkah 2.1:** Analisis integrasi `modal-card.blade.php` ke dalam `modal-detail.blade.php` dengan tata letak visual tab (Profil Member & Kartu Digital).
 - [ ] **Langkah 2.2:** Verifikasi event JavaScript pemanggil modal kartu agar tetap merespons tombol preview kartu member di tabel data.
 
 ### Fase 3: Dokumentasi & Pembaruan Deadcode Tracker
-- [ ] **Langkah 3.1:** Catat penghapusan file proxy ke dalam [deadcode-removal.md](file:///c:/xampp/htdocs/pos-apotek/deadcode-removal.md) sebagai item terselesaikan (DC-11).
-- [ ] **Langkah 3.2:** Commit perubahan dan push ke branch `risang-fitur-data-master`.
+- [x] **Langkah 3.1:** Catat penghapusan file proxy ke dalam [deadcode-removal.md](file:///c:/xampp/htdocs/pos-apotek/deadcode-removal.md) sebagai item terselesaikan (DC-11).
+- [x] **Langkah 3.2:** Commit perubahan dan push ke branch `risang-fitur-data-master`.
 
 ---
 

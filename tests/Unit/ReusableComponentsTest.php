@@ -69,16 +69,18 @@ class ReusableComponentsTest extends TestCase
     }
 
     /**
-     * Uji komponen <x-modal-confirm-delete>
+     * Uji komponen terpadu <x-modal-confirm>
      */
-    public function test_modal_confirm_delete_renders_structure(): void
+    public function test_modal_confirm_renders_structure(): void
     {
-        $view = $this->blade('<x-modal-confirm-delete />');
+        $view = $this->blade('<x-modal-confirm />');
 
-        $view->assertSee('modal-confirm-delete');
-        $view->assertSee('Konfirmasi Hapus');
+        $view->assertSee('modal-confirm');
+        $view->assertSee('Konfirmasi Tindakan');
         $view->assertSee('confirmDelete');
+        $view->assertSee('confirmAction');
         $view->assertSee('data-confirm-delete');
+        $view->assertSee('data-confirm-action');
     }
 
     /**
