@@ -347,7 +347,11 @@
                     Omzet Kotor
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-orange-600 tracking-tight" style="color: #ea580c;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-orange-600 tracking-tight"
+                        style="color: #ea580c;"
+                        data-countup="true"
+                        data-target="{{ (float)$omzet }}"
+                        data-prefix="Rp ">
                     Rp {{ number_format($omzet, 0, ',', '.') }}
                 </strong>
             </div>
@@ -361,7 +365,11 @@
                     Total Potongan Diskon
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-purple-600 tracking-tight" style="color: #9333ea;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-purple-600 tracking-tight"
+                        style="color: #9333ea;"
+                        data-countup="true"
+                        data-target="{{ (float)$totalDiskon }}"
+                        data-prefix="Rp ">
                     Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                 </strong>
             </div>
@@ -375,7 +383,11 @@
                     Penjualan Bersih (Net)
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-emerald-600 tracking-tight" style="color: #059669;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-emerald-600 tracking-tight"
+                        style="color: #059669;"
+                        data-countup="true"
+                        data-target="{{ (float)$totalPenjualanBersih }}"
+                        data-prefix="Rp ">
                     Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
                 </strong>
             </div>
