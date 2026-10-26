@@ -293,14 +293,17 @@
                         Laba Bersih
                     </span>
                     <div class="mt-1 flex items-baseline gap-2 flex-wrap">
-                        <span class="text-xl font-black text-gray-900">
+                        <span class="text-xl font-black text-gray-900 tracking-tight"
+                              data-countup="true"
+                              data-target="{{ (float) preg_replace('/[^0-9]/', '', (string)$labaBersih) }}"
+                              data-prefix="Rp ">
                             Rp {{ number_format($labaBersih, 0, ',', '.') }}
                         </span>
 
                         {{-- Indikator Persentase Kenaikan / Penurunan Laba Bersih (selaras dengan Dashboard) --}}
                         @if ($labaBersihStatus === 'naik')
-                            <span class="text-[10px] font-bold text-emerald-500 inline-flex items-center gap-0.5">
-                                <span>↑</span>
+                            <span class="kpi-trend-pill trend-up" title="Kenaikan Laba Bersih">
+                                <span class="kpi-trend-icon">&#8599;</span>
                                 <span>
                                     @if ($deltaLabaBersih !== null)
                                         {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
@@ -310,8 +313,8 @@
                                 </span>
                             </span>
                         @elseif ($labaBersihStatus === 'turun')
-                            <span class="text-[10px] font-bold text-rose-500 inline-flex items-center gap-0.5">
-                                <span>↓</span>
+                            <span class="kpi-trend-pill trend-down" title="Penurunan Laba Bersih">
+                                <span class="kpi-trend-icon">&#8600;</span>
                                 <span>
                                     @if ($deltaLabaBersih !== null)
                                         {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%

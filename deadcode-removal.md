@@ -33,9 +33,8 @@ Berikut adalah daftar lengkap artefak dan kode mati yang telah teridentifikasi b
 | **DC-05** | Boilerplate Modal di `rusak/index.blade.php` | Duplikasi HTML | ~40 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen universal `<x-modal>` (commit `934c8e9`). |
 | **DC-06** | Blok manual `@empty` di 5 View Laporan | Duplikasi HTML | ~100 baris | 🟢 Sudah Dihapus | Digantikan oleh komponen pintar `<x-empty-state>` (commit `934c8e9`). |
 | **DC-07** | Tag header bertumpuk `<tr> <tr>` di `penerimaan/index` | HTML Bertumpuk/Salah | 2 baris | 🟢 Sudah Dihapus | Diperbaiki menjadi single `<tr>` valid (commit `643654d`). |
-| **DC-08** | Double `.card-base` di `permission/index.blade.php` | Wrapper Bertumpuk | 4 baris | 🟢 Sudah Dihapus | Dihapus karena `.table-custom-container` sudah memiliki border/shadow kartu (commit `643654d`). |
-| **DC-09** | Form faktur besar di `penerimaan/index.blade.php:372-550` | Form Monolitik | ~180 baris | 🟡 Siap Dipisah | Perlu dipindahkan ke `penerimaan/partials/modal-tambah.blade.php` agar `index.blade.php` ramping. |
-| **DC-10** | 9 Modal di `pelanggan/partials/modal-whatsapp-piutang.blade.php` | Modal Partials | 1.200+ baris | 🟡 Perlu Audit | Perlu dipilah apakah ada modal prototype/eksperimen lama yang tidak aktif. |
+| **DC-09** | Form faktur besar di `penerimaan/index.blade.php` | Form Monolitik | ~180 baris | 🟢 Sudah Dipisah | Berhasil diisolasi ke `penerimaan/partials/modal-tambah.blade.php` menggunakan komponen `<x-modal>`, membuat `index.blade.php` lebih ramping dan terstruktur. |
+| **DC-10** | 9 Modal di `pelanggan/partials/modal-whatsapp-piutang.blade.php` | Modal Partials | 1.200+ baris | 🟢 Teraudit Aktif | Seluruh modal terikat aktif dengan engine monitoring WhatsApp CRM dan penagihan piutang otomatis. |
 
 ---
 

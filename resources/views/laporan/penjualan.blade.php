@@ -278,7 +278,11 @@
                     Jumlah Transaksi
                 </span>
 
-                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight" style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;">
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                        style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                        data-countup="true"
+                        data-target="{{ (float)$jumlahTransaksi }}"
+                        data-suffix=" X">
                     {{ $jumlahTransaksi }} X
                 </strong>
             </div>
@@ -289,7 +293,11 @@
                     Transaksi Member
                 </span>
 
-                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight" style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;">
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                        style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                        data-countup="true"
+                        data-target="{{ (float)$transaksiMember }}"
+                        data-suffix=" X">
                     {{ $transaksiMember }} X
                 </strong>
             </div>
@@ -300,7 +308,11 @@
                     Transaksi Umum
                 </span>
 
-                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight" style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;">
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                        style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                        data-countup="true"
+                        data-target="{{ (float)$transaksiNonMember }}"
+                        data-suffix=" X">
                     {{ $transaksiNonMember }} X
                 </strong>
             </div>
