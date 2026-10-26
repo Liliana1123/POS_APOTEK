@@ -303,7 +303,9 @@
                         {{-- Indikator Persentase Kenaikan / Penurunan Laba Bersih (selaras dengan Dashboard) --}}
                         @if ($labaBersihStatus === 'naik')
                             <span class="kpi-trend-pill trend-up" title="Kenaikan Laba Bersih">
-                                <span class="kpi-trend-icon">&#8599;</span>
+                                <span class="kpi-trend-icon inline-flex items-center">
+                                    <x-heroicon-m-arrow-trending-up class="w-3.5 h-3.5 shrink-0" />
+                                </span>
                                 <span>
                                     @if ($deltaLabaBersih !== null)
                                         {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
@@ -314,7 +316,9 @@
                             </span>
                         @elseif ($labaBersihStatus === 'turun')
                             <span class="kpi-trend-pill trend-down" title="Penurunan Laba Bersih">
-                                <span class="kpi-trend-icon">&#8600;</span>
+                                <span class="kpi-trend-icon inline-flex items-center">
+                                    <x-heroicon-m-arrow-trending-down class="w-3.5 h-3.5 shrink-0" />
+                                </span>
                                 <span>
                                     @if ($deltaLabaBersih !== null)
                                         {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
@@ -325,8 +329,8 @@
                             </span>
                         @else
                             {{-- Tampilan netral: tidak ada perubahan atau persentase tidak dapat dihitung --}}
-                            <span class="text-[10px] font-bold text-gray-400 inline-flex items-center gap-0.5">
-                                <span>—</span>
+                            <span class="text-[10px] font-bold text-gray-400 inline-flex items-center gap-1">
+                                <x-heroicon-m-minus class="w-3 h-3 shrink-0" />
                                 @if ($deltaLabaBersih !== null)
                                     <span>0,0%</span>
                                 @endif
@@ -503,25 +507,26 @@
                 </div>
 
                 <div class="flex items-center gap-2.5">
-                    {{-- Tombol + Tambah Beban --}}
+                    {{-- Tombol Tambah Beban --}}
                     <button
                         type="button"
                         id="btn-tambah-beban"
                         onclick="openModalTambahBeban()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-colors cursor-pointer"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                     >
-                        + Tambah Beban
+                        <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
+                        <span>Tambah Beban</span>
                     </button>
 
-                    {{-- Tombol Lihat Semua > --}}
+                    {{-- Tombol Lihat Semua --}}
                     <button
                         type="button"
                         id="btn-lihat-semua-beban"
                         onclick="openModalSemuaBeban()"
-                        class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-0.5 transition-colors cursor-pointer"
+                        class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                     >
                         <span>Lihat Semua</span>
-                        <span class="font-mono">&gt;</span>
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 shrink-0" />
                     </button>
                 </div>
             </div>

@@ -293,10 +293,14 @@
                                 Rp {{ number_format($omzetBersih, 0, ',', '.') }}
                             </div>
 
-                            <div class="w-[42px] text-right text-[9px] font-bold
+                            <div class="w-[52px] text-right text-[9px] font-bold flex items-center justify-end gap-0.5
                                 {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
-                                {{ ($deltaOmzetBersih ?? 0) >= 0 ? '↑' : '↓' }}
-                                {{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '-' }}
+                                @if (($deltaOmzetBersih ?? 0) >= 0)
+                                    <x-heroicon-m-arrow-trending-up class="w-3 h-3 shrink-0" />
+                                @else
+                                    <x-heroicon-m-arrow-trending-down class="w-3 h-3 shrink-0" />
+                                @endif
+                                <span>{{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '—' }}</span>
                             </div>
                         </div>
                     @endif
@@ -318,10 +322,14 @@
                                 Rp {{ number_format($grossProfitHealth, 0, ',', '.') }}
                             </div>
 
-                            <div class="w-[42px] text-right text-[9px] font-bold
+                            <div class="w-[52px] text-right text-[9px] font-bold flex items-center justify-end gap-0.5
                                 {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-500' : 'text-rose-500' }}">
-                                {{ ($deltaGrossProfit ?? 0) >= 0 ? '↑' : '↓' }}
-                                {{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '-' }}
+                                @if (($deltaGrossProfit ?? 0) >= 0)
+                                    <x-heroicon-m-arrow-trending-up class="w-3 h-3 shrink-0" />
+                                @else
+                                    <x-heroicon-m-arrow-trending-down class="w-3 h-3 shrink-0" />
+                                @endif
+                                <span>{{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '—' }}</span>
                             </div>
                         </div>
 

@@ -492,8 +492,9 @@
 
         <div class="flex justify-between items-center mb-2">
             <span class="text-[11px] font-semibold text-slate-500">Daftar Member</span>
-            <button type="button" id="btn-tambah-member" class="text-blue-600 hover:text-blue-700 text-xs font-bold cursor-pointer">
-                + Tambah Member Baru
+            <button type="button" id="btn-tambah-member" class="text-blue-600 hover:text-blue-700 text-xs font-bold cursor-pointer inline-flex items-center gap-1">
+                <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
+                <span>Tambah Member Baru</span>
             </button>
         </div>
 

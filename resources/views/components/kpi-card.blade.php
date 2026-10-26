@@ -54,7 +54,13 @@
             </div>
             @if($trend)
                 <span class="kpi-trend-pill {{ $isTrendUp ? 'trend-up' : 'trend-down' }}" title="Tren performa metrik">
-                    <span class="kpi-trend-icon">{!! $isTrendUp ? '&#8599;' : '&#8600;' !!}</span>
+                    <span class="kpi-trend-icon inline-flex items-center">
+                        @if($isTrendUp)
+                            <x-heroicon-m-arrow-trending-up class="w-3.5 h-3.5 shrink-0" />
+                        @else
+                            <x-heroicon-m-arrow-trending-down class="w-3.5 h-3.5 shrink-0" />
+                        @endif
+                    </span>
                     <span>{{ $trend }}</span>
                 </span>
             @endif

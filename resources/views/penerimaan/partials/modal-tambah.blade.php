@@ -57,8 +57,9 @@
         <div class="card-base p-6">
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
-                <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                    + Tambah Item Barang
+                <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                    <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
+                    <span>Tambah Item Barang</span>
                 </button>
             </div>
 
