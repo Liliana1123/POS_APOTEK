@@ -96,11 +96,10 @@ Dokumen ini memuat **22 saran peningkatan visual, mikro-animasi (*micro-interact
   - Latar baris berganti menjadi gradien putih ke biru es tipis (`bg-gradient-to-r from-blue-50/60 to-transparent`).
   - Baris lain di atas dan bawahnya meredup sangat halus (`opacity-90`), memudahkan mata operator membaca baris obat/harga yang panjang tanpa salah baris.
 
-### 9. Shimmer Skeleton Loading pada Live Filter & Pencarian
+### 9. Shimmer Skeleton Loading pada Live Filter & Pencarian `[SELESAI]`
 * **Prioritas:** ⭐⭐⭐ (Tinggi) | **Kompleksitas:** Sedang
-* **Kondisi Saat Ini:** Saat mengetik filter pencarian, tabel hanya meredup kaku (`opacity: 0.5`).
-* **Saran Peningkatan:**
-  Menampilkan baris kerangka abu-abu dengan sapuan kilau cahaya gradien yang bergerak horizontal (*wave shimmer animation* seperti YouTube/Notion) saat data sedang diambil.
+* **Status:** Selesai diimplementasikan pada `card-filter.blade.php` dan `app.css` dengan kelas `.table-custom-container.is-filtering`, animasi gelombang sapuan kilau `@keyframes tableShimmerGlow`, dan bilah loading indeterminate biru modern tanpa layout shift (CLS 0).
+* **Kondisi Saat Ini:** Saat mengetik filter pencarian, tabel menampilkan animasi shimmer wave halus dan bilah progress bar dinamis saat data diambil via AJAX.
 
 ### 10. Glowing Status Indicator pada Badge Tabel `[SELESAI]`
 * **Prioritas:** ⭐⭐ (Sedang) | **Kompleksitas:** Rendah

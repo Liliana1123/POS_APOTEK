@@ -728,6 +728,74 @@ body {
 }
 
 /* ==========================================================================
+   Table Shimmer Skeleton Loading on Live Search / Filter (Item 9)
+   ========================================================================== */
+@keyframes tableShimmerGlow {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.table-custom-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.table-shimmer-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e2e8f0;
+    overflow: hidden;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    pointer-events: none;
+}
+
+.table-shimmer-progress-bar {
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #60a5fa 100%);
+    border-radius: 9999px;
+    animation: modalProgressSlide 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.table-custom-container.is-filtering .table-shimmer-progress {
+    opacity: 1;
+}
+
+.table-custom-container.is-filtering table {
+    transition: opacity 160ms cubic-bezier(0.16, 1, 0.3, 1), filter 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.45;
+    filter: blur(0.3px);
+    pointer-events: none;
+}
+
+.table-custom-container.is-filtering::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: tableShimmerGlow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* ==========================================================================
    Interactive Click-to-Copy & Tooltip Bubble
    ========================================================================== */
 .copyable {

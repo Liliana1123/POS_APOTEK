@@ -114,9 +114,14 @@
         var pagContainer = document.querySelector(pagSel) || (tableContainer ? tableContainer.nextElementSibling : null);
 
         if (tableContainer) {
-            tableContainer.style.transition = 'opacity 150ms ease';
-            tableContainer.style.opacity = '0.5';
+            tableContainer.classList.add('is-filtering');
             tableContainer.style.pointerEvents = 'none';
+            if (!tableContainer.querySelector('.table-shimmer-progress')) {
+                var pBar = document.createElement('div');
+                pBar.className = 'table-shimmer-progress';
+                pBar.innerHTML = '<div class="table-shimmer-progress-bar"></div>';
+                tableContainer.insertBefore(pBar, tableContainer.firstChild);
+            }
         }
 
         fetch(targetUrl, {
@@ -183,7 +188,7 @@
         })
         .finally(function() {
             if (tableContainer) {
-                tableContainer.style.opacity = '1';
+                tableContainer.classList.remove('is-filtering');
                 tableContainer.style.pointerEvents = '';
             }
         });
