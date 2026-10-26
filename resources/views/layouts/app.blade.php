@@ -343,7 +343,17 @@
                 </button>
             </div>
             
-            <div class="flex items-center gap-3 md:gap-4 text-xs shrink-0">
+            <div class="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
+                <!-- Keyboard Shortcuts Trigger Button -->
+                <button type="button"
+                        onclick="openKeyboardShortcutsModal()"
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 rounded-lg transition-all shadow-2xs group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        title="Panduan Pintasan Keyboard (Tekan ?)">
+                    <x-heroicon-o-command-line class="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                    <span class="hidden md:inline font-medium text-slate-600 group-hover:text-blue-700">Pintasan</span>
+                    <span class="font-mono text-[10px] font-bold bg-white text-slate-500 group-hover:text-blue-600 border border-slate-200 group-hover:border-blue-200 px-1.5 py-0.5 rounded shadow-2xs">?</span>
+                </button>
+
                 <!-- Real-time Clock Widget -->
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-lg text-slate-700 shadow-2xs font-medium">
                     <x-heroicon-o-clock class="w-4 h-4 text-blue-600 shrink-0" />
