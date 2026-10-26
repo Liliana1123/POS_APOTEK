@@ -443,21 +443,28 @@ class LaporanController extends Controller
             }
         });
 
-        if ($request->filled('no_faktur')) {
+        if ($request->filled('search')) {
+            $keyword = $request->input('search');
+            $query->where(function ($q) use ($keyword) {
+                $q->whereHas('penerimaan', function ($qp) use ($keyword) {
+                    $qp->where('no_faktur', 'like', '%' . $keyword . '%');
+                })->orWhereHas('barang', function ($qb) use ($keyword) {
+                    $qb->where('nama', 'like', '%' . $keyword . '%');
+                });
+            });
+        } elseif ($request->filled('no_faktur')) {
             $query->whereHas('penerimaan', function ($q) use ($request) {
                 $q->where('no_faktur', 'like', '%' . $request->no_faktur . '%');
+            });
+        } elseif ($request->filled('nama_barang')) {
+            $query->whereHas('barang', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->nama_barang . '%');
             });
         }
 
         if ($request->filled('supplier_id')) {
             $query->whereHas('penerimaan', function ($q) use ($request) {
                 $q->where('supplier_id', $request->supplier_id);
-            });
-        }
-
-        if ($request->filled('nama_barang')) {
-            $query->whereHas('barang', function ($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->nama_barang . '%');
             });
         }
 

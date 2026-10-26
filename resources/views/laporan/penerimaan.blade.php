@@ -33,6 +33,9 @@
         @if(request('status_pembayaran'))
             &nbsp;•&nbsp; Status: {{ request('status_pembayaran') === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
         @endif
+        @if(request('search'))
+            &nbsp;•&nbsp; Pencarian: {{ request('search') }}
+        @endif
         &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
     </x-print-kop>
 </div>
@@ -49,18 +52,18 @@
     :action="route('laporan.penerimaan')"
     :reset-url="route('laporan.penerimaan')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
-    :has-reset="request()->anyFilled(['no_faktur', 'supplier_id', 'nama_barang', 'dari', 'sampai', 'status_pembayaran'])"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+    :has-reset="request()->anyFilled(['search', 'supplier_id', 'dari', 'sampai', 'status_pembayaran'])"
     :live-search="true">
     <div class="relative">
         <input
             type="text"
-            name="no_faktur"
-            value="{{ request('no_faktur') }}"
-            placeholder="Cari no. faktur..."
-            class="form-input pr-8 font-mono"
-            aria-label="No. Faktur"
-            title="No. Faktur"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Cari faktur / barang..."
+            class="form-input pr-8"
+            aria-label="Cari Faktur atau Barang"
+            title="Cari No. Faktur atau Nama Barang"
         >
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
@@ -76,7 +79,9 @@
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
         >
-        <span class="text-sm text-gray-400">-</span>
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-arrow-right class="w-3.5 h-3.5" />
+        </span>
         <input
             type="date"
             name="sampai"
@@ -95,21 +100,6 @@
             </option>
         @endforeach
     </select>
-
-    <div class="relative">
-        <input
-            type="text"
-            name="nama_barang"
-            value="{{ request('nama_barang') }}"
-            placeholder="Cari nama barang..."
-            class="form-input pr-8"
-            aria-label="Nama Barang"
-            title="Nama Barang"
-        >
-        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-        </span>
-    </div>
 
     <select name="status_pembayaran" class="form-input" aria-label="Status Pembayaran" title="Status Pembayaran">
         <option value="">Pembayaran: Semua</option>
@@ -147,7 +137,7 @@
                         <td class="col-penerimaan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->harga_beli * $item->jumlah)</td>
                     </tr>
                 @empty
-                    <x-empty-state colspan="8" />
+                    <x-empty-state colspan="8" :search-term="request('search')" />
                 @endforelse
             </tbody>
             <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
