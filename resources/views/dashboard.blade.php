@@ -665,17 +665,13 @@
                 @if ($canTombolKasir)
                     <a href="{{ route('penjualan.create') }}" class="cashier-card block !p-3.5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-xs text-white shrink-0">
-                                <x-heroicon-o-calculator class="w-4 h-4" />
-                            </div>
+                            <x-heroicon-o-calculator class="w-5 h-5 text-white shrink-0" />
                             <div>
                                 <span class="text-xs font-extrabold tracking-wide block text-white">Buka Kasir</span>
                                 <span class="text-[9px] text-blue-100 font-medium block">Transaksi penjualan baru</span>
                             </div>
                         </div>
-                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0 text-white">
-                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5" />
-                        </div>
+                        <x-heroicon-o-chevron-right class="w-4 h-4 text-white/80 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
                     </a>
                 @endif
             </div>
@@ -683,9 +679,6 @@
     </div>
     @endif
 
-    {{-- ============================================================ --}}
-    {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
-    {{-- ============================================================ --}}
     {{-- ============================================================ --}}
     {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
     {{-- ============================================================ --}}
