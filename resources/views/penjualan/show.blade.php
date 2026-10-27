@@ -27,8 +27,13 @@
                 $backUrl = route('laporan.diskon');
             } elseif (request('from') === 'penjualan_index' || request('from') === 'riwayat' || request('from') === 'index') {
                 $backUrl = route('penjualan.index');
-            } elseif (request('from') === 'pelanggan' && isset($penjualan->pelanggan_id)) {
-                $backUrl = route('pelanggan.show', $penjualan->pelanggan_id);
+            } elseif (request('from') === 'pelanggan' || request('from') === 'pelanggan_detail') {
+                $pelangganId = request('pelanggan_id') ?: ($penjualan->pelanggan_id ?? null);
+                $cleanParams = request()->except(['from', 'pelanggan_id']);
+                if ($pelangganId) {
+                    $cleanParams['detail_pelanggan_id'] = $pelangganId;
+                }
+                $backUrl = route('pelanggan.index', $cleanParams);
             }
         @endphp
         <a href="{{ $backUrl }}" class="btn-secondary py-2 px-4">Kembali</a>

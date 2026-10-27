@@ -140,6 +140,9 @@ class PelangganController extends Controller
                     'is_member' => (bool) $pelanggan->is_member,
                     'member_aktif' => (bool) $pelanggan->member_aktif,
                     'status_member' => $pelanggan->status_member,
+                    'member_since' => $pelanggan->member_since ? \Carbon\Carbon::parse($pelanggan->member_since)->format('d M Y') : ($pelanggan->created_at ? \Carbon\Carbon::parse($pelanggan->created_at)->format('d M Y') : '-'),
+                    'tanggal_lahir' => $pelanggan->tanggal_lahir ? \Carbon\Carbon::parse($pelanggan->tanggal_lahir)->format('d M Y') : '-',
+                    'keterangan' => $pelanggan->keterangan ?: '-',
                     'custom_discount_percentage' => $pelanggan->custom_discount_percentage !== null
                         ? (float) $pelanggan->custom_discount_percentage
                         : null,
