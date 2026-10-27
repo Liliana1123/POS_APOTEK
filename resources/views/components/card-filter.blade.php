@@ -119,6 +119,9 @@
         var pagSel = form.dataset.paginationTarget || '.pagination-container';
         var tableContainer = document.querySelector(tableSel);
         var pagContainer = document.querySelector(pagSel);
+        if (!pagContainer && tableContainer && isPaginationElement(tableContainer.nextElementSibling)) {
+            pagContainer = tableContainer.nextElementSibling;
+        }
 
         if (tableContainer) {
             tableContainer.classList.add('is-filtering');
@@ -147,6 +150,9 @@
 
             var newTable = doc.querySelector(tableSel);
             var newPag = doc.querySelector(pagSel);
+            if (!newPag && newTable && isPaginationElement(newTable.nextElementSibling)) {
+                newPag = newTable.nextElementSibling;
+            }
 
             if (newTable && tableContainer) {
                 tableContainer.innerHTML = newTable.innerHTML;
@@ -169,9 +175,11 @@
                     pagContainer.innerHTML = '';
                     pagContainer.classList.add('hidden');
                 }
-            } else if (newPag && newPag.innerHTML.trim() !== '' && tableContainer && tableContainer.parentNode) {
-                var clonedPag = newPag.cloneNode(true);
-                tableContainer.parentNode.insertBefore(clonedPag, tableContainer.nextSibling);
+            } else if (newPag && isPaginationElement(newPag) && newPag.innerHTML.trim() !== '' && tableContainer) {
+                var freshPag = document.createElement('div');
+                freshPag.className = 'mt-4 pagination-container';
+                freshPag.innerHTML = newPag.innerHTML;
+                tableContainer.parentNode.insertBefore(freshPag, tableContainer.nextSibling);
             }
 
             if (pushState !== false) {

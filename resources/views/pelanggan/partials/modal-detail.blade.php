@@ -32,7 +32,6 @@
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
         </div>
-    </x-slot:header>
 
         <!-- CONTENT (Scrollable jika layar kecil, fixed layout di desktop) -->
         <div class="modal-detail-scrollable">
@@ -252,7 +251,16 @@
     </div>
 
         <!-- FOOTER (Tetap terlihat di bawah) -->
-        <div class="modal-footer-fixed flex justify-end items-center px-6 py-3.5 border-t border-gray-100 bg-white shrink-0">
+        <div class="modal-footer-fixed flex justify-between items-center px-6 py-3.5 border-t border-gray-100 bg-white shrink-0">
+            <button
+                type="button"
+                id="btn-detail-print-card"
+                onclick="openCardModalFromCurrentDetail()"
+                class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:text-blue-600 hover:border-blue-300 shadow-2xs transition active:scale-98"
+                title="Cetak Kartu Member">
+                <x-heroicon-o-printer class="w-4 h-4" />
+                <span>Cetak Kartu Member</span>
+            </button>
             <button
                 type="button"
                 onclick="closeDetailModal()"
@@ -261,8 +269,9 @@
                 Tutup
             </button>
         </div>
-    </x-slot:footer>
-</x-modal>
+
+    </div>
+</div>
 
 <style>
 /* ==========================================================================

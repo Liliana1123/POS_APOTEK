@@ -1,25 +1,4 @@
 {{-- Modal Pembayaran Piutang --}}
-<<<<<<< HEAD
-<x-modal
-    id="piutangPaymentModal"
-    size="w-full max-w-4xl"
-    close-action="closePiutangPaymentModal()">
-
-    <x-slot:header>
-        <div class="flex items-center gap-4">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shrink-0">
-                <x-heroicon-o-credit-card class="h-5 w-5" />
-            </div>
-
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">
-                    Pembayaran Piutang
-                </h3>
-                <p class="mt-0.5 text-xs text-gray-500">
-                    Kelola pembayaran piutang member
-                </p>
-            </div>
-=======
 <div id="piutangPaymentModal"
     class="piutang-modal-backdrop hidden fixed inset-0 z-[9999] flex items-center justify-center p-4">
 
@@ -57,16 +36,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
->>>>>>> origin/feriena
         </div>
-    </x-slot:header>
 
-<<<<<<< HEAD
-    <div>
-=======
         {{-- Modal Body --}}
         <div class="piutang-body">
->>>>>>> origin/feriena
 
             {{-- 2 Columns: Invoice on Left, Payment Form on Right --}}
             <div class="piutang-columns">
@@ -138,25 +111,13 @@
                             <label for="piutangJumlah" class="piutang-form-label">
                                 Jumlah Pembayaran
                             </label>
-<<<<<<< HEAD
-
-                            <div class="flex">
-                                <input type="number"
-                                    id="piutangJumlah"
-                                    min="0.01"
-                                    step="0.01"
-                                    class="block w-full min-w-0 rounded-lg border-gray-300 px-1 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Masukkan jumlah pembayaran"
-                                    data-terbilang="true">
-                            </div>
-=======
                             <input type="number"
                                 id="piutangJumlah"
                                 min="0.01"
                                 step="0.01"
                                 class="piutang-input"
-                                placeholder="Masukkan jumlah pembayaran">
->>>>>>> origin/feriena
+                                placeholder="Masukkan jumlah pembayaran"
+                                data-terbilang="true">
                         </div>
 
                         {{-- Metode Pembayaran --}}
@@ -233,16 +194,6 @@
                 </div>
             </div>
 
-<<<<<<< HEAD
-    </div>
-
-    <x-slot:footer>
-        <div class="flex justify-end w-full">
-            <button type="button"
-                onclick="closePiutangPaymentModal()"
-                class="btn-secondary !text-xs px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100 transition">
-                <span>Tutup</span>
-=======
         </div>
 
         {{-- Footer --}}
@@ -251,11 +202,11 @@
                 onclick="closePiutangPaymentModal()"
                 class="piutang-close-footer-btn">
                 Tutup
->>>>>>> origin/feriena
             </button>
         </div>
-    </x-slot:footer>
-</x-modal>
+
+    </div>
+</div>
 
 {{-- Scoped Styles for Pembayaran Piutang Modal --}}
 <style>
