@@ -115,6 +115,7 @@
                 title="Piutang Supplier"
                 :value="'Rp ' . number_format($totalHutangSupplier, 0, ',', '.')"
                 subtitle="Total hutang supplier"
+                variant="hutang"
                 icon="heroicon-o-building-office-2"
                 icon-class="bg-sky-50 text-sky-600"
             />
@@ -125,6 +126,7 @@
                 title="Piutang Member"
                 :value="'Rp ' . number_format($totalPiutangMember, 0, ',', '.')"
                 subtitle="Total piutang member"
+                variant="piutang"
                 icon="heroicon-o-credit-card"
                 icon-class="bg-rose-50 text-rose-600"
             />

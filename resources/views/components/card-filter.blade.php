@@ -111,7 +111,7 @@
         var tableSel = form.dataset.tableTarget || '.table-custom-container';
         var pagSel = form.dataset.paginationTarget || '.pagination-container';
         var tableContainer = document.querySelector(tableSel);
-        var pagContainer = document.querySelector(pagSel) || (tableContainer ? tableContainer.nextElementSibling : null);
+        var pagContainer = document.querySelector(pagSel);
 
         if (tableContainer) {
             tableContainer.classList.add('is-filtering');
@@ -139,7 +139,7 @@
             var doc = parser.parseFromString(html, 'text/html');
 
             var newTable = doc.querySelector(tableSel);
-            var newPag = doc.querySelector(pagSel) || (newTable ? newTable.nextElementSibling : null);
+            var newPag = doc.querySelector(pagSel);
 
             if (newTable && tableContainer) {
                 tableContainer.innerHTML = newTable.innerHTML;
@@ -162,6 +162,9 @@
                     pagContainer.innerHTML = '';
                     pagContainer.classList.add('hidden');
                 }
+            } else if (newPag && newPag.innerHTML.trim() !== '' && tableContainer && tableContainer.parentNode) {
+                var clonedPag = newPag.cloneNode(true);
+                tableContainer.parentNode.insertBefore(clonedPag, tableContainer.nextSibling);
             }
 
             if (pushState !== false) {

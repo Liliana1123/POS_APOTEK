@@ -13,7 +13,7 @@
         if (el.dataset.countupRunning === 'true') return;
 
         const target = parseFloat(el.dataset.target || '0');
-        const prefix = el.dataset.prefix || '';
+        const prefix = el.dataset.prefix ? el.dataset.prefix.replace(/ /g, '\u00A0') : '';
         const suffix = el.dataset.suffix || '';
         const duration = parseInt(el.dataset.duration || '850', 10);
 
