@@ -285,13 +285,13 @@
             {{-- =========================================================
                 ISI BUSINESS HEALTH
             ========================================================== --}}
-            <div class="grid grid-cols-1 sm:grid-cols-[135px_1fr] gap-4 items-center">
+            <div class="grid grid-cols-1 sm:grid-cols-[125px_1fr] gap-3.5 items-center">
 
                 {{-- LEFT : HEALTH SCORE --}}
-                <div class="flex flex-col items-center justify-center border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0 sm:pr-4">
+                <div class="flex flex-col items-center justify-center border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0 sm:pr-3">
 
                     {{-- SVG Circular Gauge --}}
-                    <div class="relative w-[105px] h-[105px] flex items-center justify-center">
+                    <div class="relative w-[100px] h-[100px] flex items-center justify-center">
                         <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
                             <defs>
                                 <linearGradient id="healthGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -324,7 +324,7 @@
                         </svg>
 
                         <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span class="text-[25px] font-black text-gray-900 leading-none tracking-tight">
+                            <span class="text-[23px] font-black text-gray-900 leading-none tracking-tight">
                                 {{ $stokSehatPersen }}%
                             </span>
                             <span class="text-[8px] font-bold text-gray-400 uppercase tracking-wider mt-1">
@@ -340,7 +340,7 @@
                     </div>
 
                     {{-- Mini Breakdown Stok --}}
-                    <div class="mt-3 pt-2.5 border-t border-gray-100 w-full flex items-center justify-between text-[9px] px-1 font-semibold">
+                    <div class="mt-3 pt-2.5 border-t border-gray-100 w-full flex items-center justify-between text-[9px] px-0.5 font-semibold">
                         <div class="text-center" title="Stok Aman">
                             <span class="block font-bold text-emerald-600 text-[11px] leading-tight">{{ number_format($stokAmanCount ?? 0, 0, ',', '.') }}</span>
                             <span class="text-[8px] text-gray-400 uppercase">Aman</span>
@@ -363,148 +363,130 @@
 
                     @if ($canKpiOmzetBersih || $canGrafikOmzet)
                         {{-- Penjualan --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 border border-blue-100/60 flex items-center justify-center shrink-0">
-                                <x-heroicon-o-banknotes class="w-3.5 h-3.5" />
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 border border-blue-100/60 flex items-center justify-center shrink-0">
+                                    <x-heroicon-o-banknotes class="w-3.5 h-3.5" />
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Penjualan
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
-                                <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($omzetBersih, 0, ',', '.') }}
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[9px] font-bold flex items-center justify-end gap-0.5
-                                {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-                                @if (($deltaOmzetBersih ?? 0) >= 0)
-                                    <x-heroicon-m-arrow-trending-up class="w-3 h-3 shrink-0" />
-                                @else
-                                    <x-heroicon-m-arrow-trending-down class="w-3 h-3 shrink-0" />
+                            <div class="text-right shrink-0 flex flex-col items-end">
+                                <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight leading-tight">
+                                    <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($omzetBersih, 0, ',', '.') }}
+                                </div>
+                                @if ($deltaOmzetBersih !== null)
+                                    <div class="text-[9px] font-bold flex items-center justify-end gap-0.5 mt-0.5 leading-none {{ ($deltaOmzetBersih ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                                        @if (($deltaOmzetBersih ?? 0) >= 0)
+                                            <x-heroicon-m-arrow-trending-up class="w-2.5 h-2.5 shrink-0" />
+                                        @else
+                                            <x-heroicon-m-arrow-trending-down class="w-2.5 h-2.5 shrink-0" />
+                                        @endif
+                                        <span>{{ number_format(abs($deltaOmzetBersih), 1, ',', '.') }}%</span>
+                                    </div>
                                 @endif
-                                <span>{{ $deltaOmzetBersih !== null ? number_format(abs($deltaOmzetBersih), 1, ',', '.') . '%' : '—' }}</span>
                             </div>
                         </div>
                     @endif
 
                     @if ($canGrafikProfit)
                         {{-- Gross Profit --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100/60 flex items-center justify-center shrink-0">
-                                <x-heroicon-o-chart-bar class="w-3.5 h-3.5" />
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100/60 flex items-center justify-center shrink-0">
+                                    <x-heroicon-o-chart-bar class="w-3.5 h-3.5" />
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Gross Profit
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
-                                <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($grossProfitHealth, 0, ',', '.') }}
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[9px] font-bold flex items-center justify-end gap-0.5
-                                {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-                                @if (($deltaGrossProfit ?? 0) >= 0)
-                                    <x-heroicon-m-arrow-trending-up class="w-3 h-3 shrink-0" />
-                                @else
-                                    <x-heroicon-m-arrow-trending-down class="w-3 h-3 shrink-0" />
+                            <div class="text-right shrink-0 flex flex-col items-end">
+                                <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight leading-tight">
+                                    <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($grossProfitHealth, 0, ',', '.') }}
+                                </div>
+                                @if ($deltaGrossProfit !== null)
+                                    <div class="text-[9px] font-bold flex items-center justify-end gap-0.5 mt-0.5 leading-none {{ ($deltaGrossProfit ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                                        @if (($deltaGrossProfit ?? 0) >= 0)
+                                            <x-heroicon-m-arrow-trending-up class="w-2.5 h-2.5 shrink-0" />
+                                        @else
+                                            <x-heroicon-m-arrow-trending-down class="w-2.5 h-2.5 shrink-0" />
+                                        @endif
+                                        <span>{{ number_format(abs($deltaGrossProfit), 1, ',', '.') }}%</span>
+                                    </div>
                                 @endif
-                                <span>{{ $deltaGrossProfit !== null ? number_format(abs($deltaGrossProfit), 1, ',', '.') . '%' : '—' }}</span>
                             </div>
                         </div>
 
                         {{-- Margin --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-100/60 flex items-center justify-center shrink-0">
-                                <span class="text-[11px] font-black leading-none">%</span>
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-100/60 flex items-center justify-center shrink-0">
+                                    <span class="text-[11px] font-black leading-none">%</span>
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Margin
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
+                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight text-right shrink-0">
                                 {{ number_format($marginHealth, 1, ',', '.') }}%
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[10px] font-medium text-gray-300">
-                                —
                             </div>
                         </div>
                     @endif
 
                     @if ($canKpiHutang)
                         {{-- Hutang Supplier --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 border border-sky-100/60 flex items-center justify-center shrink-0">
-                                <x-heroicon-o-building-office-2 class="w-3.5 h-3.5" />
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 border border-sky-100/60 flex items-center justify-center shrink-0">
+                                    <x-heroicon-o-building-office-2 class="w-3.5 h-3.5" />
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Hutang Supplier
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
+                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight text-right shrink-0">
                                 <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($totalHutangSupplier, 0, ',', '.') }}
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[10px] font-medium text-gray-300">
-                                —
                             </div>
                         </div>
                     @endif
 
                     @if ($canKpiPiutang)
                         {{-- Piutang Member --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 border border-purple-100/60 flex items-center justify-center shrink-0">
-                                <x-heroicon-o-users class="w-3.5 h-3.5" />
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 border border-purple-100/60 flex items-center justify-center shrink-0">
+                                    <x-heroicon-o-users class="w-3.5 h-3.5" />
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Piutang Member
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
+                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight text-right shrink-0">
                                 <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($totalPiutangMember, 0, ',', '.') }}
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[10px] font-medium text-gray-300">
-                                —
                             </div>
                         </div>
                     @endif
 
                     @if ($canNilaiPersediaan)
                         {{-- Nilai Persediaan --}}
-                        <div class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
-                            <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 border border-teal-100/60 flex items-center justify-center shrink-0">
-                                <x-heroicon-o-cube class="w-3.5 h-3.5" />
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate block">
+                        <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors hover:bg-gray-50/80 group">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 border border-teal-100/60 flex items-center justify-center shrink-0">
+                                    <x-heroicon-o-cube class="w-3.5 h-3.5" />
+                                </div>
+                                <span class="text-[11px] font-semibold text-gray-600 group-hover:text-gray-900 transition-colors truncate">
                                     Nilai Persediaan
                                 </span>
                             </div>
 
-                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight">
+                            <div class="text-[11px] font-extrabold text-gray-900 whitespace-nowrap tracking-tight text-right shrink-0">
                                 <span class="text-[9px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($nilaiPersediaan, 0, ',', '.') }}
-                            </div>
-
-                            <div class="w-[52px] shrink-0 text-right text-[10px] font-medium text-gray-300">
-                                —
                             </div>
                         </div>
                     @endif
@@ -1072,8 +1054,8 @@
                                             <span class="font-bold text-gray-400 text-xs">{{ $index + 1 }}</span>
                                         @endif
                                     </td>
-                                    <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
-                                    <td>
+                                    <td class="font-bold text-gray-900 text-xs truncate max-w-[130px] md:max-w-[170px]" title="{{ $medicine->nama }}">{{ $medicine->nama }}</td>
+                                    <td class="truncate max-w-[95px] md:max-w-[130px]" title="{{ $medicine->kategori ?? '-' }}">
                                         <span class="text-xs text-gray-500">
                                             {{ $medicine->kategori ?? '-' }}
                                         </span>
@@ -1145,8 +1127,8 @@
                             @forelse ($leastSellingMedicines as $index => $medicine)
                                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                     <td class="text-center font-bold text-gray-400 text-xs py-2.5">{{ $index + 1 }}</td>
-                                    <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
-                                    <td>
+                                    <td class="font-bold text-gray-900 text-xs truncate max-w-[130px] md:max-w-[170px]" title="{{ $medicine->nama }}">{{ $medicine->nama }}</td>
+                                    <td class="truncate max-w-[95px] md:max-w-[130px]" title="{{ $medicine->kategori ?? '-' }}">
                                         <span class="text-xs text-gray-500">
                                             {{ $medicine->kategori ?? '-' }}
                                         </span>
