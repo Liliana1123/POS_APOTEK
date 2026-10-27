@@ -914,33 +914,11 @@ body {
    Primary Icon = 20px (w-5) → Center is 16 + 22 + 10 = 48px.
    Rail Child Icon = 16px (w-4) → Center is 16 + 24 + 8 = 48px in rail mode. */
 @media (min-width: 1024px) {
-    /* Desktop Sidebar Spacer (keeps layout stable during unpinned hover) */
-    #sidebar-spacer {
-        width: 6rem;
-        flex-shrink: 0;
-        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    html.sidebar-keep-expanded #sidebar-spacer {
-        width: 18rem;
-    }
-
-    html.sidebar-preload #sidebar-spacer {
-        transition: none !important;
-    }
-
-    /* Fixed Desktop Rail Sidebar */
     #app-sidebar {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        bottom: 0 !important;
-        height: 100vh !important;
         width: 6rem !important;
-        z-index: 50 !important;
-        will-change: width, box-shadow;
-        transform: translateZ(0); /* Hardware accelerated compositing layer */
-        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        /* w-24 / 96px */
+        will-change: width;
+        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow-x: hidden;
     }
 
@@ -949,13 +927,7 @@ body {
     #app-sidebar.sidebar-expanded,
     html.sidebar-keep-expanded #app-sidebar {
         width: 18rem !important;
-    }
-
-    /* Floating elevation drop shadow ONLY during unpinned hover expansion */
-    html:not(.sidebar-keep-expanded) #app-sidebar:hover,
-    html:not(.sidebar-keep-expanded) #app-sidebar:focus-within,
-    html:not(.sidebar-keep-expanded) #app-sidebar.sidebar-expanded {
-        box-shadow: 10px 0 32px -4px rgba(15, 23, 42, 0.32);
+        /* 288px (w-72) expanded */
     }
 
     /* Prevent animation ONLY during initial page preload to avoid FOUC */
@@ -1008,12 +980,24 @@ body {
         padding-right: 1.5rem !important;
     }
 
-    /* Collapsed state: labels smoothly fade with GPU-composited opacity and transform (no layout reflow) */
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label {
+    /* Collapsed state: labels and controls smoothly fade and shrink (no jarring display:none popping) */
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-toggle,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-arrow,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) #pin-sidebar-toggle {
         opacity: 0 !important;
+        max-width: 0 !important;
+        overflow: hidden !important;
         pointer-events: none !important;
-        transform: translateX(-6px);
-        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        white-space: nowrap !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Expanded state: labels reveal with subtle delay for organic smoothness */
@@ -1023,18 +1007,10 @@ body {
     html.sidebar-keep-expanded #app-sidebar .sidebar-nav-label {
         display: inline-block !important;
         opacity: 1 !important;
+        max-width: 220px !important;
         pointer-events: auto !important;
-        transform: translateX(0);
         white-space: nowrap !important;
-        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Header Pin Button */
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) #pin-sidebar-toggle {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        transform: scale(0.7);
-        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover #pin-sidebar-toggle,
@@ -1043,9 +1019,10 @@ body {
     html.sidebar-keep-expanded #app-sidebar #pin-sidebar-toggle {
         display: inline-flex !important;
         opacity: 1 !important;
+        max-width: 2.5rem !important;
+        padding: 0.375rem !important;
         pointer-events: auto !important;
-        transform: scale(1);
-        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Unified Arrow Transitions (Group & Subgroup) */
@@ -1053,15 +1030,7 @@ body {
     .sidebar-subgroup-arrow {
         will-change: transform, opacity;
         transform-origin: center;
-        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-arrow,
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-toggle {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover .sidebar-group-arrow,
@@ -1077,16 +1046,9 @@ body {
     #app-sidebar.sidebar-expanded .sidebar-subgroup-toggle,
     html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-toggle {
         opacity: 1 !important;
+        max-width: 2rem !important;
         pointer-events: auto !important;
-        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Footer Info and Logout */
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        transform: translateX(-6px);
-        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover .sidebar-footer-info,
@@ -1094,16 +1056,9 @@ body {
     #app-sidebar.sidebar-expanded .sidebar-footer-info,
     html.sidebar-keep-expanded #app-sidebar .sidebar-footer-info {
         opacity: 1 !important;
+        max-width: 150px !important;
         pointer-events: auto !important;
-        transform: translateX(0);
-        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout {
-        opacity: 0 !important;
-        pointer-events: none !important;
-        transform: scale(0.7);
-        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover .sidebar-footer-logout,
@@ -1111,9 +1066,9 @@ body {
     #app-sidebar.sidebar-expanded .sidebar-footer-logout,
     html.sidebar-keep-expanded #app-sidebar .sidebar-footer-logout {
         opacity: 1 !important;
+        max-width: 3rem !important;
         pointer-events: auto !important;
-        transform: scale(1);
-        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Fixed anchor padding on header and footer (never changes, logo & avatar stay rock-solid) */
