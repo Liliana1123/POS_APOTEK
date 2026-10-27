@@ -263,10 +263,10 @@
                     </div>
 
                     <div>
-                        <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                        <h3 class="text-base font-bold text-gray-900 tracking-tight">
                             Kondisi Bisnis
                         </h3>
-                        <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                        <p class="text-xs text-gray-500 mt-0.5">
                             Kondisi operasional saat ini
                         </p>
                     </div>
@@ -576,10 +576,10 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                                    <h3 class="text-base font-bold text-gray-900 tracking-tight">
                                         Tindak Lanjut
                                     </h3>
-                                    <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                                    <p class="text-xs text-gray-500 mt-0.5">
                                         {{ $activeAlertsCount > 0 ? 'Perlu perhatian operasional' : 'Semua operasional aman' }}
                                     </p>
                                 </div>
@@ -703,10 +703,10 @@
                         <x-heroicon-o-archive-box class="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                        <h3 class="text-base font-bold text-gray-900 tracking-tight">
                             Pemantauan Stok
                         </h3>
-                        <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                        <p class="text-xs text-gray-500 mt-0.5">
                             Ringkasan kuantitas & masa simpan obat
                         </p>
                     </div>
@@ -936,7 +936,7 @@
 
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight">
                                 Barang yang Harus Dibeli
                             </h3>
                             @if(count($barangHarusDibeli) > 0)
@@ -945,7 +945,7 @@
                                 </span>
                             @endif
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                        <p class="text-xs text-gray-500 mt-0.5">
                             Item stok habis & di bawah batas minimum
                         </p>
                     </div>
@@ -1049,10 +1049,10 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight">
                                 10 Obat Terlaris
                             </h3>
-                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                            <p class="text-xs text-gray-500 mt-0.5">
                                 Kuantitas unit terjual pada periode {{ $periodeLabel }}
                             </p>
                         </div>
@@ -1134,10 +1134,10 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight">
                                 10 Obat Paling Sedikit Terjual
                             </h3>
-                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                            <p class="text-xs text-gray-500 mt-0.5">
                                 Termasuk obat aktif yang belum terjual (0 unit)
                             </p>
                         </div>
@@ -1222,8 +1222,8 @@
                             </div>
 
                             <div>
-                                <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Kinerja Karyawan</h3>
-                                <p class="text-[9px] text-gray-400 mt-0.5 font-medium">Performa transaksi dan total penjualan pada periode {{ $periodeLabel }}</p>
+                                <h3 class="text-base font-bold text-gray-900 tracking-tight">Kinerja Karyawan</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Performa transaksi dan total penjualan pada periode {{ $periodeLabel }}</p>
                             </div>
                         </div>
 
@@ -1322,8 +1322,8 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Dokter Penyumbang Resep Terbanyak</h3>
-                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini</p>
+                            <h3 class="text-base font-bold text-gray-900 tracking-tight">Dokter Penyumbang Resep Terbanyak</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini</p>
                         </div>
                     </div>
 
@@ -1414,8 +1414,8 @@
                     <x-heroicon-o-user class="w-5 h-5" />
                 </div>
                 <div>
-                    <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Dokter Penyumbang Resep Bulan Ini</h3>
-                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
+                    <h3 class="text-base font-bold text-gray-900 tracking-tight">Dokter Penyumbang Resep Bulan Ini</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
                 </div>
             </div>
             <button type="button" onclick="closeModalDokterResep()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer" title="Tutup modal">
