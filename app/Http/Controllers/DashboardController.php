@@ -49,6 +49,11 @@ class DashboardController extends Controller
             case 'custom':
                 $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
                 $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+                if ($dari > $sampai) {
+                    $temp = $dari;
+                    $dari = $sampai;
+                    $sampai = $temp;
+                }
                 $daysDiff = Carbon::parse($dari)->diffInDays(Carbon::parse($sampai)) + 1;
                 $prevDari = Carbon::parse($dari)->subDays($daysDiff)->format('Y-m-d');
                 $prevSampai = Carbon::parse($dari)->subDay()->format('Y-m-d');
@@ -225,8 +230,8 @@ class DashboardController extends Controller
         $deltaTotalDiskon = $salesAndKpi['deltaTotalDiskon'];
         $deltaOmzetBersih = $salesAndKpi['deltaOmzetBersih'];
 
-        // 3. FINANCIAL CONTROL & MEMBER (Posisi Outstanding Terkini - Cached)
-        $financialControl = DashboardCacheService::remember('financial_control', [$today->format('Y-m-d'), $dari, $sampai, $prevDari, $prevSampai], function () use ($today, $dari, $sampai, $prevDari, $prevSampai) {
+        // 3. FINANCIAL CONTROL & MEMBER (Pisahkan Posisi Saldo Terkini vs Pertumbuhan Member Periode)
+        $outstandingControl = DashboardCacheService::remember('outstanding_financial_control', [$today->format('Y-m-d')], function () use ($today) {
             // A. Hutang Supplier (Penerimaan belum lunas - eager loaded untuk eliminasi N+1)
             $unpaidPenerimaans = Penerimaan::with(['detail', 'pembayaran'])
                 ->where('lunas', false)
@@ -264,25 +269,19 @@ class DashboardController extends Controller
                 }
             }
 
-            // B. Member & Piutang: 5 metrik pelanggan disatukan dalam 1 single query
-            $memberStats = DB::table('pelanggans')
+            // B. Member & Saldo Piutang Global Terkini
+            $memberGlobal = DB::table('pelanggans')
                 ->where('is_member', true)
                 ->selectRaw('
                     COUNT(*) as total_member,
-                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as new_members,
-                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as prev_new_members,
                     COALESCE(SUM(saldo_piutang), 0) as total_piutang,
                     COUNT(CASE WHEN saldo_piutang > 0 THEN 1 END) as berpiutang_count
-                ', [$dari, $sampai, $prevDari, $prevSampai])
+                ')
                 ->first();
 
-            $totalMember = (int) ($memberStats->total_member ?? 0);
-            $newMembersInPeriod = (int) ($memberStats->new_members ?? 0);
-            $prevNewMembers = (int) ($memberStats->prev_new_members ?? 0);
-            $totalPiutangMember = (float) ($memberStats->total_piutang ?? 0);
-            $memberBerpiutangCount = (int) ($memberStats->berpiutang_count ?? 0);
-
-            $deltaMember = $prevNewMembers > 0 ? round((($newMembersInPeriod - $prevNewMembers) / $prevNewMembers) * 100, 1) : null;
+            $totalMember = (int) ($memberGlobal->total_member ?? 0);
+            $totalPiutangMember = (float) ($memberGlobal->total_piutang ?? 0);
+            $memberBerpiutangCount = (int) ($memberGlobal->berpiutang_count ?? 0);
 
             // C. Umur piutang dari transaksi kasir piutang
             $unpaidPiutangPenjualans = Penjualan::with('pembayaranPiutang')
@@ -327,31 +326,48 @@ class DashboardController extends Controller
             return compact(
                 'totalHutangSupplier', 'hutangOverdue', 'hutangDueSoon', 'hutangNotDue',
                 'countHutangOverdue', 'countHutangDueSoon', 'countHutangNotDue',
-                'totalMember', 'newMembersInPeriod', 'deltaMember',
-                'totalPiutangMember', 'piutangOverdue', 'piutangDueSoon', 'piutangNotDue',
-                'countPiutangOverdue', 'countPiutangDueSoon', 'countPiutangNotDue',
-                'memberBerpiutangCount'
+                'totalMember', 'totalPiutangMember', 'piutangOverdue', 'piutangDueSoon',
+                'piutangNotDue', 'countPiutangOverdue', 'countPiutangDueSoon',
+                'countPiutangNotDue', 'memberBerpiutangCount'
             );
         });
 
-        $totalHutangSupplier = $financialControl['totalHutangSupplier'];
-        $hutangOverdue = $financialControl['hutangOverdue'];
-        $hutangDueSoon = $financialControl['hutangDueSoon'];
-        $hutangNotDue = $financialControl['hutangNotDue'];
-        $countHutangOverdue = $financialControl['countHutangOverdue'];
-        $countHutangDueSoon = $financialControl['countHutangDueSoon'];
-        $countHutangNotDue = $financialControl['countHutangNotDue'];
-        $totalMember = $financialControl['totalMember'];
-        $newMembersInPeriod = $financialControl['newMembersInPeriod'];
-        $deltaMember = $financialControl['deltaMember'];
-        $totalPiutangMember = $financialControl['totalPiutangMember'];
-        $piutangOverdue = $financialControl['piutangOverdue'];
-        $piutangDueSoon = $financialControl['piutangDueSoon'];
-        $piutangNotDue = $financialControl['piutangNotDue'];
-        $countPiutangOverdue = $financialControl['countPiutangOverdue'];
-        $countPiutangDueSoon = $financialControl['countPiutangDueSoon'];
-        $countPiutangNotDue = $financialControl['countPiutangNotDue'];
-        $memberBerpiutangCount = $financialControl['memberBerpiutangCount'];
+        // Pertumbuhan member khusus periode yang dipilih (Cached per rentang tanggal)
+        $memberPeriod = DashboardCacheService::remember('member_period_delta', [$dari, $sampai, $prevDari, $prevSampai], function () use ($dari, $sampai, $prevDari, $prevSampai) {
+            $stats = DB::table('pelanggans')
+                ->where('is_member', true)
+                ->selectRaw('
+                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as new_members,
+                    COUNT(CASE WHEN member_since BETWEEN ? AND ? THEN 1 END) as prev_new_members
+                ', [$dari, $sampai, $prevDari, $prevSampai])
+                ->first();
+
+            $newMembersInPeriod = (int) ($stats->new_members ?? 0);
+            $prevNewMembers = (int) ($stats->prev_new_members ?? 0);
+            $deltaMember = $prevNewMembers > 0 ? round((($newMembersInPeriod - $prevNewMembers) / $prevNewMembers) * 100, 1) : null;
+
+            return compact('newMembersInPeriod', 'deltaMember');
+        });
+
+        $totalHutangSupplier = $outstandingControl['totalHutangSupplier'];
+        $hutangOverdue = $outstandingControl['hutangOverdue'];
+        $hutangDueSoon = $outstandingControl['hutangDueSoon'];
+        $hutangNotDue = $outstandingControl['hutangNotDue'];
+        $countHutangOverdue = $outstandingControl['countHutangOverdue'];
+        $countHutangDueSoon = $outstandingControl['countHutangDueSoon'];
+        $countHutangNotDue = $outstandingControl['countHutangNotDue'];
+        $totalMember = $outstandingControl['totalMember'];
+        $totalPiutangMember = $outstandingControl['totalPiutangMember'];
+        $piutangOverdue = $outstandingControl['piutangOverdue'];
+        $piutangDueSoon = $outstandingControl['piutangDueSoon'];
+        $piutangNotDue = $outstandingControl['piutangNotDue'];
+        $countPiutangOverdue = $outstandingControl['countPiutangOverdue'];
+        $countPiutangDueSoon = $outstandingControl['countPiutangDueSoon'];
+        $countPiutangNotDue = $outstandingControl['countPiutangNotDue'];
+        $memberBerpiutangCount = $outstandingControl['memberBerpiutangCount'];
+
+        $newMembersInPeriod = $memberPeriod['newMembersInPeriod'];
+        $deltaMember = $memberPeriod['deltaMember'];
 
         // 5 & 6. INVENTORY CONTROL CENTER & BARANG YANG HARUS DIBELI (Cached)
         $inv = DashboardCacheService::remember('inventory_data', [], function () {
@@ -592,16 +608,13 @@ class DashboardController extends Controller
                 ->get();
         });
 
-        // 12. DOKTER PENYUMBANG RESEP TERBANYAK (Bulan Ini - Cached)
-        $startOfMonth = now()->startOfMonth()->toDateString();
-        $endOfMonth = now()->endOfMonth()->toDateString();
-
-        $semuaDokterResep = DashboardCacheService::remember('semua_dokter_resep_bulan_ini', [$startOfMonth, $endOfMonth], function () use ($startOfMonth, $endOfMonth) {
+        // 12. DOKTER PENYUMBANG RESEP TERBANYAK (Cached sesuai rentang periode)
+        $semuaDokterResep = DashboardCacheService::remember('semua_dokter_resep', [$dari, $sampai], function () use ($dari, $sampai) {
             return DB::table('penjualans')
                 ->where('jenis_transaksi', 'resep')
                 ->whereNotNull('id_dokter')
                 ->where(DB::raw('TRIM(id_dokter)'), '!=', '')
-                ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+                ->whereBetween('tanggal', [$dari, $sampai])
                 ->select(
                     'id_dokter',
                     DB::raw('MAX(nama_dokter) as nama_dokter'),

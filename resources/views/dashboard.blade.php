@@ -34,7 +34,18 @@
     $canDokterResep     = auth()->user()->hasPermission('dashboard.dokter-resep');
 @endphp
 
-<div class="dashboard-container dashboard-reference space-y-5">
+<div class="dashboard-container dashboard-reference space-y-5 relative" id="dashboard-main-container">
+
+    {{-- Payload Data Grafik untuk AJAX Live Updates --}}
+    <script id="salesChartDataPayload" type="application/json">
+    {
+        "labels": {!! json_encode($chartLabels ?? []) !!},
+        "gross": {!! json_encode($chartGross ?? []) !!},
+        "net": {!! json_encode($chartNet ?? []) !!},
+        "profit": {!! json_encode($chartProfit ?? []) !!},
+        "canProfit": {{ ($canGrafikProfit ?? false) ? 'true' : 'false' }}
+    }
+    </script>
 
     {{-- ============================================================ --}}
     {{-- 1. HEADER EXECUTIVE DENGAN FILTER PERIODE                    --}}
@@ -45,7 +56,8 @@
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
             </div>
             <p class="text-sm text-gray-500 mt-1">
-                Ringkasan kondisi operasional dan keuangan apotek Anda hari ini.
+                Ringkasan kondisi operasional dan keuangan apotek Anda periode <span class="font-semibold text-gray-700">{{ $periodeLabel }}</span>
+                <span class="text-xs text-gray-400 font-normal">({{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} &ndash; {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }})</span>.
             </p>
         </div>
 
@@ -54,6 +66,8 @@
             :periode="$periode"
             :dari="$dari"
             :sampai="$sampai"
+            :ajax="true"
+            ajax-target="#dashboard-main-container"
         />
     </div>
 
@@ -755,7 +769,11 @@
                     <div class="flex items-center gap-4">
                         {{-- Doughnut Chart Kondisi Stok with Center Text --}}
                         <div class="relative w-[92px] h-[92px] shrink-0 flex items-center justify-center">
-                            <canvas id="kondisiStokChart"></canvas>
+                            <canvas id="kondisiStokChart"
+                                data-habis="{{ (int) ($stokHabisCount ?? 0) }}"
+                                data-menipis="{{ (int) ($stokMenipisCount ?? 0) }}"
+                                data-aman="{{ (int) ($stokAmanCount ?? 0) }}"
+                            ></canvas>
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                                 <span class="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
                                 <span class="text-sm font-black text-gray-900 leading-tight my-0.5">{{ number_format($totalKondisiStok) }}</span>
@@ -829,7 +847,12 @@
                     <div class="flex items-center gap-4">
                         {{-- Donut Chart Expiry Health with Center Text --}}
                         <div class="relative w-[92px] h-[92px] shrink-0 flex items-center justify-center">
-                            <canvas id="expiryHealthChart"></canvas>
+                            <canvas id="expiryHealthChart"
+                                data-aman="{{ (int) ($expiryAman ?? 0) }}"
+                                data-warning="{{ (int) ($expiryWarning ?? 0) }}"
+                                data-critical="{{ (int) ($expiryCritical ?? 0) }}"
+                                data-kadaluarsa="{{ (int) ($expiryKadaluarsa ?? 0) }}"
+                            ></canvas>
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
                                 <span class="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Total</span>
                                 <span class="text-sm font-black text-gray-900 leading-tight my-0.5">{{ number_format($totalBatchesCount) }}</span>
@@ -1279,7 +1302,7 @@
 
                         <div>
                             <h3 class="text-base font-bold text-gray-900 tracking-tight">Dokter Penyumbang Resep Terbanyak</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Berdasarkan total resep yang disumbangkan ke apotek pada periode {{ $periodeLabel }}</p>
                         </div>
                     </div>
 
@@ -1335,7 +1358,7 @@
                             @empty
                                 <tr>
                                     <td colspan="5" class="py-10 text-center text-xs text-gray-400">
-                                        Belum ada riwayat transaksi resep dokter pada bulan ini.
+                                        Belum ada riwayat transaksi resep dokter pada periode {{ $periodeLabel }}.
                                     </td>
                                 </tr>
                             @endforelse
@@ -1368,8 +1391,8 @@
                     <x-heroicon-o-user class="w-5 h-5" />
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 tracking-tight">Dokter Penyumbang Resep Bulan Ini</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
+                    <h3 class="text-base font-bold text-gray-900 tracking-tight">Dokter Penyumbang Resep ({{ $periodeLabel }})</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Daftar lengkap dokter dengan kontribusi resep terdaftar pada periode {{ $periodeLabel }}.</p>
                 </div>
             </div>
             <button type="button" onclick="closeModalDokterResep()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer" title="Tutup modal">
@@ -1439,7 +1462,7 @@
                         @empty
                             <tr id="empty-modal-dokter">
                                 <td colspan="5" class="py-10 text-center text-xs text-gray-400">
-                                    Belum ada data resep dokter pada bulan ini.
+                                    Belum ada data resep dokter pada periode {{ $periodeLabel }}.
                                 </td>
                             </tr>
                         @endforelse
@@ -1456,7 +1479,7 @@
         <!-- Modal Footer -->
         <div class="px-6 py-3 border-t border-gray-100 bg-slate-50/70 flex items-center justify-between">
             <div class="text-xs text-gray-500">
-                Total dokter terdaftar bulan ini: <span class="font-bold text-gray-800">{{ $semuaDokterResep->count() }}</span> dokter
+                Total dokter berkontribusi periode {{ $periodeLabel }}: <span class="font-bold text-gray-800">{{ $semuaDokterResep->count() }}</span> dokter
             </div>
             <button type="button" onclick="closeModalDokterResep()" class="text-xs font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 px-4 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs">
                 Tutup
@@ -1465,35 +1488,43 @@
     </div>
 </div>
 
-{{-- Script Chart.js CDN & Interaktivitas --}}
+{{-- Script Chart.js CDN & Interaktivitas Dashboard --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function toggleCustomDate() {
-        const container = document.getElementById('customDateContainer');
-        const hiddenPeriode = document.getElementById('hiddenCustomPeriode');
-        if (container.classList.contains('hidden')) {
-            container.classList.remove('hidden');
-            container.classList.add('flex');
-            hiddenPeriode.disabled = false;
-        } else {
-            container.classList.add('hidden');
-            container.classList.remove('flex');
-            hiddenPeriode.disabled = true;
-        }
+    window.salesPerformanceChartInstance = null;
+    window.kondisiStokChartInstance = null;
+    window.expiryHealthChartInstance = null;
+
+    function formatRupiah(val) {
+        return 'Rp ' + Number(val).toLocaleString('id-ID');
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    // 1. Inisialisasi Grafik Penjualan dan Omzet
+    function initSalesChart() {
         const ctx = document.getElementById('salesPerformanceChart');
         if (!ctx) return;
 
-        const labels = @json($chartLabels);
-        const dataGross = @json($chartGross);
-        const dataNet = @json($chartNet);
-        const dataProfit = @json($chartProfit);
+        const payloadEl = document.getElementById('salesChartDataPayload');
+        if (!payloadEl) return;
 
-        const formatRupiah = (val) => {
-            return 'Rp ' + Number(val).toLocaleString('id-ID');
-        };
+        let chartData;
+        try {
+            chartData = JSON.parse(payloadEl.textContent);
+        } catch (e) {
+            console.error('Error parsing sales chart data:', e);
+            return;
+        }
+
+        const labels = chartData.labels || [];
+        const dataGross = chartData.gross || [];
+        const dataNet = chartData.net || [];
+        const dataProfit = chartData.profit || [];
+        const canProfit = chartData.canProfit;
+
+        if (window.salesPerformanceChartInstance) {
+            window.salesPerformanceChartInstance.destroy();
+            window.salesPerformanceChartInstance = null;
+        }
 
         const canvasContext = ctx.getContext('2d');
 
@@ -1526,74 +1557,77 @@
                     chartCtx.moveTo(x, topY);
                     chartCtx.lineTo(x, bottomY);
                     chartCtx.lineWidth = 1;
-                    chartCtx.strokeStyle = 'rgba(148, 163, 184, 0.65)'; // slate-400
+                    chartCtx.strokeStyle = 'rgba(148, 163, 184, 0.65)';
                     chartCtx.stroke();
                     chartCtx.restore();
                 }
             }
         };
 
-        const chart = new Chart(ctx, {
+        const datasets = [
+            {
+                label: 'Omzet Kotor',
+                data: dataGross,
+                borderColor: '#f59e0b',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                tension: 0.38,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#f59e0b',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2.5,
+                pointHitRadius: 14,
+                fill: false,
+            },
+            {
+                label: 'Omzet Bersih',
+                data: dataNet,
+                borderColor: '#2563eb',
+                backgroundColor: gradientNet,
+                borderWidth: 2.5,
+                tension: 0.38,
+                pointRadius: 0,
+                pointHoverRadius: 6.5,
+                pointHoverBackgroundColor: '#2563eb',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2.5,
+                pointHitRadius: 14,
+                fill: true,
+            }
+        ];
+
+        if (canProfit) {
+            datasets.push({
+                label: 'Gross Profit',
+                data: dataProfit,
+                borderColor: '#10b981',
+                backgroundColor: gradientProfit,
+                borderWidth: 2,
+                borderDash: [5, 4],
+                tension: 0.38,
+                pointRadius: 0,
+                pointHoverRadius: 5.5,
+                pointHoverBackgroundColor: '#10b981',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2.5,
+                pointHitRadius: 14,
+                fill: true,
+            });
+        }
+
+        window.salesPerformanceChartInstance = new Chart(ctx, {
             type: 'line',
             plugins: [verticalGuidePlugin],
             data: {
                 labels: labels,
-                datasets: [
-                    {
-                        label: 'Omzet Kotor',
-                        data: dataGross,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.38,
-                        pointRadius: 0,
-                        pointHoverRadius: 6,
-                        pointHoverBackgroundColor: '#f59e0b',
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 2.5,
-                        pointHitRadius: 14,
-                        fill: false,
-                    },
-                    {
-                        label: 'Omzet Bersih',
-                        data: dataNet,
-                        borderColor: '#2563eb',
-                        backgroundColor: gradientNet,
-                        borderWidth: 2.5,
-                        tension: 0.38,
-                        pointRadius: 0,
-                        pointHoverRadius: 6.5,
-                        pointHoverBackgroundColor: '#2563eb',
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 2.5,
-                        pointHitRadius: 14,
-                        fill: true,
-                    },
-                    @if ($canGrafikProfit)
-                    {
-                        label: 'Gross Profit',
-                        data: dataProfit,
-                        borderColor: '#10b981',
-                        backgroundColor: gradientProfit,
-                        borderWidth: 2,
-                        borderDash: [5, 4],
-                        tension: 0.38,
-                        pointRadius: 0,
-                        pointHoverRadius: 5.5,
-                        pointHoverBackgroundColor: '#10b981',
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 2.5,
-                        pointHitRadius: 14,
-                        fill: true,
-                    }
-                    @endif
-                ]
+                datasets: datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: {
-                    duration: 900,
+                    duration: 350,
                     easing: 'easeOutQuart',
                 },
                 interaction: {
@@ -1691,167 +1725,191 @@
         // Interaktivitas Legend: Klik tombol untuk toggle/sembunyikan dataset
         const legendButtons = document.querySelectorAll('#salesChartLegend .chart-legend-btn');
         legendButtons.forEach(btn => {
-            btn.addEventListener('click', function () {
+            btn.onclick = function () {
+                if (!window.salesPerformanceChartInstance) return;
                 const idx = parseInt(this.dataset.datasetIndex, 10);
-                const isVisible = chart.isDatasetVisible(idx);
-                chart.setDatasetVisibility(idx, !isVisible);
-                chart.update();
+                const isVisible = window.salesPerformanceChartInstance.isDatasetVisible(idx);
+                window.salesPerformanceChartInstance.setDatasetVisibility(idx, !isVisible);
+                window.salesPerformanceChartInstance.update();
 
                 if (isVisible) {
                     this.classList.add('opacity-40', 'line-through', 'grayscale');
                 } else {
                     this.classList.remove('opacity-40', 'line-through', 'grayscale');
                 }
-            });
+            };
         });
+    }
 
-        // ==========================================
-        // DOUGHNUT CHART: KONDISI STOK
-        // ==========================================
+    // 2. Inisialisasi Doughnut Chart: Kondisi Stok
+    function initKondisiStokChart() {
         const ctxKondisi = document.getElementById('kondisiStokChart');
-        if (ctxKondisi) {
-            const stokHabis = {{ (int) $stokHabisCount }};
-            const stokMenipis = {{ (int) $stokMenipisCount }};
-            const stokAman = {{ (int) $stokAmanCount }};
-            const totalKondisi = stokHabis + stokMenipis + stokAman;
+        if (!ctxKondisi) return;
 
-            new Chart(ctxKondisi, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Habis', 'Menipis', 'Aman'],
-                    datasets: [{
-                        data: totalKondisi > 0 ? [stokHabis, stokMenipis, stokAman] : [0, 0, 1],
-                        backgroundColor: totalKondisi > 0 ? ['#f43f5e', '#f59e0b', '#10b981'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                        hoverOffset: 4
-                    }]
+        if (window.kondisiStokChartInstance) {
+            window.kondisiStokChartInstance.destroy();
+            window.kondisiStokChartInstance = null;
+        }
+
+        const stokHabis = parseInt(ctxKondisi.dataset.habis || '0', 10);
+        const stokMenipis = parseInt(ctxKondisi.dataset.menipis || '0', 10);
+        const stokAman = parseInt(ctxKondisi.dataset.aman || '0', 10);
+        const totalKondisi = stokHabis + stokMenipis + stokAman;
+
+        window.kondisiStokChartInstance = new Chart(ctxKondisi, {
+            type: 'doughnut',
+            data: {
+                labels: ['Habis', 'Menipis', 'Aman'],
+                datasets: [{
+                    data: totalKondisi > 0 ? [stokHabis, stokMenipis, stokAman] : [0, 0, 1],
+                    backgroundColor: totalKondisi > 0 ? ['#f43f5e', '#f59e0b', '#10b981'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 400,
+                    easing: 'easeOutCubic'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '72%',
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true,
-                        duration: 1000,
-                        easing: 'easeOutCubic'
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            enabled: totalKondisi > 0,
-                            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-                            borderColor: 'rgba(255, 255, 255, 0.12)',
-                            borderWidth: 1,
-                            titleColor: '#ffffff',
-                            bodyColor: '#e2e8f0',
-                            padding: 10,
-                            cornerRadius: 8,
-                            titleFont: { size: 11, weight: 'bold' },
-                            bodyFont: { size: 10 },
-                            boxPadding: 4,
-                            callbacks: {
-                                label: function(context) {
-                                    const val = context.parsed;
-                                    const pct = totalKondisi > 0 ? ((val / totalKondisi) * 100).toFixed(1) : 0;
-                                    return context.label + ': ' + val + ' item (' + pct + '%)';
-                                }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: totalKondisi > 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                        borderColor: 'rgba(255, 255, 255, 0.12)',
+                        borderWidth: 1,
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e8f0',
+                        padding: 10,
+                        cornerRadius: 8,
+                        titleFont: { size: 11, weight: 'bold' },
+                        bodyFont: { size: 10 },
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(context) {
+                                const val = context.parsed;
+                                const pct = totalKondisi > 0 ? ((val / totalKondisi) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + val + ' item (' + pct + '%)';
                             }
                         }
                     }
                 }
-            });
-        }
+            }
+        });
+    }
 
-        // ==========================================
-        // DOUGHNUT CHART: EXPIRY HEALTH
-        // ==========================================
+    // 3. Inisialisasi Doughnut Chart: Expiry Health
+    function initExpiryHealthChart() {
         const ctxExpiry = document.getElementById('expiryHealthChart');
-        if (ctxExpiry) {
-            const expAman = {{ (int) $expiryAman }};
-            const expWarning = {{ (int) $expiryWarning }};
-            const expCritical = {{ (int) $expiryCritical }};
-            const expKadaluarsa = {{ (int) $expiryKadaluarsa }};
-            const totalExpiry = expAman + expWarning + expCritical + expKadaluarsa;
+        if (!ctxExpiry) return;
 
-            new Chart(ctxExpiry, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluwarsa'],
-                    datasets: [{
-                        data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
-                        backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#f43f5e'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                        hoverOffset: 5
-                    }]
+        if (window.expiryHealthChartInstance) {
+            window.expiryHealthChartInstance.destroy();
+            window.expiryHealthChartInstance = null;
+        }
+
+        const expAman = parseInt(ctxExpiry.dataset.aman || '0', 10);
+        const expWarning = parseInt(ctxExpiry.dataset.warning || '0', 10);
+        const expCritical = parseInt(ctxExpiry.dataset.critical || '0', 10);
+        const expKadaluarsa = parseInt(ctxExpiry.dataset.kadaluarsa || '0', 10);
+        const totalExpiry = expAman + expWarning + expCritical + expKadaluarsa;
+
+        window.expiryHealthChartInstance = new Chart(ctxExpiry, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aman (>90 hari)', 'Peringatan (30–90 hari)', 'Kritis (<30 hari)', 'Kadaluwarsa'],
+                datasets: [{
+                    data: totalExpiry > 0 ? [expAman, expWarning, expCritical, expKadaluarsa] : [0, 0, 0, 1],
+                    backgroundColor: totalExpiry > 0 ? ['#10b981', '#f59e0b', '#f97316', '#f43f5e'] : ['#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 400,
+                    easing: 'easeOutCubic'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '72%',
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true,
-                        duration: 1100,
-                        easing: 'easeOutCubic'
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            enabled: totalExpiry > 0,
-                            backgroundColor: 'rgba(15, 23, 42, 0.94)',
-                            borderColor: 'rgba(255, 255, 255, 0.12)',
-                            borderWidth: 1,
-                            titleColor: '#ffffff',
-                            bodyColor: '#e2e8f0',
-                            padding: 10,
-                            cornerRadius: 8,
-                            titleFont: { size: 12, weight: 'bold' },
-                            bodyFont: { size: 11 },
-                            boxPadding: 4,
-                            callbacks: {
-                                label: function(context) {
-                                    const val = context.parsed;
-                                    const pct = totalExpiry > 0 ? ((val / totalExpiry) * 100).toFixed(1) : 0;
-                                    return context.label + ': ' + val + ' batch (' + pct + '%)';
-                                }
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: totalExpiry > 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                        borderColor: 'rgba(255, 255, 255, 0.12)',
+                        borderWidth: 1,
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e8f0',
+                        padding: 10,
+                        cornerRadius: 8,
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 11 },
+                        boxPadding: 4,
+                        callbacks: {
+                            label: function(context) {
+                                const val = context.parsed;
+                                const pct = totalExpiry > 0 ? ((val / totalExpiry) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + val + ' batch (' + pct + '%)';
                             }
                         }
                     }
                 }
-            });
-        }
+            }
+        });
+    }
 
-
-        // ==========================================
-        // TOGGLE LIHAT SEMUA: KINERJA KARYAWAN
-        // ==========================================
+    // 4. Inisialisasi Interaksi UI (Kinerja Karyawan & Modal)
+    function initDashboardInteractions() {
         const btnToggleKinerja = document.getElementById('btn-toggle-kinerja');
         if (btnToggleKinerja) {
             let expanded = false;
             const originalText = btnToggleKinerja.textContent.trim();
-            btnToggleKinerja.addEventListener('click', function () {
+            btnToggleKinerja.onclick = function () {
                 expanded = !expanded;
                 document.querySelectorAll('.kinerja-extra-row').forEach(row => {
                     row.classList.toggle('hidden', !expanded);
                 });
                 btnToggleKinerja.textContent = expanded ? 'Sembunyikan' : originalText;
-            });
+            };
         }
 
-        // ==========================================
-        // MODAL LIHAT SEMUA: DOKTER PENYUMBANG RESEP
-        // ==========================================
         const modalDokter = document.getElementById('modal-dokter-resep');
         if (modalDokter) {
-            modalDokter.addEventListener('click', function(e) {
+            modalDokter.onclick = function(e) {
                 if (e.target === modalDokter) closeModalDokterResep();
-            });
+            };
         }
+    }
+
+    // Fungsi Penggabung Seluruh Inisialisasi
+    function initAllDashboardComponents() {
+        initSalesChart();
+        initKondisiStokChart();
+        initExpiryHealthChart();
+        initDashboardInteractions();
+    }
+
+    // Inisialisasi awal saat halaman pertama dimuat
+    document.addEventListener('DOMContentLoaded', initAllDashboardComponents);
+
+    // Re-inisialisasi otomatis saat periode dashboard diganti via AJAX
+    document.addEventListener('date-range-filter:updated', function() {
+        initAllDashboardComponents();
     });
 
+    // Helper Modal Dokter Resep
     function openModalDokterResep() {
         const modal = document.getElementById('modal-dokter-resep');
         if (modal) {
