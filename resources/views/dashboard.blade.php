@@ -1039,116 +1039,166 @@
     <div class="grid grid-cols-1 {{ ($canObatTerlaris && $canObatTerendah) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5">
         @if ($canObatTerlaris)
         {{-- 10 Obat Terlaris --}}
-        <div class="dashboard-card p-5">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
-                        <x-heroicon-o-trophy class="w-5 h-5 text-amber-500" />
+        <div class="dashboard-card p-5 bg-white flex flex-col justify-between">
+            <div>
+                {{-- Header --}}
+                <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 mb-3.5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                            <x-heroicon-o-trophy class="w-5 h-5" />
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                                10 Obat Terlaris
+                            </h3>
+                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                                Kuantitas unit terjual pada periode {{ $periodeLabel }}
+                            </p>
+                        </div>
                     </div>
 
-                    <div>
-                        <h3 class="text-base font-bold text-gray-900">10 Obat Terlaris</h3>
-                        <p class="text-xs text-gray-500">Kuantitas unit terjual pada periode {{ $periodeLabel }}.</p>
-                    </div>
+                    <a href="{{ route('laporan.penjualan') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                        <span>Laporan Penjualan</span>
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                    </a>
                 </div>
-                <a href="{{ route('laporan.penjualan') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                    Laporan Penjualan &rarr;
-                </a>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="table-compact w-full text-left">
-                    <thead>
-                        <tr>
-                            <th class="w-10 text-center">No</th>
-                            <th>Nama Obat</th>
-                            <th>Kategori</th>
-                            <th class="text-center">Terjual</th>
-                            @if ($canOmzetObat)
-                                <th class="text-right">Omzet</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($topSellingMedicines as $index => $medicine)
+                <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
+                    <table class="table-compact w-full text-left">
+                        <thead>
                             <tr>
-                                <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                                <td class="font-bold text-gray-900">{{ $medicine->nama }}</td>
-                                <td class="text-gray-600">{{ $medicine->kategori ?? '-' }}</td>
-                                <td class="text-center font-bold text-blue-600">{{ number_format($medicine->total_terjual) }} unit</td>
+                                <th class="w-12 text-center sticky-header">Rank</th>
+                                <th class="sticky-header">Nama Obat</th>
+                                <th class="sticky-header">Kategori</th>
+                                <th class="text-center sticky-header">Terjual</th>
                                 @if ($canOmzetObat)
-                                    <td class="text-right font-semibold text-gray-800">Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}</td>
+                                    <th class="text-right sticky-header">Omzet</th>
                                 @endif
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-6 text-center text-xs text-gray-400">
-                                    Belum ada transaksi penjualan pada periode ini.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($topSellingMedicines as $index => $medicine)
+                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                    <td class="text-center py-2.5">
+                                        @if ($index === 0)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-black text-[11px]">1</span>
+                                        @elseif ($index === 1)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px]">2</span>
+                                        @elseif ($index === 2)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-50 text-amber-900 font-bold text-[11px] border border-amber-200">3</span>
+                                        @else
+                                            <span class="font-bold text-gray-400 text-xs">{{ $index + 1 }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
+                                    <td>
+                                        <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
+                                            {{ $medicine->kategori ?? '-' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="inline-flex items-center justify-center font-extrabold text-blue-700 text-xs px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100 min-w-[28px]">
+                                            {{ number_format($medicine->total_terjual) }} <span class="text-[10px] text-blue-500 font-medium ml-1">unit</span>
+                                        </span>
+                                    </td>
+                                    @if ($canOmzetObat)
+                                        <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
+                                            <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($medicine->total_omzet, 0, ',', '.') }}
+                                        </td>
+                                    @endif
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-10 text-center text-xs text-gray-400">
+                                        Belum ada transaksi penjualan pada periode ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         @endif
 
         @if ($canObatTerendah)
         {{-- 10 Obat Paling Sedikit Terjual --}}
-        <div class="dashboard-card p-5">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center flex-shrink-0">
-                        <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-rose-500" />
+        <div class="dashboard-card p-5 bg-white flex flex-col justify-between">
+            <div>
+                {{-- Header --}}
+                <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 mb-3.5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 border border-rose-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                            <x-heroicon-o-exclamation-triangle class="w-5 h-5" />
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                                10 Obat Paling Sedikit Terjual
+                            </h3>
+                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                                Termasuk obat aktif yang belum terjual (0 unit)
+                            </p>
+                        </div>
                     </div>
 
-                    <div>
-                        <h3 class="text-base font-bold text-gray-900">10 Obat Paling Sedikit Terjual</h3>
-                        <p class="text-xs text-gray-500">Termasuk obat aktif yang belum terjual (0 unit).</p>
-                    </div>
+                    <a href="{{ route('laporan.penjualan') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                        <span>Laporan Penjualan</span>
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                    </a>
                 </div>
-                <a href="{{ route('laporan.penjualan') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                    Laporan Penjualan &rarr;
-                </a>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="table-compact w-full text-left">
-                    <thead>
-                        <tr>
-                            <th class="w-10 text-center">No</th>
-                            <th>Nama Obat</th>
-                            <th>Kategori</th>
-                            <th class="text-center">Terjual</th>
-                            @if ($canOmzetObat)
-                                <th class="text-right">Omzet</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($leastSellingMedicines as $index => $medicine)
+                <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
+                    <table class="table-compact w-full text-left">
+                        <thead>
                             <tr>
-                                <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                                <td class="font-bold text-gray-900">{{ $medicine->nama }}</td>
-                                <td class="text-gray-600">{{ $medicine->kategori ?? '-' }}</td>
-                                <td class="text-center font-bold {{ $medicine->total_terjual == 0 ? 'text-gray-400' : 'text-amber-600' }}">
-                                    {{ number_format($medicine->total_terjual) }} unit
-                                </td>
+                                <th class="w-12 text-center sticky-header">No</th>
+                                <th class="sticky-header">Nama Obat</th>
+                                <th class="sticky-header">Kategori</th>
+                                <th class="text-center sticky-header">Terjual</th>
                                 @if ($canOmzetObat)
-                                    <td class="text-right font-semibold text-gray-800">
-                                        Rp {{ number_format($medicine->total_omzet, 0, ',', '.') }}
-                                    </td>
+                                    <th class="text-right sticky-header">Omzet</th>
                                 @endif
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-6 text-center text-xs text-gray-400">
-                                    Belum ada data obat.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse ($leastSellingMedicines as $index => $medicine)
+                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                    <td class="text-center font-bold text-gray-400 text-xs py-2.5">{{ $index + 1 }}</td>
+                                    <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
+                                    <td>
+                                        <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
+                                            {{ $medicine->kategori ?? '-' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if((int)$medicine->total_terjual === 0)
+                                            <span class="inline-flex items-center justify-center font-extrabold text-rose-700 text-xs px-2 py-0.5 rounded-md bg-rose-50 border border-rose-100 min-w-[28px]">
+                                                0 <span class="text-[10px] text-rose-500 font-medium ml-1">unit</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center justify-center font-extrabold text-amber-700 text-xs px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 min-w-[28px]">
+                                                {{ number_format($medicine->total_terjual) }} <span class="text-[10px] text-amber-500 font-medium ml-1">unit</span>
+                                            </span>
+                                        @endif
+                                    </td>
+                                    @if ($canOmzetObat)
+                                        <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
+                                            <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($medicine->total_omzet, 0, ',', '.') }}
+                                        </td>
+                                    @endif
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="{{ $canOmzetObat ? 5 : 4 }}" class="py-10 text-center text-xs text-gray-400">
+                                        Belum ada data obat.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         @endif
@@ -1162,43 +1212,45 @@
     <div class="grid grid-cols-1 {{ ($canKinerja && $canDokterResep) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5 mt-5">
         @if ($canKinerja)
             {{-- 9.1 KINERJA KARYAWAN --}}
-            <div class="dashboard-card p-5 flex flex-col justify-between">
+            <div class="dashboard-card p-5 bg-white flex flex-col justify-between">
                 <div>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-                                <x-heroicon-o-user-group class="w-5 h-5 text-indigo-600" />
+                    {{-- Header --}}
+                    <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 mb-3.5 gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                                <x-heroicon-o-user-group class="w-5 h-5" />
                             </div>
 
                             <div>
-                                <h3 class="text-base font-bold text-gray-900">Kinerja Karyawan</h3>
-                                <p class="text-xs text-gray-500">Performa transaksi dan total penjualan karyawan pada periode {{ $periodeLabel }}.</p>
+                                <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Kinerja Karyawan</h3>
+                                <p class="text-[9px] text-gray-400 mt-0.5 font-medium">Performa transaksi dan total penjualan pada periode {{ $periodeLabel }}</p>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-2">
                             @if ($kinerjaKaryawan->count() > 5)
-                                <button type="button" id="btn-toggle-kinerja" class="btn-secondary text-xs py-1 px-3">
+                                <button type="button" id="btn-toggle-kinerja" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0">
                                     Lihat Semua ({{ $kinerjaKaryawan->count() }})
                                 </button>
                             @endif
-                            <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                                Kelola User &rarr;
+                            <a href="{{ route('user.index') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                                <span>Kelola User</span>
+                                <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
                             </a>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+                    <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-xl border border-gray-200/90 shadow-2xs">
                         <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
                             <thead>
                                 <tr>
-                                    <th class="w-12 text-center">NO</th>
-                                    <th>NAMA KARYAWAN</th>
-                                    <th class="text-right">PENJUALAN</th>
-                                    <th class="text-center">TRANSAKSI</th>
+                                    <th class="w-12 text-center sticky-header">Rank</th>
+                                    <th class="sticky-header">Nama Karyawan</th>
+                                    <th class="text-right sticky-header">Penjualan</th>
+                                    <th class="text-center sticky-header">Transaksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-gray-100">
                                 @forelse ($kinerjaKaryawan as $index => $karyawan)
                                     @php
                                         $target = isset($karyawan->target) && $karyawan->target > 0 ? (float) $karyawan->target : null;
@@ -1209,30 +1261,44 @@
                                         $isCurrentUser = auth()->id() === $karyawan->id;
                                         $isExtra = $index >= 5;
                                     @endphp
-                                    <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : '' }}">
-                                        <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                    <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : 'hover:bg-gray-50/75' }} transition-colors">
+                                        <td class="text-center py-2.5">
+                                            @if ($index === 0)
+                                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-800 font-black text-[11px]">1</span>
+                                            @elseif ($index === 1)
+                                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px]">2</span>
+                                            @elseif ($index === 2)
+                                                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 text-indigo-900 font-bold text-[11px] border border-indigo-200">3</span>
+                                            @else
+                                                <span class="font-bold text-gray-400 text-xs">{{ $index + 1 }}</span>
+                                            @endif
+                                        </td>
                                         <td>
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-bold text-gray-900">{{ $karyawan->name }}</span>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <span class="font-bold text-gray-900 text-xs">{{ $karyawan->name }}</span>
                                                 @if ($isCurrentUser)
-                                                    <span class="badge-info text-[10px] py-0 px-1.5 font-semibold">ANDA</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-black bg-blue-100 text-blue-700 border border-blue-200">ANDA</span>
                                                 @endif
-                                                <span class="text-[11px] text-gray-400 capitalize">({{ $karyawan->role }})</span>
+                                                <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium capitalize">
+                                                    {{ $karyawan->role }}
+                                                </span>
                                                 @if (!$karyawan->aktif)
-                                                    <span class="badge-danger text-[10px] py-0 px-1">Nonaktif</span>
+                                                    <span class="inline-block px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">Nonaktif</span>
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="text-right font-semibold text-gray-800">
-                                            Rp {{ number_format($penjualan, 0, ',', '.') }}
+                                        <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
+                                            <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($penjualan, 0, ',', '.') }}
                                         </td>
-                                        <td class="text-center font-bold text-blue-600">
-                                            {{ number_format($karyawan->total_transaksi) }}
+                                        <td class="text-center">
+                                            <span class="inline-flex items-center justify-center font-extrabold text-indigo-700 text-xs px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100 min-w-[28px]">
+                                                {{ number_format($karyawan->total_transaksi) }} <span class="text-[10px] text-indigo-500 font-medium ml-1">trx</span>
+                                            </span>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-6 text-center text-xs text-gray-400">
+                                        <td colspan="4" class="py-10 text-center text-xs text-gray-400">
                                             Belum ada data karyawan terdaftar.
                                         </td>
                                     </tr>
@@ -1246,59 +1312,75 @@
 
         @if ($canDokterResep)
         {{-- 9.2 DOKTER PENYUMBANG RESEP TERBANYAK --}}
-        <div class="dashboard-card p-5 flex flex-col justify-between">
+        <div class="dashboard-card p-5 bg-white flex flex-col justify-between">
             <div>
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-200 mb-3 gap-2">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-                            <x-heroicon-o-user class="w-5 h-5 text-indigo-600" />
+                {{-- Header --}}
+                <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 mb-3.5 gap-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 border border-purple-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                            <x-heroicon-o-user class="w-5 h-5" />
                         </div>
 
                         <div>
-                            <h3 class="text-base font-bold text-gray-900">Dokter Penyumbang Resep Terbanyak</h3>
-                            <p class="text-xs text-gray-500">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini.</p>
+                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Dokter Penyumbang Resep Terbanyak</h3>
+                            <p class="text-[9px] text-gray-400 mt-0.5 font-medium">Berdasarkan total resep yang disumbangkan ke apotek pada bulan ini</p>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="openModalDokterResep()" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 cursor-pointer">
-                            Lihat Semua &rarr;
+                        <button type="button" onclick="openModalDokterResep()" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0 cursor-pointer">
+                            <span>Lihat Semua</span>
+                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
                         </button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+                <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-xl border border-gray-200/90 shadow-2xs">
                     <table class="table-compact w-full text-left" id="table-dokter-resep">
                         <thead>
                             <tr>
-                                <th class="w-12 text-center">NO</th>
-                                <th>ID DOKTER</th>
-                                <th>NAMA DOKTER</th>
-                                <th class="text-center">TOTAL RESEP</th>
-                                <th class="text-right">TOTAL TRANSAKSI</th>
+                                <th class="w-12 text-center sticky-header">Rank</th>
+                                <th class="sticky-header">ID Dokter</th>
+                                <th class="sticky-header">Nama Dokter</th>
+                                <th class="text-center sticky-header">Total Resep</th>
+                                <th class="text-right sticky-header">Total Transaksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-100">
                             @forelse ($topDokterResep as $index => $dokter)
-                                <tr>
-                                    <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                                    <td class="font-bold text-gray-900 font-mono">{{ $dokter->id_dokter }}</td>
-                                    <td>
-                                        <div class="font-bold text-gray-900 leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
-                                        @if (!empty($dokter->alamat_lembaga))
-                                            <div class="text-[11px] text-gray-400 capitalize leading-tight">{{ $dokter->alamat_lembaga }}</div>
+                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                    <td class="text-center py-2.5">
+                                        @if ($index === 0)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-800 font-black text-[11px]">1</span>
+                                        @elseif ($index === 1)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px]">2</span>
+                                        @elseif ($index === 2)
+                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-50 text-purple-900 font-bold text-[11px] border border-purple-200">3</span>
+                                        @else
+                                            <span class="font-bold text-gray-400 text-xs">{{ $index + 1 }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-center font-bold text-gray-800">
-                                        {{ number_format($dokter->total_resep) }} resep
+                                    <td>
+                                        <span class="font-mono text-[11px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200/80">{{ $dokter->id_dokter }}</span>
                                     </td>
-                                    <td class="text-right font-semibold text-gray-800">
-                                        Rp {{ number_format($dokter->total_transaksi, 0, ',', '.') }}
+                                    <td>
+                                        <div class="font-bold text-gray-900 text-xs leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
+                                        @if (!empty($dokter->alamat_lembaga))
+                                            <div class="text-[10px] text-gray-400 capitalize leading-tight mt-0.5">{{ $dokter->alamat_lembaga }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="inline-flex items-center justify-center font-extrabold text-purple-700 text-xs px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 min-w-[28px]">
+                                            {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-purple-500 font-medium ml-1">resep</span>
+                                        </span>
+                                    </td>
+                                    <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
+                                        <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($dokter->total_transaksi, 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-8 text-center text-xs text-gray-400">
+                                    <td colspan="5" class="py-10 text-center text-xs text-gray-400">
                                         Belum ada riwayat transaksi resep dokter pada bulan ini.
                                     </td>
                                 </tr>
@@ -1309,8 +1391,8 @@
             </div>
 
             {{-- Note Banner at Bottom --}}
-            <div class="mt-4 p-3 rounded-lg bg-blue-50/70 border border-blue-100 flex items-center gap-2 text-xs text-blue-700">
-                <x-heroicon-s-information-circle class="w-4 h-4 text-blue-500 shrink-0" />
+            <div class="mt-3.5 p-2.5 rounded-xl bg-gray-50 border border-gray-200 flex items-center gap-2 text-[11px] text-gray-600">
+                <x-heroicon-s-information-circle class="w-4 h-4 text-purple-500 shrink-0" />
                 <span>Total resep dihitung berdasarkan riwayat transaksi penjualan yang berasal dari resep dokter.</span>
             </div>
         </div>
@@ -1324,19 +1406,19 @@
 {{-- MODAL LIHAT SEMUA: DOKTER PENYUMBANG RESEP                   --}}
 {{-- ============================================================ --}}
 <div id="modal-dokter-resep" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden transition-opacity">
-    <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50/50">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50/60">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                <div class="w-9 h-9 rounded-xl bg-purple-50 border border-purple-100/80 flex items-center justify-center text-purple-600 shrink-0 shadow-xs">
                     <x-heroicon-o-user class="w-5 h-5" />
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-gray-900">Dokter Penyumbang Resep Bulan Ini</h3>
-                    <p class="text-xs text-gray-500">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
+                    <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">Dokter Penyumbang Resep Bulan Ini</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Daftar lengkap dokter dengan kontribusi resep terdaftar pada bulan ini.</p>
                 </div>
             </div>
-            <button type="button" onclick="closeModalDokterResep()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
+            <button type="button" onclick="closeModalDokterResep()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer" title="Tutup modal">
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
         </div>
@@ -1348,7 +1430,7 @@
                     type="text"
                     id="searchDokterModal"
                     placeholder="Cari berdasarkan ID dokter, nama dokter, atau lembaga..."
-                    class="input-base pl-9 text-xs w-full"
+                    class="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 hover:bg-gray-50/80 focus:bg-white border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all outline-hidden text-gray-800 placeholder-gray-400"
                     onkeyup="filterModalDokterTable(this.value)"
                 >
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -1359,48 +1441,64 @@
 
         <!-- Modal Body Table -->
         <div class="p-4 overflow-y-auto flex-1">
-            <table class="table-compact w-full text-left" id="table-modal-dokter">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center">NO</th>
-                        <th class="w-32">ID DOKTER</th>
-                        <th>NAMA DOKTER</th>
-                        <th class="text-center w-28">TOTAL RESEP</th>
-                        <th class="text-right w-36">TOTAL TRANSAKSI</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-modal-dokter">
-                    @forelse ($semuaDokterResep as $index => $dokter)
-                        <tr class="modal-dokter-row">
-                            <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
-                            <td class="font-bold text-gray-900 font-mono">{{ $dokter->id_dokter }}</td>
-                            <td>
-                                <div class="font-bold text-gray-900 leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
-                                @if (!empty($dokter->alamat_lembaga))
-                                    <div class="text-[11px] text-gray-400 capitalize leading-tight">{{ $dokter->alamat_lembaga }}</div>
-                                @endif
-                            </td>
-                            <td class="text-center font-bold text-gray-800">
-                                {{ number_format($dokter->total_resep) }} resep
-                            </td>
-                            <td class="text-right font-semibold text-gray-800">
-                                Rp {{ number_format($dokter->total_transaksi, 0, ',', '.') }}
+            <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
+                <table class="table-compact w-full text-left" id="table-modal-dokter">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center sticky-header">Rank</th>
+                            <th class="w-32 sticky-header">ID DOKTER</th>
+                            <th class="sticky-header">NAMA DOKTER</th>
+                            <th class="text-center w-28 sticky-header">TOTAL RESEP</th>
+                            <th class="text-right w-36 sticky-header">TOTAL TRANSAKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-modal-dokter" class="divide-y divide-gray-100">
+                        @forelse ($semuaDokterResep as $index => $dokter)
+                            <tr class="modal-dokter-row hover:bg-gray-50/75 transition-colors">
+                                <td class="text-center py-2.5">
+                                    @if ($index === 0)
+                                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-800 font-black text-[11px]">1</span>
+                                    @elseif ($index === 1)
+                                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px]">2</span>
+                                    @elseif ($index === 2)
+                                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-50 text-purple-900 font-bold text-[11px] border border-purple-200">3</span>
+                                    @else
+                                        <span class="font-bold text-gray-400 text-xs">{{ $index + 1 }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="font-mono text-[11px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200/80">{{ $dokter->id_dokter }}</span>
+                                </td>
+                                <td>
+                                    <div class="font-bold text-gray-900 text-xs leading-snug">{{ $dokter->nama_dokter ?: '—' }}</div>
+                                    @if (!empty($dokter->alamat_lembaga))
+                                        <div class="text-[10px] text-gray-400 capitalize leading-tight mt-0.5">{{ $dokter->alamat_lembaga }}</div>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <span class="inline-flex items-center justify-center font-extrabold text-purple-700 text-xs px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 min-w-[28px]">
+                                        {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-purple-500 font-medium ml-1">resep</span>
+                                    </span>
+                                </td>
+                                <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
+                                    <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($dokter->total_transaksi, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr id="empty-modal-dokter">
+                                <td colspan="5" class="py-10 text-center text-xs text-gray-400">
+                                    Belum ada data resep dokter pada bulan ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                        <tr id="no-search-match-dokter" class="hidden">
+                            <td colspan="5" class="py-10 text-center text-xs text-gray-400">
+                                Tidak ada dokter yang cocok dengan pencarian.
                             </td>
                         </tr>
-                    @empty
-                        <tr id="empty-modal-dokter">
-                            <td colspan="5" class="py-8 text-center text-xs text-gray-400">
-                                Belum ada data resep dokter pada bulan ini.
-                            </td>
-                        </tr>
-                    @endforelse
-                    <tr id="no-search-match-dokter" class="hidden">
-                        <td colspan="5" class="py-8 text-center text-xs text-gray-400">
-                            Tidak ada dokter yang cocok dengan pencarian.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Modal Footer -->
@@ -1408,7 +1506,7 @@
             <div class="text-xs text-gray-500">
                 Total dokter terdaftar bulan ini: <span class="font-bold text-gray-800">{{ $semuaDokterResep->count() }}</span> dokter
             </div>
-            <button type="button" onclick="closeModalDokterResep()" class="btn-secondary text-xs py-1.5 px-4 cursor-pointer">
+            <button type="button" onclick="closeModalDokterResep()" class="text-xs font-bold text-gray-700 bg-white hover:bg-gray-100 border border-gray-200 px-4 py-1.5 rounded-lg transition-colors cursor-pointer shadow-2xs">
                 Tutup
             </button>
         </div>
