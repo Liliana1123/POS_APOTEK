@@ -926,28 +926,38 @@
         {{-- ============================================================ --}}
         {{-- KOLOM KANAN: BARANG YANG HARUS DIBELI                        --}}
         {{-- ============================================================ --}}
-        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between">
-            <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
-                        <x-heroicon-o-shopping-bag class="w-5 h-5 text-amber-600" />
+        <div class="dashboard-card inventory-card p-5 flex flex-col justify-between bg-white">
+            {{-- Header --}}
+            <div class="flex items-center justify-between pb-3.5 border-b border-gray-100 mb-3.5">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                        <x-heroicon-o-shopping-bag class="w-5 h-5" />
                     </div>
 
                     <div>
-                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-                            Barang yang Harus Dibeli
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-extrabold text-gray-900 tracking-tight">
+                                Barang yang Harus Dibeli
+                            </h3>
                             @if(count($barangHarusDibeli) > 0)
-                                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">{{ count($barangHarusDibeli) }}</span>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold uppercase tracking-wider">
+                                    {{ count($barangHarusDibeli) }} Perlu Beli
+                                </span>
                             @endif
-                        </h3>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-0.5 font-medium">
+                            Item stok habis & di bawah batas minimum
+                        </p>
                     </div>
                 </div>
-                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                    Lihat Selengkapnya &rarr;
+
+                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                    <span>Lihat Selengkapnya</span>
+                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
                 </a>
             </div>
 
-            <div class="w-full flex-1 overflow-y-auto max-h-[480px] rounded-lg border border-gray-100 shadow-2xs">
+            <div class="w-full flex-1 overflow-y-auto max-h-[480px] rounded-xl border border-gray-200/90 shadow-2xs">
                 <table class="table-compact w-full text-left table-fixed">
                     <thead>
                         <tr>
@@ -965,26 +975,50 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($barangHarusDibeli as $index => $item)
                             <tr class="hover:bg-gray-50/75 transition-colors">
-                                <td class="text-center font-medium text-gray-500">{{ $index + 1 }}</td>
+                                <td class="text-center font-bold text-gray-400 text-xs">{{ $index + 1 }}</td>
                                 <td class="font-bold text-gray-900 wrap-cell leading-snug">
                                     {{ $item['barang']->nama }}
                                 </td>
                                 <td class="text-gray-600 wrap-cell leading-snug">
-                                    {{ $item['barang']->kategori->nama ?? '-' }}
+                                    <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
+                                        {{ $item['barang']->kategori->nama ?? '-' }}
+                                    </span>
                                 </td>
-                                <td class="text-center font-bold text-gray-800">{{ $item['stok'] }}</td>
+                                <td class="text-center">
+                                    @if((int)$item['stok'] === 0)
+                                        <span class="inline-flex items-center justify-center font-extrabold text-rose-700 text-xs px-2 py-0.5 rounded-md bg-rose-50 border border-rose-100 min-w-[28px]">
+                                            0
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center justify-center font-extrabold text-amber-700 text-xs px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 min-w-[28px]">
+                                            {{ $item['stok'] }}
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if($item['status'] === 'HABIS')
-                                        <span class="badge-chip bg-rose-100 text-rose-700 whitespace-nowrap">Habis</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            Habis
+                                        </span>
                                     @else
-                                        <span class="badge-chip bg-amber-100 text-amber-700 whitespace-nowrap">Segera Beli</span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            Segera Beli
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-xs text-gray-400">
-                                    Seluruh stok obat berada dalam kondisi aman di atas batas minimum.
+                                <td colspan="5" class="py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mb-2 shadow-xs">
+                                            <x-heroicon-o-check-circle class="w-6 h-6" />
+                                        </div>
+                                        <span class="text-xs font-bold text-gray-800">Semua Stok Obat Aman</span>
+                                        <p class="text-[10px] text-gray-400 mt-0.5 max-w-[260px]">Seluruh stok obat berada dalam kondisi aman di atas batas minimum persediaan.</p>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
