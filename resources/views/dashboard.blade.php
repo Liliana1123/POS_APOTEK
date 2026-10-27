@@ -712,9 +712,9 @@
                     </div>
                 </div>
 
-                <a href="{{ route('laporan.stok') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group">
+                <a href="{{ route('laporan.stok') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0">
                     <span>Lihat Stok</span>
-                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </a>
             </div>
 
@@ -951,9 +951,9 @@
                     </div>
                 </div>
 
-                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                <a href="{{ route('laporan.stok', ['status_stok' => 'menipis']) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0">
                     <span>Lihat Selengkapnya</span>
-                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </a>
             </div>
 
@@ -1058,9 +1058,9 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('laporan.penjualan') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                    <a href="{{ route('laporan.penjualan') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0">
                         <span>Laporan Penjualan</span>
-                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </a>
                 </div>
 
@@ -1093,14 +1093,12 @@
                                     </td>
                                     <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
                                     <td>
-                                        <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
+                                        <span class="text-xs text-gray-500">
                                             {{ $medicine->kategori ?? '-' }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <span class="inline-flex items-center justify-center font-extrabold text-blue-700 text-xs px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100 min-w-[28px]">
-                                            {{ number_format($medicine->total_terjual) }} <span class="text-[10px] text-blue-500 font-medium ml-1">unit</span>
-                                        </span>
+                                    <td class="text-center font-bold text-gray-900 text-xs">
+                                        {{ number_format($medicine->total_terjual) }} <span class="text-[10px] text-gray-400 font-normal">unit</span>
                                     </td>
                                     @if ($canOmzetObat)
                                         <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
@@ -1143,9 +1141,9 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('laporan.penjualan') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                    <a href="{{ route('laporan.penjualan') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0">
                         <span>Laporan Penjualan</span>
-                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </a>
                 </div>
 
@@ -1168,19 +1166,15 @@
                                     <td class="text-center font-bold text-gray-400 text-xs py-2.5">{{ $index + 1 }}</td>
                                     <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
                                     <td>
-                                        <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
+                                        <span class="text-xs text-gray-500">
                                             {{ $medicine->kategori ?? '-' }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center text-xs">
                                         @if((int)$medicine->total_terjual === 0)
-                                            <span class="inline-flex items-center justify-center font-extrabold text-rose-700 text-xs px-2 py-0.5 rounded-md bg-rose-50 border border-rose-100 min-w-[28px]">
-                                                0 <span class="text-[10px] text-rose-500 font-medium ml-1">unit</span>
-                                            </span>
+                                            <span class="font-bold text-rose-600">0</span> <span class="text-[10px] text-rose-400">unit</span>
                                         @else
-                                            <span class="inline-flex items-center justify-center font-extrabold text-amber-700 text-xs px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 min-w-[28px]">
-                                                {{ number_format($medicine->total_terjual) }} <span class="text-[10px] text-amber-500 font-medium ml-1">unit</span>
-                                            </span>
+                                            <span class="font-bold text-gray-900">{{ number_format($medicine->total_terjual) }}</span> <span class="text-[10px] text-gray-400">unit</span>
                                         @endif
                                     </td>
                                     @if ($canOmzetObat)
@@ -1227,15 +1221,16 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-3">
                             @if ($kinerjaKaryawan->count() > 5)
-                                <button type="button" id="btn-toggle-kinerja" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0">
+                                <button type="button" id="btn-toggle-kinerja" class="text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors cursor-pointer">
                                     Lihat Semua ({{ $kinerjaKaryawan->count() }})
                                 </button>
+                                <span class="text-gray-300">|</span>
                             @endif
-                            <a href="{{ route('user.index') }}" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0">
+                            <a href="{{ route('user.index') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0">
                                 <span>Kelola User</span>
-                                <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                                <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                             </a>
                         </div>
                     </div>
@@ -1279,8 +1274,8 @@
                                                 @if ($isCurrentUser)
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-black bg-blue-100 text-blue-700 border border-blue-200">ANDA</span>
                                                 @endif
-                                                <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium capitalize">
-                                                    {{ $karyawan->role }}
+                                                <span class="text-[11px] text-gray-400 capitalize">
+                                                    ({{ $karyawan->role }})
                                                 </span>
                                                 @if (!$karyawan->aktif)
                                                     <span class="inline-block px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">Nonaktif</span>
@@ -1290,10 +1285,8 @@
                                         <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
                                             <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($penjualan, 0, ',', '.') }}
                                         </td>
-                                        <td class="text-center">
-                                            <span class="inline-flex items-center justify-center font-extrabold text-indigo-700 text-xs px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100 min-w-[28px]">
-                                                {{ number_format($karyawan->total_transaksi) }} <span class="text-[10px] text-indigo-500 font-medium ml-1">trx</span>
-                                            </span>
+                                        <td class="text-center font-bold text-gray-900 text-xs">
+                                            {{ number_format($karyawan->total_transaksi) }} <span class="text-[10px] text-gray-400 font-normal">trx</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -1328,9 +1321,9 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button type="button" onclick="openModalDokterResep()" class="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 group shrink-0 cursor-pointer">
+                        <button type="button" onclick="openModalDokterResep()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors inline-flex items-center gap-1 group shrink-0 cursor-pointer">
                             <span>Lihat Semua</span>
-                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 group-hover:translate-x-0.5 transition-all" />
+                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                     </div>
                 </div>
@@ -1369,10 +1362,8 @@
                                             <div class="text-[10px] text-gray-400 capitalize leading-tight mt-0.5">{{ $dokter->alamat_lembaga }}</div>
                                         @endif
                                     </td>
-                                    <td class="text-center">
-                                        <span class="inline-flex items-center justify-center font-extrabold text-purple-700 text-xs px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 min-w-[28px]">
-                                            {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-purple-500 font-medium ml-1">resep</span>
-                                        </span>
+                                    <td class="text-center font-bold text-gray-900 text-xs">
+                                        {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-gray-400 font-normal">resep</span>
                                     </td>
                                     <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
                                         <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($dokter->total_transaksi, 0, ',', '.') }}
@@ -1475,10 +1466,8 @@
                                         <div class="text-[10px] text-gray-400 capitalize leading-tight mt-0.5">{{ $dokter->alamat_lembaga }}</div>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    <span class="inline-flex items-center justify-center font-extrabold text-purple-700 text-xs px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 min-w-[28px]">
-                                        {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-purple-500 font-medium ml-1">resep</span>
-                                    </span>
+                                <td class="text-center font-bold text-gray-900 text-xs">
+                                    {{ number_format($dokter->total_resep) }} <span class="text-[10px] text-gray-400 font-normal">resep</span>
                                 </td>
                                 <td class="text-right font-extrabold text-gray-900 text-xs whitespace-nowrap">
                                     <span class="text-[10px] font-bold text-gray-400 mr-0.5">Rp</span>{{ number_format($dokter->total_transaksi, 0, ',', '.') }}
