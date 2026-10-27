@@ -1334,39 +1334,46 @@ body {
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.kpi-card:hover {
+.kpi-card:hover,
+.dashboard-reference .kpi-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
 }
 
-.kpi-kotor:hover {
-    box-shadow: 0 14px 28px -4px rgba(245, 158, 11, 0.18), 0 4px 8px -2px rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.4);
+.kpi-kotor:hover,
+.dashboard-reference .kpi-card.kpi-kotor:hover {
+    box-shadow: 0 14px 28px -4px rgba(245, 158, 11, 0.35), 0 4px 12px -2px rgba(245, 158, 11, 0.18) !important;
+    border-color: rgba(245, 158, 11, 0.7) !important;
 }
 
-.kpi-diskon:hover {
-    box-shadow: 0 14px 28px -4px rgba(16, 185, 129, 0.18), 0 4px 8px -2px rgba(16, 185, 129, 0.08);
-    border-color: rgba(16, 185, 129, 0.4);
+.kpi-diskon:hover,
+.dashboard-reference .kpi-card.kpi-diskon:hover {
+    box-shadow: 0 14px 28px -4px rgba(16, 185, 129, 0.35), 0 4px 12px -2px rgba(16, 185, 129, 0.18) !important;
+    border-color: rgba(16, 185, 129, 0.7) !important;
 }
 
-.kpi-bersih:hover {
-    box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.18), 0 4px 8px -2px rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.4);
+.kpi-bersih:hover,
+.dashboard-reference .kpi-card.kpi-bersih:hover {
+    box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.35), 0 4px 12px -2px rgba(37, 99, 235, 0.18) !important;
+    border-color: rgba(37, 99, 235, 0.7) !important;
 }
 
-.kpi-member:hover {
-    box-shadow: 0 14px 28px -4px rgba(139, 92, 246, 0.18), 0 4px 8px -2px rgba(139, 92, 246, 0.08);
-    border-color: rgba(139, 92, 246, 0.4);
+.kpi-member:hover,
+.dashboard-reference .kpi-card.kpi-member:hover {
+    box-shadow: 0 14px 28px -4px rgba(139, 92, 246, 0.35), 0 4px 12px -2px rgba(139, 92, 246, 0.18) !important;
+    border-color: rgba(139, 92, 246, 0.7) !important;
 }
 
-.kpi-hutang:hover {
-    box-shadow: 0 14px 28px -4px rgba(14, 165, 233, 0.18), 0 4px 8px -2px rgba(14, 165, 233, 0.08);
-    border-color: rgba(14, 165, 233, 0.4);
+.kpi-hutang:hover,
+.dashboard-reference .kpi-card.kpi-hutang:hover {
+    box-shadow: 0 14px 28px -4px rgba(14, 165, 233, 0.35), 0 4px 12px -2px rgba(14, 165, 233, 0.18) !important;
+    border-color: rgba(14, 165, 233, 0.7) !important;
 }
 
-.kpi-piutang:hover {
-    box-shadow: 0 14px 28px -4px rgba(251, 113, 133, 0.18), 0 4px 8px -2px rgba(251, 113, 133, 0.08);
-    border-color: rgba(251, 113, 133, 0.4);
+.kpi-piutang:hover,
+.dashboard-reference .kpi-card.kpi-piutang:hover {
+    box-shadow: 0 14px 28px -4px rgba(251, 113, 133, 0.35), 0 4px 12px -2px rgba(251, 113, 133, 0.18) !important;
+    border-color: rgba(251, 113, 133, 0.7) !important;
 }
 
 .kpi-card::before {
