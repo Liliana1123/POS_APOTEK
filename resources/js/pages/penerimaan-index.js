@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // MODAL DETAIL PENERIMAAN
     // =========================
-<<<<<<< HEAD
     document.addEventListener('click', function (e) {
         const button = e.target.closest('.btn-detail-penerimaan');
         if (!button) return;
@@ -29,24 +28,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             `;
 
-=======
-    document.addEventListener('click', function (event) {
-        const button = event.target.closest('.btn-detail-penerimaan');
-        if (!button) return;
-
-        const url = button.dataset.url;
-        if (!url) return;
-
-        if (modal) modal.classList.remove('hidden');
-
-        if (content) {
-            content.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    Memuat detail...
-                </div>
-            `;
-
->>>>>>> origin/lili-penerimaan-stok
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -160,7 +141,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // MODAL PEMBAYARAN
     // =========================
-<<<<<<< HEAD
     document.addEventListener('click', function (e) {
         const button = e.target.closest('.btn-payment-penerimaan');
         if (!button) return;
@@ -169,17 +149,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (paymentModal) paymentModal.classList.remove('hidden');
 
-=======
-    document.addEventListener('click', function (event) {
-        const button = event.target.closest('.btn-payment-penerimaan');
-        if (!button) return;
-
-        const id = button.dataset.id;
-        if (!id) return;
-
-        if (paymentModal) paymentModal.classList.remove('hidden');
-
->>>>>>> origin/lili-penerimaan-stok
         if (paymentContent) {
             paymentContent.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
@@ -213,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const susulanContent = document.getElementById('susulan-penerimaan-content');
     const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
 
-<<<<<<< HEAD
     document.addEventListener('click', function (e) {
         const button = e.target.closest('.btn-susulan-penerimaan');
         if (!button) return;
@@ -222,17 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (susulanModal) susulanModal.classList.remove('hidden');
 
-=======
-    document.addEventListener('click', function (event) {
-        const button = event.target.closest('.btn-susulan-penerimaan');
-        if (!button) return;
-
-        const id = button.dataset.id;
-        if (!id) return;
-
-        if (susulanModal) susulanModal.classList.remove('hidden');
-
->>>>>>> origin/lili-penerimaan-stok
         if (susulanContent) {
             susulanContent.innerHTML = `
                 <div class="text-center py-8 text-gray-500">

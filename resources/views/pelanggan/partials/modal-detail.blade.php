@@ -1,25 +1,3 @@
-<<<<<<< HEAD
-<!-- Modal Detail Pelanggan -->
-<x-modal
-    id="modal-detail-pelanggan"
-    size="w-full max-w-4xl"
-    close-action="closeDetailModal()">
-
-    <x-slot:header>
-        <div class="flex items-start gap-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                <x-heroicon-o-user class="w-5 h-5" />
-            </div>
-
-            <div>
-                <h3 class="text-base font-semibold text-gray-800">
-                    Detail Pelanggan / Member
-                </h3>
-                <p class="text-xs text-gray-500 mt-0.5">
-                    Informasi lengkap pelanggan dan riwayat transaksi.
-                </p>
-            </div>
-=======
 <!-- Modal Detail Pelanggan / Member -->
 <div id="modal-detail-pelanggan"
     class="modal-backdrop-custom hidden fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 sm:p-6 transition-opacity duration-200"
@@ -53,30 +31,9 @@
             >
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
->>>>>>> origin/feriena
         </div>
     </x-slot:header>
 
-<<<<<<< HEAD
-    <!-- CONTENT -->
-    <div class="space-y-4">
-
-        <!-- INFORMASI PELANGGAN + RINGKASAN -->
-        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5 p-1">
-
-            <!-- KIRI -->
-            <div class="space-y-4">
-
-                <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                            <x-heroicon-o-user class="w-4 h-4" />
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-medium text-gray-400">Nama</div>
-                            <div id="detail-nama" class="mt-0.5 text-sm font-semibold text-blue-600 break-words">-</div>
-                        </div>
-                    </div>
-=======
         <!-- CONTENT (Scrollable jika layar kecil, fixed layout di desktop) -->
         <div class="modal-detail-scrollable">
 
@@ -91,7 +48,6 @@
                             <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 shadow-2xs ring-3 ring-blue-50">
                                 <x-heroicon-o-user class="w-7 h-7" />
                             </div>
->>>>>>> origin/feriena
 
                             <div class="min-w-0 flex-1">
                                 <h4 id="detail-nama" class="text-base font-bold text-gray-900 break-words leading-tight">
@@ -295,24 +251,6 @@
 
     </div>
 
-<<<<<<< HEAD
-    <x-slot:footer>
-        <div class="flex justify-between items-center w-full">
-            <button
-                type="button"
-                id="btn-detail-print-card"
-                onclick="openCardModalFromCurrentDetail()"
-                class="btn-secondary !text-xs inline-flex items-center gap-1.5 px-3 py-2 text-gray-700 hover:text-blue-600 hover:border-blue-300 transition"
-                title="Cetak Kartu Member">
-                <x-heroicon-o-printer class="w-4 h-4" />
-                <span>Cetak Kartu Member</span>
-            </button>
-            <button
-                type="button"
-                onclick="closeDetailModal()"
-                class="btn-secondary !text-xs px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100 transition">
-                <span>Tutup</span>
-=======
         <!-- FOOTER (Tetap terlihat di bawah) -->
         <div class="modal-footer-fixed flex justify-end items-center px-6 py-3.5 border-t border-gray-100 bg-white shrink-0">
             <button
@@ -321,7 +259,6 @@
                 class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition active:scale-98"
             >
                 Tutup
->>>>>>> origin/feriena
             </button>
         </div>
     </x-slot:footer>

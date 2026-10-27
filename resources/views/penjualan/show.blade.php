@@ -15,22 +15,6 @@
     }
 @endphp
 
-<<<<<<< HEAD
-<x-page-header
-    title="Struk Penjualan"
-    subtitle="Cetak bukti pembayaran transaksi kasir: {{ $penjualan->no_faktur }}"
-    :back-url="$backUrl"
-    class="print:hidden">
-    <select id="select-ukuran-kertas" onchange="changePaperSize(this.value)" class="text-xs border border-gray-300 rounded-lg px-2.5 py-2 bg-white text-gray-700 font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer shadow-xs">
-        <option value="58mm">Thermal 58 mm (EPPOS)</option>
-        <option value="80mm">Thermal 80 mm (EPPOS)</option>
-    </select>
-    <button type="button" onclick="window.print()" class="btn-primary flex items-center gap-1.5 py-2 px-4">
-        <x-heroicon-o-printer class="w-4 h-4" />
-        <span>Print Struk</span>
-    </button>
-</x-page-header>
-=======
         @php
             $backUrl = route('penjualan.create');
             if (request('from') === 'laporan_penjualan') {
@@ -51,7 +35,6 @@
         <a href="{{ $backUrl }}" class="btn-secondary py-2 px-4">Kembali</a>
     </div>
 </div>
->>>>>>> origin/feriena
 
 @php
     $apotek = \Illuminate\Support\Facades\Cache::remember(
