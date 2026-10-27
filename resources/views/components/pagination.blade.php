@@ -3,8 +3,12 @@
     'view' => 'vendor.pagination.apotek',
 ])
 
-@if ($paginator && method_exists($paginator, 'hasPages') && $paginator->hasPages())
-    <div {{ $attributes->merge(['class' => 'mt-4 pagination-container']) }}>
+@php
+    $hasPages = $paginator && method_exists($paginator, 'hasPages') && $paginator->hasPages();
+@endphp
+
+<div {{ $attributes->merge(['class' => 'mt-4 pagination-container' . ($hasPages ? '' : ' hidden')]) }}>
+    @if ($hasPages)
         {{ $paginator->links($view) }}
-    </div>
-@endif
+    @endif
+</div>

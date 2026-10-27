@@ -427,13 +427,7 @@
     }
 
 
-    function openDetailRusak(id) {
-        const rusak = dataRusak.find(item => item.id === id);
-
-        if (!rusak) {
-            return;
-        }
-
+    function renderDetailRusakModal(rusak) {
         const modal = document.getElementById('modal-detail-rusak');
         const content = document.getElementById('detail-rusak-content');
 
@@ -509,6 +503,34 @@
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    function openDetailRusak(id) {
+        const rusak = dataRusak.find(item => item.id === id);
+
+        if (rusak) {
+            renderDetailRusakModal(rusak);
+            return;
+        }
+
+        fetch(`/rusak/${id}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal mengambil detail barang rusak.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            renderDetailRusakModal(data);
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Gagal mengambil data detail barang rusak.');
+        });
     }
 
     function closeDetailRusak() {
