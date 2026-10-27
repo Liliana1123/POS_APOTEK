@@ -967,7 +967,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($barangHarusDibeli as $index => $item)
-                            <tr class="hover:bg-gray-50/75 transition-colors">
+                            <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                 <td class="text-center font-bold text-gray-400 text-xs">{{ $index + 1 }}</td>
                                 <td class="font-bold text-gray-900 wrap-cell leading-snug">
                                     {{ $item['barang']->nama }}
@@ -1060,7 +1060,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($topSellingMedicines as $index => $medicine)
-                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                     <td class="text-center py-2.5">
                                         @if ($index === 0)
                                             <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-black text-[11px]">1</span>
@@ -1143,7 +1143,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($leastSellingMedicines as $index => $medicine)
-                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                     <td class="text-center font-bold text-gray-400 text-xs py-2.5">{{ $index + 1 }}</td>
                                     <td class="font-bold text-gray-900 text-xs">{{ $medicine->nama }}</td>
                                     <td>
@@ -1237,7 +1237,7 @@
                                         $isCurrentUser = auth()->id() === $karyawan->id;
                                         $isExtra = $index >= 5;
                                     @endphp
-                                    <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/40' : 'hover:bg-gray-50/75' }} transition-colors">
+                                    <tr class="{{ $isExtra ? 'kinerja-extra-row hidden' : '' }} {{ $isCurrentUser ? 'bg-blue-50/60' : ($index % 2 === 0 ? 'bg-white' : 'bg-gray-200') }}">
                                         <td class="text-center py-2.5">
                                             @if ($index === 0)
                                                 <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-800 font-black text-[11px]">1</span>
@@ -1322,7 +1322,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse ($topDokterResep as $index => $dokter)
-                                <tr class="hover:bg-gray-50/75 transition-colors">
+                                <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                     <td class="text-center py-2.5">
                                         @if ($index === 0)
                                             <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-800 font-black text-[11px]">1</span>
@@ -1426,7 +1426,7 @@
                     </thead>
                     <tbody id="tbody-modal-dokter" class="divide-y divide-gray-100">
                         @forelse ($semuaDokterResep as $index => $dokter)
-                            <tr class="modal-dokter-row hover:bg-gray-50/75 transition-colors">
+                            <tr class="modal-dokter-row {{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                                 <td class="text-center py-2.5">
                                     @if ($index === 0)
                                         <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-100 text-purple-800 font-black text-[11px]">1</span>
