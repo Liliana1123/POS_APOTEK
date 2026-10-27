@@ -979,21 +979,11 @@
                                 <td class="font-bold text-gray-900 wrap-cell leading-snug">
                                     {{ $item['barang']->nama }}
                                 </td>
-                                <td class="text-gray-600 wrap-cell leading-snug">
-                                    <span class="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
-                                        {{ $item['barang']->kategori->nama ?? '-' }}
-                                    </span>
+                                <td class="text-gray-500 wrap-cell leading-snug text-xs">
+                                    {{ $item['barang']->kategori->nama ?? '-' }}
                                 </td>
-                                <td class="text-center">
-                                    @if((int)$item['stok'] === 0)
-                                        <span class="inline-flex items-center justify-center font-extrabold text-rose-700 text-xs px-2 py-0.5 rounded-md bg-rose-50 border border-rose-100 min-w-[28px]">
-                                            0
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center justify-center font-extrabold text-amber-700 text-xs px-2 py-0.5 rounded-md bg-amber-50 border border-amber-100 min-w-[28px]">
-                                            {{ $item['stok'] }}
-                                        </span>
-                                    @endif
+                                <td class="text-center text-xs font-bold {{ (int)$item['stok'] === 0 ? 'text-rose-600' : 'text-gray-900' }}">
+                                    {{ number_format($item['stok']) }}
                                 </td>
                                 <td class="text-center">
                                     @if($item['status'] === 'HABIS')
@@ -1031,9 +1021,7 @@
     @endif
 
     {{-- ============================================================ --}}
-    {{-- 5. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
-    {{-- ============================================================ --}}
-{{-- 8. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
+    {{-- 8. 10 OBAT TERLARIS & 10 OBAT PALING SEDIKIT TERJUAL         --}}
     {{-- ============================================================ --}}
     @if ($canObatTerlaris || $canObatTerendah)
     <div class="grid grid-cols-1 {{ ($canObatTerlaris && $canObatTerendah) ? 'lg:grid-cols-2' : 'lg:grid-cols-1' }} gap-5">
