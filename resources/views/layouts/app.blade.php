@@ -83,7 +83,7 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full transition-transform duration-300 ease-in-out lg:transition-none lg:translate-x-0 lg:static lg:flex lg:w-24 print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:flex print:hidden">
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php
@@ -315,6 +315,9 @@
             </form>
         </div>
     </aside>
+
+    <!-- Desktop Sidebar Spacer (keeps layout stable during unpinned hover) -->
+    <div id="sidebar-spacer" class="hidden lg:block shrink-0 print:hidden" aria-hidden="true"></div>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
