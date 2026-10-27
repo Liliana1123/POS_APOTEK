@@ -8,7 +8,7 @@
             try {
                 if ((localStorage.getItem('sidebar-pinned') === '1' || sessionStorage.getItem('sidebar-keep-expanded') === '1')
                     && window.matchMedia('(min-width: 1024px)').matches) {
-                    document.documentElement.classList.add('sidebar-keep-expanded');
+                    document.documentElement.classList.add('sidebar-keep-expanded', 'sidebar-preload');
                 }
             } catch (e) {}
         })();
@@ -83,7 +83,7 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:w-24 lg:hover:w-72 transition-all duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full transition-transform duration-300 ease-in-out lg:transition-none lg:translate-x-0 lg:static lg:flex lg:w-24 print:hidden">
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php

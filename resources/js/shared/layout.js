@@ -10,10 +10,18 @@ function initSidebarExpand() {
     var PIN_KEY = 'sidebar-pinned';
     var html = document.documentElement;
     var pointerInside = false;
+    var hoverTimeout = null;
 
     var pinBtn = document.getElementById('pin-sidebar-toggle');
     var iconUnpinned = document.getElementById('pin-icon-unpinned');
     var iconPinned = document.getElementById('pin-icon-pinned');
+
+    // Remove preload class after initial paint so all subsequent transitions are silky smooth
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            html.classList.remove('sidebar-preload');
+        });
+    });
 
     function isDesktop() {
         return window.matchMedia('(min-width: 1024px)').matches;
@@ -48,13 +56,30 @@ function initSidebarExpand() {
 
     function expandSidebar() {
         if (!isDesktop()) return;
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            hoverTimeout = null;
+        }
         sidebar.classList.add('sidebar-expanded');
     }
 
-    function collapseSidebar() {
+    function collapseSidebar(immediate) {
         if (isPinned()) return;
-        sidebar.classList.remove('sidebar-expanded');
-        html.classList.remove('sidebar-keep-expanded');
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            hoverTimeout = null;
+        }
+        if (immediate) {
+            sidebar.classList.remove('sidebar-expanded');
+            html.classList.remove('sidebar-keep-expanded');
+            return;
+        }
+        hoverTimeout = setTimeout(function () {
+            if (!pointerInside && !isFocusInside() && !isPinned()) {
+                sidebar.classList.remove('sidebar-expanded');
+                html.classList.remove('sidebar-keep-expanded');
+            }
+        }, 80);
     }
 
     function isFocusInside() {
@@ -70,7 +95,7 @@ function initSidebarExpand() {
                 html.classList.remove('sidebar-keep-expanded');
                 updatePinUI(false);
                 if (!pointerInside && !isFocusInside()) {
-                    collapseSidebar();
+                    collapseSidebar(true);
                 }
             } else {
                 try { localStorage.setItem(PIN_KEY, '1'); } catch (err) { }
@@ -106,7 +131,7 @@ function initSidebarExpand() {
             document.removeEventListener('pointermove', settlePointer, true);
             var el = document.elementFromPoint(e.clientX, e.clientY);
             pointerInside = !!(el && sidebar.contains(el));
-            if (!pointerInside && !isFocusInside()) collapseSidebar();
+            if (!pointerInside && !isFocusInside()) collapseSidebar(false);
         }
         document.addEventListener('pointermove', settlePointer, true);
     }
@@ -117,12 +142,12 @@ function initSidebarExpand() {
     });
     sidebar.addEventListener('pointerleave', function () {
         pointerInside = false;
-        if (!isFocusInside()) collapseSidebar();
+        if (!isFocusInside()) collapseSidebar(false);
     });
     sidebar.addEventListener('focusin', expandSidebar);
     sidebar.addEventListener('focusout', function (e) {
         if (sidebar.contains(e.relatedTarget) || pointerInside) return;
-        collapseSidebar();
+        collapseSidebar(false);
     });
 }
 

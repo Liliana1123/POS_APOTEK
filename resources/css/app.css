@@ -918,7 +918,7 @@ body {
         width: 6rem !important;
         /* w-24 / 96px */
         will-change: width;
-        transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow-x: hidden;
     }
 
@@ -930,8 +930,9 @@ body {
         /* 288px (w-72) expanded */
     }
 
-    /* Avoid rail→expand animation on the first paint after a menu click */
-    html.sidebar-keep-expanded #app-sidebar {
+    /* Prevent animation ONLY during initial page preload to avoid FOUC */
+    html.sidebar-preload #app-sidebar,
+    html.sidebar-preload #app-sidebar * {
         transition: none !important;
     }
 
@@ -942,28 +943,28 @@ body {
         padding-right: 1.375rem !important;
     }
 
-    /* Level 1: Sub-menu items inside group - line aligned directly with the center axis of the parent group icon (22px + 10px = 32px / 2rem) */
+    /* Level 1: Sub-menu items inside group - line aligned directly with the center axis of the parent group icon */
     #app-sidebar .sidebar-group-items {
         margin-left: 2rem;
         padding-left: 0.75rem;
         border-left: 1.5px solid rgba(191, 219, 254, 0.3);
-        will-change: max-height, opacity;
-        transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease-in-out, border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+        will-change: max-height, opacity, margin, padding;
+        transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-in-out, border-color 0.25s ease, margin 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Level 2: Sub-menu items inside child item (e.g. WhatsApp Monitor under Pelanggan) - line aligned directly with the center axis of the Pelanggan icon (8px + 8px = 16px / 1rem) */
+    /* Level 2: Sub-menu items inside child item */
     #app-sidebar .sidebar-subgroup-items {
         margin-left: 1rem;
         padding-left: 0.75rem;
         border-left: 1.5px solid rgba(191, 219, 254, 0.3);
-        will-change: max-height, opacity;
-        transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease-in-out, border-color 0.2s ease, margin 0.2s ease, padding 0.2s ease;
+        will-change: max-height, opacity, margin, padding;
+        transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-in-out, border-color 0.25s ease, margin 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar .sidebar-nav-child {
         padding-left: 0.5rem !important;
         padding-right: 0.75rem !important;
-        transition: padding 0.2s ease, background-color 0.15s ease, color 0.15s ease;
+        transition: padding 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, color 0.15s ease;
     }
 
     /* Collapsed state in rail mode: adjust child items to align with central anchor */
@@ -979,35 +980,37 @@ body {
         padding-right: 1.5rem !important;
     }
 
-    /* Collapsed state: labels and controls cleanly hidden */
+    /* Collapsed state: labels and controls smoothly fade and shrink (no jarring display:none popping) */
     html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-nav-label,
     html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-group-arrow,
     html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-toggle,
     html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-subgroup-arrow,
     html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-info,
-    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout {
-        display: none !important;
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) .sidebar-footer-logout,
+    html:not(.sidebar-keep-expanded) #app-sidebar:not(:hover):not(:focus-within):not(.sidebar-expanded) #pin-sidebar-toggle {
         opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
         max-width: 0 !important;
         overflow: hidden !important;
+        pointer-events: none !important;
         white-space: nowrap !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Expanded state: labels and controls reveal cleanly */
+    /* Expanded state: labels reveal with subtle delay for organic smoothness */
     #app-sidebar:hover .sidebar-nav-label,
     #app-sidebar:focus-within .sidebar-nav-label,
     #app-sidebar.sidebar-expanded .sidebar-nav-label,
     html.sidebar-keep-expanded #app-sidebar .sidebar-nav-label {
         display: inline-block !important;
         opacity: 1 !important;
-        visibility: visible !important;
-        max-width: 210px !important;
+        max-width: 220px !important;
         pointer-events: auto !important;
-        transition: opacity 0.2s 0.05s ease-out;
+        white-space: nowrap !important;
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover #pin-sidebar-toggle,
@@ -1015,14 +1018,19 @@ body {
     #app-sidebar.sidebar-expanded #pin-sidebar-toggle,
     html.sidebar-keep-expanded #app-sidebar #pin-sidebar-toggle {
         display: inline-flex !important;
+        opacity: 1 !important;
+        max-width: 2.5rem !important;
+        padding: 0.375rem !important;
+        pointer-events: auto !important;
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Unified Arrow Transitions (Group & Subgroup) */
     .sidebar-group-arrow,
     .sidebar-subgroup-arrow {
-        will-change: transform;
+        will-change: transform, opacity;
         transform-origin: center;
-        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s 0.05s ease-out !important;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover .sidebar-group-arrow,
@@ -1032,30 +1040,35 @@ body {
     #app-sidebar:hover .sidebar-subgroup-arrow,
     #app-sidebar:focus-within .sidebar-subgroup-arrow,
     #app-sidebar.sidebar-expanded .sidebar-subgroup-arrow,
-    html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-arrow {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-
+    html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-arrow,
     #app-sidebar:hover .sidebar-subgroup-toggle,
     #app-sidebar:focus-within .sidebar-subgroup-toggle,
     #app-sidebar.sidebar-expanded .sidebar-subgroup-toggle,
-    html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-toggle,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-subgroup-toggle {
+        opacity: 1 !important;
+        max-width: 2rem !important;
+        pointer-events: auto !important;
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     #app-sidebar:hover .sidebar-footer-info,
     #app-sidebar:focus-within .sidebar-footer-info,
     #app-sidebar.sidebar-expanded .sidebar-footer-info,
-    html.sidebar-keep-expanded #app-sidebar .sidebar-footer-info,
+    html.sidebar-keep-expanded #app-sidebar .sidebar-footer-info {
+        opacity: 1 !important;
+        max-width: 150px !important;
+        pointer-events: auto !important;
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     #app-sidebar:hover .sidebar-footer-logout,
     #app-sidebar:focus-within .sidebar-footer-logout,
     #app-sidebar.sidebar-expanded .sidebar-footer-logout,
     html.sidebar-keep-expanded #app-sidebar .sidebar-footer-logout {
-        display: block !important;
         opacity: 1 !important;
-        visibility: visible !important;
+        max-width: 3rem !important;
         pointer-events: auto !important;
-        transition: opacity 0.2s 0.05s ease-out;
+        transition: opacity 0.22s 0.08s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Fixed anchor padding on header and footer (never changes, logo & avatar stay rock-solid) */
@@ -1071,14 +1084,18 @@ body {
 
     /* Active indicator dot on group header in collapsed rail mode */
     .sidebar-group-active-dot {
-        display: block;
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     #app-sidebar:hover .sidebar-group-active-dot,
     #app-sidebar:focus-within .sidebar-group-active-dot,
     #app-sidebar.sidebar-expanded .sidebar-group-active-dot,
     html.sidebar-keep-expanded #app-sidebar .sidebar-group-active-dot {
-        display: none !important;
+        opacity: 0 !important;
+        transform: scale(0.4);
+        pointer-events: none;
     }
 
     /* Pinned sidebar visual distinction */
