@@ -663,18 +663,18 @@
                 @endif
 
                 @if ($canTombolKasir)
-                    <a href="{{ route('penjualan.create') }}" class="dashboard-card cashier-card !p-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-between shadow-md hover:shadow-lg transition-all duration-200 group">
+                    <a href="{{ route('penjualan.create') }}" class="cashier-card block !p-3.5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center backdrop-blur-xs text-white shrink-0">
+                            <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-xs text-white shrink-0">
                                 <x-heroicon-o-calculator class="w-4 h-4" />
                             </div>
                             <div>
-                                <span class="text-xs font-extrabold tracking-wide block">Buka Kasir</span>
-                                <span class="text-[9px] text-blue-100 font-medium">Transaksi penjualan baru</span>
+                                <span class="text-xs font-extrabold tracking-wide block text-white">Buka Kasir</span>
+                                <span class="text-[9px] text-blue-100 font-medium block">Transaksi penjualan baru</span>
                             </div>
                         </div>
-                        <div class="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center group-hover:translate-x-0.5 transition-transform shrink-0">
-                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5 text-white" />
+                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0 text-white">
+                            <x-heroicon-o-chevron-right class="w-3.5 h-3.5" />
                         </div>
                     </a>
                 @endif
