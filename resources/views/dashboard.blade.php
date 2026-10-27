@@ -527,7 +527,7 @@
                                 'dot' => 'bg-rose-500',
                                 'ping' => 'bg-rose-400',
                                 'arrow' => 'text-rose-400 group-hover:text-rose-600',
-                                'card' => 'border-l-4 border-l-rose-500 hover:border-rose-400 hover:shadow-rose-500/10',
+                                'card' => 'border-gray-200 border-l-4 border-l-rose-500 hover:border-l-rose-600 hover:bg-rose-50/30 hover:shadow-md hover:shadow-rose-500/10',
                             ],
                             'attention' => [
                                 'label' => 'Perlu Perhatian',
@@ -535,7 +535,7 @@
                                 'dot' => 'bg-amber-500',
                                 'ping' => 'bg-amber-400',
                                 'arrow' => 'text-amber-400 group-hover:text-amber-600',
-                                'card' => 'border-l-4 border-l-amber-500 hover:border-amber-400 hover:shadow-amber-500/10',
+                                'card' => 'border-gray-200 border-l-4 border-l-amber-500 hover:border-l-amber-600 hover:bg-amber-50/30 hover:shadow-md hover:shadow-amber-500/10',
                             ],
                             'monitoring' => [
                                 'label' => 'Dalam Pemantauan',
@@ -543,7 +543,7 @@
                                 'dot' => 'bg-sky-500',
                                 'ping' => 'bg-sky-400',
                                 'arrow' => 'text-sky-400 group-hover:text-sky-600',
-                                'card' => 'border-l-4 border-l-sky-500 hover:border-sky-400 hover:shadow-sky-500/10',
+                                'card' => 'border-gray-200 border-l-4 border-l-sky-500 hover:border-l-sky-600 hover:bg-sky-50/30 hover:shadow-md hover:shadow-sky-500/10',
                             ],
                             'overdue' => [
                                 'label' => 'Terlambat',
@@ -551,7 +551,7 @@
                                 'dot' => 'bg-rose-500',
                                 'ping' => 'bg-rose-400',
                                 'arrow' => 'text-rose-400 group-hover:text-rose-600',
-                                'card' => 'border-l-4 border-l-rose-500 hover:border-rose-400 hover:shadow-rose-500/10',
+                                'card' => 'border-gray-200 border-l-4 border-l-rose-500 hover:border-l-rose-600 hover:bg-rose-50/30 hover:shadow-md hover:shadow-rose-500/10',
                             ],
                             'piutang' => [
                                 'label' => 'Piutang',
@@ -559,7 +559,7 @@
                                 'dot' => 'bg-purple-500',
                                 'ping' => 'bg-purple-400',
                                 'arrow' => 'text-purple-400 group-hover:text-purple-600',
-                                'card' => 'border-l-4 border-l-purple-500 hover:border-purple-400 hover:shadow-purple-500/10',
+                                'card' => 'border-gray-200 border-l-4 border-l-purple-500 hover:border-l-purple-600 hover:bg-purple-50/30 hover:shadow-md hover:shadow-purple-500/10',
                             ],
                         ];
                     @endphp
@@ -619,11 +619,11 @@
                                 @endphp
 
                                 <a href="{{ $item['route'] }}"
-                                   class="group block p-2.5 rounded-xl border transition-all duration-200 {{ $hasCount ? $cfg['card'] . ' bg-white hover:shadow-md' : 'border-gray-200/80 bg-gray-50/50 hover:bg-white hover:border-gray-300' }}">
+                                   class="group block p-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 {{ $hasCount ? $cfg['card'] . ' bg-white' : 'border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 hover:shadow-xs' }}">
                                     <div class="flex items-center justify-between gap-2">
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-center gap-1.5 mb-1">
-                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border transition-transform duration-200 group-hover:scale-[1.02] origin-left {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
                                                     @if ($hasCount)
                                                         <span class="relative flex h-1.5 w-1.5">
                                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $cfg['ping'] }}"></span>
@@ -646,14 +646,14 @@
                                                 <span class="text-xs font-black {{ $hasCount ? 'text-gray-900' : 'text-gray-400' }}">
                                                     {{ number_format($itemCount, 0, ',', '.') }}
                                                 </span>
-                                                <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600' : 'text-gray-400' }} truncate">
+                                                <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600 group-hover:text-gray-900' : 'text-gray-400' }} transition-colors truncate">
                                                     {{ $item['label'] }}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div class="shrink-0 flex items-center">
-                                            <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1" />
+                                            <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1.5" />
                                         </div>
                                     </div>
                                 </a>
