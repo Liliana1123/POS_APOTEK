@@ -140,32 +140,59 @@
     @if ($canGrafikOmzet || $canKondisiBisnis || $showActionCol)
     <div class="main-dashboard-grid grid grid-cols-1 xl:grid-cols-12 gap-3 items-stretch">
         @if ($canGrafikOmzet)
+            @php
+                $validNet = array_values(array_filter($chartNet ?? [], fn($v) => (float)$v > 0));
+                $peakVal = !empty($chartNet) ? max($chartNet) : 0;
+                $peakIdx = $peakVal > 0 ? array_search($peakVal, $chartNet) : false;
+                $peakLabel = ($peakIdx !== false && isset($chartLabels[$peakIdx])) ? $chartLabels[$peakIdx] : null;
+                $avgDaily = count($chartNet ?? []) > 0 ? array_sum($chartNet) / count($chartNet) : 0;
+            @endphp
             <div class="main-graph-card {{ ($canKondisiBisnis && $showActionCol) ? 'xl:col-span-5' : (($canKondisiBisnis || $showActionCol) ? 'xl:col-span-7' : 'xl:col-span-12') }}">
-                <div class="dashboard-card p-4 h-full">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100">
-                        <div>
-                            <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
+                <div class="dashboard-card p-4 h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 tracking-tight">Grafik Penjualan dan Omzet</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Tren penjualan dan omzet apotek berdasarkan periode yang dipilih.</p>
+                            </div>
+                            
+                            {{-- Interactive Legend (Netral Tanpa Warna Cerah) --}}
+                            <div class="flex items-center gap-1.5 text-xs font-medium flex-wrap" id="salesChartLegend" title="Klik tombol untuk menyembunyikan / menampilkan garis">
+                                <button type="button" data-dataset-index="0" class="chart-legend-btn px-2.5 py-1 rounded-md border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 cursor-pointer text-xs font-semibold select-none shadow-2xs">
+                                    Omzet Kotor
+                                </button>
+                                <button type="button" data-dataset-index="1" class="chart-legend-btn px-2.5 py-1 rounded-md border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 cursor-pointer text-xs font-semibold select-none shadow-2xs">
+                                    Omzet Bersih
+                                </button>
+                                @if ($canGrafikProfit)
+                                    <button type="button" data-dataset-index="2" class="chart-legend-btn px-2.5 py-1 rounded-md border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 cursor-pointer text-xs font-semibold select-none shadow-2xs">
+                                        Gross Profit
+                                    </button>
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex items-center gap-4 text-xs font-medium">
-                            <span class="inline-flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                                <span class="text-gray-600">Omzet Kotor</span>
-                            </span>
-                            <span class="inline-flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded-full bg-blue-600"></span>
-                                <span class="text-gray-600">Omzet Bersih</span>
-                            </span>
-                            @if ($canGrafikProfit)
-                                <span class="inline-flex items-center gap-1.5">
-                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                                    <span class="text-gray-600">Gross Profit</span>
-                                </span>
+
+                        {{-- Quick Insights Banner (Netral Tanpa Warna Cerah & Tanpa Emoji) --}}
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                            @if ($peakVal > 0 && $peakLabel)
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-gray-50 text-gray-700 border border-gray-200 shadow-2xs">
+                                    <span class="text-gray-500 font-bold uppercase tracking-wider text-[10px]">Puncak:</span>
+                                    <span>{{ $peakLabel }} (Rp {{ number_format($peakVal, 0, ',', '.') }})</span>
+                                </div>
                             @endif
+                            @if ($avgDaily > 0)
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-gray-50 text-gray-700 border border-gray-200 shadow-2xs">
+                                    <span class="text-gray-500 font-bold uppercase tracking-wider text-[10px]">Rata-rata:</span>
+                                    <span>Rp {{ number_format($avgDaily, 0, ',', '.') }}/hari</span>
+                                </div>
+                            @endif
+                            <div class="text-[10.5px] text-gray-400 ml-auto hidden sm:block italic">
+                                *Klik tombol untuk filter garis grafik
+                            </div>
                         </div>
                     </div>
 
-                    <div class="relative w-full" style="min-height: 280px; max-height: 340px;">
+                    <div class="relative w-full flex-1" style="min-height: 270px; max-height: 330px;">
                         <canvas id="salesPerformanceChart"></canvas>
                     </div>
                 </div>
@@ -269,8 +296,9 @@
                     </div>
 
                     {{-- Status --}}
-                    <div class="mt-3 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-extrabold">
-                        ♥ {{ $healthStatus }}
+                    <div class="mt-3 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold inline-flex items-center gap-1.5 border border-emerald-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>{{ $healthStatus }}</span>
                     </div>
                 </div>
 
@@ -1203,8 +1231,47 @@
             return 'Rp ' + Number(val).toLocaleString('id-ID');
         };
 
+        const canvasContext = ctx.getContext('2d');
+
+        // Linear Gradient lembut untuk Omzet Bersih (Blue)
+        const gradientNet = canvasContext.createLinearGradient(0, 0, 0, 320);
+        gradientNet.addColorStop(0, 'rgba(37, 99, 235, 0.28)');
+        gradientNet.addColorStop(0.65, 'rgba(37, 99, 235, 0.05)');
+        gradientNet.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
+
+        // Linear Gradient lembut untuk Gross Profit (Emerald)
+        const gradientProfit = canvasContext.createLinearGradient(0, 0, 0, 320);
+        gradientProfit.addColorStop(0, 'rgba(16, 185, 129, 0.22)');
+        gradientProfit.addColorStop(0.65, 'rgba(16, 185, 129, 0.04)');
+        gradientProfit.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+        // Custom Plugin: Garis Pandu Vertikal (Crosshair Guideline on Hover)
+        const verticalGuidePlugin = {
+            id: 'verticalGuide',
+            afterDraw: (chartInstance) => {
+                if (chartInstance.tooltip?._active?.length) {
+                    const activePoint = chartInstance.tooltip._active[0];
+                    const chartCtx = chartInstance.ctx;
+                    const x = activePoint.element.x;
+                    const topY = chartInstance.scales.y.top;
+                    const bottomY = chartInstance.scales.y.bottom;
+
+                    chartCtx.save();
+                    chartCtx.beginPath();
+                    chartCtx.setLineDash([4, 4]);
+                    chartCtx.moveTo(x, topY);
+                    chartCtx.lineTo(x, bottomY);
+                    chartCtx.lineWidth = 1;
+                    chartCtx.strokeStyle = 'rgba(148, 163, 184, 0.65)'; // slate-400
+                    chartCtx.stroke();
+                    chartCtx.restore();
+                }
+            }
+        };
+
         const chart = new Chart(ctx, {
             type: 'line',
+            plugins: [verticalGuidePlugin],
             data: {
                 labels: labels,
                 datasets: [
@@ -1212,24 +1279,30 @@
                         label: 'Omzet Kotor',
                         data: dataGross,
                         borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                        backgroundColor: 'transparent',
                         borderWidth: 2,
-                        tension: 0.35,
-                        pointRadius: 3,
+                        tension: 0.38,
+                        pointRadius: 0,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: '#f59e0b',
+                        pointHoverBackgroundColor: '#f59e0b',
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2.5,
+                        pointHitRadius: 14,
                         fill: false,
                     },
                     {
                         label: 'Omzet Bersih',
                         data: dataNet,
                         borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.10)',
+                        backgroundColor: gradientNet,
                         borderWidth: 2.5,
-                        tension: 0.35,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: '#2563eb',
+                        tension: 0.38,
+                        pointRadius: 0,
+                        pointHoverRadius: 6.5,
+                        pointHoverBackgroundColor: '#2563eb',
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2.5,
+                        pointHitRadius: 14,
                         fill: true,
                     },
                     @if ($canGrafikProfit)
@@ -1237,14 +1310,17 @@
                         label: 'Gross Profit',
                         data: dataProfit,
                         borderColor: '#10b981',
-                        backgroundColor: 'transparent',
-                        borderWidth: 1.75,
-                        borderDash: [4, 4],
-                        tension: 0.35,
-                        pointRadius: 2,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#10b981',
-                        fill: false,
+                        backgroundColor: gradientProfit,
+                        borderWidth: 2,
+                        borderDash: [5, 4],
+                        tension: 0.38,
+                        pointRadius: 0,
+                        pointHoverRadius: 5.5,
+                        pointHoverBackgroundColor: '#10b981',
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2.5,
+                        pointHitRadius: 14,
+                        fill: true,
                     }
                     @endif
                 ]
@@ -1253,7 +1329,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: {
-                    duration: 1100,
+                    duration: 900,
                     easing: 'easeOutQuart',
                 },
                 interaction: {
@@ -1266,10 +1342,11 @@
                     },
                     tooltip: {
                         backgroundColor: 'rgba(15, 23, 42, 0.94)',
-                        borderColor: 'rgba(255, 255, 255, 0.12)',
+                        borderColor: 'rgba(255, 255, 255, 0.14)',
                         borderWidth: 1,
                         titleColor: '#ffffff',
                         bodyColor: '#e2e8f0',
+                        footerColor: '#34d399',
                         padding: 12,
                         cornerRadius: 10,
                         titleFont: {
@@ -1279,10 +1356,29 @@
                         bodyFont: {
                             size: 11,
                         },
+                        footerFont: {
+                            size: 11,
+                            weight: 'bold',
+                        },
                         boxPadding: 4,
                         callbacks: {
+                            title: function (items) {
+                                if (!items || items.length === 0) return '';
+                                return 'Tanggal: ' + items[0].label;
+                            },
                             label: function (context) {
                                 return context.dataset.label + ': ' + formatRupiah(context.parsed.y);
+                            },
+                            footer: function (items) {
+                                if (!items || items.length === 0) return '';
+                                const idx = items[0].dataIndex;
+                                const netVal = Number(dataNet[idx] || 0);
+                                const profitVal = Number(dataProfit[idx] || 0);
+                                if (netVal > 0 && profitVal > 0) {
+                                    const marginPercent = ((profitVal / netVal) * 100).toFixed(1);
+                                    return 'Margin Laba: ' + marginPercent + '%';
+                                }
+                                return '';
                             }
                         }
                     }
@@ -1313,7 +1409,9 @@
                             },
                             color: '#64748b',
                             callback: function (val) {
-                                if (val >= 1000000) {
+                                if (val >= 1000000000) {
+                                    return 'Rp ' + (val / 1000000000).toFixed(1) + ' M';
+                                } else if (val >= 1000000) {
                                     return 'Rp ' + (val / 1000000).toFixed(1) + ' jt';
                                 } else if (val >= 1000) {
                                     return 'Rp ' + (val / 1000).toFixed(0) + ' rb';
@@ -1324,6 +1422,23 @@
                     }
                 }
             }
+        });
+
+        // Interaktivitas Legend: Klik tombol untuk toggle/sembunyikan dataset
+        const legendButtons = document.querySelectorAll('#salesChartLegend .chart-legend-btn');
+        legendButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const idx = parseInt(this.dataset.datasetIndex, 10);
+                const isVisible = chart.isDatasetVisible(idx);
+                chart.setDatasetVisibility(idx, !isVisible);
+                chart.update();
+
+                if (isVisible) {
+                    this.classList.add('opacity-40', 'line-through', 'grayscale');
+                } else {
+                    this.classList.remove('opacity-40', 'line-through', 'grayscale');
+                }
+            });
         });
 
         // ==========================================
