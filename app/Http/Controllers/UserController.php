@@ -11,12 +11,11 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
-        if ($request->filled('cari')) {
-            $query->where('name', 'like', '%' . $request->cari . '%')
-                ->orWhere('email', 'like', '%' . $request->cari . '%');
-        }
-        $users = $query->orderBy('id')->paginate(15)->withQueryString();
+        $users = User::query()
+            ->search(['name', 'email'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('user.index', compact('users'));
     }
 
@@ -31,8 +30,10 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'apoteker', 'kasir'])],
+            'role' => ['required', Rule::in(array_keys(config('permission.roles')))],
         ]);
+
+        $this->guardIzinRole($request, $data['role']);
 
         $newUser = User::create([
             'name' => $data['name'],
@@ -49,6 +50,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil ditambahkan.');
             return response()->json(['message' => 'User berhasil ditambahkan.'], 201);
         }
 
@@ -66,8 +68,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'apoteker', 'kasir'])],
+            'role' => ['required', Rule::in(array_keys(config('permission.roles')))],
         ]);
+
+        $this->guardIzinRole($request, $data['role']);
+
+        if ($user->isSuperAdmin() && ! $request->user()->isSuperAdmin()) {
+            abort(403, 'Akun Superadmin hanya bisa diubah oleh Superadmin.');
+        }
 
         $update = [
             'name' => $data['name'],
@@ -88,6 +96,7 @@ class UserController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'User berhasil diperbarui.');
             return response()->json(['message' => 'User berhasil diperbarui.']);
         }
 
@@ -98,6 +107,10 @@ class UserController extends Controller
     {
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak bisa menonaktifkan akun yang sedang kamu gunakan.');
+        }
+
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Akun Superadmin hanya bisa dinonaktifkan oleh Superadmin.');
         }
 
         $user->update(['aktif' => ! $user->aktif]);
@@ -118,6 +131,10 @@ class UserController extends Controller
             return back()->with('error', 'Tidak bisa menghapus akun sendiri.');
         }
 
+        if ($user->isSuperAdmin() && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Akun Superadmin hanya bisa dihapus oleh Superadmin.');
+        }
+
         if ($user->penerimaan()->exists() || $user->penjualan()->exists()) {
             return back()->with('error', 'User punya riwayat transaksi, tidak bisa dihapus. Nonaktifkan saja.');
         }
@@ -131,5 +148,12 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+    }
+
+    private function guardIzinRole(Request $request, string $roleBaru): void
+    {
+        if (! $request->user()->isSuperAdmin() && $roleBaru === 'superadmin') {
+            abort(403, 'Hanya Superadmin yang bisa membuat atau mengubah role Superadmin.');
+        }
     }
 }

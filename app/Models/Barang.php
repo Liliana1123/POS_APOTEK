@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Barang extends Model
 {
+    use Filterable;
     protected $fillable = [
         'kode_apotek', 'kode_kfa', 'nama', 'merk', 'kategori_id', 'satuan_id', 'pabrik_id',
         'barcode', 'butuh_resep', 'stok_minimum', 'aktif',
@@ -109,6 +111,15 @@ class Barang extends Model
         return $this->hasMany(DetailPenerimaan::class);
     }
 
+    public function batchFefoFirst(): HasMany
+    {
+        return $this->detailPenerimaan()
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
+            ->orderBy('expired_date', 'asc')
+            ->limit(1);
+    }
+
     // Total stok dari semua batch yang masih aktif
     public function stokTotal(): int
     {
@@ -139,9 +150,19 @@ class Barang extends Model
         return $this->batchFefo()->first()?->harga_jual;
     }
 
+    public function latestDetailPenerimaan(): HasMany
+    {
+        return $this->hasMany(DetailPenerimaan::class)->latest('id')->limit(1);
+    }
+
     // Nama supplier terakhir dari riwayat penerimaan barang
     public function supplierNama(): string
     {
+        if ($this->relationLoaded('latestDetailPenerimaan')) {
+            $dp = $this->latestDetailPenerimaan->first();
+            return $dp?->penerimaan?->supplier?->nama ?? '—';
+        }
+
         $dp = $this->detailPenerimaan()
             ->with('penerimaan.supplier')
             ->latest('id')

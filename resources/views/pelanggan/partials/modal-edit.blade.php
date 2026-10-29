@@ -1,36 +1,25 @@
 <!-- Modal Edit Pelanggan / Member -->
-<div id="modal-edit-pelanggan"
-    class="modal-backdrop-custom hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+<x-modal
+    id="modal-edit-pelanggan"
+    size="w-full max-w-xl"
+    close-id="close-edit-pelanggan">
 
-    <div class="modal-container-custom w-full mx-4 bg-white rounded-xl shadow-xl max-h-[92vh] overflow-hidden" style="max-width: 560px;">
-
-        <!-- HEADER -->
-        <div class="flex items-start justify-between gap-4 px-5 py-4 border-b border-gray-100">
-            <div class="flex items-start gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                    <x-heroicon-o-pencil-square class="w-5 h-5" />
-                </div>
-                <div>
-                    <h3 class="text-base font-semibold text-gray-800">Edit Pelanggan / Member</h3>
-                </div>
+    <x-slot:header>
+        <div class="flex items-start gap-3">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <x-heroicon-o-pencil-square class="w-5 h-5" />
             </div>
-
-            <button
-                type="button"
-                id="close-edit-pelanggan"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
-                title="Tutup"
-                aria-label="Tutup"
-            >
-                <x-heroicon-o-x-mark class="w-5 h-5" />
-            </button>
+            <div>
+                <h3 class="text-base font-semibold text-gray-800">Edit Pelanggan / Member</h3>
+            </div>
         </div>
+    </x-slot:header>
 
-        <!-- CONTENT -->
-        <div class="overflow-y-auto max-h-[calc(92vh-132px)]">
-            <form id="form-edit-pelanggan" novalidate>
-                @csrf
-                <input type="hidden" name="_method" value="PUT">
+    <!-- CONTENT -->
+    <div>
+        <form id="form-edit-pelanggan" novalidate>
+            @csrf
+            <input type="hidden" name="_method" value="PUT">
 
                 <div class="px-5 py-5">
                     <div id="edit-pelanggan-error" class="hidden mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700"></div>
@@ -39,7 +28,7 @@
 
                         <!-- Nama -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-user class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -51,7 +40,7 @@
 
                         <!-- No Telp -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-phone class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -63,7 +52,7 @@
 
                         <!-- Alamat -->
                         <div class="flex items-start gap-3 min-w-0 md:col-span-2">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-map-pin class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -75,7 +64,7 @@
 
                         <!-- Tanggal Lahir -->
                         <div class="flex items-start gap-3 min-w-0">
-                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                 <x-heroicon-o-calendar-days class="w-4 h-4" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -101,30 +90,43 @@
                                 <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="status_member"></p>
                             </div>
                         </div>
+
+                        <!-- Custom Diskon (%) -->
+                        <div class="flex items-start gap-3 min-w-0 md:col-span-2">
+                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                <x-heroicon-o-tag class="w-4 h-4" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <label class="block text-[10px] font-medium text-gray-400 mb-1">Custom Diskon (%)</label>
+                                <input type="number" name="custom_discount_percentage" min="0" max="100" step="any" class="form-input w-full" placeholder="Kosongkan untuk diskon default 10%">
+                                <p class="text-[10px] text-gray-400 mt-1">Kosongkan untuk diskon default 10%.</p>
+                                <p class="edit-field-error text-red-600 text-[10px] mt-1 hidden" data-error-for="custom_discount_percentage"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </form>
-        </div>
+    </div>
 
-        <!-- FOOTER -->
-        <div class="flex justify-end items-center gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50">
+    <x-slot:footer>
+        <div class="flex justify-end items-center gap-2 w-full">
             <button
                 type="button"
                 id="cancel-edit-pelanggan"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+                class="btn-secondary !text-xs px-4 py-2 font-semibold text-gray-700 hover:bg-gray-100 transition"
             >
-                Batal
+                <span>Batal</span>
             </button>
             <button
                 type="button"
                 id="save-edit-pelanggan"
-                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                class="btn-primary !text-xs px-4 py-2 font-semibold text-white transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-                Simpan Perubahan
+                <span>Simpan Perubahan</span>
             </button>
         </div>
-    </div>
-</div>
+    </x-slot:footer>
+</x-modal>
 
 <script>
 (function () {
@@ -169,6 +171,10 @@
         form.elements.alamat.value = button.dataset.alamat || '';
         form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
         form.elements.status_member.value = button.dataset.status_member || '';
+        const customDisc = button.dataset.custom_discount_percentage;
+        form.elements.custom_discount_percentage.value = (customDisc !== undefined && customDisc !== null && customDisc !== '')
+            ? parseFloat(customDisc)
+            : '';
         form.dataset.id = button.dataset.id || '';
 
         modal.classList.remove('hidden');

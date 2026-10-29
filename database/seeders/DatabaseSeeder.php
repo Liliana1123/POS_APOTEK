@@ -13,31 +13,32 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Akun awal untuk login pertama kali
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@apotek.test',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'aktif' => true,
-        ]);
-
-        User::create([
-            'name' => 'Kasir',
-            'email' => 'kasir@apotek.test',
-            'password' => Hash::make('password'),
-            'role' => 'kasir',
-            'aktif' => true,
-        ]);
+        // Akun awal untuk login pertama kali. firstOrCreate supaya seeder
+        // boleh dijalankan ulang di database yang sudah berisi data.
+        foreach ([
+            ['Superadmin', 'superadmin@apotek.test', 'superadmin'],
+            ['Admin', 'admin@apotek.test', 'admin'],
+            ['Kasir', 'kasir@apotek.test', 'kasir'],
+        ] as [$name, $email, $role]) {
+            User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'password' => Hash::make('password'),
+                    'role' => $role,
+                    'aktif' => true,
+                ]
+            );
+        }
 
         // Kategori umum di apotek
         foreach (['Obat bebas', 'Obat bebas terbatas', 'Obat keras', 'Alat kesehatan', 'Vitamin & suplemen'] as $nama) {
-            Kategori::create(['nama' => $nama]);
+            Kategori::firstOrCreate(['nama' => $nama]);
         }
 
         // Satuan yang umum dipakai
         foreach (['Tablet', 'Strip', 'Botol', 'Box', 'Sachet', 'Tube', 'Pcs'] as $nama) {
-            Satuan::create(['nama' => $nama]);
+            Satuan::firstOrCreate(['nama' => $nama]);
         }
 
         // Data pabrik farmasi

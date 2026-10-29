@@ -1,170 +1,205 @@
 @extends('layouts.app')
-@section('title', 'Laporan Audit Diskon')
+@section('title', 'Laporan Audit Diskon Dan Promo')
 
 @section('content')
-<style>
-@media print {
-    aside, nav, header, [role="navigation"], .print\:hidden, .no-print {
-        display: none !important;
-    }
-    main {
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-    }
-    .card-base {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-    }
-    body {
-        background: white !important;
-        color: black !important;
-    }
-    @page {
-        margin: 15mm 10mm 15mm 10mm;
-    }
-}
-</style>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Penggunaan Diskon & Promo</h1>
-        <p class="text-caption mt-1">Pantau riwayat audit & hemat rupiah dari promo/membership.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.diskon', array_merge(request()->query(), ['export' => 'csv'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-            Export CSV
-        </a>
-        <button onclick="window.print()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
+@php
+    $apotek = \Illuminate\Support\Facades\Cache::remember(
+        'info_apotek',
+        now()->addHours(6),
+        fn () => \App\Models\InfoApotek::first()
+    );
+@endphp
+
+{{-- ========================================================= --}}
+{{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
+{{-- ========================================================= --}}
+<div class="print-only">
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN PENGGUNAAN DISKON DAN PROMO">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('jenis'))
+            &nbsp;•&nbsp; Jenis Diskon: {{ request('jenis') === 'member' ? 'Diskon Member' : 'Custom Promo' }}
+        @endif
+        @if(request('promo_id') && ($promoAktif = $promos->firstWhere('id', request('promo_id'))))
+            &nbsp;•&nbsp; Promo: {{ $promoAktif->nama }}
+        @endif
+        @if(request('status_pelanggan'))
+            &nbsp;•&nbsp; Status:
+            {{
+                [
+                    'pelanggan_tetap' => 'Member Pelanggan Tetap',
+                    'keluarga_nakes' => 'Member Keluarga Nakes',
+                    'member_only' => 'Member Only',
+                    'umum' => 'Umum',
+                ][request('status_pelanggan')] ?? 'Semua Pelanggan'
+            }}
+        @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 </div>
 
-<!-- Filter Card -->
-<div class="card-base p-5 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.diskon') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Dari Tanggal</label>
-            <input type="date" name="dari" value="{{ $dari }}" class="form-input">
-        </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Sampai Tanggal</label>
-            <input type="date" name="sampai" value="{{ $sampai }}" class="form-input">
-        </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Jenis Diskon</label>
-            <select name="jenis" class="form-input">
-                <option value="">Semua Jenis</option>
-                <option value="member" @selected(request('jenis') === 'member')>Diskon Member</option>
-                <option value="custom" @selected(request('jenis') === 'custom')>Custom Promo</option>
-            </select>
-        </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Promo Custom</label>
-            <select name="promo_id" class="form-input">
-                <option value="">Semua Promo</option>
-                @foreach ($promos as $promo)
-                    <option value="{{ $promo->id }}" @selected(request('promo_id') == $promo->id)>
-                        {{ $promo->nama }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Status Pelanggan</label>
-            <select name="status_pelanggan" class="form-input">
-                <option value="">Semua Pelanggan</option>
-                <option value="member" @selected(request('status_pelanggan') === 'member')>Member</option>
-                <option value="umum" @selected(request('status_pelanggan') === 'umum')>Umum</option>
-            </select>
-        </div>
-        
-        <div class="md:col-span-5 flex justify-end gap-2 border-t pt-3 mt-1">
-            <a href="{{ route('laporan.diskon') }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-                Clear
-            </a>
-            <button type="submit" class="btn-primary py-2 px-5">
-                Terapkan Filter
-            </button>
-        </div>
-    </form>
-</div>
+<x-page-header
+    title="Laporan Penggunaan Diskon dan Promo"
+    subtitle="Pantau riwayat audit dan diskon rupiah dari promo/membership."
+    class="print:hidden">
+    <x-print-actions />
+</x-page-header>
 
-<!-- Laporan Info (Khusus Print) -->
-<div class="hidden print:block mb-6 border-b pb-3">
-    <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider">Laporan Rincian Audit Diskon & Promo</h2>
-    <p class="text-xs text-gray-500 mt-1">Periode: {{ date('d M Y', strtotime($dari)) }} s/d {{ date('d M Y', strtotime($sampai)) }}</p>
-</div>
-
-<!-- Audit List Table -->
-<div class="table-custom-container">
-    <div class="p-4 border-b bg-gray-50/50 flex justify-between items-center print:border-b-0 print:p-0 print:mb-4">
-        <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Daftar Audit Penggunaan Diskon</span>
-        <span class="text-xs font-bold text-green-600 font-mono">Total Hemat: Rp {{ number_format($totalNominal, 0, ',', '.') }}</span>
+<!-- Filter & Search Card -->
+<x-card-filter
+    :action="route('laporan.diskon')"
+    :reset-url="route('laporan.diskon')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5"
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'jenis', 'promo_id', 'status_pelanggan'])"
+    :live-search="true">
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
     </div>
-    
-    <div class="overflow-x-auto">
-        <table class="table-custom min-w-[55rem]">
+
+    <select name="jenis" class="form-input" aria-label="Jenis Diskon" title="Jenis Diskon">
+        <option value="">Jenis: Semua</option>
+        <option value="member" @selected(request('jenis') === 'member')>Diskon Member</option>
+        <option value="custom" @selected(request('jenis') === 'custom')>Custom Promo</option>
+    </select>
+
+    <select name="promo_id" class="form-input" aria-label="Promo Custom" title="Promo Custom">
+        <option value="">Promo: Semua</option>
+        @foreach ($promos as $promo)
+            <option value="{{ $promo->id }}" @selected(request('promo_id') == $promo->id)>
+                {{ $promo->nama }}
+            </option>
+        @endforeach
+    </select>
+
+    <select name="status_pelanggan" class="form-input" aria-label="Status Pelanggan" title="Status Pelanggan">
+        <option value="">Pelanggan: Semua</option>
+        <option value="pelanggan_tetap" @selected(request('status_pelanggan') === 'pelanggan_tetap')>Member Pelanggan Tetap</option>
+        <option value="keluarga_nakes" @selected(request('status_pelanggan') === 'keluarga_nakes')>Member Keluarga Nakes</option>
+        <option value="member_only" @selected(request('status_pelanggan') === 'member_only')>Member Only</option>
+        <option value="umum" @selected(request('status_pelanggan') === 'umum')>Umum</option>
+    </select>
+</x-card-filter>
+
+<!-- Table Card -->
+<div class="table-custom-container print-table-wrapper">
+    <div class="overflow-x-auto print-table-wrapper">
+        <table class="table-custom table-diskon print-table w-full min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-28">Tanggal</th>
-                    <th scope="col" class="w-36">No. Faktur</th>
-                    <th scope="col">Barang / Obat</th>
-                    <th scope="col">Pelanggan</th>
-                    <th scope="col" class="w-28">Jenis Diskon</th>
-                    <th scope="col">Nama Promo</th>
-                    <th scope="col" class="text-center w-24">Persentase</th>
-                    <th scope="col" class="text-right w-36">Hemat Rupiah</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">No. Invoice</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Tanggal</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Barang / Obat</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Pelanggan</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Jenis Diskon</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Nama Promo</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Persentase Diskon</th>
+                    <th class="text-center !px-3.5 py-3.5 text-[10px] !font-bold uppercase tracking-wider whitespace-nowrap">Diskon Rupiah</th>
                 </tr>
             </thead>
-            <tbody class="table-custom-body divide-y divide-gray-150">
-                @forelse ($usages as $usage)
-                    <tr>
-                        <td class="text-gray-600">{{ $usage->created_at->format('d M Y H:i') }}</td>
-                        <td class="font-semibold text-gray-800 font-mono">
-                            <a href="{{ route('penjualan.show', $usage->penjualan_id) }}" class="text-blue-600 hover:underline print:text-gray-800">
+            <tbody class="table-custom-body">
+                @forelse ($usages as $index => $usage)
+                    <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
+                        <td class="col-diskon-faktur text-center font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">
+                            <a href="{{ route('penjualan.show', ['penjualan' => $usage->penjualan_id, 'from' => 'laporan_diskon']) }}" class="text-blue-600 hover:underline print:text-gray-800">
                                 {{ $usage->penjualan->no_faktur ?? 'Faktur Terhapus' }}
                             </a>
                         </td>
-                        <td class="text-gray-750 font-medium">{{ $usage->barang_nama }}</td>
-                        <td class="text-gray-700">
-                            {{ $usage->penjualan->pelanggan->nama ?? 'Umum' }}
-                            @if (isset($usage->penjualan->pelanggan) && $usage->penjualan->pelanggan->is_member)
-                                <span class="badge-success ml-1.5 py-0.5 px-1 text-[8px] print:hidden">Member</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($usage->jenis === 'member')
-                                <span class="badge-info">Member</span>
-                            @else
-                                <span class="badge-neutral">Custom Promo</span>
-                            @endif
-                        </td>
-                        <td class="text-gray-600">{{ $usage->custom_discount_nama ?? '-' }}</td>
-                        <td class="text-center font-bold text-gray-750">{{ $usage->persentase }}%</td>
-                        <td class="table-num font-bold text-gray-800 font-mono">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">Riwayat Diskon Kosong</div>
-                                <div class="empty-state-desc font-sans">Tidak ditemukan riwayat audit diskon yang cocok dengan filter pencarian Anda.</div>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">@tanggalWaktuId($usage->created_at)</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->barang_nama }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
+                            @php
+                                $pelanggan = $usage->penjualan?->pelanggan;
+                                $statusMember = trim((string) ($pelanggan?->status_member ?? ''));
+
+                                $memberVariant = match ($statusMember) {
+                                    'Member Pelanggan Tetap' => 'success',
+                                    'Member Keluarga Nakes' => 'info',
+                                    'Member Only' => 'warning',
+                                    default => null,
+                                };
+                            @endphp
+
+                            <div class="flex flex-col items-center justify-center gap-1 min-w-0"> 
+                                <span class="font-semibold text-gray-800 text-xs text-center">
+                                    {{ $pelanggan?->nama ?? 'Umum' }}
+                                </span>
+
+                                @if ($memberVariant)
+                                    <span class="badge-{{ $memberVariant }} self-center py-0.5 px-1.5 text-[9px]">
+                                        {{ $statusMember }}
+                                    </span>
+                                @else
+                                    <span class="self-center text-[9px]">
+                                        {{ (!$pelanggan || !$pelanggan->is_member) ? 'Umum' : ($statusMember ?: 'Member') }}
+                                    </span>
+                                @endif
+
                             </div>
                         </td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
+                            <x-status-badge :variant="$usage->jenis === 'member' ? 'info' : 'secondary'" :label="$usage->jenis === 'member' ? 'Member' : 'Custom Promo'" />
+                        </td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->custom_discount_nama ?? '-' }}</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">{{ $usage->persentase }}%</td>
+                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">Rp {{ number_format($usage->nominal, 0, ',', '.') }}</td>
                     </tr>
+                @empty
+                    <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
-                    <td colspan="7" class="px-5 py-4 text-right text-gray-600">Total Hemat:</td>
-                    <td class="px-5 py-4 text-right text-green-600 font-mono text-sm">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
+                    <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Diskon:</td>
+                    <td class="col-diskon-hemat table-num !px-2.5 py-3.5 text-left text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>
         </table>
     </div>
 </div>
+
+{{-- ========================================================= --}}
+{{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
+{{-- ========================================================= --}}
+<x-print-signature :apotek="$apotek" />
+
+<script>
+    function printReport() {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+        setTimeout(function () {
+            window.print();
+        }, 50);
+    }
+
+    window.addEventListener('beforeprint', function () {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+    });
+</script>
 @endsection

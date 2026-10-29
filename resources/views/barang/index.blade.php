@@ -3,21 +3,23 @@
 
 @section('content')
 <!-- Page Header -->
-<x-page-header title="Daftar Barang & Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
-    <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
-        <x-heroicon-o-plus class="w-4 h-4" />
-        <span>Tambah Barang</span>
-    </button>
+<x-page-header title="Daftar Barang dan Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
+    @if(auth()->user()->canManage('master.barang'))
+        <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
+            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+            <span>Import Data</span>
+        </button>
 
-    <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
-        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-        <span>Import Data</span>
-    </button>
+        <a href="{{ route('barang.export', request()->query()) }}" id="btn-export-barang" data-sync-filter="true" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            <span>Export Data</span>
+        </a>
 
-    <a href="{{ route('barang.export', request()->query()) }}" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
-        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-        <span>Export Data</span>
-    </a>
+        <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
+            <x-heroicon-o-plus class="w-4 h-4" />
+            <span>Tambah Barang</span>
+        </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
@@ -25,51 +27,32 @@
     :action="route('barang.index')"
     :reset-url="route('barang.index')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
+    :live-search="true"
     :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Cari Barang</label>
-        <div class="relative">
-            <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama, kode, KFA, merk..." class="form-input pr-8">
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-            </span>
-        </div>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Kategori</label>
-        <select name="kategori_id" class="form-input">
-            <option value="">Semua Kategori</option>
-            @foreach ($kategoris as $k)
-                <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Resep</label>
-        <select name="butuh_resep" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
-            <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Status</label>
-        <select name="aktif" class="form-input">
-            <option value="">Semua</option>
-            <option value="1" @selected(request('aktif') === '1')>Aktif</option>
-            <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
-        </select>
-    </div>
-    <div>
-        <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">Stok</label>
-        <select name="stok" class="form-input">
-            <option value="">Semua</option>
-            <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
-            <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
-            <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
-        </select>
-    </div>
+    <x-search-input name="cari" placeholder="Cari nama, kode, KFA, merk..." class="sm:col-span-2 md:col-span-2 lg:col-span-2" />
+    <select name="kategori_id" class="form-input" aria-label="Kategori" title="Kategori">
+        <option value="">Kategori: Semua</option>
+        @foreach ($kategoris as $k)
+            <option value="{{ $k->id }}" @selected(request('kategori_id') == $k->id)>{{ $k->nama }}</option>
+        @endforeach
+    </select>
+    <select name="butuh_resep" class="form-input" aria-label="Resep" title="Resep">
+        <option value="">Resep: Semua</option>
+        <option value="1" @selected(request('butuh_resep') === '1')>Wajib Resep</option>
+        <option value="0" @selected(request('butuh_resep') === '0')>Bebas</option>
+    </select>
+    <select name="aktif" class="form-input" aria-label="Status" title="Status">
+        <option value="">Status: Semua</option>
+        <option value="1" @selected(request('aktif') === '1')>Aktif</option>
+        <option value="0" @selected(request('aktif') === '0')>Nonaktif</option>
+    </select>
+    <select name="stok" class="form-input" aria-label="Stok" title="Stok">
+        <option value="">Stok: Semua</option>
+        <option value="habis" @selected(request('stok') === 'habis')>Habis</option>
+        <option value="menipis" @selected(request('stok') === 'menipis')>Menipis</option>
+        <option value="aman" @selected(request('stok') === 'aman')>Aman</option>
+    </select>
 </x-card-filter>
 
 <!-- Table Custom Wrapper -->
@@ -102,12 +85,15 @@
                             $statusStokBadge = 'badge-warning';
                         }
                     @endphp
+                    @php
+                        $canManageBarang = auth()->user()->canManage('master.barang');
+                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="text-left">
+                        <td class="text-left pl-3">
                             <x-table-action
-                                edit-class="btn-edit-barang"
-                                :edit-id="$barang->id"
-                                :edit-data="[
+                                edit-class="{{ $canManageBarang ? 'btn-edit-barang' : '' }}"
+                                :edit-id="$canManageBarang ? $barang->id : null"
+                                :edit-data="$canManageBarang ? [
                                     'kode_apotek' => $barang->kode_apotek,
                                     'kode_kfa' => $barang->kode_kfa,
                                     'nama' => $barang->nama,
@@ -119,8 +105,9 @@
                                     'stok_minimum' => $barang->stok_minimum,
                                     'butuh_resep' => (int) $barang->butuh_resep,
                                     'aktif' => (int) $barang->aktif
-                                ]"
-                                :delete-url="route('barang.destroy', $barang)"
+                                ] : null"
+                                :delete-url="$canManageBarang ? route('barang.destroy', $barang) : null"
+                                :delete-item="$barang->nama"
                                 delete-confirm="Yakin ingin menghapus barang ini?">
                                 
                                 <button type="button"
@@ -151,16 +138,14 @@
                                 </button>
                             </x-table-action>
                         </td>
-                        <td class="font-mono">{{ $barang->kode_apotek ?? '—' }}</td>
-                        <td class="font-mono">{{ $barang->kode_kfa ?? '—' }}</td>
+                        <td><x-copyable :text="$barang->kode_apotek" /></td>
+                        <td><x-copyable :text="$barang->kode_kfa" /></td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
                         <td>{{ $stok }}</td>
                         <td class="text-center">
-                            <x-badge :variant="$barang->aktif ? 'success' : 'secondary'">
-                                {{ $barang->aktif ? 'Aktif' : 'Nonaktif' }}
-                            </x-badge>
+                            <x-status-badge type="aktif" :status="$barang->aktif" />
                         </td>
                     </tr>
                 @empty
@@ -171,7 +156,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $barangs->links() }}</div>
+<x-pagination :paginator="$barangs" />
 
 <!-- Modal Tambah / Edit Barang -->
 <x-modal-form
@@ -197,68 +182,22 @@
             <input type="text" name="kode_apotek" readonly class="bg-transparent font-mono font-bold text-blue-700 text-xs text-right focus:outline-none cursor-default" title="Kode apotek dibuat otomatis oleh sistem dan tidak dapat diubah">
         </div>
 
-        <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Nama Barang / Obat <span class="text-red-500">*</span></label>
-            <input type="text" name="nama" required class="form-input" placeholder="Masukkan nama barang...">
-            <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="nama"></p>
-        </div>
+        <x-form.input name="nama" label="Nama Barang / Obat" required placeholder="Masukkan nama barang..." />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Kode KFA (Opsional)</label>
-                <input type="text" name="kode_kfa" class="form-input" placeholder="Contoh: KFA-12345...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kode_kfa"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Merk (Opsional)</label>
-                <input type="text" name="merk" class="form-input" placeholder="Contoh: Kimia Farma, Kalbe...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="merk"></p>
-            </div>
+            <x-form.input name="kode_kfa" label="Kode KFA (Opsional)" placeholder="Contoh: KFA-12345..." />
+            <x-form.input name="merk" label="Merk (Opsional)" placeholder="Contoh: Kimia Farma, Kalbe..." />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Kategori <span class="text-red-500">*</span></label>
-                <select name="kategori_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($kategoris as $k)
-                        <option value="{{ $k->id }}">{{ $k->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="kategori_id"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Satuan <span class="text-red-500">*</span></label>
-                <select name="satuan_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($satuans as $s)
-                        <option value="{{ $s->id }}">{{ $s->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="satuan_id"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Pabrik <span class="text-red-500">*</span></label>
-                <select name="pabrik_id" required class="form-input">
-                    <option value="">Pilih</option>
-                    @foreach ($pabriks as $p)
-                        <option value="{{ $p->id }}">{{ $p->nama }}</option>
-                    @endforeach
-                </select>
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="pabrik_id"></p>
-            </div>
+            <x-form.select name="kategori_id" label="Kategori" required placeholder="Pilih" :options="$kategoris->pluck('nama', 'id')" />
+            <x-form.select name="satuan_id" label="Satuan" required placeholder="Pilih" :options="$satuans->pluck('nama', 'id')" />
+            <x-form.select name="pabrik_id" label="Pabrik" required placeholder="Pilih" :options="$pabriks->pluck('nama', 'id')" />
         </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Barcode (Opsional)</label>
-                <input type="text" name="barcode" class="form-input" placeholder="Scan / ketik barcode...">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="barcode"></p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Stok Minimum <span class="text-red-500">*</span></label>
-                <input type="number" name="stok_minimum" min="0" class="form-input" placeholder="0">
-                <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="stok_minimum"></p>
-            </div>
+            <x-form.input name="barcode" label="Barcode (Opsional)" placeholder="Scan / ketik barcode..." />
+            <x-form.input type="number" name="stok_minimum" label="Stok Minimum" required min="0" placeholder="0" />
         </div>
         <div class="space-y-2">
             <label class="flex items-start text-xs font-medium text-gray-700 cursor-pointer">
@@ -283,100 +222,5 @@
 @include('barang.partials.modal-detail')
 @include('barang.partials.modal-import')
 
-<!-- Page Specific Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // --- DETAIL MODAL LOGIC ---
-    var detailModal = document.getElementById('modal-detail-barang');
-    var detailBackdrop = document.getElementById('modal-detail-barang-backdrop');
-    var btnCloseDetail = document.getElementById('btn-close-detail-modal');
-    var btnCancelDetail = document.getElementById('btn-cancel-detail-modal');
-    var btnEditFromDetail = document.getElementById('btn-edit-from-detail');
-
-    function openDetailModal(data) {
-        document.getElementById('detail-title-nama').textContent = data.nama;
-        document.getElementById('detail-kode-apotek').textContent = data.kode_apotek;
-        document.getElementById('detail-kode-kfa').textContent = data.kode_kfa;
-        document.getElementById('detail-nama').textContent = data.nama;
-        document.getElementById('detail-merk').textContent = data.merk;
-        document.getElementById('detail-barcode').textContent = data.barcode;
-        document.getElementById('detail-kategori').textContent = data.kategori;
-        document.getElementById('detail-satuan').textContent = data.satuan;
-        document.getElementById('detail-pabrik').textContent = data.pabrik;
-        document.getElementById('detail-supplier').textContent = data.supplier;
-        document.getElementById('detail-stok').textContent = data.stok + ' ' + data.satuan;
-        document.getElementById('detail-stok-minimum').textContent = data.stok_minimum + ' ' + data.satuan;
-
-        var badge = document.getElementById('detail-status-stok-badge');
-        badge.className = data.status_stok_badge;
-        badge.textContent = data.status_stok;
-
-        document.getElementById('detail-butuh-resep').textContent = data.butuh_resep;
-        document.getElementById('detail-status-aktif').textContent = data.aktif;
-
-        window.__detailEditId = data.id;
-
-        detailBackdrop.classList.remove('hidden');
-        detailModal.classList.remove('hidden');
-    }
-
-    function closeDetailModal() {
-        detailBackdrop.classList.add('hidden');
-        detailModal.classList.add('hidden');
-    }
-
-    document.querySelectorAll('.btn-detail-barang').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            try {
-                var data = JSON.parse(this.dataset.json);
-                openDetailModal(data);
-            } catch (e) {
-                console.error('Error parsing barang detail JSON', e);
-            }
-        });
-    });
-
-    if (btnCloseDetail) btnCloseDetail.addEventListener('click', closeDetailModal);
-    if (btnCancelDetail) btnCancelDetail.addEventListener('click', closeDetailModal);
-    if (detailBackdrop) detailBackdrop.addEventListener('click', closeDetailModal);
-    if (btnEditFromDetail) btnEditFromDetail.addEventListener('click', function() {
-        closeDetailModal();
-        var editBtn = document.querySelector('.btn-edit-barang[data-id="' + window.__detailEditId + '"]');
-        if (editBtn) editBtn.click();
-    });
-
-    // --- IMPORT MODAL LOGIC ---
-    var importModal = document.getElementById('modal-import-barang');
-    var importBackdrop = document.getElementById('modal-import-barang-backdrop');
-    var btnOpen = document.getElementById('btn-import-barang');
-    var btnClose = document.getElementById('btn-close-import-modal');
-    var btnCancel = document.getElementById('btn-cancel-import-modal');
-    var formImport = document.getElementById('form-import-barang');
-    var submitBtn = document.getElementById('btn-submit-import');
-
-    function openImportModal() {
-        importBackdrop.classList.remove('hidden');
-        importModal.classList.remove('hidden');
-    }
-
-    function closeImportModal() {
-        importBackdrop.classList.add('hidden');
-        importModal.classList.add('hidden');
-    }
-
-    if (btnOpen) btnOpen.addEventListener('click', openImportModal);
-    if (btnClose) btnClose.addEventListener('click', closeImportModal);
-    if (btnCancel) btnCancel.addEventListener('click', closeImportModal);
-    if (importBackdrop) importBackdrop.addEventListener('click', closeImportModal);
-
-    if (formImport) {
-        formImport.addEventListener('submit', function () {
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span>Memproses...</span>';
-            }
-        });
-    }
-});
-</script>
+@vite('resources/js/pages/barang-index.js')
 @endsection

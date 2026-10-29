@@ -2,95 +2,63 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Pencatatan Barang Rusak</h1>
-        <p class="text-caption mt-1">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
-    </div>
+<x-page-header title="Daftar Pencatatan Barang Rusak" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="cari"
-                        value="{{ request('cari') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('rusak.index')"
+    :reset-url="route('rusak.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
+    @if(request()->filled('tanggal'))
+        <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+    @endif
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Batch
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_batch"
-                        value="{{ request('no_batch') }}"
-                        placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari', request('no_batch')) }}"
+            placeholder="Cari nama barang atau no. batch..."
+            class="form-input pr-8"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Pencatatan
-                </label>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai') }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir') }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                    Clear
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
+        <input
+            type="date"
+            name="tanggal_mulai"
+            value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
+</x-card-filter>
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
@@ -101,7 +69,7 @@
                     <th scope="col" class="text-center">No</th>
                     <th scope="col" class="text-center">Aksi</th>
                     <th scope="col">Tanggal Lapor</th>
-                    <th scope="col">Barang / Obat</th>
+                    <th scope="col">Barang atau Obat</th>
                     <th scope="col">No. Batch</th>
                     <th scope="col" class="text-right">Jumlah</th>
                     <th scope="col">Keterangan</th>
@@ -149,31 +117,24 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('rusak.destroy', $rusak) }}"
-                                method="POST"
-                                class="inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')"
-                            >
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus"
-                                >
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('rusak.destroy', $rusak) }}"
+                                data-item-name="{{ $rusak->detailPenerimaan?->barang?->nama ?? 'Barang Rusak' }} (Batch: {{ $rusak->detailPenerimaan?->no_batch ?? '-' }})"
+                                data-confirm-message="Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch terkait.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->format('d M Y') }}
+                        @tanggalId($rusak->tanggal, 'd F Y')
                     </td>
 
                     {{-- Barang / Obat --}}
@@ -197,56 +158,14 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Barang Rusak Tidak Ditemukan
-                                @else
-                                    Barang Rusak Kosong
-                                @endif
-                            </div>
-                            <div class="empty-state-desc">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                    Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
-                                @else
-                                    Belum ada data pelaporan obat atau barang rusak.
-                                @endif
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-    <div class="flex items-center gap-2 text-sm text-gray-600">
-        <span>Tampilkan</span>
-
-        <select
-            name="per_page"
-            class="form-input py-1.5 w-20"
-            form="filter-form"
-            onchange="this.form.submit()"
-        >
-            <option value="10" @selected(request('per_page', 15) == 10)>10</option>
-            <option value="15" @selected(request('per_page', 15) == 15)>15</option>
-            <option value="25" @selected(request('per_page', 15) == 25)>25</option>
-            <option value="50" @selected(request('per_page', 15) == 50)>50</option>
-            <option value="100" @selected(request('per_page', 15) == 100)>100</option>
-        </select>
-
-        <span>data</span>
-    </div>
-
-    <div>
-        {{ $rusaks->links() }}
-    </div>
-</div>
+<x-pagination :paginator="$rusaks" />
 
     @php
         $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
@@ -296,12 +215,12 @@
                 @endif
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang / Obat <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Batch Barang atau Obat <span class="text-red-500">*</span></label>
                     <select name="detail_penerimaan_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-blue-500">
                         <option value="">Pilih Batch</option>
                         @foreach ($batches as $batch)
                             <option value="{{ $batch->id }}" @selected(old('detail_penerimaan_id') == $batch->id)>
-                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->format('d M Y') : '-' }})
+                                {{ $batch->barang->nama }} — Batch {{ $batch->no_batch }} (Sisa Stok: {{ $batch->stok }}, ED: {{ $batch->expired_date ? $batch->expired_date->translatedFormat('d F Y') : '-' }})
                             </option>
                         @endforeach
                     </select>
@@ -351,58 +270,23 @@
     </div>
 
     <!-- Modal Detail Barang Rusak -->
-    <div id="modal-detail-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Detail Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Informasi pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button type="button"
-                        onclick="closeDetailRusak()"
-                        class="text-gray-400 hover:text-gray-600 text-xl">
-                    &times;
-                </button>
-            </div>
-
-            <div id="detail-rusak-content" class="p-6">
-            </div>
-
-        </div>
-    </div>
+    <x-modal
+        id="modal-detail-rusak"
+        title="Detail Barang Rusak"
+        subtitle="Informasi pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeDetailRusak()"
+        content-id="detail-rusak-content"
+        body-class="p-6" />
 
     <!-- Modal Edit Barang Rusak -->
-    <div id="modal-edit-rusak"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-            <div class="flex justify-between items-center px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">
-                        Edit Barang Rusak
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">
-                        Koreksi data pencatatan barang rusak.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    onclick="closeEditRusak()"
-                    class="text-gray-400 hover:text-gray-600 text-xl"
-                >
-                    &times;
-                </button>
-            </div>
+    <x-modal
+        id="modal-edit-rusak"
+        title="Edit Barang Rusak"
+        subtitle="Koreksi data pencatatan barang rusak."
+        size="max-w-2xl"
+        close-action="closeEditRusak()"
+        body-class="p-0">
 
             <form id="form-edit-rusak" class="p-6">
 
@@ -522,9 +406,7 @@
                 </div>
 
             </form>
-
-        </div>
-    </div>
+    </x-modal>
 
 
 <script>
@@ -545,13 +427,7 @@
     }
 
 
-    function openDetailRusak(id) {
-        const rusak = dataRusak.find(item => item.id === id);
-
-        if (!rusak) {
-            return;
-        }
-
+    function renderDetailRusakModal(rusak) {
         const modal = document.getElementById('modal-detail-rusak');
         const content = document.getElementById('detail-rusak-content');
 
@@ -627,6 +503,34 @@
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    function openDetailRusak(id) {
+        const rusak = dataRusak.find(item => item.id === id);
+
+        if (rusak) {
+            renderDetailRusakModal(rusak);
+            return;
+        }
+
+        fetch(`/rusak/${id}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal mengambil detail barang rusak.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            renderDetailRusakModal(data);
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Gagal mengambil data detail barang rusak.');
+        });
     }
 
     function closeDetailRusak() {
@@ -707,9 +611,19 @@
             keterangan: document.getElementById('edit-keterangan-rusak').value
         })
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
-            throw new Error('Gagal menyimpan perubahan.');
+            let errorMsg = 'Gagal menyimpan perubahan.';
+            try {
+                const errData = await response.json();
+                if (errData?.errors) {
+                    const firstErr = Object.values(errData.errors).flat()[0];
+                    if (firstErr) errorMsg = firstErr;
+                } else if (errData?.message) {
+                    errorMsg = errData.message;
+                }
+            } catch (e) {}
+            throw new Error(errorMsg);
         }
 
         closeEditRusak();
@@ -717,7 +631,7 @@
     })
     .catch(error => {
         console.error(error);
-        alert('Gagal menyimpan perubahan.');
+        alert(error.message || 'Gagal menyimpan perubahan.');
     });
 });
 

@@ -1,43 +1,14 @@
-<style>
-    .table-payment-penerimaan {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-
-    .table-payment-penerimaan th {
-        padding: 0.6rem 0.75rem !important;
-        font-size: 0.65rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.03em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
-    }
-
-    .table-payment-penerimaan td {
-        padding: 0.55rem 0.75rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        vertical-align: middle;
-    }
-</style>
-
 <div class="space-y-4">
     <!-- Info Cards Grid (Selaras dengan Form Susulan & Detail Penerimaan) -->
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal, 'd F Y')</strong>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal_faktur, 'd F Y')</strong>
         </div>
 
         <div>
@@ -58,28 +29,20 @@
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Pembayaran</span>
             <div class="mt-0.5">
-                @if ($penerimaan->lunas)
-                    <span class="badge-success">Lunas</span>
-                @else
-                    <span class="badge-warning">Belum Lunas</span>
-                @endif
+                <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
             </div>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Penerimaan</span>
             <div class="mt-0.5">
-                @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                    <span class="badge-success">Lengkap</span>
-                @else
-                    <span class="badge-warning">Belum Lengkap</span>
-                @endif
+                <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
             </div>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo ? $penerimaan->jatuh_tempo->format('d M Y') : '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->jatuh_tempo, 'd F Y')</strong>
         </div>
     </div>
 
@@ -88,34 +51,34 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
             <div class="p-3 bg-slate-50/80 rounded-lg border border-slate-200/80">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Total Belanja</span>
-                <strong class="font-mono text-gray-800 text-sm">Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}</strong>
+                <strong class="font-mono text-gray-800 text-sm">@rupiah($penerimaan->totalFaktur())</strong>
             </div>
 
             <div class="p-3 bg-slate-50/80 rounded-lg border border-slate-200/80">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">PPN</span>
-                <strong class="font-mono text-gray-800 text-sm">Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}</strong>
+                <strong class="font-mono text-gray-800 text-sm">@rupiah($penerimaan->ppn)</strong>
             </div>
 
             <div class="p-3 bg-blue-50/50 rounded-lg border border-blue-200">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">Total Tagihan</span>
-                <strong class="font-mono font-bold text-blue-700 text-sm">Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}</strong>
+                <strong class="font-mono font-bold text-blue-700 text-sm">@rupiah($penerimaan->totalTagihan())</strong>
             </div>
 
             <div class="p-3 bg-emerald-50/50 rounded-lg border border-emerald-200">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-emerald-600 mb-1">Total Dibayar</span>
-                <strong class="font-mono font-bold text-emerald-600 text-sm">Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}</strong>
+                <strong class="font-mono font-bold text-emerald-600 text-sm">@rupiah($penerimaan->totalDibayar())</strong>
             </div>
 
             <div class="p-3 rounded-lg border {{ $penerimaan->sisaTagihan() > 0 ? 'bg-rose-50/50 border-rose-200 text-rose-700' : 'bg-emerald-50/50 border-emerald-200 text-emerald-700' }}">
                 <span class="block text-[10px] font-bold uppercase tracking-wider {{ $penerimaan->sisaTagihan() > 0 ? 'text-rose-600' : 'text-emerald-600' }} mb-1">Sisa Tagihan</span>
-                <strong class="font-mono font-bold text-sm">Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}</strong>
+                <strong class="font-mono font-bold text-sm">@rupiah($penerimaan->sisaTagihan())</strong>
             </div>
         </div>
 
         @if ($penerimaan->kelebihanPembayaran() > 0)
             <div class="mt-3 p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center text-xs">
                 <span class="font-bold text-amber-800 uppercase tracking-wider text-[10px]">Kelebihan Pembayaran</span>
-                <strong class="font-mono text-amber-700 text-sm font-bold">Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}</strong>
+                <strong class="font-mono text-amber-700 text-sm font-bold">@rupiah($penerimaan->kelebihanPembayaran())</strong>
             </div>
         @endif
     </div>
@@ -152,14 +115,15 @@
                         value="{{ old('jumlah') }}"
                         class="form-input font-mono text-right"
                         placeholder="0"
+                        data-terbilang="true"
                         required
                     >
-                    <span class="text-[11px] text-gray-400 mt-1 block">Maks. Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}</span>
+                    <span class="text-[11px] text-gray-400 mt-1 block">Maks. @rupiah($penerimaan->sisaTagihan())</span>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Pembayaran
+                        Keterangan atau Catatan Pembayaran
                     </label>
                     <input
                         type="text"
@@ -194,10 +158,10 @@
                                 <tr class="hover:bg-slate-50/60 transition-colors">
                                     <td class="text-center text-slate-500 font-medium">{{ $loop->iteration }}</td>
                                     <td class="text-slate-700 font-medium">
-                                        {{ $pembayaran->tanggal_bayar?->format('d M Y') ?? '-' }}
+                                        @tanggalId($pembayaran->tanggal_bayar, 'd F Y')
                                     </td>
                                     <td class="text-right font-mono font-semibold text-emerald-600">
-                                        Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
+                                        @rupiah($pembayaran->jumlah)
                                     </td>
                                     <td class="text-slate-600">
                                         {{ $pembayaran->keterangan ?: '—' }}
@@ -274,10 +238,10 @@
                             <tr class="hover:bg-slate-50/60 transition-colors">
                                 <td class="text-center text-slate-500 font-medium">{{ $loop->iteration }}</td>
                                 <td class="text-slate-700 font-medium">
-                                    {{ $pembayaran->tanggal_bayar?->format('d M Y') ?? '-' }}
+                                    @tanggalId($pembayaran->tanggal_bayar, 'd F Y')
                                 </td>
                                 <td class="text-right font-mono font-semibold text-emerald-600">
-                                    Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
+                                    @rupiah($pembayaran->jumlah)
                                 </td>
                                 <td class="text-slate-600">
                                     {{ $pembayaran->keterangan ?: '—' }}

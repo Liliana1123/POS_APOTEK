@@ -11,23 +11,29 @@
 </x-page-header>
 
 <!-- Filter & Search Card -->
-<x-card-filter :action="route('custom-discount.index')" :reset-url="route('custom-discount.index')" :has-filter="request()->anyFilled(['cari', 'status'])">
-    <div class="relative shrink-0 w-full sm:w-64">
-        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..." class="form-input pr-8">
+<x-card-filter
+    :action="route('custom-discount.index')"
+    :reset-url="route('custom-discount.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'status'])">
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama promo..."
+            class="form-input pr-8" aria-label="Nama Promo" title="Nama Promo">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
         </span>
     </div>
 
-    <div class="w-full sm:w-48">
-        <select name="status" class="form-input">
-            <option value="">Semua Status</option>
-            <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
-            <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>
-            <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
-            <option value="nonaktif" @selected(request('status') === 'nonaktif')>Non-aktif</option>
-        </select>
-    </div>
+    <select name="status" class="form-input sm:col-span-2 md:col-span-3" aria-label="Status Promo" title="Status Promo">
+        <option value="">Status: Semua</option>
+        <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
+        <option value="belum_mulai" @selected(request('status') === 'belum_mulai')>Belum Mulai</option>
+        <option value="berakhir" @selected(request('status') === 'berakhir')>Berakhir</option>
+        <option value="nonaktif" @selected(request('status') === 'nonaktif')>Non-aktif</option>
+    </select>
 </x-card-filter>
 
 <!-- Table Card -->
@@ -47,25 +53,6 @@
             </thead>
             <tbody class="table-custom-body divide-gray-150">
                 @forelse ($discounts as $index => $discount)
-                    @php
-                        $today = now()->format('Y-m-d');
-                        $startDate = $discount->tanggal_mulai->format('Y-m-d');
-                        $endDate = $discount->tanggal_selesai->format('Y-m-d');
-                        
-                        if (!$discount->aktif) {
-                            $statusText = 'Non-aktif';
-                            $statusType = 'secondary';
-                        } elseif ($startDate > $today) {
-                            $statusText = 'Belum Mulai';
-                            $statusType = 'warning';
-                        } elseif ($endDate < $today) {
-                            $statusText = 'Berakhir';
-                            $statusType = 'danger';
-                        } else {
-                            $statusText = 'Aktif';
-                            $statusType = 'success';
-                        }
-                    @endphp
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                         <td class="text-left">
                             <x-table-action
@@ -82,11 +69,12 @@
                                     'barang_ids' => $discount->barangs->pluck('id')->toArray(),
                                 ]"
                                 :delete-url="route('custom-discount.destroy', $discount)"
+                                :delete-item="$discount->nama"
                                 delete-confirm="Yakin ingin menghapus promo diskon ini?"
                             >
                                 <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">
                                     @csrf
-                                    <button type="submit" 
+                                    <button type="submit"
                                             class="btn-secondary !p-1.5 hover:bg-slate-100 transition-colors {{ $discount->aktif ? 'text-slate-500 hover:text-red-600' : 'text-slate-500 hover:text-emerald-600' }}"
                                             title="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}"
                                             aria-label="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}">
@@ -101,13 +89,13 @@
                         </td>
                         <td class="font-medium text-gray-800">{{ $discount->nama }}</td>
                         <td class="text-emerald-600 font-semibold font-mono">{{ $discount->persentase }}%</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_mulai->format('d M Y') }}</td>
-                        <td class="text-gray-600 font-mono text-xs">{{ $discount->tanggal_selesai->format('d M Y') }}</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_mulai)</td>
+                        <td class="text-gray-600 font-mono text-xs">@tanggalId($discount->tanggal_selesai)</td>
                         <td>
                             <x-badge type="info">{{ $discount->cakupan }}</x-badge>
                         </td>
                         <td class="text-center">
-                            <x-badge :type="$statusType">{{ $statusText }}</x-badge>
+                            <x-status-badge type="promo" :value="$discount" />
                         </td>
                     </tr>
                 @empty
@@ -118,9 +106,7 @@
     </div>
 </div>
 
-<div class="mt-4">
-    {{ $discounts->links() }}
-</div>
+<x-pagination :paginator="$discounts" />
 
 <!-- Modal Form CRUD Promo -->
 <x-modal-form
@@ -248,14 +234,6 @@ function toggleModalCakupanFields(cakupanVal) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Confirmation on toggle promo status
-    document.querySelectorAll('.toggle-promo-form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            if (!confirm('Yakin ingin mengubah status keaktifan promo ini?')) {
-                e.preventDefault();
-            }
-        });
-    });
 
     // Reset cakupan view when Create button clicked
     const btnTambah = document.getElementById('btn-tambah-promo');

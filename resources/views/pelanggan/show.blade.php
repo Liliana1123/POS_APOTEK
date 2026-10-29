@@ -2,21 +2,15 @@
 @section('title', 'Profil Pelanggan / Member')
 
 @section('content')
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Detail Profil Pelanggan / Member</h1>
-        <p class="text-caption mt-1">Detail profil, statistik belanja, dan riwayat transaksi.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('pelanggan.index') }}" class="btn-secondary py-2 px-4">
-            Kembali
-        </a>
-        <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4">
-            Edit Profil
-        </a>
-    </div>
-</div>
+<x-page-header
+    title="Detail Profil Pelanggan / Member"
+    subtitle="Detail profil, statistik belanja, dan riwayat transaksi."
+    :back-url="route('pelanggan.index')">
+    <a href="{{ route('pelanggan.edit', $pelanggan) }}" class="btn-primary py-2 px-4 flex items-center gap-1.5">
+        <x-heroicon-o-pencil-square class="w-4 h-4" />
+        <span>Edit Profil</span>
+    </a>
+</x-page-header>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
     <!-- Status Member -->
@@ -29,64 +23,9 @@
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 text-base leading-tight">{{ $pelanggan->nama }}</h3>
-                @php
-                    $statusMember = trim((string) $pelanggan->status_member);
-                @endphp
-
-                @if($pelanggan->status_member === 'Member Keluarga Nakes') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #F3E8FF; 
-                            color: #7E22CE; 
-                        " 
-                    > 
-                        Member Keluarga Nakes 
-                    </span> 
-
-                @elseif($pelanggan->status_member === 'Member Only') 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #FEF9C3; 
-                            color: #A16207; 
-                        " 
-                    > 
-                        Member Only 
-                    </span> 
-
-                @else 
-                    <span 
-                        class="inline-flex items-center justify-center text-center" 
-                        style=" 
-                            font-size: 0.5625rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.05em; 
-                            line-height: 1.2; 
-                            padding: 0.125rem 0.5rem; 
-                            border-radius: 0.25rem; 
-                            background-color: #DCFCE7; 
-                            color: #15803D; 
-                        " 
-                    > 
-                        Member Pelanggan Tetap 
-                    </span> 
-                @endif
+                <div class="mt-1">
+                    <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" />
+                </div>
             </div>
         </div>
 
@@ -105,7 +44,7 @@
             </div>
             <div>
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Lahir</span>
-                <span class="text-gray-800">{{ $pelanggan->tanggal_lahir ? $pelanggan->tanggal_lahir->format('d M Y') : '—' }}</span>
+                <span class="text-gray-800">@tanggalId($pelanggan->tanggal_lahir)</span>
             </div>
             <div>
                 <span class="text-gray-400 block text-[10px] uppercase font-semibold">Keterangan</span>
@@ -113,8 +52,14 @@
             </div>
             @if ($pelanggan->is_member)
                 <div>
+                    <span class="text-gray-400 block text-[10px] uppercase font-semibold">Benefit Diskon</span>
+                    <span class="inline-flex items-center px-2 py-0.5 mt-0.5 rounded text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                        {{ $pelanggan->custom_discount_percentage !== null ? 'Diskon ' . (float)$pelanggan->custom_discount_percentage . '%' : 'Diskon Default ' . config('pos.diskon_member', 10) . '%' }}
+                    </span>
+                </div>
+                <div>
                     <span class="text-gray-400 block text-[10px] uppercase font-semibold">Tanggal Terdaftar</span>
-                    <span class="text-gray-800">{{ $pelanggan->member_since ? $pelanggan->member_since->format('d M Y') : '—' }}</span>
+                    <span class="text-gray-800">@tanggalId($pelanggan->member_since)</span>
                 </div>
             @endif
         </div>
@@ -174,12 +119,12 @@
                         $totalDiskon = $penjualan->detail()->sum('diskon');
                     @endphp
                     <tr>
-                        <td class="text-gray-600">{{ $penjualan->tanggal->format('d M Y') }}</td>
+                        <td class="text-gray-600">@tanggalId($penjualan->tanggal)</td>
                         <td class="font-semibold text-gray-850 font-mono">{{ $penjualan->no_faktur }}</td>
-                        <td class="table-num font-semibold text-green-600">Rp {{ number_format($totalDiskon, 0, ',', '.') }}</td>
-                        <td class="table-num font-bold text-gray-850">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</td>
+                        <td class="table-num font-semibold text-green-600">@rupiah($totalDiskon)</td>
+                        <td class="table-num font-bold text-gray-850">@rupiah($penjualan->total)</td>
                         <td class="text-right">
-                            <a href="{{ route('penjualan.show', $penjualan) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
+                            <a href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'pelanggan']) }}" class="btn-secondary py-1 px-2.5 text-[10px] font-semibold">Detail</a>
                         </td>
                     </tr>
                 @empty

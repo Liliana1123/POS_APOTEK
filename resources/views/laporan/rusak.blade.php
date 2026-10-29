@@ -2,192 +2,151 @@
 @section('title', 'Laporan Barang Rusak')
 
 @section('content')
-<style>
-@media print {
-    aside, nav, header, [role="navigation"], .print\:hidden, .no-print {
-        display: none !important;
-    }
-    main {
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-    }
-    .card-base {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-    }
-    body {
-        background: white !important;
-        color: black !important;
-    }
-    @page {
-        margin: 15mm 10mm 15mm 10mm;
-    }
-}
-</style>
 
-<!-- Page Header Pattern -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Barang Rusak / Kadaluarsa</h1>
-        <p class="text-caption mt-1">Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch.</p>
-    </div>
-    <div class="flex gap-2 shrink-0">
-        <a href="{{ route('laporan.rusak', array_merge(request()->query(), ['export' => 'csv'])) }}" class="btn-secondary py-2 px-4 flex items-center justify-center">
-            Export CSV
-        </a>
-        <button onclick="window.print()" class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
-    </div>
+@php
+    $apotek = \Illuminate\Support\Facades\Cache::remember(
+        'info_apotek',
+        now()->addHours(6),
+        fn () => \App\Models\InfoApotek::first()
+    );
+@endphp
+
+{{-- ========================================================= --}}
+{{-- TEMPLATE CETAK (KOP & JUDUL LAPORAN) --}}
+{{-- ========================================================= --}}
+<div class="print-only">
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="Laporan Kerugian Barang Rusak">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }} {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('nama_barang'))
+            &nbsp;•&nbsp; Barang: {{ request('nama_barang') }}
+        @endif
+        @if(request('no_batch'))
+            &nbsp;•&nbsp; Batch: {{ request('no_batch') }}
+        @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 </div>
+
+<x-page-header
+    title="Laporan Barang Rusak"
+    subtitle="Analisis barang rusak dan kerugian finansial berdasarkan harga beli batch."
+    class="print:hidden">
+    <x-print-actions />
+</x-page-header>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6 print:hidden">
-    <form method="GET" action="{{ route('laporan.rusak') }}" class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="nama_barang"
-                        value="{{ request('nama_barang') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('laporan.rusak')"
+    :reset-url="route('laporan.rusak')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :has-reset="request()->anyFilled(['nama_barang', 'barang', 'cari', 'no_batch', 'batch', 'dari', 'sampai', 'jenis', 'keterangan'])"
+    :live-search="true">
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari', request('nama_barang', request('no_batch'))) }}"
+            placeholder="Cari nama barang atau no. batch..."
+            class="form-input pr-8"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch"
+        >
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Batch
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_batch"
-                        value="{{ request('no_batch') }}"
-                        placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono"
-                    >
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-center text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Lapor
-                </label>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="dari"
-                        value="{{ $dari }}"
-                        class="form-input min-w-0"
-                    >
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="sampai"
-                        value="{{ $sampai }}"
-                        class="form-input min-w-0"
-                    >
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
-                <a
-                    href="{{ route('laporan.rusak') }}"
-                    class="btn-secondary py-1.5 px-4 flex items-center justify-center"
-                >
-                    Reset
-                </a>
-            @endif
-
-            <button type="submit" class="btn-primary py-1.5 px-4">
-                Filter
-            </button>
-        </div>
-    </form>
-</div>
-
-<!-- Laporan Info (Khusus Print) -->
-<div class="hidden print:block mb-6 border-b pb-3">
-    <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wider">Laporan Kerugian Barang Rusak & Kadaluarsa</h2>
-    <p class="text-xs text-gray-500 mt-1">Periode: {{ date('d M Y', strtotime($dari)) }} s/d {{ date('d M Y', strtotime($sampai)) }}</p>
-</div>
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
+        <input
+            type="date"
+            name="dari"
+            value="{{ $dari }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal"
+        >
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
+        <input
+            type="date"
+            name="sampai"
+            value="{{ $sampai }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir"
+        >
+    </div>
+</x-card-filter>
 
 <!-- Table Card -->
-<div class="table-custom-container">
-    <div class="overflow-x-auto">
-        <table class="table-custom w-full table-fixed min-w-0">
+<div class="table-custom-container print-table-wrapper">
+    <div class="overflow-x-auto print-table-wrapper">
+        <table class="table-custom table-rusak print-table w-full min-w-[54rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="w-[5%] text-center">No</th>
-                    <th scope="col" class="w-[14%] text-center">Tanggal Lapor</th>
-                    <th scope="col" class="w-[20%]">Nama Barang</th>
-                    <th scope="col" class="w-[17%] text-center">No. Batch</th>
-                    <th scope="col" class="w-[7%] text-center">Jumlah</th>
-                    <th scope="col" class="w-[15%] text-right">Total Kerugian</th>
-                    <th scope="col" class="w-[23%]">Keterangan</th>
+                    <th scope="col" class="w-[4%] min-w-[2.5rem] text-center !px-1.5 py-3">No</th>
+                    <th scope="col" class="w-[14%] min-w-[7.5rem] text-center !px-2 py-3 whitespace-nowrap">Tanggal Lapor</th>
+                    <th scope="col" class="w-[24%] min-w-[10rem] !px-3 py-3 break-words">Nama Barang</th>
+                    <th scope="col" class="w-[13%] min-w-[6.5rem] text-center !px-2 py-3 whitespace-nowrap">No. Batch</th>
+                    <th scope="col" class="w-[7%] min-w-[3.5rem] text-center !px-2 py-3 whitespace-nowrap">Jumlah</th>
+                    <th scope="col" class="w-[15%] min-w-[7.5rem] text-right !px-2.5 py-3 whitespace-nowrap">Total Kerugian</th>
+                    <th scope="col" class="w-[23%] min-w-[10rem] !px-2.5 py-3 break-words">Keterangan</th>
                 </tr>
             </thead>
             <tbody class="table-custom-body">
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="table-num text-center">{{ $index + 1 }}</td>
-                        <td class="text-center font-mono text-gray-600">{{ $item->tanggal->format('d M Y') }}</td>
-                        <td class="font-medium text-gray-800">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
-                        <td class="font-mono text-gray-600 text-center">{{ $item->detailPenerimaan->no_batch ?? '—' }} </td>
-                        <td class="table-num font-bold text-gray-800 text-center"> {{ number_format($item->jumlah, 0, ',', '.') }} </td>
-                        <td class="table-num font-bold text-red-600 font-mono text-right">Rp {{ number_format($item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-gray-600 truncate max-w-xs" title="{{ $item->keterangan }}">{{ $item->keterangan ?? '-' }}</td>
+                        <td class="table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
+                        <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">@tanggalId($item->tanggal, 'd F Y')</td>
+                        <td class="font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
+                        <td class="font-mono text-gray-600 text-center text-xs !px-2 py-3 whitespace-nowrap">{{ $item->detailPenerimaan->no_batch ?? '—' }}</td>
+                        <td class="table-num font-bold text-gray-800 text-center text-xs !px-2 py-3 whitespace-nowrap">{{ number_format($item->jumlah, 0, ',', '.') }}</td>
+                        <td class="table-num font-bold text-red-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">@rupiah($item->jumlah * ($item->detailPenerimaan->harga_beli ?? 0))</td>
+                        <td class="text-gray-600 text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->keterangan ?? '-' }}</td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="7" class="p-0">
-                            <div class="empty-state-container">
-                                <div class="empty-state-title">
-                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
-                                        Barang Rusak Tidak Ditemukan
-                                    @else
-                                        Barang Rusak Kosong
-                                    @endif
-                                </div>
-                                <div class="empty-state-desc">
-                                    @if(request()->anyFilled(['nama_barang', 'no_batch', 'dari', 'sampai']))
-                                        Tidak ditemukan data pelaporan obat rusak atau kadaluarsa yang cocok dengan filter kriteria Anda.
-                                    @else
-                                        Tidak ditemukan riwayat pelaporan obat rusak atau kadaluarsa pada rentang tanggal ini.
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
+            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
                 <tr>
-                    <td colspan="5" class="px-5 py-4 text-right uppercase tracking-wider text-gray-600">Total Kerugian Finansial:</td>
-                    <td class="table-num px-5 py-4 text-right text-red-650 font-mono text-sm font-bold">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>
-                    <td></td>
+                    <td colspan="5" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Kerugian Finansial:</td>
+                    <td class="table-num !px-2.5 py-3.5 text-right text-red-650 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>
+                    <td class="!px-2.5 py-3.5"></td>
                 </tr>
             </tfoot>
         </table>
     </div>
 </div>
+
+{{-- ========================================================= --}}
+{{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
+{{-- ========================================================= --}}
+<x-print-signature :apotek="$apotek" />
+
+<script>
+    function printReport() {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+        setTimeout(function () {
+            window.print();
+        }, 50);
+    }
+
+    window.addEventListener('beforeprint', function () {
+        document.querySelectorAll('.overflow-y-auto, .overflow-x-auto, .overflow-hidden, html, body').forEach(function (el) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+        });
+        window.scrollTo(0, 0);
+    });
+</script>
+
 @endsection

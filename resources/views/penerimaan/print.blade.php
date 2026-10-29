@@ -17,7 +17,7 @@
         body {
             margin: 0;
             padding: 30px;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
             font-size: 12px;
             color: #222;
             background: #fff;
@@ -29,20 +29,72 @@
         }
 
         .header {
-            text-align: center;
             margin-bottom: 25px;
         }
 
-        .header h1 {
+        .kop-surat {
+            position: relative;
+            min-height: 90px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kop-logo {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 75px;
+            height: 75px;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .kop-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .kop-info h2 {
             margin: 0 0 5px;
-            font-size: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
         }
 
-        .header p {
+        .kop-info p {
+            margin: 3px 0;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .kop-info h2 {
+            margin: 0 0 5px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .kop-info p {
+            margin: 2px 0;
+            font-size: 12px;
+            color: #444;
+        }
+
+        /* JUDUL DI BAWAH KOP */
+        .judul-dokumen {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .judul-dokumen h1 {
             margin: 0;
-            color: #666;
+            font-size: 20px;
+            font-weight: bold;
         }
-
         .info {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -52,12 +104,19 @@
 
         .info-item {
             display: flex;
-            gap: 8px;
+            align-items: baseline;
         }
 
         .info-label {
-            width: 110px;
+            width: 135px;
             font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .info-colon {
+            width: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
         .info-value {
@@ -68,12 +127,23 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            box-sizing: border-box;
         }
 
         th,
         td {
-            border: 1px solid #999;
+            border: 1px solid #777;
             padding: 7px;
+        }
+
+        /* Pastikan border kolom paling kanan / paling belakang dan baris paling akhir tidak hilang */
+        table th:last-child,
+        table td:last-child {
+            border-right: 1px solid #777 !important;
+        }
+
+        table tr:last-child td {
+            border-bottom: 1px solid #777 !important;
         }
 
         th {
@@ -117,19 +187,54 @@
             margin-bottom: 8px;
         }
 
-        .footer {
-            margin-top: 40px;
+        @page {
+            @top-left {
+                text-align: left;
+            }
+            @top-center {
+                content: none;
+            }
+            @top-right {
+                text-align: right;
+            }
+            @bottom-left {
+                text-align: left;
+            }
+            @bottom-center {
+                content: none;
+            }
+            @bottom-right {
+                text-align: right;
+            }
+        }
+
+        .footer-ttd {
+            margin-top: 50px;
             display: flex;
             justify-content: space-between;
         }
 
         .signature {
-            width: 220px;
+            width: 250px;
             text-align: center;
+            font-size: 14px;
+        }
+
+        .signature-title {
+            margin-bottom: 2px;
+            font-weight: normal;
+        }
+
+        .signature-role {
+            font-weight: bold;
         }
 
         .signature-space {
-            height: 70px;
+            height: 75px;
+        }
+
+        .signature-name {
+            font-weight: bold;
         }
 
         .print-button {
@@ -151,10 +256,32 @@
 
             .container {
                 max-width: none;
+                width: 100%;
+                padding-right: 1px;
             }
 
             .print-button {
                 display: none;
+            }
+
+            .no-break {
+                -webkit-column-break-inside: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            table th,
+            table td {
+                border: 1px solid #777 !important;
+            }
+
+            table th:last-child,
+            table td:last-child {
+                border-right: 1px solid #777 !important;
+            }
+
+            table tr:last-child td {
+                border-bottom: 1px solid #777 !important;
             }
         }
     </style>
@@ -169,17 +296,77 @@
     </button>
 
     <div class="header">
-        <h1>BUKTI PENERIMAAN BARANG</h1>
-        <p>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</p>
-        @if($apotek?->alamat)
-            <p>{{ $apotek->alamat }}</p>
-        @endif
+
+        {{-- KOP SURAT --}}
+        <div class="kop-surat">
+
+            {{-- LOGO APOTEK --}}
+            @if($apotek?->logo)
+                <img
+                    src="{{ asset('storage/' . $apotek->logo) }}"
+                    alt="Logo {{ $apotek->nama_apotek }}"
+                    class="kop-logo"
+                >
+            @endif
+
+            {{-- INFORMASI APOTEK --}}
+            <div class="kop-info">
+
+                <h2>
+                    {{ $apotek?->nama_apotek ?? 'POS Apotek' }}
+                </h2>
+
+                @if($apotek?->alamat)
+                    <p>{{ $apotek->alamat }}</p>
+                @endif
+
+                @if($apotek?->telepon || $apotek?->email)
+                    <p>
+                        @if($apotek?->telepon)
+                            Telp. {{ $apotek->telepon }}
+                        @endif
+
+                        @if($apotek?->telepon && $apotek?->email)
+                            &nbsp; | &nbsp;
+                        @endif
+
+                        @if($apotek?->email)
+                            Email: {{ $apotek->email }}
+                        @endif
+                    </p>
+                @endif
+
+                @if($apotek?->no_izin_sia || $apotek?->no_sipa)
+                    <p>
+                        @if($apotek?->no_izin_sia)
+                            SIA: {{ $apotek->no_izin_sia }}
+                        @endif
+
+                        @if($apotek?->no_izin_sia && $apotek?->no_sipa)
+                            &nbsp;&nbsp;•&nbsp;&nbsp;
+                        @endif
+
+                        @if($apotek?->no_sipa)
+                            SIPA: {{ $apotek->no_sipa }}
+                        @endif
+                    </p>
+                @endif
+
+            </div>
+        </div>
+
+        {{-- JUDUL DOKUMEN DI BAWAH KOP --}}
+        <div class="judul-dokumen">
+            <h1>BUKTI PENERIMAAN BARANG</h1>
+        </div>
+
     </div>
 
     <div class="info">
 
         <div class="info-item">
             <div class="info-label">No. Faktur</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->no_faktur }}
             </div>
@@ -187,6 +374,7 @@
 
         <div class="info-item">
             <div class="info-label">Tanggal Terima</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->tanggal?->format('d/m/Y') ?? '—' }}
             </div>
@@ -194,6 +382,7 @@
 
         <div class="info-item">
             <div class="info-label">Supplier</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->supplier->nama ?? '—' }}
             </div>
@@ -201,6 +390,7 @@
 
         <div class="info-item">
             <div class="info-label">Telepon Supplier</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->telepon_supplier ?? '—' }}
             </div>
@@ -208,6 +398,7 @@
 
         <div class="info-item">
             <div class="info-label">Dicatat Oleh</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->user->name ?? '—' }}
             </div>
@@ -215,6 +406,7 @@
 
         <div class="info-item">
             <div class="info-label">Status Pembayaran</div>
+            <div class="info-colon">:</div>
             <div class="info-value">
                 {{ $penerimaan->lunas ? 'Lunas' : 'Belum Lunas' }}
             </div>
@@ -223,6 +415,7 @@
         @if ($penerimaan->jatuh_tempo)
             <div class="info-item">
                 <div class="info-label">Jatuh Tempo</div>
+                <div class="info-colon">:</div>
                 <div class="info-value">
                     {{ $penerimaan->jatuh_tempo->format('d/m/Y') }}
                 </div>
@@ -232,6 +425,7 @@
         @if ($penerimaan->keterangan)
             <div class="info-item">
                 <div class="info-label">Keterangan</div>
+                <div class="info-colon">:</div>
                 <div class="info-value">
                     {{ $penerimaan->keterangan }}
                 </div>
@@ -245,16 +439,16 @@
     <table>
         <thead>
             <tr>
-                <th>No</th>
+                <th style="width: 30px;">No</th>
                 <th>Barang</th>
-                <th>Barcode</th>
-                <th>No. Batch</th>
-                <th>Expired</th>
-                <th>Rak</th>
-                <th>Satuan</th>
-                <th>Jumlah</th>
-                <th>Harga Beli</th>
-                <th>Subtotal</th>
+                <th style="width: 80px;">Barcode</th>
+                <th style="width: 75px;">No. Batch</th>
+                <th style="width: 80px;">Expired</th>
+                <th style="width: 50px;">Rak</th>
+                <th style="width: 55px;">Satuan</th>
+                <th style="width: 40px;">Qty</th>
+                <th style="width: 85px;">Harga Beli</th>
+                <th style="width: 90px;">Subtotal</th>
             </tr>
         </thead>
 
@@ -294,11 +488,11 @@
                     </td>
 
                     <td class="text-right">
-                        Rp {{ number_format($item->harga_beli, 0, ',', '.') }}
+                        @rupiah($item->harga_beli)
                     </td>
 
                     <td class="text-right">
-                        Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}
+                        @rupiah($item->harga_beli * $item->jumlah)
                     </td>
                 </tr>
             @endforeach
@@ -310,28 +504,28 @@
         <div class="total-row">
             <span>Total Belanja</span>
             <span>
-                Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}
+                @rupiah($penerimaan->totalFaktur())
             </span>
         </div>
 
         <div class="total-row">
             <span>PPN (11%)</span>
             <span>
-                Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
+                @rupiah($penerimaan->ppn)
             </span>
         </div>
 
         <div class="total-row grand-total">
             <span>Total Tagihan</span>
             <span>
-                Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                @rupiah($penerimaan->totalTagihan())
             </span>
         </div>
 
         <div class="total-row">
             <span>Total Dibayar</span>
             <span>
-                Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}
+                @rupiah($penerimaan->totalDibayar())
             </span>
         </div>
 
@@ -339,7 +533,7 @@
             <div class="total-row" style="color: #dc2626; font-weight: bold;">
                 <span>Kekurangan Pembayaran</span>
                 <span>
-                    Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                    @rupiah($penerimaan->sisaTagihan())
                 </span>
             </div>
         @endif
@@ -348,7 +542,7 @@
             <div class="total-row" style="color: #dc2626; font-weight: bold;">
                 <span>Kelebihan Pembayaran</span>
                 <span>
-                    Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}
+                    @rupiah($penerimaan->kelebihanPembayaran())
                 </span>
             </div>
         @endif
@@ -385,7 +579,7 @@
                             </td>
 
                             <td class="text-right">
-                                Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
+                                @rupiah($pembayaran->jumlah)
                             </td>
 
                             <td>
@@ -416,12 +610,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Tanggal</th>
+                        <th style="width: 35px;">No</th>
+                        <th style="width: 85px;">Tanggal</th>
                         <th>Barang</th>
-                        <th>Jumlah</th>
-                        <th>Dicatat Oleh</th>
-                        <th>Keterangan</th>
+                        <th style="width: 45px;">Qty</th>
+                        <th style="width: 110px;">Dicatat Oleh</th>
+                        <th style="width: 150px;">Keterangan</th>
                     </tr>
                 </thead>
 
@@ -441,7 +635,7 @@
                                 {{ $riwayat->detailPesanan->barang->nama ?? $riwayat->detailPenerimaan->barang->nama ?? '—' }}
                             </td>
 
-                            <td class="text-right">
+                            <td class="text-center">
                                 {{ number_format($riwayat->jumlah, 0, ',', '.') }}
                             </td>
 
@@ -464,28 +658,44 @@
 
     </div>
 
-    <div class="footer">
+    <div class="no-break">
+        <div class="footer-ttd">
 
-        <div class="signature">
-            <div>Supplier</div>
+            <div class="signature">
+                <div class="signature-title">Mengetahui,</div>
+                <div class="signature-role">Supplier</div>
 
-            <div class="signature-space"></div>
+                <div class="signature-space"></div>
 
-            <strong>
-                {{ $penerimaan->supplier->nama ?? '—' }}
-            </strong>
+                <div class="signature-name">
+                    @if (!empty($penerimaan->supplier?->nama))
+                        @php
+                            $supplierWords = preg_split('/\s+/', trim($penerimaan->supplier->nama));
+                            $namaSupplierTtd = implode(' ', array_slice($supplierWords, 0, 3));
+                        @endphp
+                        ( {{ $namaSupplierTtd }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
+            <div class="signature">
+                <div class="signature-title">Diterima oleh,</div>
+                <div class="signature-role">Petugas Penerima</div>
+
+                <div class="signature-space"></div>
+
+                <div class="signature-name">
+                    @if (!empty($penerimaan->user?->name))
+                        ( {{ $penerimaan->user->name }} )
+                    @else
+                        (__________________)
+                    @endif
+                </div>
+            </div>
+
         </div>
-
-        <div class="signature">
-            <div>Petugas Penerimaan</div>
-
-            <div class="signature-space"></div>
-
-            <strong>
-                {{ $penerimaan->user->name ?? '—' }}
-            </strong>
-        </div>
-
     </div>
 
 </div>

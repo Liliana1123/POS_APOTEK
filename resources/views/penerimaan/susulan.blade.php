@@ -1,69 +1,14 @@
-<style>
-    .table-susulan-penerimaan {
-        width: max-content;
-        min-width: 1350px;
-        table-layout: auto;
-        border-collapse: collapse;
-        font-size: 0.75rem;
-        text-align: left;
-    }
-
-    .table-susulan-penerimaan th {
-        padding: 0.6rem 0.55rem !important;
-        font-size: 0.65rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.03em !important;
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-bottom: 1px solid #1d4ed8 !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
-    }
-
-    .table-susulan-penerimaan td {
-        padding: 0.5rem 0.55rem !important;
-        font-size: 0.75rem !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        vertical-align: middle;
-        white-space: nowrap;
-    }
-
-    .table-susulan-penerimaan input {
-        box-sizing: border-box !important;
-        max-width: none !important;
-    }
-
-    .table-susulan-penerimaan input[type="number"] {
-        min-width: 135px !important;
-    }
-
-    .table-susulan-penerimaan input[type="text"] {
-        min-width: 110px !important;
-    }
-
-    .table-susulan-penerimaan input[type="date"] {
-        min-width: 50px !important;
-    }
-
-    .table-susulan-penerimaan td:nth-child(12) input {
-        min-width: 65px !important;
-        width: 65px !important;
-    }
-    
-</style>
-
 <div class="space-y-4">
     <!-- Info Cards Grid (Selaras dengan Detail Penerimaan) -->
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal, 'd F Y')</strong>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->format('d M Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal_faktur, 'd F Y')</strong>
         </div>
 
         <div>
@@ -84,29 +29,21 @@
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Pembayaran</span>
             <div class="mt-0.5">
-                @if ($penerimaan->lunas)
-                    <span class="badge-success">Lunas</span>
-                @else
-                    <span class="badge-warning">Belum Lunas</span>
-                @endif
+                <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
             </div>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Penerimaan</span>
             <div class="mt-0.5">
-                @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                    <span class="badge-success">Lengkap</span>
-                @else
-                    <span class="badge-warning">Belum Lengkap</span>
-                @endif
+                <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
             </div>
         </div>
 
         @if ($penerimaan->jatuh_tempo)
             <div>
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-                <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->format('d M Y') }}</strong>
+                <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->jatuh_tempo, 'd F Y')</strong>
             </div>
         @endif
     </div>
@@ -119,7 +56,7 @@
             <span>Semua pesanan barang pada faktur ini sudah lengkap diterima atau diselesaikan.</span>
         </div>
     @else
-        <form id="form-susulan-penerimaan" method="POST" action="{{ route('penerimaan.susulan.store', $penerimaan) }}">
+        <form id="form-susulan-penerimaan" method="POST" action="{{ route('penerimaan.susulan.store', $penerimaan, false) }}" data-no-loading>
             @csrf
 
             <!-- Form Input Tanggal & Keterangan -->
@@ -139,7 +76,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1.5">
-                        Keterangan / Catatan Susulan
+                        Keterangan atau Catatan Susulan
                     </label>
                     <input
                         type="text"
@@ -149,6 +86,14 @@
                         value="{{ old('keterangan') }}"
                     >
                 </div>
+            </div>
+
+            <!-- Alert Banner Error (Bila Terjadi Kesalahan Input) -->
+            <div id="susulan-error-banner" class="hidden rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700 items-center gap-2 mb-4">
+                <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="susulan-error-text"></span>
             </div>
 
             <!-- Tabel Daftar Barang Kekurangan -->
@@ -178,6 +123,8 @@
                                 @php
                                     $barang = $detail->barang;
                                     $latestDetail = $penerimaan->detail->where('barang_id', $detail->barang_id)->last();
+                                    $defaultBatch = $latestDetail?->no_batch ?? '';
+                                    $defaultExpired = $latestDetail?->expired_date ? \Carbon\Carbon::parse($latestDetail->expired_date)->format('Y-m-d') : '';
                                     $defaultHargaBeli = $latestDetail?->harga_beli ?? $barang?->harga_beli ?? '';
                                     $defaultHargaJual = $latestDetail?->harga_jual ?? $barang?->harga_jual ?? '';
                                     $defaultRak = $latestDetail?->no_rak ?? $barang?->no_rak ?? '';
@@ -242,6 +189,7 @@
                                         <input
                                             type="text"
                                             name="detail[{{ $detail->id }}][no_batch]"
+                                            value="{{ $defaultBatch }}"
                                             class="form-input !py-1 text-xs w-full text-center font-mono"
                                             placeholder="Batch..."
                                         >
@@ -252,6 +200,7 @@
                                         <input
                                             type="date"
                                             name="detail[{{ $detail->id }}][expired_date]"
+                                            value="{{ $defaultExpired }}"
                                             class="form-input !py-1 text-xs w-full"
                                         >
                                     </td>
@@ -302,14 +251,14 @@
             <!-- Footer Action Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 <p class="text-xs text-slate-500 text-center sm:text-left">
-                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch & harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
+                    <span class="font-semibold text-slate-700">* Petunjuk:</span> Masukkan jumlah <strong>Susulan</strong> (serta data batch dan harga) untuk barang yang datang, atau isi <strong>Batal</strong> bila pesanan dibatalkan supplier.
                 </p>
 
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <button
                         type="button"
+                        id="btn-batal-susulan"
                         class="btn-secondary w-full sm:w-auto"
-                        onclick="document.getElementById('modal-susulan-penerimaan').classList.add('hidden')"
                     >
                         Batal
                     </button>
