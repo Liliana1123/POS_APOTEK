@@ -144,13 +144,6 @@
                 <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
             @endforelse
         </tbody>
-        <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
-            <tr>
-                <td colspan="8" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">Total Akumulasi:</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-gray-800 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($omzet, 0, ',', '.') }}</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}</td>
-            </tr>
-        </tfoot>
     </table>
 
     {{-- ========================================================= --}}
@@ -183,7 +176,7 @@
             type="date"
             id="dari"
             name="dari"
-            value="{{ $dari }}"
+            value="{{ old('dari', $dari) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
@@ -195,7 +188,7 @@
             type="date"
             id="sampai"
             name="sampai"
-            value="{{ $sampai }}"
+            value="{{ old('sampai', $sampai) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Akhir"
             title="Tanggal Akhir"
@@ -255,6 +248,10 @@
         <option value="terlambat" @selected(request('status_piutang') === 'terlambat')>Terlambat</option>
     </select>
 </x-card-filter>
+
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
 
 <!-- Summary Cards (layar) -->
 <div class="laporan-summary-cards grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5 mb-4 print:hidden">
@@ -408,8 +405,11 @@
             <tr>
 
                 <th scope="col" class="w-[14%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                    <button
-                        type="button"
+                    @php
+                        $nextInvoiceDirection = ($sort === 'no_faktur' && $direction === 'asc') ? 'desc' : 'asc';
+                    @endphp
+                    <a
+                        href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'no_faktur', 'direction' => $nextInvoiceDirection]) }}"
                         data-sort="invoice"
                         id="btn-sort-invoice"
                         class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -419,12 +419,15 @@
                         <span id="icon-sort-invoice" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                             <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                         </span>
-                    </button>
+                    </a>
                 </th>
 
                 <th scope="col" class="w-[11%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                    <button
-                        type="button"
+                    @php
+                        $nextDateDirection = ($sort === 'tanggal' && $direction === 'asc') ? 'desc' : 'asc';
+                    @endphp
+                    <a
+                        href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'tanggal', 'direction' => $nextDateDirection]) }}"
                         data-sort="tanggal"
                         id="btn-sort-tanggal"
                         class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -434,7 +437,7 @@
                         <span id="icon-sort-tanggal" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                             <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                         </span>
-                    </button>
+                    </a>
                 </th>
 
                 <th scope="col" class="w-[18%] min-w-[12rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
@@ -639,50 +642,19 @@
 
             </tbody>
 
-            {{-- Table Footer: Total Akumulasi --}}
-            @if($penjualans->count() > 0)
-                <tfoot>
-                    <tr class="bg-gray-50/75 border-t border-gray-200 font-bold text-xs align-middle">
-                        <td colspan="7" class="!px-3.5 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">
-                            Total Akumulasi
-                        </td>
-
-                        <td class="table-num !px-3.5 py-3.5 !text-left text-gray-800 font-mono text-sm font-bold whitespace-nowrap">
-                            Rp {{ number_format($omzet, 0, ',', '.') }}
-                        </td>
-
-                        <td class="table-num !px-3.5 py-3.5 !text-left text-blue-700 font-mono text-sm font-bold whitespace-nowrap">
-                            Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
-                        </td>
-                    </tr>
-                </tfoot>
-            @endif
-
         </table>
     </div>
 
     {{-- Pagination & Informasi Data --}}
-    @if($penjualans->count() > 0)
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-white px-4 sm:px-5 py-3.5 print:hidden">
-
-            <div class="text-xs text-slate-500">
-                Menampilkan
-                <span id="page-item-count" class="font-semibold text-slate-700">
-                    {{ min(15, $penjualans->count()) }}
-                </span>
-                dari
-                <span class="font-semibold text-slate-700">
-                    {{ $penjualans->count() }}
-                </span>
-                data
-            </div>
-
-            <div id="pagination-controls" class="flex items-center gap-1">
-                {{-- Di-render dinamis oleh JavaScript --}}
-            </div>
-
-        </div>
-    @endif
+    <div class="pagination-container mt-4 flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
+        @if ($penjualans->total() > 0)
+            <p class="text-xs text-slate-500">
+                Menampilkan {{ $penjualans->firstItem() }}–{{ $penjualans->lastItem() }}
+                dari {{ $penjualans->total() }} transaksi
+            </p>
+        @endif
+        {{ $penjualans->links('vendor.pagination.apotek') }}
+    </div>
 
 </div>
 
@@ -933,4 +905,3 @@ document.addEventListener('live-filter:updated', initPenjualanTablePagination);
     });
 </script>
 @endsection
-

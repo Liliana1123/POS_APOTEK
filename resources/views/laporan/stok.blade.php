@@ -58,7 +58,7 @@
     :action="route('laporan.stok')"
     :reset-url="route('laporan.stok')"
     :grid="true"
-    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-8"
     :has-reset="request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai'])"
     :live-search="true">
     <div class="relative sm:col-span-2 lg:col-span-2">
@@ -75,6 +75,12 @@
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
         </span>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:col-span-2 lg:col-span-2">
+        <input type="date" name="dari" value="{{ $dari }}" class="form-input min-w-0" aria-label="Tanggal Awal" title="Tanggal Awal">
+        <span class="inline-flex items-center text-gray-400 shrink-0"><x-heroicon-m-minus class="w-3.5 h-3.5" /></span>
+        <input type="date" name="sampai" value="{{ $sampai }}" class="form-input min-w-0" aria-label="Tanggal Akhir" title="Tanggal Akhir">
     </div>
 
     <select
@@ -124,6 +130,10 @@
     </select>
 </x-card-filter>
 
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
+
 
 <!-- ========================================================= -->
 <!-- SECTION 1 : STOK PER BATCH -->
@@ -139,7 +149,7 @@
             </p>
         </div>
         <div class="text-xs font-medium text-gray-500 print:text-[8px]">
-            Menampilkan <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->count() }}</span> batch
+            Menampilkan <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->total() }}</span> batch
         </div>
     </div>
 
@@ -216,7 +226,7 @@
                         >
                             <!-- No -->
                             <td class="col-stok-no table-num text-center">
-                                {{ $index + 1 }}
+                                {{ ($stokPerBatch->firstItem() ?? 1) + $index }}
                             </td>
 
                             <!-- Barang -->
@@ -291,30 +301,17 @@
                     @endforelse
                 </tbody>
 
-                @if ($stokPerBatch->isNotEmpty())
-                    <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                        <tr>
-                            <td colspan="7" class="!px-3 py-3 text-right uppercase tracking-wider text-gray-600">
-                                Total (Ringkasan Data Tampil):
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-gray-800 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokAwal, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-indigo-700 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokTerjual, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-rose-700 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokRusak, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right {{ $totalSisaStok <= 0 ? 'text-red-600' : 'text-emerald-700' }} font-bold whitespace-nowrap">
-                                {{ number_format($totalSisaStok, 0, ',', '.') }}
-                            </td>
-                            <td class="!px-2 py-3"></td>
-                        </tr>
-                    </tfoot>
-                @endif
             </table>
         </div>
+    </div>
+    <div class="pagination-container mt-4 flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
+        @if ($stokPerBatch->total() > 0)
+            <p class="text-xs text-slate-500">
+                Menampilkan {{ $stokPerBatch->firstItem() }}–{{ $stokPerBatch->lastItem() }}
+                dari {{ $stokPerBatch->total() }} batch
+            </p>
+        @endif
+        {{ $stokPerBatch->links('vendor.pagination.apotek') }}
     </div>
 </div>
 

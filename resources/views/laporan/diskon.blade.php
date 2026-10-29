@@ -58,7 +58,7 @@
         <input
             type="date"
             name="dari"
-            value="{{ $dari }}"
+            value="{{ old('dari', $dari) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
@@ -69,7 +69,7 @@
         <input
             type="date"
             name="sampai"
-            value="{{ $sampai }}"
+            value="{{ old('sampai', $sampai) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Akhir"
             title="Tanggal Akhir"
@@ -99,6 +99,10 @@
         <option value="umum" @selected(request('status_pelanggan') === 'umum')>Umum</option>
     </select>
 </x-card-filter>
+
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
@@ -167,13 +171,16 @@
                     <x-empty-state colspan="8" />
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                <tr>
-                    <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Diskon:</td>
-                    <td class="col-diskon-hemat table-num !px-2.5 py-3.5 text-left text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
-                </tr>
-            </tfoot>
         </table>
+    </div>
+    <div class="pagination-container mt-4 flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
+        @if ($usages->total() > 0)
+            <p class="text-xs text-slate-500">
+                Menampilkan {{ $usages->firstItem() }}–{{ $usages->lastItem() }}
+                dari {{ $usages->total() }} data
+            </p>
+        @endif
+        {{ $usages->links('vendor.pagination.apotek') }}
     </div>
 </div>
 
