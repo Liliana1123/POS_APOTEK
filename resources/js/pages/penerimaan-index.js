@@ -178,17 +178,41 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================
     // MODAL SUSULAN
     // =========================
+    // MODAL SUSULAN
+    // =========================
     const susulanModal = document.getElementById('modal-susulan-penerimaan');
     const susulanContent = document.getElementById('susulan-penerimaan-content');
     const closeSusulanButton = document.getElementById('close-susulan-penerimaan');
+    let lastActiveElementSusulan = null;
+
+    function tutupModalSusulan() {
+        if (susulanModal) {
+            if (document.activeElement && susulanModal.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+            susulanModal.classList.add('hidden');
+            susulanModal.setAttribute('aria-hidden', 'true');
+        }
+        if (susulanContent) susulanContent.innerHTML = '';
+        if (lastActiveElementSusulan && typeof lastActiveElementSusulan.focus === 'function') {
+            lastActiveElementSusulan.focus();
+            lastActiveElementSusulan = null;
+        }
+    }
 
     document.addEventListener('click', function (e) {
         const button = e.target.closest('.btn-susulan-penerimaan');
         if (!button) return;
         const id = button.dataset.id;
-        if (!id) return;
+        const url = button.dataset.url || (id ? `/penerimaan/${id}/susulan-form` : null);
+        if (!url) return;
 
-        if (susulanModal) susulanModal.classList.remove('hidden');
+        lastActiveElementSusulan = button;
+
+        if (susulanModal) {
+            susulanModal.classList.remove('hidden');
+            susulanModal.setAttribute('aria-hidden', 'false');
+        }
 
         if (susulanContent) {
             susulanContent.innerHTML = `
@@ -197,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             `;
 
-            fetch(`/penerimaan/${id}/susulan-form`)
+            fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error('Gagal memuat formulir penerimaan susulan.');
                     return response.text();
@@ -216,10 +240,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (closeSusulanButton) {
-        closeSusulanButton.addEventListener('click', function () {
-            if (susulanModal) susulanModal.classList.add('hidden');
-            if (susulanContent) susulanContent.innerHTML = '';
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('#close-susulan-penerimaan') || e.target.closest('#btn-batal-susulan')) {
+            tutupModalSusulan();
+        }
+    });
+
+    if (susulanModal) {
+        susulanModal.addEventListener('click', function (e) {
+            if (e.target === susulanModal) {
+                tutupModalSusulan();
+            }
         });
     }
 
@@ -231,21 +262,126 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const form = event.target;
         const button = form.querySelector('#btn-simpan-susulan');
-        if (!button || button.disabled) return;
+        const errorBanner = form.querySelector('#susulan-error-banner');
+        const errorText = form.querySelector('#susulan-error-text');
 
+        function showError(msg) {
+            if (errorBanner && errorText) {
+                errorText.textContent = msg;
+                errorBanner.classList.remove('hidden');
+                errorBanner.classList.add('flex');
+                errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                alert(msg);
+            }
+        }
+
+        if (errorBanner) {
+            errorBanner.classList.add('hidden');
+            errorBanner.classList.remove('flex');
+        }
+
+        if (form.dataset.submitting === 'true' || !button || button.disabled) return;
+
+        // Validasi Frontend cepat
+        let totalSusulan = 0;
+        let totalBatal = 0;
+        let missingDetail = false;
+        let expiredInvalid = false;
+        let hargaInvalid = false;
+        const tglTerima = form.querySelector('[name="tanggal_terima"]')?.value || '';
+
+        form.querySelectorAll('tbody tr').forEach(row => {
+            const susulanInput = row.querySelector('[name^="jumlah_susulan"]');
+            const batalInput = row.querySelector('[name^="jumlah_pembatalan"]');
+            const batchInput = row.querySelector('[name*="[no_batch]"]');
+            const expiredInput = row.querySelector('[name*="[expired_date]"]');
+            const hargaBeliInput = row.querySelector('[name*="[harga_beli]"]');
+            const hargaJualInput = row.querySelector('[name*="[harga_jual]"]');
+
+            const sVal = parseInt(susulanInput?.value, 10) || 0;
+            const bVal = parseInt(batalInput?.value, 10) || 0;
+            totalSusulan += sVal;
+            totalBatal += bVal;
+
+            if (sVal > 0) {
+                const missingBatch = !batchInput?.value?.trim();
+                const missingExpired = !expiredInput?.value;
+                const missingHargaBeli = !hargaBeliInput?.value;
+                const missingHargaJual = !hargaJualInput?.value;
+
+                if (missingBatch || missingExpired || missingHargaBeli || missingHargaJual) {
+                    missingDetail = true;
+                    if (missingBatch) batchInput?.classList.add('border-red-500');
+                    if (missingExpired) expiredInput?.classList.add('border-red-500');
+                    if (missingHargaBeli) hargaBeliInput?.classList.add('border-red-500');
+                    if (missingHargaJual) hargaJualInput?.classList.add('border-red-500');
+                } else {
+                    batchInput?.classList.remove('border-red-500');
+                    expiredInput?.classList.remove('border-red-500');
+                    hargaBeliInput?.classList.remove('border-red-500');
+                    hargaJualInput?.classList.remove('border-red-500');
+                }
+
+                if (expiredInput?.value && tglTerima && expiredInput.value < tglTerima) {
+                    expiredInvalid = true;
+                }
+
+                const hb = parseFloat(hargaBeliInput?.value) || 0;
+                const hj = parseFloat(hargaJualInput?.value) || 0;
+                if (hj < hb) {
+                    hargaInvalid = true;
+                }
+            }
+        });
+
+        if (totalSusulan + totalBatal <= 0) {
+            showError('Minimal satu barang harus memiliki jumlah susulan atau pembatalan lebih dari 0.');
+            return;
+        }
+
+        if (missingDetail) {
+            showError('Nomor batch, tanggal expired, harga beli, dan harga jual wajib diisi untuk barang yang menerima susulan.');
+            return;
+        }
+
+        if (expiredInvalid) {
+            showError('Tanggal expired tidak boleh sebelum tanggal penerimaan susulan.');
+            return;
+        }
+
+        if (hargaInvalid) {
+            showError('Harga jual tidak boleh lebih kecil dari harga beli.');
+            return;
+        }
+
+        form.dataset.submitting = 'true';
         button.disabled = true;
+        const originalText = button.textContent;
         button.textContent = 'Menyimpan...';
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || form.querySelector('[name="_token"]')?.value;
+        const requestHeaders = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        };
+        if (csrfToken) {
+            requestHeaders['X-CSRF-TOKEN'] = csrfToken;
+        }
 
         fetch(form.action, {
             method: 'POST',
             body: new FormData(form),
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
+            headers: requestHeaders
         })
             .then(async response => {
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    throw new Error('Terjadi kesalahan pada server (status ' + response.status + '). Silakan coba lagi.');
+                }
+
                 if (!response.ok) {
                     let errorMsg = 'Gagal menyimpan penerimaan susulan.';
                     if (data.errors) {
@@ -259,15 +395,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 return data;
             })
             .then(data => {
-                if (susulanModal) susulanModal.classList.add('hidden');
-                if (susulanContent) susulanContent.innerHTML = '';
+                tutupModalSusulan();
                 window.location.reload();
             })
             .catch(error => {
                 console.error('Penerimaan susulan:', error);
-                alert(error.message || 'Gagal menyimpan penerimaan susulan.');
+                showError(error.message || 'Gagal menyimpan penerimaan susulan.');
+                delete form.dataset.submitting;
                 button.disabled = false;
-                button.textContent = 'Simpan Penerimaan Susulan';
+                button.textContent = originalText;
             });
     });
 

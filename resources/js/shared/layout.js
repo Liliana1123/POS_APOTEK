@@ -451,10 +451,16 @@ function initShellInteractions() {
     // Universal Form Submission Loading States
     document.addEventListener('submit', function (e) {
         var form = e.target;
-        if (form.action.includes('logout') || form.dataset.confirmed === 'false' || form.dataset.liveFilter === 'true') return;
+        if (
+            form.action.includes('logout') ||
+            form.dataset.confirmed === 'false' ||
+            form.dataset.liveFilter === 'true' ||
+            form.hasAttribute('data-no-loading')
+        ) return;
         var btn = form.querySelector('button[type="submit"]');
         if (btn) {
             setTimeout(function () {
+                if (e.defaultPrevented) return;
                 btn.disabled = true;
                 btn.innerHTML = btn.dataset.loadingText || 'Memproses...';
             }, 10);

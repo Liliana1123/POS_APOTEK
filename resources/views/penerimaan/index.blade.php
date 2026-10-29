@@ -146,6 +146,7 @@
                                     style="color: #7C3AED;"
                                     title="Penerimaan Susulan"
                                     data-id="{{ $penerimaan->id }}"
+                                    data-url="{{ route('penerimaan.susulan.form', $penerimaan, false) }}"
                                 >
                                     <x-heroicon-o-arrow-path class="w-4 h-4" />
                                 </button>
