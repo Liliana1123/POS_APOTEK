@@ -12,14 +12,15 @@ const tabBtnScan = document.getElementById('tab-btn-scan');
 const panelCariContent = document.getElementById('panel-cari-content');
 const panelScanContent = document.getElementById('panel-scan-content');
 
-// Elements - Search & Filter
+// Elements - Search & Results
 const cariInput = document.getElementById('cari-barang');
 const btnClearCari = document.getElementById('btn-clear-cari');
 const daftarBarang = document.getElementById('daftar-barang');
 const infoJumlahBarang = document.getElementById('info-jumlah-barang');
-const btnRefreshBarang = document.getElementById('btn-refresh-barang');
-const kategoriButtons = document.querySelectorAll('.btn-kategori');
-let activeKategori = 'semua';
+const cariStatusContainer = document.getElementById('cari-status-container');
+let currentSearchResults = [];
+let selectedResultIndex = 0;
+let cariStatusTimeout = null;
 
 // Elements - Scan Barcode
 const barcodeInput = document.getElementById('barcode-input');
@@ -397,145 +398,83 @@ function sinkronkanJenisTransaksi(nilai) {
 });
 
 // =========================================================================
-// RENDER DAFTAR BARANG (Kartu Sederhana tanpa ikon/gambar)
+// PENCARIAN OBAT & HASIL REALTIME (Navigasi Keyboard ↑/↓ dan Enter)
 // =========================================================================
-function renderDaftarBarang(filter = '') {
-    const query = (typeof filter === 'string' ? filter : (cariInput ? cariInput.value : '')).trim().toLowerCase();
-
-    // Hanya tampilkan barang yang stok > 0 di kartu pemilihan obat
-    let hasil = barangs.filter(b => b.stok > 0);
-
-    // Filter by Kategori
-    if (activeKategori !== 'semua') {
-        hasil = hasil.filter(b => {
-            const kat = (b.kategori || '').toLowerCase();
-            const nama = b.nama.toLowerCase();
-            if (activeKategori === 'obat') {
-                return kat.includes('obat') || (!kat.includes('alat') && !kat.includes('vitamin'));
-            } else if (activeKategori === 'alat_kesehatan') {
-                return kat.includes('alat');
-            } else if (activeKategori === 'vitamin') {
-                return kat.includes('vitamin') || kat.includes('suplemen') || nama.includes('vitamin');
-            } else if (activeKategori === 'kecantikan') {
-                return kat.includes('kecantikan') || kat.includes('perawatan')
-                    || nama.includes('kecantikan') || nama.includes('perawatan');
-            }
-            return true;
-        });
-    }
-
-    // Filter by Text Query
-    if (query) {
-        hasil = hasil.filter(b => {
-            const cariNama = b.nama.toLowerCase().includes(query);
-            const cariKode = b.kode_apotek && b.kode_apotek.toLowerCase().includes(query);
-            const cariBarcode = b.barcode && b.barcode.toLowerCase().includes(query);
-            const cariSatuan = b.satuan && b.satuan.toLowerCase().includes(query);
-            const cariBatch = b.no_batch && b.no_batch.toLowerCase().includes(query);
-            return cariNama || cariKode || cariBarcode || cariSatuan || cariBatch;
-        });
-    }
-
-    if (infoJumlahBarang) {
-        if (query || activeKategori !== 'semua') {
-            infoJumlahBarang.textContent = `${hasil.length} barang ditemukan`;
-            infoJumlahBarang.classList.remove('hidden');
-        } else {
-            infoJumlahBarang.classList.add('hidden');
-        }
-    }
-
-    if (btnClearCari) {
-        btnClearCari.classList.toggle('hidden', !query);
-    }
-
-    daftarBarang.innerHTML = hasil.map(b => {
-        const batchDisplay = b.no_batch || (b.kode_apotek ? 'B-' + b.kode_apotek : 'B-001');
-        return `
-            
-                <div class="border border-slate-200/90 rounded-xl p-3 bg-white hover:border-blue-300 hover:shadow-xs transition-all flex flex-col group min-w-0">
-                <div class="min-w-0">
-                    <div class="font-bold text-slate-800 text-xs truncate" title="${b.nama}">${b.nama}</div>
-                    <div class="text-xs text-slate-400 mt-0.5 truncate">
-                        Stok ${b.stok} &nbsp;·&nbsp; No Batch ${batchDisplay} &nbsp;·&nbsp; ${b.satuan || 'Pcs'}
-                    </div>
-                </div>
-                <div class="flex items-center justify-between mt-2 min-w-0">
-                    <div class="font-bold text-blue-600 text-xs truncate mr-1">${formatRupiah(b.harga ?? 0)}</div>                            
-                        <button type="button" data-id="${b.id}" class="btn-tambah-obat w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs transition-transform active:scale-90 cursor-pointer shrink-0" title="Tambah ke keranjang">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                style="width: 14px; height: 14px; display: block; flex-shrink: 0;">
-                                <path d="M12 5v14M5 12h14"/>
-                            </svg>
-                        </button>
-                </div>
-            </div>
-        `;
-    }).join('') || '<p class="text-xs text-slate-400 py-8 text-center col-span-2">Barang tidak ditemukan.</p>';
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
-// Search & Clear Event Listeners
-cariInput?.addEventListener('input', () => renderDaftarBarang(cariInput.value));
-btnClearCari?.addEventListener('click', () => {
-    if (cariInput) {
-        cariInput.value = '';
-        renderDaftarBarang('');
-        cariInput.focus();
+function showCariStatus(type, title, message) {
+    if (!cariStatusContainer) return;
+    if (cariStatusTimeout) clearTimeout(cariStatusTimeout);
+
+    let borderClass = 'border-emerald-200 bg-emerald-50/90 text-emerald-900';
+    let iconSvg = `
+        <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    `;
+
+    if (type === 'error') {
+        borderClass = 'border-red-200 bg-red-50/90 text-red-900';
+        iconSvg = `
+            <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        `;
+    } else if (type === 'warning') {
+        borderClass = 'border-amber-200 bg-amber-50/90 text-amber-900';
+        iconSvg = `
+            <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        `;
     }
-});
 
-// Category Filter Buttons
-kategoriButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        kategoriButtons.forEach(b => {
-            b.className = 'btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer';
-        });
-        btn.className = 'btn-kategori active px-3.5 py-1 rounded-full text-xs font-semibold transition-colors bg-blue-600 text-white cursor-pointer';
-        activeKategori = btn.dataset.kategori;
-        renderDaftarBarang(cariInput?.value || '');
-    });
-});
+    cariStatusContainer.innerHTML = `
+        <div class="p-2.5 rounded-xl border ${borderClass} shadow-2xs flex items-start gap-2.5 transition-all text-xs">
+            ${iconSvg}
+            <div class="min-w-0 flex-1 leading-snug">
+                <div class="font-bold text-xs">${title}</div>
+                ${message ? `<div class="text-[11px] opacity-90 mt-0.5">${message}</div>` : ''}
+            </div>
+            <button type="button" class="text-slate-400 hover:text-slate-700 font-bold text-sm ml-1" onclick="document.getElementById('cari-status-container').classList.add('hidden')">&times;</button>
+        </div>
+    `;
+    cariStatusContainer.classList.remove('hidden');
 
-// Refresh Button
-btnRefreshBarang?.addEventListener('click', () => {
-    activeKategori = 'semua';
-    kategoriButtons.forEach(b => {
-        if (b.dataset.kategori === 'semua') {
-            b.className = 'btn-kategori active px-3.5 py-1 rounded-full text-xs font-semibold transition-colors bg-blue-600 text-white cursor-pointer';
-        } else {
-            b.className = 'btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer';
-        }
-    });
-    if (cariInput) cariInput.value = '';
-    renderDaftarBarang('');
-});
+    cariStatusTimeout = setTimeout(() => {
+        cariStatusContainer.classList.add('hidden');
+    }, 4000);
+}
 
-// =========================================================================
-// ADD TO CART (Dari Kartu Panel Kiri)
-// =========================================================================
+// Tambah obat ke keranjang (dengan validasi stok)
 function tambahKeKeranjang(id) {
     const barang = barangs.find(b => String(b.id) === String(id));
-    if (!barang) return;
+    if (!barang) return false;
 
-    if (cart[id]) {
-        if (cart[id].jumlah < barang.stok) {
-            cart[id].jumlah += 1;
-        } else {
-            alert(`Stok ${barang.nama} sudah mencapai batas maksimum (${barang.stok} ${barang.satuan || 'Pcs'}).`);
-            return;
-        }
+    if (barang.stok <= 0) {
+        showCariStatus('error', `Stok ${barang.nama} Habis`, `Stok obat saat ini 0 ${barang.satuan || 'Pcs'}. Barang tidak dapat ditambahkan ke keranjang.`);
+        return false;
+    }
+
+    const currentQty = cart[barang.id] ? cart[barang.id].jumlah : 0;
+    if (currentQty >= barang.stok) {
+        showCariStatus('warning', `Batas Stok Tercapai: ${barang.nama}`, `Jumlah di keranjang (${currentQty} ${barang.satuan || 'Pcs'}) sudah mencapai batas stok tersedia (${barang.stok} ${barang.satuan || 'Pcs'}).`);
+        return false;
+    }
+
+    if (cart[barang.id]) {
+        cart[barang.id].jumlah += 1;
+        showCariStatus('success', `Jumlah Bertambah: ${barang.nama}`, `Jumlah di keranjang: ${cart[barang.id].jumlah} ${barang.satuan || 'Pcs'}`);
     } else {
-        if (barang.stok <= 0) {
-            alert(`Stok ${barang.nama} habis.`);
-            return;
-        }
-        cart[id] = {
+        cart[barang.id] = {
             id: barang.id,
             nama: barang.nama,
             kode_apotek: barang.kode_apotek,
@@ -546,14 +485,236 @@ function tambahKeKeranjang(id) {
             jumlah: 1,
             diskon_custom_percent: barang.diskon_custom_percent ?? 0
         };
+        showCariStatus('success', `Ditambahkan ke Keranjang`, `${barang.nama} · ${formatRupiah(barang.harga ?? 0)}`);
     }
+
     renderKeranjang();
+    return true;
 }
 
+function pilihObatDariPencarian(barang) {
+    if (!barang) return;
+    const berhasil = tambahKeKeranjang(barang.id);
+    if (berhasil) {
+        if (cariInput) {
+            cariInput.value = '';
+            cariInput.focus();
+        }
+        renderDaftarBarang('');
+    }
+}
+
+function updateSelectionHighlight() {
+    if (!daftarBarang) return;
+    const items = daftarBarang.querySelectorAll('.item-hasil-cari');
+    items.forEach((el, idx) => {
+        const isSelected = (idx === selectedResultIndex);
+        const nameEl = el.querySelector('.item-nama');
+        const priceEl = el.querySelector('.item-harga');
+
+        if (isSelected) {
+            el.className = 'item-hasil-cari group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer border-blue-500 bg-blue-50/70 shadow-xs ring-1 ring-blue-300';
+            if (nameEl) nameEl.className = 'item-nama font-bold text-xs text-blue-900 truncate';
+            if (priceEl) priceEl.className = 'item-harga font-bold text-xs text-blue-700 whitespace-nowrap';
+            el.scrollIntoView({ block: 'nearest' });
+        } else {
+            el.className = 'item-hasil-cari group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/60';
+            if (nameEl) nameEl.className = 'item-nama font-bold text-xs text-slate-800 truncate';
+            if (priceEl) priceEl.className = 'item-harga font-bold text-xs text-blue-600 whitespace-nowrap';
+        }
+    });
+}
+
+function renderDaftarBarang(filter = '') {
+    if (!daftarBarang) return;
+
+    const query = (typeof filter === 'string' ? filter : (cariInput ? cariInput.value : '')).trim().toLowerCase();
+
+    // 2. Jika kolom pencarian masih kosong, jangan tampilkan daftar obat bawaan
+    if (!query) {
+        currentSearchResults = [];
+        selectedResultIndex = -1;
+
+        if (btnClearCari) btnClearCari.classList.add('hidden');
+        if (infoJumlahBarang) {
+            infoJumlahBarang.innerHTML = '';
+            infoJumlahBarang.classList.add('hidden');
+        }
+
+        daftarBarang.innerHTML = `
+            <div class="border border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center my-auto min-h-[240px] bg-slate-50/40">
+                <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <p class="font-bold text-slate-700 text-xs">Pencarian Obat Cepat</p>
+                <p class="text-slate-400 text-[11px] mt-1 max-w-xs leading-relaxed">
+                    Ketik nama obat, kode barang, atau barcode.<br>
+                    Gunakan tombol <kbd class="px-1.5 py-0.5 text-[10px] bg-white border border-slate-200 rounded shadow-2xs font-mono text-slate-600">↑</kbd> <kbd class="px-1.5 py-0.5 text-[10px] bg-white border border-slate-200 rounded shadow-2xs font-mono text-slate-600">↓</kbd> untuk memilih dan <kbd class="px-1.5 py-0.5 text-[10px] bg-white border border-slate-200 rounded shadow-2xs font-mono text-slate-600">Enter ↵</kbd> untuk menambahkan ke keranjang.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    if (btnClearCari) {
+        btnClearCari.classList.remove('hidden');
+    }
+
+    // 3. Pencarian realtime berdasarkan nama, kode apotek, barcode, atau no batch
+    let hasil = barangs.filter(b => {
+        // Hanya tampilkan obat yang masih memiliki stok tersedia dan layak jual
+        if (!b.stok || Number(b.stok) <= 0) return false;
+
+        const cariNama = b.nama && b.nama.toLowerCase().includes(query);
+        const cariKode = b.kode_apotek && b.kode_apotek.toLowerCase().includes(query);
+        const cariBarcode = b.barcode && b.barcode.toLowerCase().includes(query);
+        const cariBatch = b.no_batch && b.no_batch.toLowerCase().includes(query);
+        return cariNama || cariKode || cariBarcode || cariBatch;
+    });
+
+    // Urutkan: prioritaskan kata kunci awalan nama / kode
+    hasil.sort((a, b) => {
+        const aStart = (a.nama && a.nama.toLowerCase().startsWith(query)) || (a.kode_apotek && a.kode_apotek.toLowerCase().startsWith(query));
+        const bStart = (b.nama && b.nama.toLowerCase().startsWith(query)) || (b.kode_apotek && b.kode_apotek.toLowerCase().startsWith(query));
+        if (aStart && !bStart) return -1;
+        if (!aStart && bStart) return 1;
+
+        return (a.nama || '').localeCompare(b.nama || '');
+    });
+
+    // 7. Jika obat tidak ditemukan
+    if (hasil.length === 0) {
+        currentSearchResults = [];
+        selectedResultIndex = -1;
+
+        if (infoJumlahBarang) {
+            infoJumlahBarang.innerHTML = '';
+            infoJumlahBarang.classList.add('hidden');
+        }
+
+        daftarBarang.innerHTML = `
+            <div class="p-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 flex flex-col items-center justify-center text-center my-4">
+                <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-2">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="font-bold text-xs text-slate-700">Obat Tidak Ditemukan</div>
+                <div class="text-[11px] text-slate-400 mt-1 max-w-xs">
+                    Tidak ada obat yang cocok dengan kata kunci "<strong>${escapeHtml(query)}</strong>".
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    currentSearchResults = hasil;
+    // 4. Hasil pertama otomatis disorot
+    selectedResultIndex = 0;
+
+    if (infoJumlahBarang) {
+        infoJumlahBarang.innerHTML = `
+            <span><strong class="font-semibold text-slate-700">${hasil.length}</strong> obat ditemukan</span>
+            <span class="text-[10px] text-slate-400">Tekan <kbd class="px-1 py-0.5 bg-slate-100 rounded font-mono text-slate-600">Enter</kbd> untuk memilih yang disorot</span>
+        `;
+        infoJumlahBarang.classList.remove('hidden');
+    }
+
+    daftarBarang.innerHTML = hasil.map((b, idx) => {
+        const isSelected = (idx === selectedResultIndex);
+        const batchDisplay = b.no_batch || (b.kode_apotek ? 'B-' + b.kode_apotek : 'B-001');
+        const cardClass = isSelected
+            ? 'item-hasil-cari group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer border-blue-500 bg-blue-50/70 shadow-xs ring-1 ring-blue-300'
+            : 'item-hasil-cari group flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/60';
+
+        return `
+            <div class="${cardClass}" data-id="${b.id}" data-index="${idx}">
+                <div class="min-w-0 flex-1 pr-3">
+                    <div class="flex items-center gap-2">
+                        <span class="item-nama font-bold text-xs ${isSelected ? 'text-blue-900' : 'text-slate-800'} truncate" title="${escapeHtml(b.nama)}">${escapeHtml(b.nama)}</span>
+                        ${b.butuh_resep ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 shrink-0">Resep</span>' : ''}
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 truncate">
+                        <span class="font-mono text-slate-500 font-medium">${escapeHtml(b.kode_apotek || '-')}</span>
+                        <span>·</span>
+                        <span>Batch: ${escapeHtml(batchDisplay)}</span>
+                        <span>·</span>
+                        <span>Stok: <strong class="${isSelected ? 'text-blue-800' : 'text-slate-700'}">${b.stok}</strong> ${escapeHtml(b.satuan || 'Pcs')}</span>
+                    </div>
+                </div>
+                <div class="shrink-0 flex items-center gap-2.5 pl-2">
+                    <div class="text-right">
+                        <div class="item-harga font-bold text-xs ${isSelected ? 'text-blue-700' : 'text-blue-600'} whitespace-nowrap">${formatRupiah(b.harga ?? 0)}</div>
+                        ${b.diskon_custom_percent > 0 ? `<div class="text-[10px] text-emerald-600 font-semibold whitespace-nowrap">Diskon ${b.diskon_custom_percent}%</div>` : ''}
+                    </div>
+                    <button type="button" class="btn-action-tambah items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-2xs whitespace-nowrap cursor-pointer transition-colors">
+                        + Tambah
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 4. Navigasi Keyboard pada input pencarian (↑, ↓, Enter, Escape)
+cariInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+        if (currentSearchResults.length > 0) {
+            e.preventDefault();
+            selectedResultIndex = (selectedResultIndex + 1) % currentSearchResults.length;
+            updateSelectionHighlight();
+        }
+    } else if (e.key === 'ArrowUp') {
+        if (currentSearchResults.length > 0) {
+            e.preventDefault();
+            selectedResultIndex = (selectedResultIndex - 1 + currentSearchResults.length) % currentSearchResults.length;
+            updateSelectionHighlight();
+        }
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (currentSearchResults.length === 1) {
+            // Jika hanya ada satu hasil, Enter langsung memasukkannya ke keranjang
+            pilihObatDariPencarian(currentSearchResults[0]);
+        } else if (currentSearchResults.length > 1) {
+            // Memasukkan obat yang sedang disorot ke keranjang
+            const idx = (selectedResultIndex >= 0 && selectedResultIndex < currentSearchResults.length) ? selectedResultIndex : 0;
+            pilihObatDariPencarian(currentSearchResults[idx]);
+        } else if (cariInput.value.trim().length > 0) {
+            showCariStatus('error', 'Obat Tidak Ditemukan', `Tidak ada obat yang cocok dengan "${cariInput.value.trim()}".`);
+        }
+    } else if (e.key === 'Escape') {
+        cariInput.value = '';
+        renderDaftarBarang('');
+    }
+});
+
+// Realtime search input
+cariInput?.addEventListener('input', () => {
+    renderDaftarBarang(cariInput.value);
+});
+
+// Clear button
+btnClearCari?.addEventListener('click', () => {
+    if (cariInput) {
+        cariInput.value = '';
+        renderDaftarBarang('');
+        cariInput.focus();
+    }
+});
+
+// Mouse Click pada item hasil pencarian
 daftarBarang?.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-tambah-obat');
-    if (!btn) return;
-    tambahKeKeranjang(btn.dataset.id);
+    const itemEl = e.target.closest('.item-hasil-cari');
+    if (!itemEl) return;
+    const id = itemEl.dataset.id;
+    const barang = barangs.find(b => String(b.id) === String(id));
+    if (barang) {
+        pilihObatDariPencarian(barang);
+    }
 });
 
 // =========================================================================
@@ -565,6 +726,13 @@ function renderKeranjang() {
 
     if (keranjangKosong) {
         keranjangKosong.style.display = adaItem ? 'none' : 'block';
+    }
+
+    if (btnHapusSemua) {
+        btnHapusSemua.disabled = !adaItem;
+        btnHapusSemua.classList.toggle('opacity-50', !adaItem);
+        btnHapusSemua.classList.toggle('cursor-not-allowed', !adaItem);
+        btnHapusSemua.classList.toggle('cursor-pointer', adaItem);
     }
 
     const diskonMemberPercent = (selectedPelanggan && selectedPelanggan.is_member && selectedPelanggan.member_aktif)
@@ -674,10 +842,31 @@ keranjangItems?.addEventListener('click', (e) => {
     }
 });
 
-// Hapus Semua Button
+// Hapus Semua Button (Modal Konfirmasi Hapus)
 btnHapusSemua?.addEventListener('click', () => {
+    // 3. Jika keranjang kosong, jangan tampilkan konfirmasi yang tidak diperlukan
     if (Object.keys(cart).length === 0) return;
-    if (confirm('Kosongkan semua barang di keranjang?')) {
+
+    if (typeof window.confirmAction === 'function') {
+        window.confirmAction({
+            title: 'Konfirmasi Hapus',
+            message: 'Yakin ingin mengosongkan semua barang di keranjang?<span class="block text-xs text-gray-500 mt-1.5">Tindakan ini akan menghapus seluruh barang dari keranjang transaksi.</span>',
+            type: 'danger',
+            icon: 'trash',
+            confirmText: 'Ya, Hapus Data',
+            cancelText: 'Batal',
+            onConfirm: function () {
+                cart = {};
+                renderKeranjang();
+                if (typeof window.resetConfirmLoading === 'function') {
+                    window.resetConfirmLoading();
+                }
+                if (typeof window.closeConfirmModal === 'function') {
+                    window.closeConfirmModal();
+                }
+            }
+        });
+    } else if (confirm('Yakin ingin mengosongkan semua barang di keranjang? Tindakan ini akan menghapus seluruh barang dari keranjang transaksi.')) {
         cart = {};
         renderKeranjang();
     }
@@ -1114,9 +1303,12 @@ document.addEventListener('keydown', (e) => {
 function initPenjualanCreate() {
     const initialJenis = hiddenJenisTransaksi?.value || 'non_resep';
     sinkronkanJenisTransaksi(initialJenis);
-    renderDaftarBarang();
+    renderDaftarBarang('');
     renderKeranjang();
     updateMemberStatusColor();
+    if (cariInput) {
+        cariInput.focus();
+    }
 }
 
 if (document.readyState === 'loading') {

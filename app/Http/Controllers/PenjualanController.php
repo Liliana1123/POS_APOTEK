@@ -90,11 +90,40 @@ class PenjualanController extends Controller
                 ];
             });
 
-        // Cuma barang yang aktif & masih ada stok yang bisa dijual
+        $today = now()->startOfDay()->toDateString();
+
+        // Cuma barang yang aktif & masih ada stok layak jual (stok > 0 dan belum kedaluwarsa)
         // eager-load stok aggregate (withSum) dan batch FEFO pertama, satuan, serta kategori
-        $barangs = Barang::withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
-            ->with(['batchFefoFirst', 'satuan', 'kategori'])
-            ->where('aktif', true)
+        $barangs = Barang::where('aktif', true)
+            ->whereHas('detailPenerimaan', function ($q) use ($today) {
+                $q->where('aktif', true)
+                  ->where('stok', '>', 0)
+                  ->where(function ($sub) use ($today) {
+                      $sub->whereNull('expired_date')
+                          ->orWhereDate('expired_date', '>=', $today);
+                  });
+            })
+            ->withSum(['detailPenerimaan' => function ($q) use ($today) {
+                $q->where('aktif', true)
+                  ->where('stok', '>', 0)
+                  ->where(function ($sub) use ($today) {
+                      $sub->whereNull('expired_date')
+                          ->orWhereDate('expired_date', '>=', $today);
+                  });
+            }], 'stok')
+            ->with([
+                'satuan',
+                'kategori',
+                'detailPenerimaan' => function ($q) use ($today) {
+                    $q->where('aktif', true)
+                      ->where('stok', '>', 0)
+                      ->where(function ($sub) use ($today) {
+                          $sub->whereNull('expired_date')
+                              ->orWhereDate('expired_date', '>=', $today);
+                      })
+                      ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC');
+                }
+            ])
             ->get();
 
         // Precompute custom discount % untuk SEMUA barang aktif dalam sekali query (tidak dipanggil per-barang)
@@ -136,19 +165,26 @@ class PenjualanController extends Controller
             }
         }
 
-        $barangs = $barangs->map(fn($b) => [
-                'id'                  => $b->id,
-                'kode_apotek'         => $b->kode_apotek,
-                'nama'                => $b->nama,
-                'satuan'              => $b->satuan?->nama,
-                'stok'                => (int) ($b->detail_penerimaan_sum_stok ?? 0),
-                'harga'               => $b->batchFefoFirst->first()?->harga_jual,
-                'no_batch'            => $b->batchFefoFirst->first()?->no_batch ?? ($b->kode_apotek ? 'B-' . $b->kode_apotek : 'B-001'),
-                'barcode'             => $b->barcode,
-                'kategori'            => $b->kategori?->nama,
-                'butuh_resep'         => $b->butuh_resep,
-                'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
-            ])
+        $barangs = $barangs->map(function ($b) use ($discountMap) {
+                $firstFefo = $b->detailPenerimaan->first();
+                $stokLayak = (int) ($b->detail_penerimaan_sum_stok ?? 0);
+
+                return [
+                    'id'                  => $b->id,
+                    'kode_apotek'         => $b->kode_apotek,
+                    'nama'                => $b->nama,
+                    'satuan'              => $b->satuan?->nama,
+                    'stok'                => $stokLayak,
+                    'harga'               => $firstFefo?->harga_jual,
+                    'no_batch'            => $firstFefo?->no_batch ?? ($b->kode_apotek ? 'B-' . $b->kode_apotek : 'B-001'),
+                    'expired_date'        => $firstFefo?->expired_date?->format('Y-m-d'),
+                    'barcode'             => $b->barcode,
+                    'kategori'            => $b->kategori?->nama,
+                    'butuh_resep'         => $b->butuh_resep,
+                    'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
+                ];
+            })
+            ->filter(fn($b) => $b['stok'] > 0 && $b['harga'] !== null)
             ->values();
 
         return view('penjualan.create', compact('pelanggans', 'barangs'));
@@ -443,12 +479,19 @@ class PenjualanController extends Controller
                     // Diskon gabungan di-cap maksimal 50%
                     $totalDiskonPercent = min(50, $diskonMemberPercent + $diskonCustomPercent);
 
-                    // Ambil batch aktif & masih ada stok, urut FEFO (expired paling dekat duluan)
+                    $tglTransaksi = !empty($data['tanggal']) ? $data['tanggal'] : now()->toDateString();
+
+                    // Ambil batch aktif, stok > 0, dan belum kedaluwarsa, diurutkan FEFO murni:
+                    // Expired paling dekat duluan, batch tanpa expired ditaruh terakhir, tie-break id ASC
                     $batches = $barang->detailPenerimaan()
                         ->lockForUpdate()
                         ->where('aktif', true)
                         ->where('stok', '>', 0)
-                        ->orderBy('expired_date')
+                        ->where(function ($sub) use ($tglTransaksi) {
+                            $sub->whereNull('expired_date')
+                                ->orWhereDate('expired_date', '>=', $tglTransaksi);
+                        })
+                        ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC')
                         ->get();
 
                     foreach ($batches as $batch) {
@@ -545,10 +588,11 @@ class PenjualanController extends Controller
                             }
                         }
 
-                        $batch->decrement('stok', $ambil);
-                        if ($batch->stok - $ambil <= 0) {
-                            $batch->update(['aktif' => false]);
-                        }
+                        $sisaStokBatch = max(0, $batch->stok - $ambil);
+                        $batch->update([
+                            'stok' => $sisaStokBatch,
+                            'aktif' => $sisaStokBatch > 0,
+                        ]);
 
                         $totalFaktur += $subtotal;
                         $sisaJumlah -= $ambil;

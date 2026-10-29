@@ -113,29 +113,47 @@ class Barang extends Model
 
     public function batchFefoFirst(): HasMany
     {
+        $today = now()->startOfDay()->toDateString();
         return $this->detailPenerimaan()
             ->where('aktif', true)
             ->where('stok', '>', 0)
-            ->orderBy('expired_date', 'asc')
+            ->where(function ($q) use ($today) {
+                $q->whereNull('expired_date')
+                  ->orWhereDate('expired_date', '>=', $today);
+            })
+            ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC')
             ->limit(1);
     }
 
-    // Total stok dari semua batch yang masih aktif
+    // Total stok dari semua batch yang masih aktif dan belum expired
     public function stokTotal(): int
     {
         if (array_key_exists('detail_penerimaan_sum_stok', $this->attributes)) {
             return (int) $this->attributes['detail_penerimaan_sum_stok'];
         }
-        return $this->detailPenerimaan()->where('aktif', true)->sum('stok');
+        $today = now()->startOfDay()->toDateString();
+        return (int) $this->detailPenerimaan()
+            ->where('aktif', true)
+            ->where('stok', '>', 0)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('expired_date')
+                  ->orWhereDate('expired_date', '>=', $today);
+            })
+            ->sum('stok');
     }
 
-    // Batch aktif & masih ada stok, diurutkan FEFO (expired paling dekat duluan)
+    // Batch aktif & masih ada stok & belum expired, diurutkan FEFO (expired paling dekat duluan)
     public function batchFefo()
     {
+        $today = now()->startOfDay()->toDateString();
         return $this->detailPenerimaan()
             ->where('aktif', true)
             ->where('stok', '>', 0)
-            ->orderBy('expired_date', 'asc');
+            ->where(function ($q) use ($today) {
+                $q->whereNull('expired_date')
+                  ->orWhereDate('expired_date', '>=', $today);
+            })
+            ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC');
     }
 
     public function stokMenipis(): bool

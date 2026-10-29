@@ -178,8 +178,9 @@
 
             // Reset detail box class
             if (detailBoxEl) {
+                const isHidden = detailBoxEl.classList.contains('hidden');
                 detailBoxEl.className = 'mb-5 p-3 rounded-xl text-xs font-medium border text-gray-700 break-words flex items-center gap-2 justify-center ' +
-                    themeStyles[targetType].detailBox.join(' ');
+                    themeStyles[targetType].detailBox.join(' ') + (isHidden ? ' hidden' : '');
             }
 
             if (detailLabelEl) {
@@ -295,6 +296,9 @@
             if (btnConfirmTextEl) btnConfirmTextEl.textContent = config.confirmText;
             if (btnCancelEl) btnCancelEl.textContent = config.cancelText;
 
+            // Tema warna & icon
+            applyTheme(config.type, config.icon);
+
             // Detail box
             if (config.detail && config.detail.trim() !== '') {
                 detailLabelEl.textContent = config.detailLabel;
@@ -303,9 +307,6 @@
             } else {
                 detailBoxEl.classList.add('hidden');
             }
-
-            // Tema warna & icon
-            applyTheme(config.type, config.icon);
 
             // Form konfigurasi
             if (formEl) {

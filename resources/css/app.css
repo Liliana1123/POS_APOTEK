@@ -3054,3 +3054,14 @@ body {
 .kpi-card:hover .kpi-trend-pill.trend-down .kpi-trend-icon {
     transform: translateY(2.5px);
 }
+
+/* ==========================================================================
+   Hasil Pencarian Kasir POS - Tombol + Tambah di sebelah kanan harga
+   ========================================================================== */
+.item-hasil-cari .btn-action-tambah {
+    display: none;
+}
+
+.item-hasil-cari:hover .btn-action-tambah {
+    display: inline-flex;
+}

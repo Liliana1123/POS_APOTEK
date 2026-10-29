@@ -64,22 +64,6 @@
 
             <!-- VIEW 1: CARI OBAT / BARANG -->
             <div id="panel-cari-content" class="flex flex-col flex-1 min-w-0 w-full">
-                <!-- Search Bar -->
-                <div class="relative mb-3">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                    <input
-                        type="text"
-                        id="cari-barang"
-                        placeholder="Cari nama, kode barang, atau barcode..."
-                        class="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                    >
-                    <button type="button" id="btn-clear-cari" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 hidden">
-                        <x-heroicon-m-x-mark class="w-4 h-4" />
-                    </button>
-                </div>
-
                 <!-- Jenis Transaksi (Non Resep / Resep) -->
                 <div class="flex items-center gap-3 mb-3">
                     <span class="text-xs font-semibold text-slate-700 whitespace-nowrap">Jenis Transaksi</span>
@@ -158,42 +142,31 @@
                     </div>
                 </div>
 
-                <!-- Category Pills & Refresh Button -->
-                <div class="flex items-center justify-between gap-2 mb-3 overflow-x-auto pb-1">
-                    <div class="flex items-center gap-1.5 shrink-0" id="filter-kategori-container">
-                        <button type="button" data-kategori="semua"
-                            class="btn-kategori active px-3.5 py-1 rounded-full text-xs font-semibold transition-colors bg-blue-600 text-white cursor-pointer">
-                            Semua
-                        </button>
-                        <button type="button" data-kategori="obat"
-                            class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer">
-                            Obat
-                        </button>
-                        <button type="button" data-kategori="alat_kesehatan"
-                            class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer">
-                            Alat Kesehatan
-                        </button>
-                        <button type="button" data-kategori="vitamin"
-                            class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer">
-                            Vitamin dan Suplemen
-                        </button>
-                        <button type="button" data-kategori="kecantikan"
-                            class="btn-kategori px-3 py-1 rounded-full text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition-colors cursor-pointer whitespace-nowrap">
-                            Kecantikan &amp; Perawatan
-                        </button>
-                    </div>
-
-                    <button type="button" id="btn-refresh-barang" class="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-semibold cursor-pointer shrink-0 transition-colors">
-                        <x-heroicon-o-arrow-path class="w-3.5 h-3.5" id="icon-refresh" />
-                        <span>Refresh</span>
+                <!-- Search Bar -->
+                <div class="relative mb-3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+                    </span>
+                    <input
+                        type="text"
+                        id="cari-barang"
+                        placeholder="Cari nama obat, kode barang, atau barcode..."
+                        autocomplete="off"
+                        class="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                    >
+                    <button type="button" id="btn-clear-cari" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 hidden">
+                        <x-heroicon-m-x-mark class="w-4 h-4" />
                     </button>
                 </div>
 
-                <!-- Info Jumlah Barang Tersedia -->
-                <p id="info-jumlah-barang" class="text-[10px] text-slate-400 mb-2 px-0.5 hidden"></p>
+                <!-- Status / Alert Pencarian (Stok Habis / Tidak Mencukupi / Berhasil Ditambahkan) -->
+                <div id="cari-status-container" class="mb-3 hidden"></div>
 
-                <!-- Daftar Obat Grid (2 Kolom Kartu Sederhana tanpa ikon/gambar) -->
-                <div id="daftar-barang" class="grid grid-cols-2 gap-2.5 w-full min-w-0 overflow-y-auto max-h-[460px] pr-1" style="grid-template-columns: repeat(2, minmax(0, 1fr));"></div>
+                <!-- Info Jumlah Obat Ditemukan & Hint Navigasi Keyboard -->
+                <div id="info-jumlah-barang" class="text-[11px] text-slate-400 mb-2 px-1 hidden flex items-center justify-between"></div>
+
+                <!-- Hasil Pencarian Obat (Navigasi Keyboard ↑ / ↓ dan Enter) -->
+                <div id="daftar-barang" class="flex flex-col gap-2 w-full min-w-0 overflow-y-auto max-h-[440px] pr-1"></div>
             </div>
 
             <!-- VIEW 2: SCAN BARCODE (Muncul saat tab Scan Barcode aktif) -->
