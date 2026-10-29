@@ -192,7 +192,7 @@
                                         data-telepon="{{ $pelanggan->telepon }}"
                                         data-alamat="{{ $pelanggan->alamat }}"
                                         data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
-                                        data-status_member="{{ $pelanggan->status_member }}"
+                                        data-status_member="{{ $pelanggan->status_member ?: 'Member Pelanggan Tetap' }}"
                                         data-custom_discount_percentage="{{ $pelanggan->custom_discount_percentage }}">
                                         <x-heroicon-o-pencil-square class="w-4 h-4" />
                                     </button>
@@ -208,7 +208,7 @@
                                     data-nama="{{ $pelanggan->nama }}"
                                     data-member-id="{{ $pelanggan->member_id }}"
                                     data-total-belanja="{{ $pelanggan->total_belanja ?? 0 }}"
-                                    data-status-member="{{ $pelanggan->status_member }}"
+                                    data-status-member="{{ $pelanggan->status_member ?: 'Member Pelanggan Tetap' }}"
                                     data-custom-discount="{{ $pelanggan->custom_discount_percentage }}"
                                     data-is-active="{{ ($pelanggan->is_member && $pelanggan->member_aktif) ? '1' : '0' }}"
                                     data-discount="{{ $pelanggan->diskon_percent }}"

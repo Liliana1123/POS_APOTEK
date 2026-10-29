@@ -133,7 +133,7 @@
 
                                 $memberVariant = match ($statusMember) {
                                     'Member Pelanggan Tetap' => 'success',
-                                    'Member Keluarga Nakes' => 'info',
+                                    'Member Keluarga Nakes' => 'indigo',
                                     'Member Only' => 'warning',
                                     default => null,
                                 };

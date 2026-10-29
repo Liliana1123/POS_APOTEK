@@ -251,16 +251,7 @@
     </div>
 
         <!-- FOOTER (Tetap terlihat di bawah) -->
-        <div class="modal-footer-fixed flex justify-between items-center px-6 py-3.5 border-t border-gray-100 bg-white shrink-0">
-            <button
-                type="button"
-                id="btn-detail-print-card"
-                onclick="openCardModalFromCurrentDetail()"
-                class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:text-blue-600 hover:border-blue-300 shadow-2xs transition active:scale-98"
-                title="Cetak Kartu Member">
-                <x-heroicon-o-printer class="w-4 h-4" />
-                <span>Cetak Kartu Member</span>
-            </button>
+        <div class="modal-footer-fixed flex justify-end items-center px-6 py-3.5 border-t border-gray-100 bg-white shrink-0">
             <button
                 type="button"
                 onclick="closeDetailModal()"
@@ -478,22 +469,6 @@
 <script>
 let currentDetailPelanggan = null;
 
-function openCardModalFromCurrentDetail() {
-    if (!currentDetailPelanggan) return;
-    const p = currentDetailPelanggan;
-    if (typeof window.openCardModal === 'function') {
-        const isActive = Boolean(p.is_member && p.member_aktif);
-        window.openCardModal(
-            p.nama || '',
-            p.member_id || '',
-            p.total_belanja || 0,
-            p.status_member || '',
-            p.custom_discount_percentage,
-            isActive,
-            p.diskon_percent
-        );
-    }
-}
 function formatDetailRupiah(angka) {
     return 'Rp ' + Math.round(Number(angka || 0)).toLocaleString('id-ID');
 }
@@ -535,7 +510,7 @@ function getMemberStatusInfo(pelanggan) {
     if (status === 'Member Keluarga Nakes') {
         return {
             label: 'Member Keluarga Nakes',
-            badgeClass: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70'
+            badgeClass: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70'
         };
     }
 
@@ -635,10 +610,6 @@ function openDetailModal(pelangganId) {
     .then(data => {
         const pelanggan = data.pelanggan || {};
         currentDetailPelanggan = pelanggan;
-        const printCardBtn = document.getElementById('btn-detail-print-card');
-        if (printCardBtn) {
-            printCardBtn.style.display = (pelanggan.member_id) ? 'inline-flex' : 'none';
-        }
         const transaksi = Array.isArray(data.transaksi) ? data.transaksi : [];
 
         // Profil

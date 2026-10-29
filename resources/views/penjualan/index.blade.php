@@ -533,7 +533,7 @@
             const isMember = Boolean(penjualan.pelanggan?.is_member);
 
             const memberVariant = {
-                'Member Keluarga Nakes': 'info',
+                'Member Keluarga Nakes': 'indigo',
                 'Member Only': 'warning',
             }[statusMember] || 'success';
 
@@ -593,7 +593,8 @@
                             ${
                                 isMember
                                     ? `<span class="inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-[9px] leading-tight font-semibold uppercase tracking-normal
-                                        ${ memberVariant === 'info' ? 'bg-blue-50 text-blue-700'
+                                        ${ memberVariant === 'indigo' ? 'bg-indigo-50 text-indigo-700'
+                                         : memberVariant === 'info' ? 'bg-blue-50 text-blue-700'
                                          : memberVariant === 'warning' ? 'bg-amber-50 text-amber-700'
                                          : 'bg-emerald-50 text-emerald-700' }">
                                         ${escapeHtml(labelMember)}

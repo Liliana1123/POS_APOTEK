@@ -11,7 +11,6 @@ const tabBtnCari = document.getElementById('tab-btn-cari');
 const tabBtnScan = document.getElementById('tab-btn-scan');
 const panelCariContent = document.getElementById('panel-cari-content');
 const panelScanContent = document.getElementById('panel-scan-content');
-const btnBackToCari = document.getElementById('btn-back-to-cari');
 
 // Elements - Search & Filter
 const cariInput = document.getElementById('cari-barang');
@@ -114,13 +113,28 @@ function formatRupiah(angka) {
 // TAB SWITCHING (Cari Obat vs Scan Barcode)
 // =========================================================================
 function switchTab(tab) {
-    if (tab === 'scan') {
-        // Tab Scan Active (solid blue pill)
-        tabBtnScan.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-600 text-white shadow-xs cursor-pointer';
-        tabBtnCari.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-800 hover:bg-slate-100 cursor-pointer';
+    const iconCari = tabBtnCari?.querySelector('svg');
+    const iconScan = tabBtnScan?.querySelector('svg');
 
-        panelCariContent.classList.add('hidden');
-        panelScanContent.classList.remove('hidden');
+    if (tab === 'scan') {
+        // Tab Scan Active (light blue pill, matches Tab Cari when active)
+        if (tabBtnScan) {
+            tabBtnScan.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-100/80 text-blue-700 cursor-pointer';
+        }
+        if (iconScan) {
+            iconScan.setAttribute('class', 'w-4 h-4 text-blue-600');
+        }
+
+        // Tab Cari Inactive
+        if (tabBtnCari) {
+            tabBtnCari.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-800 hover:bg-slate-100 cursor-pointer';
+        }
+        if (iconCari) {
+            iconCari.setAttribute('class', 'w-4 h-4 text-slate-400');
+        }
+
+        panelCariContent?.classList.add('hidden');
+        panelScanContent?.classList.remove('hidden');
 
         if (barcodeInput) {
             barcodeInput.value = '';
@@ -129,11 +143,23 @@ function switchTab(tab) {
         }
     } else {
         // Tab Cari Active (light blue pill)
-        tabBtnCari.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-100/80 text-blue-700 cursor-pointer';
-        tabBtnScan.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-800 hover:bg-slate-100 cursor-pointer';
+        if (tabBtnCari) {
+            tabBtnCari.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all bg-blue-100/80 text-blue-700 cursor-pointer';
+        }
+        if (iconCari) {
+            iconCari.setAttribute('class', 'w-4 h-4 text-blue-600');
+        }
 
-        panelScanContent.classList.add('hidden');
-        panelCariContent.classList.remove('hidden');
+        // Tab Scan Inactive
+        if (tabBtnScan) {
+            tabBtnScan.className = 'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-800 hover:bg-slate-100 cursor-pointer';
+        }
+        if (iconScan) {
+            iconScan.setAttribute('class', 'w-4 h-4 text-slate-400');
+        }
+
+        panelScanContent?.classList.add('hidden');
+        panelCariContent?.classList.remove('hidden');
 
         if (cariInput) {
             cariInput.focus();
@@ -143,7 +169,6 @@ function switchTab(tab) {
 
 tabBtnCari?.addEventListener('click', () => switchTab('cari'));
 tabBtnScan?.addEventListener('click', () => switchTab('scan'));
-btnBackToCari?.addEventListener('click', () => switchTab('cari'));
 
 // Klik area scanner langsung memfokuskan kursor ke input barcode
 scanViewfinderCard?.addEventListener('click', () => {
@@ -852,6 +877,19 @@ btnResetPelanggan?.addEventListener('click', () => {
 // =========================================================================
 // TAMBAH MEMBER BARU MODAL
 // =========================================================================
+function updateMemberStatusColor() {
+    if (!memberStatusInput) return;
+    if (!memberStatusInput.value) {
+        memberStatusInput.classList.add('text-slate-400');
+        memberStatusInput.classList.remove('text-slate-800');
+    } else {
+        memberStatusInput.classList.remove('text-slate-400');
+        memberStatusInput.classList.add('text-slate-800');
+    }
+}
+
+memberStatusInput?.addEventListener('change', updateMemberStatusColor);
+
 btnTambahMember?.addEventListener('click', () => {
     if (memberError) {
         memberError.classList.add('hidden');
@@ -859,10 +897,14 @@ btnTambahMember?.addEventListener('click', () => {
     }
     if (memberNamaInput) memberNamaInput.value = '';
     if (memberTeleponInput) memberTeleponInput.value = '';
-    if (memberStatusInput) memberStatusInput.value = '';
+    if (memberStatusInput) {
+        memberStatusInput.value = '';
+        updateMemberStatusColor();
+    }
     if (memberCustomDiscountInput) memberCustomDiscountInput.value = '';
     if (modalPilihMember) modalPilihMember.classList.add('hidden');
     if (modalDaftarMember) modalDaftarMember.classList.remove('hidden');
+    memberNamaInput?.focus();
 });
 
 [btnCancelMember, btnCloseMemberX].forEach(btn => {
@@ -882,9 +924,24 @@ formDaftarMember?.addEventListener('submit', (e) => {
     const telepon = memberTeleponInput.value.trim();
     const statusMember = memberStatusInput.value;
 
+    if (!nama) {
+        memberError.classList.remove('hidden');
+        memberError.textContent = 'Nama member wajib diisi.';
+        memberNamaInput?.focus();
+        return;
+    }
+
+    if (!telepon) {
+        memberError.classList.remove('hidden');
+        memberError.textContent = 'Nomor HP wajib diisi.';
+        memberTeleponInput?.focus();
+        return;
+    }
+
     if (!statusMember) {
         memberError.classList.remove('hidden');
         memberError.textContent = 'Silakan pilih jenis member.';
+        memberStatusInput?.focus();
         return;
     }
 
@@ -917,7 +974,14 @@ formDaftarMember?.addEventListener('submit', (e) => {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
         },
         body: JSON.stringify(payload),
-    }).then(r => r.json()).then(response => {
+    }).then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+            const firstErr = data.errors ? Object.values(data.errors)[0]?.[0] : null;
+            throw new Error(firstErr || data.message || 'Terjadi kesalahan saat mendaftarkan member.');
+        }
+        return data;
+    }).then(response => {
         if (response.success) {
             const memberObj = response.member;
             const idx = pelanggans.findIndex(p => p.id === memberObj.id);
@@ -925,14 +989,13 @@ formDaftarMember?.addEventListener('submit', (e) => {
             else pelanggans.push(memberObj);
             selectPelanggan(memberObj);
             modalDaftarMember.classList.add('hidden');
+        } else {
+            memberError.classList.remove('hidden');
+            memberError.textContent = response.message || 'Gagal mendaftarkan member.';
         }
     }).catch(error => {
         memberError.classList.remove('hidden');
-        if (error.response && error.response.data && error.response.data.message) {
-            memberError.textContent = error.response.data.message;
-        } else {
-            memberError.textContent = 'Terjadi kesalahan saat mendaftarkan member.';
-        }
+        memberError.textContent = error.message || 'Terjadi kesalahan saat mendaftarkan member.';
     });
 });
 
@@ -1053,6 +1116,7 @@ function initPenjualanCreate() {
     sinkronkanJenisTransaksi(initialJenis);
     renderDaftarBarang();
     renderKeranjang();
+    updateMemberStatusColor();
 }
 
 if (document.readyState === 'loading') {
