@@ -560,10 +560,11 @@ class LaporanController extends Controller
         if ($pelanggan === 'pelanggan_tetap') {
             $query->whereHas('pelanggan', function ($q) {
                 $q->where('is_member', true)
-                    ->where(
-                        'status_member',
-                        'Member Pelanggan Tetap'
-                    );
+                    ->where(function ($sub) {
+                        $sub->where('status_member', 'Member Pelanggan Tetap')
+                            ->orWhereNull('status_member')
+                            ->orWhere('status_member', '');
+                    });
             });
         }
 
@@ -1327,7 +1328,11 @@ class LaporanController extends Controller
             if ($statusPelanggan === 'pelanggan_tetap') {
                 $query->whereHas('penjualan.pelanggan', function ($q) {
                     $q->where('is_member', true)
-                      ->where('status_member', 'Member Pelanggan Tetap');
+                        ->where(function ($sub) {
+                            $sub->where('status_member', 'Member Pelanggan Tetap')
+                                ->orWhereNull('status_member')
+                                ->orWhere('status_member', '');
+                        });
                 });
             } elseif ($statusPelanggan === 'keluarga_nakes') {
                 $query->whereHas('penjualan.pelanggan', function ($q) {

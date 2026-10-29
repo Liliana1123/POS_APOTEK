@@ -18,6 +18,7 @@ class PelangganController extends Controller
             'pelanggan_tetap',
             'keluarga_nakes',
             'member_only',
+            'umum',
         ];
 
         if (!in_array($status, $allowedStatuses, true)) {
@@ -39,14 +40,22 @@ class PelangganController extends Controller
         $query = Pelanggan::query();
 
         try {
-            $query->where('is_member', true);
+            if ($status === 'umum') {
+                $query->where('is_member', false);
+            } else {
+                $query->where('is_member', true);
 
-            if ($status === 'pelanggan_tetap') {
-                $query->where('status_member', 'Member Pelanggan Tetap');
-            } elseif ($status === 'keluarga_nakes') {
-                $query->where('status_member', 'Member Keluarga Nakes');
-            } elseif ($status === 'member_only') {
-                $query->where('status_member', 'Member Only');
+                if ($status === 'pelanggan_tetap') {
+                    $query->where(function ($q) {
+                        $q->where('status_member', 'Member Pelanggan Tetap')
+                            ->orWhereNull('status_member')
+                            ->orWhere('status_member', '');
+                    });
+                } elseif ($status === 'keluarga_nakes') {
+                    $query->where('status_member', 'Member Keluarga Nakes');
+                } elseif ($status === 'member_only') {
+                    $query->where('status_member', 'Member Only');
+                }
             }
 
             if ($statusPiutang === 'lunas') {

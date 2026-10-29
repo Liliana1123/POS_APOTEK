@@ -514,7 +514,7 @@
                                         $statusMember = trim((string) $penjualan->pelanggan->status_member);
 
                                         $memberVariant = match($statusMember) {
-                                            'Member Keluarga Nakes' => 'info',
+                                            'Member Keluarga Nakes' => 'indigo',
                                             'Member Only' => 'warning',
                                             default => 'success',
                                         };

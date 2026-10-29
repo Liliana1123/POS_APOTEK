@@ -535,7 +535,7 @@ function getMemberStatusInfo(pelanggan) {
     if (status === 'Member Keluarga Nakes') {
         return {
             label: 'Member Keluarga Nakes',
-            badgeClass: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70'
+            badgeClass: 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/70'
         };
     }
 

@@ -170,7 +170,7 @@
         form.elements.telepon.value = button.dataset.telepon || '';
         form.elements.alamat.value = button.dataset.alamat || '';
         form.elements.tanggal_lahir.value = button.dataset.tanggal_lahir || '';
-        form.elements.status_member.value = button.dataset.status_member || '';
+        form.elements.status_member.value = button.dataset.status_member || 'Member Pelanggan Tetap';
         const customDisc = button.dataset.custom_discount_percentage;
         form.elements.custom_discount_percentage.value = (customDisc !== undefined && customDisc !== null && customDisc !== '')
             ? parseFloat(customDisc)
