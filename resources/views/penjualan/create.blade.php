@@ -55,7 +55,7 @@
 
                 <button type="button" id="tab-btn-scan"
                     class="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all text-slate-600 hover:text-slate-800 hover:bg-slate-100 cursor-pointer">
-                    <svg class="w-4 h-4 text-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 5v14M7 5v14M11 5v14M15 5v14M17 5v14M21 5v14" />
                     </svg>
                     <span>Scan Barcode</span>
@@ -123,7 +123,7 @@
                                 id="nama-dokter"
                                 maxlength="255"
                                 class="w-full min-w-0 px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-                                placeholder="dr. ..."
+                                placeholder="Nama Dokter"
                                 value="{{ old('nama_dokter') }}"
                             >
                         </div>
@@ -198,15 +198,8 @@
 
             <!-- VIEW 2: SCAN BARCODE (Muncul saat tab Scan Barcode aktif) -->
             <div id="panel-scan-content" class="hidden flex flex-col flex-1">
-                <!-- Header Sub-Nav: Tombol Kembali ke Cari Obat -->
                 <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
                     <span class="text-xs font-semibold text-slate-700">Area Pemindaian Barcode</span>
-                    <button type="button" id="btn-back-to-cari" class="text-blue-600 hover:text-blue-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        <span>Kembali ke Cari Obat / Barang</span>
-                    </button>
                 </div>
 
                 <!-- Barcode Input Bar with Manual Submit Button -->
@@ -343,7 +336,6 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-500 font-medium flex items-center gap-1">
                                 <span>% Diskon</span>
-                                <x-heroicon-m-pencil class="w-3 h-3 text-slate-400" />
                             </span>
                             <span id="display-diskon" class="font-semibold text-slate-600">Rp 0</span>
                         </div>
@@ -453,10 +445,8 @@
                         id="btn-proses-transaksi"
                         class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m0 0l-6-6m6 6H3" />
-                        </svg>
-                        <span>Proses Transaksi &rarr;</span>
+                        <span>Proses Transaksi</span>
+                        <x-heroicon-o-chevron-right class="w-4 h-4 text-white" />
                     </button>
                 </div>
 
@@ -527,20 +517,26 @@
 
         <form id="form-daftar-member" class="space-y-3">
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Member</label>
-                <input type="text" id="member-nama" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Nama Member <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input type="text" id="member-nama" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500 placeholder-slate-400 text-slate-800">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor HP</label>
-                <input type="text" id="member-telepon" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Nomor HP <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input type="text" id="member-telepon" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500 placeholder-slate-400 text-slate-800">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Jenis Member</label>
-                <select id="member-status" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500">
-                    <option value="">Pilih jenis member...</option>
-                    <option value="Member Pelanggan Tetap">Member Pelanggan Tetap</option>
-                    <option value="Member Keluarga Nakes">Member Keluarga Nakes</option>
-                    <option value="Member Only">Member Only</option>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Jenis Member <span class="text-red-500 font-bold">*</span>
+                </label>
+                <select id="member-status" required class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500 text-slate-400">
+                    <option value="" class="text-slate-400">Pilih jenis member...</option>
+                    <option value="Member Pelanggan Tetap" class="text-slate-800">Member Pelanggan Tetap</option>
+                    <option value="Member Keluarga Nakes" class="text-slate-800">Member Keluarga Nakes</option>
+                    <option value="Member Only" class="text-slate-800">Member Only</option>
                 </select>
             </div>
             <div>
@@ -554,7 +550,7 @@
                     max="100"
                     step="0.01"
                     placeholder="Kosongkan untuk diskon default 10%"
-                    class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500"
+                    class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500 placeholder-slate-400 text-slate-800"
                 >
             </div>
             <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">

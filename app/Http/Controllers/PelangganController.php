@@ -323,9 +323,14 @@ class PelangganController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:30',
+            'telepon' => 'required|string|max:30',
             'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
             'custom_discount_percentage' => 'nullable|numeric|min:0|max:100',
+        ], [
+            'nama.required' => 'Nama member wajib diisi.',
+            'telepon.required' => 'Nomor HP wajib diisi.',
+            'status_member.required' => 'Jenis member wajib dipilih.',
+            'status_member.in' => 'Jenis member tidak valid.',
         ]);
 
         $telepon = $request->input('telepon');
