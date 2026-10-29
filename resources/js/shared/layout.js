@@ -112,6 +112,14 @@ function initSidebarExpand() {
         if (!link || !sidebar.contains(link) || !isDesktop()) return;
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         sessionStorage.setItem(KEEP_KEY, '1');
+        var group = link.closest('.sidebar-group');
+        if (group && group.dataset.group) {
+            localStorage.setItem('sidebar-group-' + group.dataset.group, '1');
+        }
+        var subgroup = link.closest('.sidebar-subgroup');
+        if (subgroup && subgroup.dataset.subgroup) {
+            localStorage.setItem('sidebar-subgroup-' + subgroup.dataset.subgroup, '1');
+        }
     });
 
     var initialPinned = isPinned();
@@ -158,15 +166,28 @@ function initSidebarGroupRestore() {
         var saved = localStorage.getItem('sidebar-group-' + name);
         var items = group.querySelector('.sidebar-group-items');
         if (!items) return;
-        var expand = saved === '1' || items.dataset.hasActive === 'true';
+        var hasActive = items.dataset.hasActive === 'true';
+        var expand = hasActive || saved === '1';
         if (expand) {
             items.style.transition = 'none';
             items.style.maxHeight = 'none';
+            items.classList.remove('max-h-0');
             items.setAttribute('data-expanded', '1');
             var btn = group.querySelector('.sidebar-group-header');
             if (btn) btn.setAttribute('aria-expanded', 'true');
             var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
             if (arrow) arrow.classList.add('rotate-90');
+            void items.offsetHeight;
+            items.style.transition = '';
+        } else if (saved === '0' && !hasActive) {
+            items.style.transition = 'none';
+            items.style.maxHeight = '0px';
+            items.classList.add('max-h-0');
+            items.setAttribute('data-expanded', '0');
+            var btn = group.querySelector('.sidebar-group-header');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+            if (arrow) arrow.classList.remove('rotate-90');
             void items.offsetHeight;
             items.style.transition = '';
         }
@@ -213,6 +234,7 @@ function initSubgroupAccordion() {
         if (expand) {
             items.style.transition = 'none';
             items.style.maxHeight = 'none';
+            items.classList.remove('max-h-0');
             items.setAttribute('data-expanded', '1');
             if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
             if (arrow) arrow.classList.add('rotate-90');
@@ -231,11 +253,13 @@ function initSubgroupAccordion() {
                 items.style.maxHeight = items.scrollHeight + 'px';
                 void items.offsetHeight;
                 items.style.maxHeight = '0px';
+                items.classList.add('max-h-0');
                 items.setAttribute('data-expanded', '0');
                 if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
                 if (arrow) arrow.classList.remove('rotate-90');
                 localStorage.setItem('sidebar-subgroup-' + name, '0');
             } else {
+                items.classList.remove('max-h-0');
                 items.style.maxHeight = items.scrollHeight + 'px';
                 items.setAttribute('data-expanded', '1');
                 if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
@@ -377,11 +401,13 @@ function initShellInteractions() {
                 items.style.maxHeight = items.scrollHeight + 'px';
                 void items.offsetHeight;
                 items.style.maxHeight = '0px';
+                items.classList.add('max-h-0');
                 items.setAttribute('data-expanded', '0');
                 this.setAttribute('aria-expanded', 'false');
                 if (arrow) arrow.classList.remove('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '0');
             } else {
+                items.classList.remove('max-h-0');
                 items.style.maxHeight = items.scrollHeight + 'px';
                 items.setAttribute('data-expanded', '1');
                 this.setAttribute('aria-expanded', 'true');

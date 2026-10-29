@@ -24,3 +24,8 @@ Homestead.yaml
 Thumbs.db
 
 .opencode/
+
+# Manual Book Docs
+*MANUAL_BOOK*.md
+*manual_book*.md
+*manual-book*.md

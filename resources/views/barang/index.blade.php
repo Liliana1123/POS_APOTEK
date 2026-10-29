@@ -67,7 +67,7 @@
                     <th scope="col">Nama Barang</th>
                     <th scope="col" class="w-40">Merk</th>
                     <th scope="col" class="w-28">Satuan</th>
-                    <th scope="col" class="w-32">Stok</th>
+                    <th scope="col" class="w-40">Stok</th>
                     <th scope="col" class="text-center w-28">Status</th>
                 </tr>
             </thead>
@@ -143,7 +143,12 @@
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
-                        <td>{{ $stok }}</td>
+                        <td class="whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-gray-800">{{ $stok }}</span>
+                                <x-status-badge type="stok" :stok="$stok" :min="$barang->stok_minimum" />
+                            </div>
+                        </td>
                         <td class="text-center">
                             <x-status-badge type="aktif" :status="$barang->aktif" />
                         </td>

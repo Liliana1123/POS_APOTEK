@@ -198,10 +198,10 @@
                                         <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
                                     </a>
                                     <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 p-1.5 mr-1 bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:text-blue-950' : 'text-blue-300 hover:text-white' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
-                                        <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-300 pointer-events-none" aria-hidden="true" />
+                                        <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-300 pointer-events-none {{ $waMonitorActive ? 'rotate-90' : '' }}" aria-hidden="true" />
                                     </button>
                                 </div>
-                                <div class="sidebar-subgroup-items overflow-hidden max-h-0 transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}">
+                                <div class="sidebar-subgroup-items overflow-hidden {{ $waMonitorActive ? '' : 'max-h-0' }} transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}" @if($waMonitorActive) data-expanded="1" style="max-height: none;" @endif>
                                     @if ($u->hasPermission('master.pelanggan') || $u->isSuperAdmin())
                                         <x-nav-link route="whatsapp-monitor.index" pattern="whatsapp-monitor.*" icon="chat-bubble-left-right" label="WhatsApp Monitor" />
                                     @endif
@@ -315,6 +315,58 @@
             </form>
         </div>
     </aside>
+    <script>
+        (function () {
+            try {
+                document.querySelectorAll('.sidebar-group').forEach(function (group) {
+                    var name = group.dataset.group;
+                    var saved = localStorage.getItem('sidebar-group-' + name);
+                    var items = group.querySelector('.sidebar-group-items');
+                    if (!items) return;
+                    var hasActive = items.dataset.hasActive === 'true';
+                    var expand = hasActive || saved === '1';
+                    if (expand) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = 'none';
+                        items.classList.remove('max-h-0');
+                        items.setAttribute('data-expanded', '1');
+                        var btn = group.querySelector('.sidebar-group-header');
+                        if (btn) btn.setAttribute('aria-expanded', 'true');
+                        var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+                        if (arrow) arrow.classList.add('rotate-90');
+                    } else if (saved === '0' && !hasActive) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = '0px';
+                        items.classList.add('max-h-0');
+                        items.setAttribute('data-expanded', '0');
+                        var btn = group.querySelector('.sidebar-group-header');
+                        if (btn) btn.setAttribute('aria-expanded', 'false');
+                        var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+                        if (arrow) arrow.classList.remove('rotate-90');
+                    }
+                });
+
+                document.querySelectorAll('.sidebar-subgroup').forEach(function (subgroup) {
+                    var name = subgroup.dataset.subgroup;
+                    var saved = localStorage.getItem('sidebar-subgroup-' + name);
+                    var items = subgroup.querySelector('.sidebar-subgroup-items');
+                    var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+                    var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+                    if (!items) return;
+                    var hasActive = items.dataset.hasActive === 'true';
+                    var expand = hasActive || saved === '1';
+                    if (expand) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = 'none';
+                        items.classList.remove('max-h-0');
+                        items.setAttribute('data-expanded', '1');
+                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                        if (arrow) arrow.classList.add('rotate-90');
+                    }
+                });
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">

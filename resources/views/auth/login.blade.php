@@ -81,15 +81,7 @@
 
                     <div class="space-y-1">
                         @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
-                        @error('captcha')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
                     </div>
-
-                    <label class="flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                        Ingat saya
-                    </label>
 
                     <button type="submit"
                         class="btn-primary h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-semibold shadow-lg shadow-blue-200 transition hover:from-blue-700 hover:to-indigo-700">
