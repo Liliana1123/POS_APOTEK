@@ -25,26 +25,15 @@ use OpenSpout\Writer\XLSX\Writer;
 
 class LaporanController extends Controller
 {
-    // Laporan stok: total stok per barang + alert stok menipis & mendekati expired
+    // Laporan stok: total stok per barang + alert stok menipis & mendekati expired (tanpa batasan filter tanggal)
     public function stok(Request $request)
     {
         $kategoris = Kategori::orderBy('nama')->get();
         $barangs = collect(); // unused, kept for view compatibility
 
-        [$dari, $sampai, $dateError] = $this->rentangTanggal($request);
-
         $query = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah');
-
-        if ($dateError) {
-            $query->whereRaw('1 = 0');
-        } else {
-            // Filter tanggal penerimaan masuknya batch ke apotek
-            $query->whereHas('penerimaan', function ($q) use ($dari, $sampai) {
-                $q->whereBetween('tanggal', [$dari, $sampai]);
-            });
-        }
 
         $query->when($request->filled('nama'), function ($query) use ($request) {
                 $query->whereHas('barang', function ($q) use ($request) {
@@ -71,11 +60,6 @@ class LaporanController extends Controller
             })
             ->when($request->filled('no_batch'), function ($query) use ($request) {
                 $query->where('no_batch', 'like', '%' . $request->no_batch . '%');
-            })
-            ->when($request->filled('tanggal'), function ($query) use ($request) {
-                $query->whereHas('penerimaan', function ($q) use ($request) {
-                    $q->whereDate('tanggal', $request->tanggal);
-                });
             })
             ->when($request->filled('status_stok'), function ($query) use ($request) {
 
@@ -246,10 +230,7 @@ class LaporanController extends Controller
             'totalStokAwal',
             'totalStokTerjual',
             'totalStokRusak',
-            'totalSisaStok',
-            'dari',
-            'sampai',
-            'dateError'
+            'totalSisaStok'
         ));
     }
 
@@ -1334,12 +1315,14 @@ class LaporanController extends Controller
         if ($dateError) {
             $query->whereRaw('1 = 0');
         } else {
-            if ($dari) {
-                $query->whereDate('created_at', '>=', $dari);
-            }
-            if ($sampai) {
-                $query->whereDate('created_at', '<=', $sampai);
-            }
+            $query->whereHas('penjualan', function ($q) use ($dari, $sampai) {
+                if ($dari) {
+                    $q->whereDate('tanggal', '>=', $dari);
+                }
+                if ($sampai) {
+                    $q->whereDate('tanggal', '<=', $sampai);
+                }
+            });
         }
 
         // Filter: jenis (member / custom)

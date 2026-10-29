@@ -136,15 +136,15 @@ class LaporanRentangTanggalTest extends TestCase
     public function test_all_five_reports_default_to_current_month_and_filter_by_date(): void
     {
         $data = $this->createReportData();
-        $reportRoutes = [
-            'laporan.stok',
+        $dateFilterReports = [
             'laporan.penerimaan',
             'laporan.penjualan',
             'laporan.rusak',
             'laporan.diskon',
         ];
 
-        foreach ($reportRoutes as $routeName) {
+        // 4 laporan menggunakan filter tanggal dan default bulan berjalan
+        foreach ($dateFilterReports as $routeName) {
             $response = $this->actingAs($data['user'])->get(route($routeName));
 
             $response->assertOk()
@@ -153,7 +153,14 @@ class LaporanRentangTanggalTest extends TestCase
                 ->assertDontSee($data['previousMonthInvoice']);
         }
 
-        foreach ($reportRoutes as $routeName) {
+        // Laporan stok TIDAK menggunakan filter tanggal dan menampilkan seluruh barang/batch persediaan
+        $stokResponse = $this->actingAs($data['user'])->get(route('laporan.stok'));
+        $stokResponse->assertOk()
+            ->assertDontSee('name="dari"', false)
+            ->assertDontSee('name="sampai"', false)
+            ->assertSee($data['previousMonthInvoice']);
+
+        foreach ($dateFilterReports as $routeName) {
             $response = $this->actingAs($data['user'])->get(route($routeName, [
                 'dari' => $data['start'],
                 'sampai' => $data['end'],
@@ -171,7 +178,6 @@ class LaporanRentangTanggalTest extends TestCase
         $earlier = Carbon::parse($data['start'])->toDateString();
 
         foreach ([
-            'laporan.stok',
             'laporan.penerimaan',
             'laporan.penjualan',
             'laporan.rusak',
@@ -189,7 +195,6 @@ class LaporanRentangTanggalTest extends TestCase
         $data = $this->createReportData(16);
 
         foreach ([
-            'laporan.stok',
             'laporan.penerimaan',
             'laporan.penjualan',
             'laporan.rusak',
@@ -210,5 +215,11 @@ class LaporanRentangTanggalTest extends TestCase
                 ->assertSee('Menampilkan 16–16')
                 ->assertSee('dari 16');
         }
+
+        // Laporan stok juga dipaginasi via database
+        $stokPage1 = $this->actingAs($data['user'])->get(route('laporan.stok'));
+        $stokPage1->assertOk()
+            ->assertSee('Menampilkan 1–15')
+            ->assertSee('page=2');
     }
 }

@@ -173,13 +173,7 @@
             </tbody>
         </table>
     </div>
-    <div class="pagination-container mt-4 flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between">
-        @if ($usages->total() > 0)
-            <p class="text-xs text-slate-500">
-                Menampilkan {{ $usages->firstItem() }}–{{ $usages->lastItem() }}
-                dari {{ $usages->total() }} data
-            </p>
-        @endif
+    <div class="pagination-container mt-4 print:hidden">
         {{ $usages->links('vendor.pagination.apotek') }}
     </div>
 </div>
