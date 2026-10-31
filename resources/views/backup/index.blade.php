@@ -8,7 +8,7 @@
             onclick="openUploadModal()"
             class="btn-secondary flex items-center gap-2"
             title="Restore database dari file .sql di komputer lokal">
-        <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+        <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
         <span>Restore dari File</span>
     </button>
 
@@ -148,7 +148,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
             <div class="flex items-center gap-2.5">
                 <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <x-heroicon-o-arrow-up-tray class="w-5 h-5" />
+                    <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
                 </div>
                 <h3 id="modal-upload-title" class="text-base sm:text-lg font-bold text-gray-900">
                     Restore Database dari File Lokal
@@ -178,7 +178,7 @@
                            class="sr-only">
                     <div class="dropzone-default-content flex flex-col items-center justify-center space-y-1.5 transition-opacity">
                         <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                         </div>
                         <div class="text-xs font-semibold text-slate-700">
                             <span class="text-blue-600 underline">Pilih file SQL</span> atau seret file ke sini

@@ -457,17 +457,17 @@ class BarangController extends Controller
             fclose($handle);
 
             \App\Models\ActivityLog::log(
-                'Import Data Obat',
+                'Impor Data Obat',
                 "Total: {$importedCount} baru, {$updatedCount} diperbarui" . ($skippedCount > 0 ? " ({$skippedCount} dilewati)" : ""),
                 \App\Models\ActivityLog::CATEGORY_INVENTARIS
             );
         } catch (\Exception $e) {
             DB::rollBack();
             fclose($handle);
-            return back()->with('error', 'Terjadi kesalahan saat memproses data import: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memproses data impor: ' . $e->getMessage());
         }
 
-        $msg = "Import data selesai: {$importedCount} barang baru ditambahkan, {$updatedCount} barang diperbarui.";
+        $msg = "Impor data selesai: {$importedCount} barang baru ditambahkan, {$updatedCount} barang diperbarui.";
         if ($skippedCount > 0) {
             $msg .= " ({$skippedCount} baris dilewati).";
         }

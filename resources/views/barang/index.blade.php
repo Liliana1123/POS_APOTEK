@@ -5,14 +5,14 @@
 <!-- Page Header -->
 <x-page-header title="Daftar Barang dan Obat" subtitle="Kelola data master obat, kode apotek, KFA, merk, kategori, dan stok minimum.">
     @if(auth()->user()->canManage('master.barang'))
-        <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Import Data Barang">
-            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-            <span>Import Data</span>
+        <button type="button" id="btn-import-barang" class="btn-secondary flex items-center gap-2" title="Impor Data Barang">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            <span>Impor Data</span>
         </button>
 
-        <a href="{{ route('barang.export', request()->query()) }}" id="btn-export-barang" data-sync-filter="true" class="btn-secondary flex items-center gap-2" title="Export Data Barang">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            <span>Export Data</span>
+        <a href="{{ route('barang.export', request()->query()) }}" id="btn-export-barang" data-sync-filter="true" class="btn-secondary flex items-center gap-2" title="Ekspor Data Barang">
+            <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+            <span>Ekspor Data</span>
         </a>
 
         <button type="button" id="btn-tambah-barang" class="btn-primary flex items-center gap-2">
