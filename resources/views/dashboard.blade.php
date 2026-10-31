@@ -32,6 +32,58 @@
     $canOmzetObat       = auth()->user()->hasPermission('dashboard.omzet-obat');
     $canKinerja         = auth()->user()->hasPermission('dashboard.kinerja-karyawan');
     $canDokterResep     = auth()->user()->hasPermission('dashboard.dokter-resep');
+
+    // 5. Role Pengguna
+    $currentUser        = auth()->user();
+    $isKasir            = $currentUser->isKasir();
+    $isGudang           = $currentUser->isGudang();
+    $isApoteker         = $currentUser->isApoteker();
+    $isAdminOrSuper     = $currentUser->isAdmin() || $currentUser->isSuperAdmin();
+
+    // 6. Action Center / Tindak Lanjut Data
+    $activeAlertsCount  = collect($actionCenter)->filter(fn($item) => ($item['count'] ?? 0) > 0)->count();
+    $actionConfigs      = [
+        'critical' => [
+            'label' => 'Kritis',
+            'badge' => 'bg-rose-50 text-rose-700 border-rose-200',
+            'dot' => 'bg-rose-500',
+            'ping' => 'bg-rose-400',
+            'arrow' => 'text-rose-400 group-hover:text-rose-600',
+            'card' => 'border-gray-200 border-l-4 border-l-rose-500 hover:border-l-rose-600 hover:bg-rose-50/30 hover:shadow-md hover:shadow-rose-500/10',
+        ],
+        'attention' => [
+            'label' => 'Perlu Perhatian',
+            'badge' => 'bg-amber-50 text-amber-700 border-amber-200',
+            'dot' => 'bg-amber-500',
+            'ping' => 'bg-amber-400',
+            'arrow' => 'text-amber-400 group-hover:text-amber-600',
+            'card' => 'border-gray-200 border-l-4 border-l-amber-500 hover:border-l-amber-600 hover:bg-amber-50/30 hover:shadow-md hover:shadow-amber-500/10',
+        ],
+        'monitoring' => [
+            'label' => 'Dalam Pemantauan',
+            'badge' => 'bg-sky-50 text-sky-700 border-sky-200',
+            'dot' => 'bg-sky-500',
+            'ping' => 'bg-sky-400',
+            'arrow' => 'text-sky-400 group-hover:text-sky-600',
+            'card' => 'border-gray-200 border-l-4 border-l-sky-500 hover:border-l-sky-600 hover:bg-sky-50/30 hover:shadow-md hover:shadow-sky-500/10',
+        ],
+        'overdue' => [
+            'label' => 'Terlambat',
+            'badge' => 'bg-rose-50 text-rose-700 border-rose-200',
+            'dot' => 'bg-rose-500',
+            'ping' => 'bg-rose-400',
+            'arrow' => 'text-rose-400 group-hover:text-rose-600',
+            'card' => 'border-gray-200 border-l-4 border-l-rose-500 hover:border-l-rose-600 hover:bg-rose-50/30 hover:shadow-md hover:shadow-rose-500/10',
+        ],
+        'piutang' => [
+            'label' => 'Piutang',
+            'badge' => 'bg-purple-50 text-purple-700 border-purple-200',
+            'dot' => 'bg-purple-500',
+            'ping' => 'bg-purple-400',
+            'arrow' => 'text-purple-400 group-hover:text-purple-600',
+            'card' => 'border-gray-200 border-l-4 border-l-purple-500 hover:border-l-purple-600 hover:bg-purple-50/30 hover:shadow-md hover:shadow-purple-500/10',
+        ],
+    ];
 @endphp
 
 <div class="dashboard-container dashboard-reference space-y-5 relative" id="dashboard-main-container">
@@ -72,7 +124,414 @@
     </div>
 
     {{-- ============================================================ --}}
-    {{-- 2. KPI UTAMA (KARTU STATISTIK)                               --}}
+    {{-- TAMPILAN DASHBOARD BERDASARKAN ROLE PENGGUNA                 --}}
+    {{-- ============================================================ --}}
+
+    @if ($isKasir)
+        {{-- ============================================================ --}}
+        {{-- 1. LAYOUT DASHBOARD: ROLE KASIR                              --}}
+        {{-- ============================================================ --}}
+
+        {{-- Baris 1: Total Member (Kiri) & Tombol Buka Kasir Banner (Kanan) --}}
+        @if ($canKpiTotalMember || $canTombolKasir)
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                @if ($canKpiTotalMember)
+                    <div class="{{ $canTombolKasir ? 'md:col-span-4 xl:col-span-3' : 'col-span-12' }}">
+                        <x-kpi-card
+                            title="Total Member"
+                            :value="number_format($totalMember)"
+                            subtitle="Member terdaftar"
+                            variant="member"
+                            icon="heroicon-o-user-group"
+                            icon-class="bg-amber-50 text-amber-600"
+                            :trend="$deltaMember !== null ? ($deltaMember >= 0 ? '+' : '') . $deltaMember . '%' : null"
+                            class="h-full"
+                        />
+                    </div>
+                @endif
+
+                @if ($canTombolKasir)
+                    <div class="{{ $canKpiTotalMember ? 'md:col-span-8 xl:col-span-9' : 'col-span-12' }}">
+                        <a href="{{ route('penjualan.create') }}" class="cashier-card w-full h-full p-4 sm:p-5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group rounded-2xl min-h-[96px]">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-xl bg-white/20 border border-white/25 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                                    <x-heroicon-o-calculator class="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <span class="text-base sm:text-lg font-black tracking-wide block text-white leading-tight">Buka Kasir</span>
+                                    <span class="text-xs text-blue-100 font-medium block mt-0.5">Transaksi penjualan baru</span>
+                                </div>
+                            </div>
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/25 group-hover:translate-x-1 transition-all shrink-0">
+                                <x-heroicon-o-chevron-right class="w-5 h-5 text-white" />
+                            </div>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- Baris 2: Tindak Lanjut Full Width --}}
+        @if ($hasAlerts)
+            <div class="w-full">
+                <div class="dashboard-card p-4 sm:p-5 bg-white">
+                    {{-- Header --}}
+                    <div class="relative flex items-center justify-between mb-3.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl {{ $activeAlertsCount > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100/80' : 'bg-emerald-50 text-emerald-600 border border-emerald-100/80' }} flex items-center justify-center shrink-0 shadow-xs">
+                                @if ($activeAlertsCount > 0)
+                                    <x-heroicon-o-bell-alert class="w-5 h-5" />
+                                @else
+                                    <x-heroicon-o-check-circle class="w-5 h-5" />
+                                @endif
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 tracking-tight">
+                                    Tindak Lanjut
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    {{ $activeAlertsCount > 0 ? 'Perlu perhatian operasional' : 'Semua operasional aman' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Pill Header --}}
+                        @if ($activeAlertsCount > 0)
+                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                                </span>
+                                <span>{{ $activeAlertsCount }} Aksi</span>
+                            </div>
+                        @else
+                            <div class="flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Terkendali</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Alert List --}}
+                    <div class="space-y-2">
+                        @foreach ($actionCenter as $kunci => $item)
+                            @php
+                                $cfg = $actionConfigs[$kunci] ?? [
+                                    'label' => ucfirst($kunci),
+                                    'badge' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                    'dot' => 'bg-gray-500',
+                                    'ping' => 'bg-gray-400',
+                                    'arrow' => 'text-gray-400 group-hover:text-gray-600',
+                                    'card' => 'border-gray-200',
+                                ];
+                                $itemCount = (int) ($item['count'] ?? 0);
+                                $hasCount = $itemCount > 0;
+                            @endphp
+
+                            <a href="{{ $item['route'] }}"
+                               class="group block p-2.5 sm:p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 {{ $hasCount ? $cfg['card'] . ' bg-white' : 'border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 hover:shadow-xs' }}">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border transition-transform duration-200 group-hover:scale-[1.02] origin-left {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                @if ($hasCount)
+                                                    <span class="relative flex h-1.5 w-1.5">
+                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $cfg['ping'] }}"></span>
+                                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 {{ $cfg['dot'] }}"></span>
+                                                    </span>
+                                                @else
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                @endif
+                                                <span>{{ $item['title'] ?? $cfg['label'] }}</span>
+                                            </span>
+
+                                            @if (!$hasCount)
+                                                <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+                                                    Aman
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-black {{ $hasCount ? 'text-gray-900' : 'text-gray-400' }}">
+                                                {{ number_format($itemCount, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600 group-hover:text-gray-900' : 'text-gray-400' }} transition-colors truncate">
+                                                {{ $item['label'] }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="shrink-0 flex items-center">
+                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1.5" />
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
+    @elseif ($isGudang)
+        {{-- ============================================================ --}}
+        {{-- 2. LAYOUT DASHBOARD: ROLE ADMIN GUDANG                       --}}
+        {{-- ============================================================ --}}
+
+        {{-- Baris 1: Tindak Lanjut Full Width                            --}}
+        @if ($hasAlerts)
+            <div class="w-full">
+                <div class="dashboard-card p-4 sm:p-5 bg-white">
+                    {{-- Header --}}
+                    <div class="relative flex items-center justify-between mb-3.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl {{ $activeAlertsCount > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100/80' : 'bg-emerald-50 text-emerald-600 border border-emerald-100/80' }} flex items-center justify-center shrink-0 shadow-xs">
+                                @if ($activeAlertsCount > 0)
+                                    <x-heroicon-o-bell-alert class="w-5 h-5" />
+                                @else
+                                    <x-heroicon-o-check-circle class="w-5 h-5" />
+                                @endif
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 tracking-tight">
+                                    Tindak Lanjut Gudang
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    {{ $activeAlertsCount > 0 ? 'Perlu perhatian persediaan & kadaluarsa' : 'Semua persediaan aman terkendali' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Pill Header --}}
+                        @if ($activeAlertsCount > 0)
+                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                                </span>
+                                <span>{{ $activeAlertsCount }} Aksi</span>
+                            </div>
+                        @else
+                            <div class="flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Terkendali</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Alert List --}}
+                    <div class="space-y-2">
+                        @foreach ($actionCenter as $kunci => $item)
+                            @php
+                                $cfg = $actionConfigs[$kunci] ?? [
+                                    'label' => ucfirst($kunci),
+                                    'badge' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                    'dot' => 'bg-gray-500',
+                                    'ping' => 'bg-gray-400',
+                                    'arrow' => 'text-gray-400 group-hover:text-gray-600',
+                                    'card' => 'border-gray-200',
+                                ];
+                                $itemCount = (int) ($item['count'] ?? 0);
+                                $hasCount = $itemCount > 0;
+                            @endphp
+
+                            <a href="{{ $item['route'] }}"
+                               class="group block p-2.5 sm:p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 {{ $hasCount ? $cfg['card'] . ' bg-white' : 'border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 hover:shadow-xs' }}">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border transition-transform duration-200 group-hover:scale-[1.02] origin-left {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                @if ($hasCount)
+                                                    <span class="relative flex h-1.5 w-1.5">
+                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $cfg['ping'] }}"></span>
+                                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 {{ $cfg['dot'] }}"></span>
+                                                    </span>
+                                                @else
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                @endif
+                                                <span>{{ $item['title'] ?? $cfg['label'] }}</span>
+                                            </span>
+
+                                            @if (!$hasCount)
+                                                <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+                                                    Aman
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-black {{ $hasCount ? 'text-gray-900' : 'text-gray-400' }}">
+                                                {{ number_format($itemCount, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600 group-hover:text-gray-900' : 'text-gray-400' }} transition-colors truncate">
+                                                {{ $item['label'] }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="shrink-0 flex items-center">
+                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1.5" />
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
+    @elseif ($isApoteker)
+        {{-- ============================================================ --}}
+        {{-- 3. LAYOUT DASHBOARD: ROLE APOTEKER                           --}}
+        {{-- ============================================================ --}}
+
+        {{-- Baris 1: Total Member (Kiri) & Tombol Buka Kasir Banner (Kanan) --}}
+        @if ($canKpiTotalMember || $canTombolKasir)
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                @if ($canKpiTotalMember)
+                    <div class="{{ $canTombolKasir ? 'md:col-span-4 xl:col-span-3' : 'col-span-12' }}">
+                        <x-kpi-card
+                            title="Total Member"
+                            :value="number_format($totalMember)"
+                            subtitle="Member terdaftar"
+                            variant="member"
+                            icon="heroicon-o-user-group"
+                            icon-class="bg-amber-50 text-amber-600"
+                            :trend="$deltaMember !== null ? ($deltaMember >= 0 ? '+' : '') . $deltaMember . '%' : null"
+                            class="h-full"
+                        />
+                    </div>
+                @endif
+
+                @if ($canTombolKasir)
+                    <div class="{{ $canKpiTotalMember ? 'md:col-span-8 xl:col-span-9' : 'col-span-12' }}">
+                        <a href="{{ route('penjualan.create') }}" class="cashier-card w-full h-full p-4 sm:p-5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group rounded-2xl min-h-[96px]">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-xl bg-white/20 border border-white/25 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                                    <x-heroicon-o-calculator class="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <span class="text-base sm:text-lg font-black tracking-wide block text-white leading-tight">Buka Kasir</span>
+                                    <span class="text-xs text-blue-100 font-medium block mt-0.5">Transaksi penjualan baru</span>
+                                </div>
+                            </div>
+                            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/25 group-hover:translate-x-1 transition-all shrink-0">
+                                <x-heroicon-o-chevron-right class="w-5 h-5 text-white" />
+                            </div>
+                        </a>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- Baris 2: Tindak Lanjut Full Width --}}
+        @if ($hasAlerts)
+            <div class="w-full">
+                <div class="dashboard-card p-4 sm:p-5 bg-white">
+                    {{-- Header --}}
+                    <div class="relative flex items-center justify-between mb-3.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl {{ $activeAlertsCount > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100/80' : 'bg-emerald-50 text-emerald-600 border border-emerald-100/80' }} flex items-center justify-center shrink-0 shadow-xs">
+                                @if ($activeAlertsCount > 0)
+                                    <x-heroicon-o-bell-alert class="w-5 h-5" />
+                                @else
+                                    <x-heroicon-o-check-circle class="w-5 h-5" />
+                                @endif
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 tracking-tight">
+                                    Tindak Lanjut
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    {{ $activeAlertsCount > 0 ? 'Perlu perhatian operasional apotek' : 'Semua operasional apotek terkendali' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Pill Header --}}
+                        @if ($activeAlertsCount > 0)
+                            <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                                </span>
+                                <span>{{ $activeAlertsCount }} Aksi</span>
+                            </div>
+                        @else
+                            <div class="flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Terkendali</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Alert List --}}
+                    <div class="space-y-2">
+                        @foreach ($actionCenter as $kunci => $item)
+                            @php
+                                $cfg = $actionConfigs[$kunci] ?? [
+                                    'label' => ucfirst($kunci),
+                                    'badge' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                    'dot' => 'bg-gray-500',
+                                    'ping' => 'bg-gray-400',
+                                    'arrow' => 'text-gray-400 group-hover:text-gray-600',
+                                    'card' => 'border-gray-200',
+                                ];
+                                $itemCount = (int) ($item['count'] ?? 0);
+                                $hasCount = $itemCount > 0;
+                            @endphp
+
+                            <a href="{{ $item['route'] }}"
+                               class="group block p-2.5 sm:p-3 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 {{ $hasCount ? $cfg['card'] . ' bg-white' : 'border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 hover:shadow-xs' }}">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border transition-transform duration-200 group-hover:scale-[1.02] origin-left {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                                @if ($hasCount)
+                                                    <span class="relative flex h-1.5 w-1.5">
+                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $cfg['ping'] }}"></span>
+                                                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 {{ $cfg['dot'] }}"></span>
+                                                    </span>
+                                                @else
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                @endif
+                                                <span>{{ $item['title'] ?? $cfg['label'] }}</span>
+                                            </span>
+
+                                            @if (!$hasCount)
+                                                <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+                                                    Aman
+                                                </span>
+                                            @endif
+                                        </div>
+
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-black {{ $hasCount ? 'text-gray-900' : 'text-gray-400' }}">
+                                                {{ number_format($itemCount, 0, ',', '.') }}
+                                            </span>
+                                            <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600 group-hover:text-gray-900' : 'text-gray-400' }} transition-colors truncate">
+                                                {{ $item['label'] }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="shrink-0 flex items-center">
+                                        <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1.5" />
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
+    @else
+        {{-- ============================================================ --}}
+        {{-- 4. LAYOUT EXECUTIVE: SUPERADMIN & ADMIN                      --}}
+        {{-- ============================================================ --}}
+
+        {{-- 2. KPI UTAMA (KARTU STATISTIK)                               --}}
     {{-- ============================================================ --}}
     @if ($canKpiOmzetKotor || $canKpiTotalDiskon || $canKpiOmzetBersih || $canKpiTotalMember || $canKpiHutang || $canKpiPiutang)
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -513,6 +972,19 @@
 
         @if ($showActionCol)
             <div class="main-action-column {{ ($canGrafikOmzet && $canKondisiBisnis) ? 'xl:col-span-3' : (($canGrafikOmzet || $canKondisiBisnis) ? 'xl:col-span-5' : 'xl:col-span-12') }} space-y-3">
+                @if ($canTombolKasir)
+                    <a href="{{ route('penjualan.create') }}" class="cashier-card w-full block !p-3.5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group">
+                        <div class="flex items-center gap-2.5">
+                            <x-heroicon-o-calculator class="w-5 h-5 text-white shrink-0" />
+                            <div>
+                                <span class="text-xs font-extrabold tracking-wide block text-white">Buka Kasir</span>
+                                <span class="text-[9px] text-blue-100 font-medium block">Transaksi penjualan baru</span>
+                            </div>
+                        </div>
+                        <x-heroicon-o-chevron-right class="w-4 h-4 text-white/80 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
+                    </a>
+                @endif
+
                 @if ($hasAlerts)
                     @php
                         $activeAlertsCount = collect($actionCenter)->filter(fn($item) => ($item['count'] ?? 0) > 0)->count();
@@ -657,22 +1129,10 @@
                         </div>
                     </div>
                 @endif
-
-                @if ($canTombolKasir)
-                    <a href="{{ route('penjualan.create') }}" class="cashier-card block !p-3.5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group">
-                        <div class="flex items-center gap-2.5">
-                            <x-heroicon-o-calculator class="w-5 h-5 text-white shrink-0" />
-                            <div>
-                                <span class="text-xs font-extrabold tracking-wide block text-white">Buka Kasir</span>
-                                <span class="text-[9px] text-blue-100 font-medium block">Transaksi penjualan baru</span>
-                            </div>
-                        </div>
-                        <x-heroicon-o-chevron-right class="w-4 h-4 text-white/80 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
-                    </a>
-                @endif
             </div>
         @endif
     </div>
+    @endif
     @endif
 
     {{-- ============================================================ --}}
@@ -1499,6 +1959,7 @@
         return 'Rp ' + Number(val).toLocaleString('id-ID');
     }
 
+    @if ($canGrafikOmzet)
     // 1. Inisialisasi Grafik Penjualan dan Omzet
     function initSalesChart() {
         const ctx = document.getElementById('salesPerformanceChart');
@@ -1740,7 +2201,11 @@
             };
         });
     }
+    @else
+    function initSalesChart() {}
+    @endif
 
+    @if ($canPemantauanStok)
     // 2. Inisialisasi Doughnut Chart: Kondisi Stok
     function initKondisiStokChart() {
         const ctxKondisi = document.getElementById('kondisiStokChart');
@@ -1804,7 +2269,11 @@
             }
         });
     }
+    @else
+    function initKondisiStokChart() {}
+    @endif
 
+    @if ($canPemantauanStok)
     // 3. Inisialisasi Doughnut Chart: Expiry Health
     function initExpiryHealthChart() {
         const ctxExpiry = document.getElementById('expiryHealthChart');
@@ -1869,8 +2338,11 @@
             }
         });
     }
+    @else
+    function initExpiryHealthChart() {}
+    @endif
 
-    // 4. Inisialisasi Interaksi UI (Kinerja Karyawan & Modal)
+    {{-- 4. Inisialisasi Interaksi UI (Kinerja Karyawan & Modal) --}}
     function initDashboardInteractions() {
         const btnToggleKinerja = document.getElementById('btn-toggle-kinerja');
         if (btnToggleKinerja) {
