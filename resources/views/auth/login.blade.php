@@ -81,12 +81,6 @@ $abbr = ($apotek?->nama_apotek ?? '')
 
                     <div class="space-y-1">
                         @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
-<<<<<<< HEAD
-                        @error('captcha')
-                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-=======
->>>>>>> f60378b0ce85b6a1b9274cf3aadd745abecc213c
                     </div>
 
                     <button type="submit"
