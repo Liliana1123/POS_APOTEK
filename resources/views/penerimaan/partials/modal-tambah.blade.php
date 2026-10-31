@@ -115,9 +115,9 @@
             <div class="text-xs text-gray-500">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
         </div>
 
-        <div class="flex gap-2 pt-2">
-            <button type="submit" id="btn-simpan-tambah" class="btn-primary">Simpan Faktur</button>
+        <div class="flex justify-end items-center gap-2.5 pt-4">
             <button type="button" id="btn-batal-tambah" class="btn-secondary">Batal</button>
+            <button type="submit" id="btn-simpan-tambah" class="btn-primary">Simpan Faktur</button>
         </div>
     </form>
 </x-modal>

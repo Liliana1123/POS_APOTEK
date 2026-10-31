@@ -485,21 +485,21 @@
     </div>
 
     {{-- ACTION BUTTONS --}}
-    <div class="flex gap-2 pt-2">
-        <button
-            type="submit"
-            id="btn-simpan-edit"
-            class="btn-primary"
-        >
-            Simpan Perubahan
-        </button>
-
+    <div class="flex justify-end items-center gap-2.5 pt-4">
         <button
             type="button"
             id="btn-batal-edit"
             class="btn-secondary"
         >
             Batal
+        </button>
+
+        <button
+            type="submit"
+            id="btn-simpan-edit"
+            class="btn-primary"
+        >
+            Simpan Perubahan
         </button>
     </div>
 

@@ -151,9 +151,9 @@
         <div class="text-xs text-gray-500 italic border-l-2 border-red-500 pl-2">Pembayaran pertama dicatat sebagai histori dan tidak menimpa pembayaran sebelumnya.</div>
     </div>
 
-    <div class="flex gap-2 pt-2">
-        <button type="submit" class="btn-primary">Simpan Faktur</button>
+    <div class="flex justify-end items-center gap-2.5 pt-4">
         <a href="{{ route('penerimaan.index') }}" class="btn-secondary">Batal</a>
+        <button type="submit" class="btn-primary">Simpan Faktur</button>
     </div>
 </form>
 
