@@ -61,6 +61,39 @@ return [
         // Sidebar: Promo & Log
         'master.custom-discount' => ['group' => 'Promo & Log', 'label' => 'Custom Discount'],
         'sistem.activity-log' => ['group' => 'Promo & Log', 'label' => 'Log Aktivitas'],
+
+        // Dashboard: KPI Utama (6 Kartu)
+        'dashboard.kpi-omzet-kotor' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Omzet Kotor'],
+        'dashboard.kpi-total-diskon' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Total Diskon'],
+        'dashboard.kpi-omzet-bersih' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Omzet Bersih'],
+        'dashboard.kpi-total-member' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Total Member'],
+        'dashboard.kpi-hutang-supplier' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Hutang Supplier'],
+        'dashboard.kpi-piutang-member' => ['group' => 'Dashboard: KPI', 'label' => 'Kartu KPI: Piutang Member'],
+
+        // Dashboard: Grafik & Analisis
+        'dashboard.grafik-omzet' => ['group' => 'Dashboard: Grafik & Analisis', 'label' => 'Grafik Tren Penjualan & Omzet'],
+        'dashboard.grafik-profit' => ['group' => 'Dashboard: Grafik & Analisis', 'label' => 'Gross Profit & Margin pada Grafik'],
+        'dashboard.kondisi-bisnis' => ['group' => 'Dashboard: Grafik & Analisis', 'label' => 'Widget Kondisi Bisnis (Business Health Score)'],
+
+        // Dashboard: Tindak Lanjut & Pintasan
+        'dashboard.alert-stok-habis' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Alert Tindak Lanjut: Stok Habis (Kritis)'],
+        'dashboard.alert-stok-menipis' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Alert Tindak Lanjut: Stok Menipis (Perhatian)'],
+        'dashboard.alert-expired' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Alert Tindak Lanjut: Mendekati Expired < 30 Hari'],
+        'dashboard.alert-hutang-tempo' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Alert Tindak Lanjut: Hutang Supplier Jatuh Tempo'],
+        'dashboard.alert-piutang-member' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Alert Tindak Lanjut: Piutang Member Terbuka'],
+        'dashboard.tombol-buka-kasir' => ['group' => 'Dashboard: Tindak Lanjut', 'label' => 'Tombol Pintasan: Buka Kasir'],
+
+        // Dashboard: Stok & Inventory
+        'dashboard.pemantauan-stok' => ['group' => 'Dashboard: Stok & Barang', 'label' => 'Pemantauan Fisik Stok & Expiry Health'],
+        'dashboard.nilai-persediaan' => ['group' => 'Dashboard: Stok & Barang', 'label' => 'Valuasi Nilai Modal Persediaan'],
+        'dashboard.barang-harus-dibeli' => ['group' => 'Dashboard: Stok & Barang', 'label' => 'Tabel Barang yang Harus Dibeli (Reorder)'],
+
+        // Dashboard: Obat & Karyawan
+        'dashboard.obat-terlaris' => ['group' => 'Dashboard: Obat & Karyawan', 'label' => 'Tabel 10 Obat Terlaris'],
+        'dashboard.obat-terendah' => ['group' => 'Dashboard: Obat & Karyawan', 'label' => 'Tabel 10 Obat Paling Sedikit Terjual'],
+        'dashboard.omzet-obat' => ['group' => 'Dashboard: Obat & Karyawan', 'label' => 'Nominal Omzet (Rp) pada Tabel Obat'],
+        'dashboard.kinerja-karyawan' => ['group' => 'Dashboard: Obat & Karyawan', 'label' => 'Tabel Kinerja & Ranking Karyawan'],
+        'dashboard.dokter-resep' => ['group' => 'Dashboard: Obat & Karyawan', 'label' => 'Tabel Dokter Penyumbang Resep'],
     ],
 
     /*
@@ -74,9 +107,25 @@ return [
         'apoteker' => [
             'transaksi.penjualan' => 'kelola',
             'master.barang' => 'lihat',
+            'dashboard.kpi-total-member' => 'lihat',
+            'dashboard.alert-stok-habis' => 'lihat',
+            'dashboard.alert-stok-menipis' => 'lihat',
+            'dashboard.alert-expired' => 'lihat',
+            'dashboard.tombol-buka-kasir' => 'lihat',
+            'dashboard.pemantauan-stok' => 'lihat',
+            'dashboard.barang-harus-dibeli' => 'lihat',
+            'dashboard.obat-terlaris' => 'lihat',
+            'dashboard.obat-terendah' => 'lihat',
+            'dashboard.dokter-resep' => 'lihat',
         ],
         'kasir' => [
             'transaksi.penjualan' => 'kelola',
+            'dashboard.kpi-total-member' => 'lihat',
+            'dashboard.alert-stok-habis' => 'lihat',
+            'dashboard.alert-stok-menipis' => 'lihat',
+            'dashboard.tombol-buka-kasir' => 'lihat',
+            'dashboard.obat-terlaris' => 'lihat',
+            'dashboard.obat-terendah' => 'lihat',
         ],
         'gudang' => [
             'master.barang' => 'kelola',
@@ -89,6 +138,11 @@ return [
             'laporan.stok' => 'lihat',
             'laporan.penerimaan' => 'lihat',
             'laporan.rusak' => 'lihat',
+            'dashboard.alert-stok-habis' => 'lihat',
+            'dashboard.alert-stok-menipis' => 'lihat',
+            'dashboard.alert-expired' => 'lihat',
+            'dashboard.pemantauan-stok' => 'lihat',
+            'dashboard.barang-harus-dibeli' => 'lihat',
         ],
     ],
 

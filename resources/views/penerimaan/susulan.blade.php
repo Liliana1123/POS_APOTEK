@@ -3,12 +3,12 @@
     <div class="card-base p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Terima</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal?->translatedFormat('d F Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal, 'd F Y')</strong>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Tanggal Faktur</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->tanggal_faktur?->translatedFormat('d F Y') ?? '-' }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->tanggal_faktur, 'd F Y')</strong>
         </div>
 
         <div>
@@ -29,29 +29,21 @@
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Pembayaran</span>
             <div class="mt-0.5">
-                @if ($penerimaan->lunas)
-                <span class="badge-success">Lunas</span>
-                @else
-                <span class="badge-warning">Belum Lunas</span>
-                @endif
+                <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
             </div>
         </div>
 
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Status Penerimaan</span>
             <div class="mt-0.5">
-                @if ($penerimaan->statusPenerimaan() === 'LENGKAP')
-                <span class="badge-success">Lengkap</span>
-                @else
-                <span class="badge-warning">Belum Lengkap</span>
-                @endif
+                <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
             </div>
         </div>
 
         @if ($penerimaan->jatuh_tempo)
         <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Jatuh Tempo</span>
-            <strong class="text-gray-800 text-sm">{{ $penerimaan->jatuh_tempo->translatedFormat('d F Y') }}</strong>
+            <strong class="text-gray-800 text-sm">@tanggalId($penerimaan->jatuh_tempo, 'd F Y')</strong>
         </div>
         @endif
     </div>
@@ -64,7 +56,7 @@
         <span>Semua pesanan barang pada faktur ini sudah lengkap diterima atau diselesaikan.</span>
     </div>
     @else
-    <form id="form-susulan-penerimaan" method="POST" action="{{ route('penerimaan.susulan.store', $penerimaan) }}">
+    <form id="form-susulan-penerimaan" method="POST" action="{{ route('penerimaan.susulan.store', $penerimaan, false) }}" data-no-loading>
         @csrf
 
         <!-- Form Input Tanggal & Keterangan -->
@@ -94,6 +86,14 @@
             </div>
         </div>
 
+        <!-- Alert Banner Error (Bila Terjadi Kesalahan Input) -->
+        <div id="susulan-error-banner" class="hidden rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700 items-center gap-2 mb-4">
+            <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span id="susulan-error-text"></span>
+        </div>
+
         <!-- Tabel Daftar Barang Kekurangan -->
         <div class="card-base p-0 mb-4 border border-slate-200">
 
@@ -121,6 +121,8 @@
                         @php
                         $barang = $detail->barang;
                         $latestDetail = $penerimaan->detail->where('barang_id', $detail->barang_id)->last();
+                        $defaultBatch = $latestDetail?->no_batch ?? '';
+                        $defaultExpired = $latestDetail?->expired_date ? \Carbon\Carbon::parse($latestDetail->expired_date)->format('Y-m-d') : '';
                         $defaultHargaBeli = $latestDetail?->harga_beli ?? $barang?->harga_beli ?? '';
                         $defaultHargaJual = $latestDetail?->harga_jual ?? $barang?->harga_jual ?? '';
                         $defaultRak = $latestDetail?->no_rak ?? $barang?->no_rak ?? '';
@@ -184,6 +186,7 @@
                                 <input
                                     type="text"
                                     name="detail[{{ $detail->id }}][no_batch]"
+                                    value="{{ $defaultBatch }}"
                                     class="form-input !py-1 text-xs w-full text-center font-mono"
                                     placeholder="Batch...">
                             </td>
@@ -193,6 +196,7 @@
                                 <input
                                     type="date"
                                     name="detail[{{ $detail->id }}][expired_date]"
+                                    value="{{ $defaultExpired }}"
                                     class="form-input !py-1 text-xs w-full">
                             </td>
 
@@ -245,8 +249,8 @@
             <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button
                     type="button"
-                    class="btn-secondary w-full sm:w-auto"
-                    onclick="document.getElementById('modal-susulan-penerimaan').classList.add('hidden')">
+                    id="btn-batal-susulan"
+                    class="btn-secondary w-full sm:w-auto">
                     Batal
                 </button>
 

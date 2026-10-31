@@ -18,49 +18,12 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
 {{-- ========================================================= --}}
 <div class="print-only">
 
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-        @if($apotek?->logo)
-        <img
-            src="{{ asset('storage/' . $apotek->logo) }}"
-            alt="Logo {{ $apotek->nama_apotek }}"
-            class="print-kop-logo">
-        @endif
-
-        <div class="print-kop-info">
-            <h1>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
-
-            @if($apotek?->alamat)
-            <p>{{ $apotek->alamat }}</p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-            <p>
-                @if($apotek?->telepon) Telp: {{ $apotek->telepon }} @endif
-                @if($apotek?->telepon && $apotek?->email) &nbsp; | &nbsp; @endif
-                @if($apotek?->email) Email: {{ $apotek->email }} @endif
-            </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-            <p>
-                @if($apotek?->no_izin_sia) SIA: {{ $apotek->no_izin_sia }} @endif
-                @if($apotek?->no_izin_sia && $apotek?->no_sipa) &nbsp;&nbsp;•&nbsp;&nbsp; @endif
-                @if($apotek?->no_sipa) SIPA: {{ $apotek->no_sipa }} @endif
-            </p>
-            @endif
-        </div>
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>LAPORAN LABA RUGI & FINANSIAL</h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
-            {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN LABA RUGI & FINANSIAL">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
+        {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 
     {{-- RINGKASAN EKSEKUTIF CETAK --}}
     <div class="print-section mb-4">
@@ -173,97 +136,35 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
 {{-- TAMPILAN LAYAR APLIKASI (SCREEN UI) --}}
 {{-- ========================================================= --}}
 
-{{-- Header Halaman & Filter Controls --}}
-<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6 print:hidden">
-    <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Laporan Laba Rugi</h1>
-        <p class="text-xs text-slate-500 mt-0.5">Ringkasan keuangan apotek berdasarkan periode yang dipilih</p>
-    </div>
-
-    {{-- Tombol Ekspor/Cetak + Filter Periode (sebelah kanan, vertikal) --}}
+<x-page-header
+    title="Laporan Laba Rugi"
+    subtitle="Ringkasan keuangan apotek berdasarkan periode yang dipilih"
+    class="print:hidden lg:items-start">
     <div class="flex flex-col items-end gap-2">
         {{-- Baris 1: Ekspor Excel & Cetak Laporan --}}
-        <div class="flex gap-2 shrink-0">
-            {{-- Ekspor Excel --}}
-            <a
-                id="btn-export-excel"
-                href="{{ route('laporan.laba-rugi', array_merge(request()->query(), ['export' => 'excel'])) }}"
-                class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                Ekspor Excel
-            </a>
+        <x-print-actions
+            excel-id="btn-export-excel"
+            print-id="btn-cetak-laporan"
+            print-action="window.print()" />
 
-            {{-- Cetak Laporan --}}
-            <button
-                type="button"
-                id="btn-cetak-laporan"
-                onclick="window.print()"
-                class="btn-primary py-2 px-4">
-                Cetak Laporan
-            </button>
-        </div>
-
-        {{-- Baris 2: Filter Periode (tepat di bawah tombol ekspor/cetak) --}}
-        <div class="flex flex-wrap items-center gap-2">
-            {{-- Tombol Preset Periode --}}
-            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-white p-1 shadow-2xs">
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'hari_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'hari_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Hari Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'minggu_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'minggu_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Minggu Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'bulan_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'bulan_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Bulan Ini
-                </a>
-                <a href="{{ route('laporan.laba-rugi', ['periode' => 'tahun_ini']) }}"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'tahun_ini' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Tahun Ini
-                </a>
-                <button type="button" onclick="toggleCustomDate()" id="btnToggleCustom"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-md transition-colors {{ $currentPeriode === 'custom' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                    Custom
-                </button>
-            </div>
-
-            {{-- Form Rentang Tanggal Custom (hanya tampil saat Custom aktif) --}}
-            <form method="GET" action="{{ route('laporan.laba-rugi') }}" id="customDateContainer" class="{{ $currentPeriode === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200 shadow-2xs">
-                <input type="hidden" name="periode" value="custom">
-                <input type="date" name="dari" id="inputDari" value="{{ $dari }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <span class="text-xs text-gray-400">s/d</span>
-                <input type="date" name="sampai" id="inputSampai" value="{{ $sampai }}" required class="text-xs border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500">
-                <button type="submit" class="btn-primary !py-1 !px-2.5 !text-xs">Terapkan</button>
-            </form>
-        </div>
+        {{-- Baris 2: Filter Periode --}}
+        <x-date-range-filter
+            :action="route('laporan.laba-rugi')"
+            :periode="$currentPeriode"
+            :dari="$dari"
+            :sampai="$sampai" />
     </div>
-</div>
+</x-page-header>
 
 {{-- Flash Notification Alerts --}}
-@if(session('success'))
-<div class="mb-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 shadow-sm print:hidden">
-    <x-heroicon-o-check-circle class="h-5 w-5 text-emerald-600 shrink-0" />
-    <div class="font-medium flex-1">{{ session('success') }}</div>
-    <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
-        <x-heroicon-o-x-mark class="h-4 w-4" />
-    </button>
-</div>
-@endif
-
 @if(isset($errors) && $errors->any())
-<div class="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800 shadow-sm print:hidden">
-    <div class="font-bold mb-1 flex items-center gap-2">
-        <x-heroicon-o-exclamation-triangle class="h-4 w-4 text-rose-600" />
-        <span>Terjadi kesalahan saat memproses data:</span>
-    </div>
-    <ul class="list-disc list-inside space-y-0.5 text-rose-700 pl-1">
+<x-alert type="danger" title="Terjadi kesalahan saat memproses data:" class="print:hidden">
+    <ul class="list-disc list-inside space-y-0.5 pl-1">
         @foreach($errors->all() as $err)
         <li>{{ $err }}</li>
         @endforeach
     </ul>
-</div>
+</x-alert>
 @endif
 
 {{-- ========================================================= --}}
@@ -273,113 +174,198 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
     <div class="flex flex-col lg:flex-row gap-4 items-stretch">
 
         {{-- KOLOM KIRI (7 KARTU DALAM 2 BARIS) --}}
-        <div class="flex-1 min-w-0 flex flex-col justify-between gap-3.5">
+        <div class="flex-1 min-w-0 flex flex-col gap-3">
 
             {{-- BARIS 1: 4 KARTU (Omzet Kotor, Total Diskon, Penjualan Bersih, HPP) --}}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
+
                 {{-- 1. Omzet Kotor --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0f7ff; border: 1px solid #dbeafe;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #bfdbfe !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-chart-bar class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            Omzet Kotor
+                        </span>
+
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($omzetKotor, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Omzet Kotor</span>
                     </div>
-                    <strong class="block text-base font-bold text-blue-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($omzetKotor, 0, ',', '.') }}
-                    </strong>
+
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shadow-sm">
+                        <x-heroicon-o-chart-bar class="h-6 w-6" />
+                    </div>
                 </div>
 
                 {{-- 2. Total Diskon --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #faf5ff; border: 1px solid #f3e8ff;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #eabffeff !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-purple-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-tag class="w-4 h-4" />
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                            Total Diskon
+                        </span>
+                        <div class="text-xl font-black text-gray-900 mt-1">
+                            Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Total Diskon</span>
                     </div>
-                    <strong class="block text-base font-bold text-purple-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($totalDiskon, 0, ',', '.') }}
-                    </strong>
+                    <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm shrink-0">
+                        <x-heroicon-o-tag class="w-6 h-6" />
+                    </div>
                 </div>
 
                 {{-- 3. Penjualan Bersih --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0fdf4; border: 1px solid #dcfce7;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #bffee1ff !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-currency-dollar class="w-4 h-4" />
+                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                            Penjualan Bersih
+                        </span>
+                        <div class="text-xl font-black text-gray-900 mt-1">
+                            Rp {{ number_format($penjualanBersih, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Penjualan Bersih</span>
                     </div>
-                    <strong class="block text-base font-bold text-emerald-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($penjualanBersih, 0, ',', '.') }}
-                    </strong>
+                    <div class="kpi-icon bg-emerald-50 text-emerald-600 shadow-2xs">
+                        <x-heroicon-o-banknotes class="w-6 h-6" />
+                    </div>
                 </div>
 
-                {{-- 4. HPP (Harga Pokok Penjualan) --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #fff7ed; border: 1px solid #ffedd5;">
+                {{-- 4. HPP --}}
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #ffedd5 !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-orange-400 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-circle-stack class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            HPP (Harga Pokok Penjualan)
+                        </span>
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($hpp, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">HPP (Harga Pokok Penjualan)</span>
                     </div>
-                    <strong class="block text-base font-bold text-orange-500 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($hpp, 0, ',', '.') }}
-                    </strong>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 shadow-sm">
+                        <x-heroicon-s-circle-stack class="h-6 w-6" />
+                    </div>
                 </div>
-
             </div>
 
             {{-- BARIS 2: 3 KARTU (Laba Kotor, Total Beban Operasional, Laba Bersih) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch w-full">
 
                 {{-- 5. Laba Kotor --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f0fdf9; border: 1px solid #ccfbf1;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #bfdbfe !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-teal-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-circle-stack class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            Laba Kotor
+                        </span>
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($labaKotor, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Laba Kotor</span>
                     </div>
-                    <strong class="block text-base font-bold text-teal-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($labaKotor, 0, ',', '.') }}
-                    </strong>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 shadow-sm">
+                        <x-heroicon-o-banknotes class="h-6 w-6" />
+                    </div>
                 </div>
 
                 {{-- 6. Total Beban Operasional --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #fff1f2; border: 1px solid #ffe4e6;">
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #ffb6ccff !important;">
                     <div>
-                        <div class="w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-wallet class="w-4 h-4" />
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            Total Beban Operasional
+                        </span>
+                        <div class="mt-1 text-xl font-black text-gray-900">
+                            Rp {{ number_format($totalBeban, 0, ',', '.') }}
                         </div>
-                        <span class="block text-xs font-semibold text-slate-500">Total Beban Operasional</span>
                     </div>
-                    <strong class="block text-base font-bold text-rose-500 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($totalBeban, 0, ',', '.') }}
-                    </strong>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm"
+                        style="background-color: #fff1f5; color: #fd89acff;">
+                        <x-heroicon-o-wallet class="h-6 w-6" />
+                    </div>
                 </div>
 
                 {{-- 7. Laba Bersih --}}
-                <div class="rounded-xl p-3.5 flex flex-col justify-between transition-all hover:shadow-sm" style="background-color: #f5f3ff; border: 1px solid #ede9fe;">
-                    <div>
-                        <div class="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center mb-2.5 shadow-sm">
-                            <x-heroicon-s-arrow-trending-up class="w-4 h-4" />
-                        </div>
-                        <span class="block text-xs font-semibold text-slate-500">Laba Bersih</span>
-                    </div>
-                    <strong class="block text-base font-bold text-indigo-600 mt-1 font-mono tracking-tight">
-                        Rp {{ number_format($labaBersih, 0, ',', '.') }}
-                    </strong>
-                </div>
+                <div class="flex items-center justify-between rounded-xl p-3.5 transition-all hover:shadow-sm"
+                    style="background-color: #ffffff; border: 2px solid #bffee1ff !important;">
+                    <div class="flex-1 min-w-0">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                            Laba Bersih
+                        </span>
+                        <div class="mt-1 flex items-baseline gap-2 flex-wrap">
+                            <span class="text-xl font-black text-gray-900 tracking-tight"
+                                data-countup="true"
+                                data-target="{{ (float) preg_replace('/[^0-9]/', '', (string)$labaBersih) }}"
+                                data-prefix="Rp ">
+                                Rp {{ number_format($labaBersih, 0, ',', '.') }}
+                            </span>
 
+                            {{-- Indikator Persentase Kenaikan / Penurunan Laba Bersih (selaras dengan Dashboard) --}}
+                            @if ($labaBersihStatus === 'naik')
+                            <span class="kpi-trend-pill trend-up" title="Kenaikan Laba Bersih">
+                                <span class="kpi-trend-icon inline-flex items-center">
+                                    <x-heroicon-m-arrow-trending-up class="w-3.5 h-3.5 shrink-0" />
+                                </span>
+                                <span>
+                                    @if ($deltaLabaBersih !== null)
+                                    {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
+                                    @else
+                                    Rp {{ number_format(abs($selisihNominalLabaBersih), 0, ',', '.') }}
+                                    @endif
+                                </span>
+                            </span>
+                            @elseif ($labaBersihStatus === 'turun')
+                            <span class="kpi-trend-pill trend-down" title="Penurunan Laba Bersih">
+                                <span class="kpi-trend-icon inline-flex items-center">
+                                    <x-heroicon-m-arrow-trending-down class="w-3.5 h-3.5 shrink-0" />
+                                </span>
+                                <span>
+                                    @if ($deltaLabaBersih !== null)
+                                    {{ number_format(abs($deltaLabaBersih), 1, ',', '.') }}%
+                                    @else
+                                    Rp {{ number_format(abs($selisihNominalLabaBersih), 0, ',', '.') }}
+                                    @endif
+                                </span>
+                            </span>
+                            @else
+                            {{-- Tampilan netral: tidak ada perubahan atau persentase tidak dapat dihitung --}}
+                            <span class="text-[10px] font-bold text-gray-400 inline-flex items-center gap-1">
+                                <x-heroicon-m-minus class="w-3 h-3 shrink-0" />
+                                @if ($deltaLabaBersih !== null)
+                                <span>0,0%</span>
+                                @endif
+                            </span>
+                            @endif
+                        </div>
+
+                        @if ($prevLabaBersih !== null)
+                        <div class="mt-0.5 text-[9px] text-gray-400">
+                            vs periode lalu: Rp {{ number_format($prevLabaBersih, 0, ',', '.') }}
+                            @if ($prevLabaBersih < 0 && $labaBersih> 0)
+                                <span class="text-emerald-600 font-semibold">(Berbalik Untung)</span>
+                                @elseif ($prevLabaBersih > 0 && $labaBersih < 0)
+                                    <span class="text-rose-600 font-semibold">(Berbalik Rugi)</span>
+                                    @endif
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm
+                    {{ $labaBersihStatus === 'naik' ? 'bg-emerald-50 text-emerald-600' : ($labaBersihStatus === 'turun' ? 'bg-rose-50 text-rose-500' : 'bg-gray-100 text-gray-400') }}">
+                        @if ($labaBersihStatus === 'naik')
+                        <x-heroicon-o-arrow-trending-up class="h-6 w-6" />
+                        @elseif ($labaBersihStatus === 'turun')
+                        <x-heroicon-o-arrow-trending-down class="h-6 w-6" />
+                        @else
+                        <x-heroicon-o-minus class="h-5 w-5" />
+                        @endif
+                    </div>
+                </div>
             </div>
 
         </div>
 
         {{-- KOLOM KANAN: RINGKASAN PIUTANG & UTANG --}}
-        <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+        <div class="w-full lg:w-72 xl:w-80 rounded-xl p-4 flex flex-col justify-between shrink-0"
+            style="background-color: #ffffffff; border: 2px solid #d1d1d1ff;">
             <h2 class="text-xs font-bold text-slate-800 mb-3 tracking-wide">Ringkasan Piutang & Utang</h2>
 
             <div class="space-y-4 my-auto">
@@ -412,7 +398,7 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                 </div>
             </div>
 
-            <div class="text-[10px] text-slate-400 pt-2.5 border-t border-slate-200 mt-3 flex justify-between items-center">
+            <div class="text-[10px] text-blue-600 pt-2.5 border-t border-slate-200 mt-3 flex justify-between items-center">
                 <span>{{ $memberBerpiutangCount }} Member aktif</span>
                 <span>{{ $countHutangBelumLunas }} Faktur belum lunas</span>
             </div>
@@ -515,30 +501,28 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
             {{-- Header Kartu Beban --}}
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center">
-                        <x-heroicon-s-clipboard-document-list class="w-3.5 h-3.5" />
-                    </div>
                     <h2 class="text-sm font-bold text-slate-800 tracking-tight">Ringkasan Beban Operasional</h2>
                 </div>
 
                 <div class="flex items-center gap-2.5">
-                    {{-- Tombol + Tambah Beban --}}
+                    {{-- Tombol Tambah Beban --}}
                     <button
                         type="button"
                         id="btn-tambah-beban"
                         onclick="openModalTambahBeban()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition-colors cursor-pointer">
-                        + Tambah Beban
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+                        <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
+                        <span>Tambah Beban</span>
                     </button>
 
-                    {{-- Tombol Lihat Semua > --}}
+                    {{-- Tombol Lihat Semua --}}
                     <button
                         type="button"
                         id="btn-lihat-semua-beban"
                         onclick="openModalSemuaBeban()"
-                        class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-0.5 transition-colors cursor-pointer">
+                        class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
                         <span>Lihat Semua</span>
-                        <span class="font-mono">&gt;</span>
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5 shrink-0" />
                     </button>
                 </div>
             </div>
@@ -570,7 +554,15 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                         </tr>
                         @endforelse
                     </tbody>
-                    <tfoot>
+                    {{-- Ruang kosong untuk menyamakan posisi dengan Laba Bersih --}}
+                    @for ($i = 0; $i < 5; $i++)
+                        <tr>
+                        <td colspan="3" class="py-2.5 px-3 border-0">
+                            &nbsp;
+                        </td>
+                        </tr>
+                        @endfor
+
                         {{-- Baris Total Beban Operasional --}}
                         <tr class="border-t border-slate-200" style="background-color: #f0f7ff;">
                             <td colspan="2" class="py-2.5 px-3 font-bold text-blue-600 text-xs">
@@ -580,7 +572,6 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                                 Rp {{ number_format($totalBeban, 0, ',', '.') }}
                             </td>
                         </tr>
-                    </tfoot>
                 </table>
             </div>
         </div>
@@ -661,9 +652,6 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                     Nominal Beban (Rp) <span class="text-rose-500">*</span>
                 </label>
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-bold text-slate-400">
-                        Rp
-                    </span>
                     <input
                         type="number"
                         id="modal-beban-nominal"
@@ -672,6 +660,7 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                         step="any"
                         placeholder="Contoh: 150000"
                         required
+                        data-terbilang="true"
                         class="form-input text-xs pl-9 font-mono font-semibold">
                 </div>
             </div>
@@ -700,7 +689,6 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                 <button
                     type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer">
-                    <x-heroicon-o-check-circle class="w-4 h-4" />
                     <span>Simpan Beban</span>
                 </button>
             </div>
@@ -719,7 +707,7 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/60 shrink-0">
             <div>
                 <h3 class="text-sm font-bold text-slate-800">Daftar Lengkap Beban Operasional</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Periode: {{ \Carbon\Carbon::parse($dari)->translatedFormat('d M Y') }} s/d {{ \Carbon\Carbon::parse($sampai)->translatedFormat('d M Y') }} (Total: <strong>Rp {{ number_format($totalBeban, 0, ',', '.') }}</strong>)</p>
+                <p class="text-xs text-slate-400 mt-0.5">Periode: @tanggalId($dari) s/d @tanggalId($sampai) (Total: <strong>@rupiah($totalBeban)</strong>)</p>
             </div>
             <button
                 type="button"
@@ -750,7 +738,7 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                         <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="text-center text-slate-400 py-2.5 px-2">{{ $idx + 1 }}</td>
                             <td class="text-center font-mono text-slate-600 py-2.5 px-3 whitespace-nowrap">
-                                {{ $item->tanggal ? $item->tanggal->format('d M Y') : '-' }}
+                                @tanggalId($item->tanggal)
                             </td>
                             <td class="py-2.5 px-3">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-orange-50 text-orange-700 border border-orange-200">
@@ -767,20 +755,16 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
                                 {{ $item->user->name ?? 'Admin' }}
                             </td>
                             <td class="text-center py-2.5 px-2">
-                                <form
-                                    action="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus catatan beban Rp {{ number_format($item->nominal, 0, ',', '.') }}?');"
-                                    class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        type="submit"
-                                        class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                                        title="Hapus beban">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
+                                <button
+                                    type="button"
+                                    class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Hapus beban"
+                                    aria-label="Hapus beban"
+                                    data-confirm-delete="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
+                                    data-item-name="{{ $item->nama_beban }} (Rp {{ number_format($item->nominal, 0, ',', '.') }})"
+                                    data-confirm-message="Yakin ingin menghapus catatan beban operasional ini?">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -814,39 +798,7 @@ $currentPeriode = request('periode', $periode ?? 'bulan_ini');
 {{-- SCRIPT INTERAKSI MODAL & FILTER --}}
 {{-- ========================================================= --}}
 {{-- Signature Section for Print PDF --}}
-<div class="no-break print-signature">
-    <div class="print-signature-grid">
-        {{-- Left: Penanggung Jawab Apotek --}}
-        <div class="print-signature-box">
-            <p class="print-signature-title">Mengetahui,</p>
-            <p class="print-signature-role">Penanggung Jawab Apotek</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if (!empty($apotek->nama_apoteker_pj))
-                {{ $apotek->nama_apoteker_pj }}
-                @else
-                (____________________)
-                @endif
-            </p>
-            @if (!empty($apotek->no_sipa))
-            <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
-            @endif
-        </div>
-        {{-- Right: Pembuat Laporan --}}
-        <div class="print-signature-box text-right">
-            <p class="print-signature-title">Dibuat oleh,</p>
-            <p class="print-signature-role">Pembuat Laporan</p>
-            <div class="print-signature-space"></div>
-            <p class="print-signature-name">
-                @if (!empty(auth()->user()->name))
-                {{ auth()->user()->name }}
-                @else
-                (____________________)
-                @endif
-            </p>
-        </div>
-    </div>
-</div>
+<x-print-signature :apotek="$apotek" />
 {{-- End of Signature Section --}}
 <script>
     // Toggle tampilan form custom date (sama dengan Dashboard)

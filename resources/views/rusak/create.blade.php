@@ -2,10 +2,11 @@
 @section('title', 'Catat Barang Rusak')
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-xl font-bold text-gray-800">Catat Barang Rusak Baru</h1>
-    <p class="text-xs text-gray-500 mt-0.5">Laporkan obat yang rusak, pecah, atau kadaluarsa untuk dikurangi dari stok batch.</p>
-</div>
+<x-page-header
+    title="Catat Barang Rusak Baru"
+    subtitle="Laporkan obat yang rusak, pecah, atau kadaluarsa untuk dikurangi dari stok batch."
+    :back-url="route('rusak.index')"
+/>
 
 <form action="{{ route('rusak.store') }}" method="POST" class="bg-white rounded-xl shadow-sm border border-gray-150 p-6 max-w-lg space-y-4">
     @csrf

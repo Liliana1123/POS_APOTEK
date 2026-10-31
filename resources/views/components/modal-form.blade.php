@@ -17,7 +17,11 @@
 <div id="{{ $id }}"
      class="fixed inset-0 z-50 hidden flex items-start justify-center pt-[5vh] sm:pt-[10vh] px-4">
 
-    <div class="w-full {{ $width }} bg-white rounded-xl shadow-2xl relative max-h-[85vh] flex flex-col">
+    <div class="w-full {{ $width }} bg-white rounded-xl shadow-2xl relative max-h-[85vh] flex flex-col overflow-hidden">
+        <!-- Top Indeterminate Progress Bar (Aktif saat AJAX simpan) -->
+        <div id="{{ $id }}-progress-bar" class="absolute top-0 left-0 right-0 h-1 hidden overflow-hidden bg-slate-100 z-10">
+            <div class="h-full w-1/2 rounded-full modal-progress-running bg-blue-600"></div>
+        </div>
 
         {{-- HEADER --}}
         <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
@@ -137,7 +141,7 @@
         });
 
         form.querySelectorAll('.form-input, select, textarea').forEach(function (el) {
-            el.classList.remove('border-red-500');
+            el.classList.remove('border-red-500', 'input-error-shake');
         });
 
         errorEl.classList.add('hidden');
@@ -171,6 +175,9 @@
 
         if (input) {
             input.classList.add('border-red-500');
+            input.classList.remove('input-error-shake');
+            void input.offsetWidth; // Force DOM reflow to re-trigger CSS keyframe
+            input.classList.add('input-error-shake');
         }
     }
 
@@ -414,41 +421,25 @@
     */
 
     if (editBtnSel) {
+        document.addEventListener('click', function (event) {
+            var btn = event.target.closest(editBtnSel);
+            if (!btn) return;
 
-        document.querySelectorAll(editBtnSel).forEach(function (btn) {
+            event.preventDefault();
 
-            btn.addEventListener('click', function (event) {
+            var id = btn.dataset.id;
+            if (!id) {
+                console.error('Tombol edit tidak memiliki data-id.');
+                return;
+            }
 
-                event.preventDefault();
+            methodEl.value = 'PUT';
+            form.dataset.url = updateBase.replace(/\/$/, '') + '/' + id;
+            form.dataset.mode = 'edit';
 
-                var id = this.dataset.id;
-
-                if (!id) {
-
-                    console.error(
-                        'Tombol edit tidak memiliki data-id.'
-                    );
-
-                    return;
-                }
-
-                methodEl.value = 'PUT';
-
-                form.dataset.url =
-                    updateBase.replace(/\/$/, '') +
-                    '/' +
-                    id;
-
-                form.dataset.mode = 'edit';
-
-                openModal('edit');
-
-                prefillFromBtn(this);
-
-            });
-
+            openModal('edit');
+            prefillFromBtn(btn);
         });
-
     }
 
 
@@ -550,11 +541,19 @@
                 ? 'Simpan Perubahan'
                 : submitLabel;
 
+        var localProgressBar = document.getElementById(prefix + '-progress-bar');
+        if (localProgressBar) {
+            localProgressBar.classList.remove('hidden');
+        }
+
         submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        submitBtn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0 mr-2 align-middle"></span><span class="align-middle">Menyimpan...</span>';
 
-        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
-
-        submitBtn.textContent = 'Menyimpan...';
+        modalEl.querySelectorAll('.' + prefix + '-close').forEach(function (btn) {
+            btn.disabled = true;
+            btn.classList.add('opacity-40', 'pointer-events-none');
+        });
 
 
         /*
@@ -673,6 +672,19 @@
 
                 hideModal();
 
+                var successMsg = (result.body && result.body.message)
+                    ? result.body.message
+                    : (mode === 'edit' ? 'Data berhasil diperbarui.' : 'Data berhasil disimpan.');
+
+                try {
+                    sessionStorage.setItem('pending_toast', JSON.stringify({
+                        message: successMsg,
+                        type: 'success'
+                    }));
+                } catch (e) {
+                    console.error('Error saving pending_toast:', e);
+                }
+
                 window.location.reload();
 
                 return;
@@ -708,16 +720,21 @@
         })
 
         .finally(function () {
+            if (localProgressBar) {
+                localProgressBar.classList.add('hidden');
+            }
 
             submitBtn.disabled = false;
-
             submitBtn.classList.remove(
-                'opacity-70',
+                'opacity-75',
                 'cursor-not-allowed'
             );
-
             submitBtn.textContent = originalText;
 
+            modalEl.querySelectorAll('.' + prefix + '-close').forEach(function (btn) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-40', 'pointer-events-none');
+            });
         });
 
     });

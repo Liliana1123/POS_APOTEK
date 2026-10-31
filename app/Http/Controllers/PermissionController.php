@@ -13,10 +13,14 @@ class PermissionController extends Controller
         $this->guardSuperAdmin();
 
         $permissions = Permission::orderBy('sort')->get();
+        $pagePermissions = $permissions->filter(fn ($p) => !str_starts_with($p->slug, 'dashboard.'));
+        $dashboardPermissions = $permissions->filter(fn ($p) => str_starts_with($p->slug, 'dashboard.'))->groupBy('group');
 
         return view('permission.index', [
             'roles' => config('permission.roles', []),
             'permissions' => $permissions,
+            'pagePermissions' => $pagePermissions,
+            'dashboardPermissions' => $dashboardPermissions,
             'matrix' => $this->matrix($permissions),
         ]);
     }

@@ -18,23 +18,13 @@ class BarangController extends Controller
             ->withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
             ->with('latestDetailPenerimaan.penerimaan.supplier');
 
-        if ($request->filled('cari')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->cari . '%')
-                    ->orWhere('kode_apotek', 'like', '%' . $request->cari . '%')
-                    ->orWhere('kode_kfa', 'like', '%' . $request->cari . '%')
-                    ->orWhere('merk', 'like', '%' . $request->cari . '%')
-                    ->orWhere('barcode', 'like', '%' . $request->cari . '%');
-            });
-        }
+        $query->search(['nama', 'kode_apotek', 'kode_kfa', 'merk', 'barcode'], $request->cari);
 
         if ($request->filled('kategori_id')) {
             $query->where('kategori_id', $request->kategori_id);
         }
 
-        if ($request->filled('aktif')) {
-            $query->where('aktif', $request->aktif === '1');
-        }
+        $query->filterStatus('aktif', $request->aktif);
 
         if ($request->filled('butuh_resep')) {
             $query->where('butuh_resep', $request->butuh_resep === '1');
@@ -112,6 +102,7 @@ class BarangController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Barang berhasil ditambahkan.');
             return response()->json(['message' => 'Barang berhasil ditambahkan.'], 201);
         }
 
@@ -153,6 +144,7 @@ class BarangController extends Controller
         );
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Barang berhasil diperbarui.');
             return response()->json(['message' => 'Barang berhasil diperbarui.']);
         }
 

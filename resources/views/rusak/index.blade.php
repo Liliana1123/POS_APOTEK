@@ -2,101 +2,60 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-    <div>
-        <h1>Daftar Pencatatan Barang Rusak</h1>
-        <p class="text-caption mt-1">Kelola dan laporkan obat rusak atau kadaluarsa.</p>
-    </div>
+<x-page-header title="Daftar Pencatatan Barang Rusak" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>
     </button>
-</div>
+</x-page-header>
 
 <!-- Filter & Search Card -->
-<div class="card-base p-4 mb-6">
-    <form method="GET" action="{{ route('rusak.index') }}" class="space-y-4" id="filter-form">
-        @if(request()->filled('tanggal'))
-        <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
-        @endif
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Nama Barang
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="cari"
-                        value="{{ request('cari') }}"
-                        placeholder="Cari nama barang..."
-                        class="form-input pr-8">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+<x-card-filter
+    :action="route('rusak.index')"
+    :reset-url="route('rusak.index')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-8"
+    action-cols="sm:col-span-2 md:col-span-2"
+    :live-search="true"
+    :has-reset="request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal'])">
+    @if(request()->filled('tanggal'))
+    <input type="hidden" name="tanggal" value="{{ request('tanggal') }}">
+    @endif
 
-            <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    No. Batch
-                </label>
-                <div class="relative">
-                    <input
-                        type="text"
-                        name="no_batch"
-                        value="{{ request('no_batch') }}"
-                        placeholder="Cari no. batch..."
-                        class="form-input pr-8 font-mono">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
-                    </span>
-                </div>
-            </div>
+    <div class="relative sm:col-span-2 md:col-span-3">
+        <input
+            type="text"
+            name="cari"
+            value="{{ request('cari', request('no_batch')) }}"
+            placeholder="Cari nama barang atau no. batch..."
+            class="form-input pr-8"
+            aria-label="Cari barang atau no. batch"
+            title="Cari barang atau no. batch">
+        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+        </span>
+    </div>
 
-            <div>
-                <div class="flex items-center gap-2 mb-1.5">
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Awal
-                    </label>
-                    <span class="text-sm invisible select-none">-</span>
-                    <label class="block flex-1 min-w-0 text-[10px] font-bold uppercase tracking-wider text-gray-400 font-sans">
-                        Tanggal Akhir
-                    </label>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input
-                        type="date"
-                        name="tanggal_mulai"
-                        value="{{ request('tanggal_mulai', $tanggalMulai) }}"
-                        class="form-input min-w-0">
-
-                    <span class="text-sm text-gray-400">-</span>
-
-                    <input
-                        type="date"
-                        name="tanggal_akhir"
-                        value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
-                        class="form-input min-w-0">
-                </div>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-            <a href="{{ route('rusak.index') }}" class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Clear
-            </a>
-            @endif
-
-            <button type="submit" class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="flex items-center gap-1.5 sm:col-span-2 md:col-span-3">
+        <input
+            type="date"
+            name="tanggal_mulai"
+            value="{{ request('tanggal_mulai', $tanggalMulai) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal">
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
+        <input
+            type="date"
+            name="tanggal_akhir"
+            value="{{ request('tanggal_akhir', $tanggalAkhir) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir">
+    </div>
+</x-card-filter>
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
@@ -152,29 +111,24 @@
                                 <x-heroicon-o-printer class="w-4 h-4" />
                             </a>
 
-                            <form
-                                action="{{ route('rusak.destroy', $rusak) }}"
-                                method="POST"
-                                class="inline"
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch.')">
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    type="submit"
-                                    class="btn-secondary !p-1.5"
-                                    style="color: #DC2626;"
-                                    title="Hapus">
-                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('rusak.destroy', $rusak) }}"
+                                data-item-name="{{ $rusak->detailPenerimaan?->barang?->nama ?? 'Barang Rusak' }} (Batch: {{ $rusak->detailPenerimaan?->no_batch ?? '-' }})"
+                                data-confirm-message="Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch terkait.">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
 
                         </div>
                     </td>
 
                     {{-- Tanggal Lapor --}}
                     <td class="text-gray-600">
-                        {{ $rusak->tanggal->translatedFormat('d F Y') }}
+                        @tanggalId($rusak->tanggal, 'd F Y')
                     </td>
 
                     {{-- Barang / Obat --}}
@@ -198,35 +152,14 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                Barang Rusak Tidak Ditemukan
-                                @else
-                                Barang Rusak Kosong
-                                @endif
-                            </div>
-                            <div class="empty-state-desc">
-                                @if(request()->anyFilled(['cari', 'no_batch', 'tanggal_mulai', 'tanggal_akhir', 'tanggal']))
-                                Tidak ada data barang rusak yang cocok dengan filter kriteria Anda.
-                                @else
-                                Belum ada data pelaporan obat atau barang rusak.
-                                @endif
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="mt-4">
-    {{ $rusaks->links('vendor.pagination.apotek') }}
-</div>
+<x-pagination :paginator="$rusaks" />
 
 @php
 $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
@@ -328,174 +261,138 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
 </div>
 
 <!-- Modal Detail Barang Rusak -->
-<div id="modal-detail-rusak"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
-
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
-
-        <div class="flex justify-between items-center px-6 py-4 border-b">
-            <div>
-                <h2 class="text-lg font-bold text-gray-800">
-                    Detail Barang Rusak
-                </h2>
-                <p class="text-xs text-gray-500 mt-0.5">
-                    Informasi pencatatan barang rusak.
-                </p>
-            </div>
-
-            <button type="button"
-                onclick="closeDetailRusak()"
-                class="text-gray-400 hover:text-gray-600 text-xl">
-                &times;
-            </button>
-        </div>
-
-        <div id="detail-rusak-content" class="p-6">
-        </div>
-
-    </div>
-</div>
+<x-modal
+    id="modal-detail-rusak"
+    title="Detail Barang Rusak"
+    subtitle="Informasi pencatatan barang rusak."
+    size="max-w-2xl"
+    close-action="closeDetailRusak()"
+    content-id="detail-rusak-content"
+    body-class="p-6" />
 
 <!-- Modal Edit Barang Rusak -->
-<div id="modal-edit-rusak"
-    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+<x-modal
+    id="modal-edit-rusak"
+    title="Edit Barang Rusak"
+    subtitle="Koreksi data pencatatan barang rusak."
+    size="max-w-2xl"
+    close-action="closeEditRusak()"
+    body-class="p-0">
 
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl">
+    <form id="form-edit-rusak" class="p-6">
 
-        <div class="flex justify-between items-center px-6 py-4 border-b">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
             <div>
-                <h2 class="text-lg font-bold text-gray-800">
-                    Edit Barang Rusak
-                </h2>
-                <p class="text-xs text-gray-500 mt-0.5">
-                    Koreksi data pencatatan barang rusak.
-                </p>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Tanggal Lapor
+                </label>
+
+                <input
+                    type="date"
+                    id="edit-tanggal-rusak"
+                    name="tanggal"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
+                    required>
             </div>
 
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Nama Barang
+                </label>
+
+                <input
+                    type="text"
+                    id="edit-barang-rusak"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                    readonly>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    No. Batch
+                </label>
+
+                <input
+                    type="text"
+                    id="edit-batch-rusak"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100 font-mono"
+                    readonly>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    No. Rak
+                </label>
+
+                <input
+                    type="text"
+                    id="edit-rak-rusak"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                    readonly>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Jumlah Rusak
+                </label>
+
+                <input
+                    type="number"
+                    id="edit-jumlah-rusak"
+                    name="jumlah"
+                    min="1"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
+                    required>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    Expired Date
+                </label>
+
+                <input
+                    type="text"
+                    id="edit-expired-rusak"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
+                    readonly>
+            </div>
+
+        </div>
+
+        <div class="mt-5">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">
+                Keterangan
+            </label>
+
+            <textarea
+                id="edit-keterangan-rusak"
+                name="keterangan"
+                rows="3"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
             <button
                 type="button"
                 onclick="closeEditRusak()"
-                class="text-gray-400 hover:text-gray-600 text-xl">
-                &times;
+                class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold">
+                Batal
+            </button>
+
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold">
+                Simpan Perubahan
             </button>
         </div>
 
-        <form id="form-edit-rusak" class="p-6">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Tanggal Lapor
-                    </label>
-
-                    <input
-                        type="date"
-                        id="edit-tanggal-rusak"
-                        name="tanggal"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
-                        required>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Nama Barang
-                    </label>
-
-                    <input
-                        type="text"
-                        id="edit-barang-rusak"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                        readonly>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        No. Batch
-                    </label>
-
-                    <input
-                        type="text"
-                        id="edit-batch-rusak"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100 font-mono"
-                        readonly>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        No. Rak
-                    </label>
-
-                    <input
-                        type="text"
-                        id="edit-rak-rusak"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                        readonly>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Jumlah Rusak
-                    </label>
-
-                    <input
-                        type="number"
-                        id="edit-jumlah-rusak"
-                        name="jumlah"
-                        min="1"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"
-                        required>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Expired Date
-                    </label>
-
-                    <input
-                        type="text"
-                        id="edit-expired-rusak"
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs bg-gray-100"
-                        readonly>
-                </div>
-
-            </div>
-
-            <div class="mt-5">
-                <label class="block text-xs font-semibold text-gray-600 mb-1">
-                    Keterangan
-                </label>
-
-                <textarea
-                    id="edit-keterangan-rusak"
-                    name="keterangan"
-                    rows="3"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button
-                    type="button"
-                    onclick="closeEditRusak()"
-                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-semibold">
-                    Batal
-                </button>
-
-                <button
-                    type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-5 py-2 rounded-lg font-semibold">
-                    Simpan Perubahan
-                </button>
-            </div>
-
-        </form>
-
-    </div>
-</div>
+    </form>
+</x-modal>
 
 
 <script>
-    const dataRusak = @json($rusaks->items());
+    const dataRusak = @json($rusaks - > items());
 
     function formatTanggalRusak(tanggal) {
         if (!tanggal) {
@@ -512,13 +409,7 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
     }
 
 
-    function openDetailRusak(id) {
-        const rusak = dataRusak.find(item => item.id === id);
-
-        if (!rusak) {
-            return;
-        }
-
+    function renderDetailRusakModal(rusak) {
         const modal = document.getElementById('modal-detail-rusak');
         const content = document.getElementById('detail-rusak-content');
 
@@ -594,6 +485,34 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    function openDetailRusak(id) {
+        const rusak = dataRusak.find(item => item.id === id);
+
+        if (rusak) {
+            renderDetailRusakModal(rusak);
+            return;
+        }
+
+        fetch(`/rusak/${id}`, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil detail barang rusak.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderDetailRusakModal(data);
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Gagal mengambil data detail barang rusak.');
+            });
     }
 
     function closeDetailRusak() {
@@ -720,7 +639,7 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
         }
     });
 
-    @if($errors->any())
+    @if($errors - > any())
     openTambahRusak();
     @endif
 </script>

@@ -26,9 +26,15 @@ class LoginController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
             'captcha' => ['required', 'captcha'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+            'captcha.required' => 'Kode captcha wajib diisi.',
+            'captcha.captcha' => 'Kode captcha salah atau tidak valid.',
         ]);
 
-        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
                 'email' => 'Email atau password salah.',
             ]);

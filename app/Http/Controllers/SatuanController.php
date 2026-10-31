@@ -9,11 +9,11 @@ class SatuanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Satuan::query();
-        if ($request->filled('cari')) {
-            $query->where('nama', 'like', '%' . $request->cari . '%');
-        }
-        $satuans = $query->orderBy('id')->paginate(15)->withQueryString();
+        $satuans = Satuan::query()
+            ->search(['nama'], $request->cari)
+            ->orderBy('id')
+            ->paginate(15)
+            ->withQueryString();
         return view('satuan.index', compact('satuans'));
     }
 
@@ -31,6 +31,7 @@ class SatuanController extends Controller
         Satuan::create($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Satuan berhasil ditambahkan.');
             return response()->json(['message' => 'Satuan berhasil ditambahkan.'], 201);
         }
 
@@ -51,6 +52,7 @@ class SatuanController extends Controller
         $satuan->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Satuan berhasil diperbarui.');
             return response()->json(['message' => 'Satuan berhasil diperbarui.']);
         }
 

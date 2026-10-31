@@ -4,19 +4,21 @@
 @section('content')
 <!-- Page Header -->
 <x-page-header title="Manajemen User" subtitle="Kelola akun pengguna sistem: {{ collect(config('permission.roles'))->pluck('label')->implode(', ') }}.">
+    @if(auth()->user()->canManage('sistem.kelola-user'))
     <button type="button" id="btn-tambah-user" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Tambah User</span>
     </button>
+    @endif
 </x-page-header>
 
 <!-- Filter & Search Card -->
 <x-card-filter
     :action="route('user.index')"
     :reset-url="route('user.index')"
-    :grid="true"
+    :live-search="true"
     :has-reset="request()->filled('cari')">
-    <div class="relative shrink-0 w-full sm:w-64">
+    <div class="relative shrink-0 w-full sm:w-[360px]">
         <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari nama atau email..." class="form-input pr-8">
         <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
             <x-heroicon-o-magnifying-glass class="w-4 h-4" />
@@ -30,7 +32,7 @@
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
+                    <th scope="col" class="text-left w-36 pl-3">Aksi</th>
                     <th scope="col" class="w-16">ID</th>
                     <th scope="col">Nama</th>
                     <th scope="col">Email</th>
@@ -39,34 +41,48 @@
                 </tr>
             </thead>
             <tbody class="table-custom-body divide-gray-150">
+                @php
+                $canManageUser = auth()->user()->canManage('sistem.kelola-user');
+                $isSuper = auth()->user()->isSuperAdmin();
+                @endphp
                 @forelse ($users as $index => $user)
+                @php
+                $canEditUser = $canManageUser && (! $user->isSuperAdmin() || $isSuper);
+                $canDeleteUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists();
+                $canToggleUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper);
+                @endphp
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                    <td class="text-left">
+                    <td class="text-left pl-3">
                         <x-table-action
-                            edit-class="btn-edit-user"
-                            :edit-id="$user->id"
-                            :edit-data="['name' => $user->name, 'email' => $user->email, 'role' => $user->role]"
-                            :delete-url="($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists()) ? route('user.destroy', $user) : null"
+                            edit-class="{{ $canEditUser ? 'btn-edit-user' : '' }}"
+                            :edit-id="$canEditUser ? $user->id : null"
+                            :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
+                            :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
+                            :delete-item="$user->name"
                             delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
 
-                            @if($user->id !== auth()->id() && (! $user->isSuperAdmin() || auth()->user()->isSuperAdmin()))
+                            @if($canToggleUser)
                             <!-- Toggle Aktif / Nonaktif -->
-                            <form action="{{ route('user.toggle', $user) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit"
-                                    class="btn-secondary !p-1.5 {{ $user->aktif ? 'hover:bg-red-50 hover:border-red-300' : 'hover:bg-green-50 hover:border-green-300' }} transition-colors"
-                                    style="color: {{ $user->aktif ? '#DC2626' : '#16A34A' }};"
-                                    title="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
-                                    aria-label="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
-                                    onclick="return confirm('Yakin ingin {{ $user->aktif ? 'menonaktifkan' : 'mengaktifkan kembali' }} user ini?')">
-                                    @if($user->aktif)
-                                    <x-heroicon-o-user-minus class="w-4 h-4" />
-                                    @else
-                                    <x-heroicon-o-user-plus class="w-4 h-4" />
-                                    @endif
-                                </button>
-                            </form>
+                            <button type="button"
+                                data-confirm-action="{{ route('user.toggle', $user) }}"
+                                data-confirm-method="PATCH"
+                                data-confirm-title="{{ $user->aktif ? 'Nonaktifkan Akun User' : 'Aktifkan Akun User' }}"
+                                data-confirm-message="Apakah Anda yakin ingin {{ $user->aktif ? 'menonaktifkan akun user ini? User tidak akan dapat login sampai diaktifkan kembali.' : 'mengaktifkan kembali akun user ini agar dapat login dan mengakses sistem?' }}"
+                                data-confirm-detail="{{ $user->name }} ({{ $user->email }})"
+                                data-confirm-detail-label="User:"
+                                data-confirm-type="{{ $user->aktif ? 'warning' : 'info' }}"
+                                data-confirm-btn-text="{{ $user->aktif ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan' }}"
+                                data-confirm-loading-text="{{ $user->aktif ? 'Menonaktifkan...' : 'Mengaktifkan...' }}"
+                                class="btn-secondary !p-1.5 {{ $user->aktif ? 'hover:bg-red-50 hover:border-red-300' : 'hover:bg-green-50 hover:border-green-300' }} transition-colors"
+                                style="color: {{ $user->aktif ? '#DC2626' : '#16A34A' }};"
+                                title="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
+                                aria-label="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}">
+                                @if($user->aktif)
+                                <x-heroicon-o-user-minus class="w-4 h-4" />
+                                @else
+                                <x-heroicon-o-user-plus class="w-4 h-4" />
+                                @endif
+                            </button>
                             @endif
                         </x-table-action>
                     </td>
@@ -74,24 +90,10 @@
                     <td class="font-medium text-gray-800">{{ $user->name }}</td>
                     <td class="text-gray-600">{{ $user->email }}</td>
                     <td>
-                        @php
-                        $roleVariant = match($user->role) {
-                        'superadmin' => 'danger',
-                        'admin' => 'info',
-                        'apoteker' => 'warning',
-                        'gudang' => 'secondary',
-                        'kasir' => 'success',
-                        default => 'gray',
-                        };
-                        @endphp
-                        <x-badge :variant="$roleVariant">
-                            {{ ucfirst($user->role) }}
-                        </x-badge>
+                        <x-status-badge type="role" :status="$user->role" />
                     </td>
                     <td class="text-center">
-                        <x-badge :variant="$user->aktif ? 'success' : 'danger'">
-                            {{ $user->aktif ? 'Aktif' : 'Nonaktif' }}
-                        </x-badge>
+                        <x-status-badge type="aktif" :status="$user->aktif" />
                     </td>
                 </tr>
                 @empty
@@ -102,7 +104,7 @@
     </div>
 </div>
 
-<div class="mt-4">{{ $users->links('vendor.pagination.apotek') }}</div>
+<x-pagination :paginator="$users" />
 
 <x-modal-form
     id="modal-user"

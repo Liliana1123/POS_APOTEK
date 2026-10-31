@@ -6,16 +6,157 @@ function initSidebarExpand() {
     var sidebar = document.getElementById('app-sidebar');
     if (!sidebar) return;
 
+    var KEEP_KEY = 'sidebar-keep-expanded';
+    var PIN_KEY = 'sidebar-pinned';
+    var html = document.documentElement;
+    var pointerInside = false;
+    var hoverTimeout = null;
+
+    var pinBtn = document.getElementById('pin-sidebar-toggle');
+    var iconUnpinned = document.getElementById('pin-icon-unpinned');
+    var iconPinned = document.getElementById('pin-icon-pinned');
+
+    // Remove preload class after initial paint so all subsequent transitions are silky smooth
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            html.classList.remove('sidebar-preload');
+        });
+    });
+
+    function isDesktop() {
+        return window.matchMedia('(min-width: 1024px)').matches;
+    }
+
+    function isPinned() {
+        try {
+            return localStorage.getItem(PIN_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function updatePinUI(pinned) {
+        if (!pinBtn) return;
+        if (pinned) {
+            pinBtn.title = 'Lepas kunci sidebar (Unpin - Ctrl+B)';
+            pinBtn.setAttribute('aria-label', 'Lepas kunci sidebar (Ctrl+B)');
+            pinBtn.classList.add('bg-blue-800', 'text-white');
+            sidebar.classList.add('sidebar-pinned');
+            if (iconUnpinned) iconUnpinned.classList.add('hidden');
+            if (iconPinned) iconPinned.classList.remove('hidden');
+        } else {
+            pinBtn.title = 'Kunci sidebar tetap terbuka (Pin - Ctrl+B)';
+            pinBtn.setAttribute('aria-label', 'Kunci sidebar (Ctrl+B)');
+            pinBtn.classList.remove('bg-blue-800', 'text-white');
+            sidebar.classList.remove('sidebar-pinned');
+            if (iconUnpinned) iconUnpinned.classList.remove('hidden');
+            if (iconPinned) iconPinned.classList.add('hidden');
+        }
+    }
+
     function expandSidebar() {
+        if (!isDesktop()) return;
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            hoverTimeout = null;
+        }
         sidebar.classList.add('sidebar-expanded');
     }
-    function collapseSidebar() {
-        sidebar.classList.remove('sidebar-expanded');
+
+    function collapseSidebar(immediate) {
+        if (isPinned()) return;
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            hoverTimeout = null;
+        }
+        if (immediate) {
+            sidebar.classList.remove('sidebar-expanded');
+            html.classList.remove('sidebar-keep-expanded');
+            return;
+        }
+        hoverTimeout = setTimeout(function () {
+            if (!pointerInside && !isFocusInside() && !isPinned()) {
+                sidebar.classList.remove('sidebar-expanded');
+                html.classList.remove('sidebar-keep-expanded');
+            }
+        }, 80);
     }
-    sidebar.addEventListener('mouseenter', expandSidebar);
-    sidebar.addEventListener('mouseleave', collapseSidebar);
+
+    function isFocusInside() {
+        return sidebar.contains(document.activeElement);
+    }
+
+    if (pinBtn) {
+        pinBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var pinned = isPinned();
+            if (pinned) {
+                try { localStorage.removeItem(PIN_KEY); } catch (err) { }
+                html.classList.remove('sidebar-keep-expanded');
+                updatePinUI(false);
+                if (!pointerInside && !isFocusInside()) {
+                    collapseSidebar(true);
+                }
+            } else {
+                try { localStorage.setItem(PIN_KEY, '1'); } catch (err) { }
+                try { sessionStorage.removeItem(KEEP_KEY); } catch (err) { }
+                html.classList.add('sidebar-keep-expanded');
+                expandSidebar();
+                updatePinUI(true);
+            }
+        });
+    }
+
+    sidebar.addEventListener('click', function (e) {
+        var link = e.target.closest('a.sidebar-nav-link');
+        if (!link || !sidebar.contains(link) || !isDesktop()) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        sessionStorage.setItem(KEEP_KEY, '1');
+        var group = link.closest('.sidebar-group');
+        if (group && group.dataset.group) {
+            localStorage.setItem('sidebar-group-' + group.dataset.group, '1');
+        }
+        var subgroup = link.closest('.sidebar-subgroup');
+        if (subgroup && subgroup.dataset.subgroup) {
+            localStorage.setItem('sidebar-subgroup-' + subgroup.dataset.subgroup, '1');
+        }
+    });
+
+    var initialPinned = isPinned();
+    updatePinUI(initialPinned);
+
+    if (isDesktop() && (initialPinned || html.classList.contains('sidebar-keep-expanded') || sessionStorage.getItem(KEEP_KEY) === '1')) {
+        pointerInside = true;
+        expandSidebar();
+        if (!initialPinned) {
+            sessionStorage.removeItem(KEEP_KEY);
+            requestAnimationFrame(function () {
+                html.classList.remove('sidebar-keep-expanded');
+            });
+        }
+
+        function settlePointer(e) {
+            document.removeEventListener('pointermove', settlePointer, true);
+            var el = document.elementFromPoint(e.clientX, e.clientY);
+            pointerInside = !!(el && sidebar.contains(el));
+            if (!pointerInside && !isFocusInside()) collapseSidebar(false);
+        }
+        document.addEventListener('pointermove', settlePointer, true);
+    }
+
+    sidebar.addEventListener('pointerenter', function () {
+        pointerInside = true;
+        expandSidebar();
+    });
+    sidebar.addEventListener('pointerleave', function () {
+        pointerInside = false;
+        if (!isFocusInside()) collapseSidebar(false);
+    });
     sidebar.addEventListener('focusin', expandSidebar);
-    sidebar.addEventListener('focusout', collapseSidebar);
+    sidebar.addEventListener('focusout', function (e) {
+        if (sidebar.contains(e.relatedTarget) || pointerInside) return;
+        collapseSidebar(false);
+    });
 }
 
 // Sidebar group state restore from localStorage (blocking execution)
@@ -25,32 +166,188 @@ function initSidebarGroupRestore() {
         var saved = localStorage.getItem('sidebar-group-' + name);
         var items = group.querySelector('.sidebar-group-items');
         if (!items) return;
-        var expand = saved === '1' || items.dataset.hasActive === 'true';
+        var hasActive = items.dataset.hasActive === 'true';
+        var expand = hasActive || saved === '1';
         if (expand) {
-            items.style.maxHeight = '999px';
+            items.style.transition = 'none';
+            items.style.maxHeight = 'none';
+            items.classList.remove('max-h-0');
             items.setAttribute('data-expanded', '1');
             var btn = group.querySelector('.sidebar-group-header');
             if (btn) btn.setAttribute('aria-expanded', 'true');
-            var arrow = items.previousElementSibling ? items.previousElementSibling.querySelector('.sidebar-group-arrow') : null;
+            var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
             if (arrow) arrow.classList.add('rotate-90');
+            void items.offsetHeight;
+            items.style.transition = '';
+        } else if (saved === '0' && !hasActive) {
+            items.style.transition = 'none';
+            items.style.maxHeight = '0px';
+            items.classList.add('max-h-0');
+            items.setAttribute('data-expanded', '0');
+            var btn = group.querySelector('.sidebar-group-header');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+            var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+            if (arrow) arrow.classList.remove('rotate-90');
+            void items.offsetHeight;
+            items.style.transition = '';
         }
     });
+}
+
+// Subgroup Accordion (e.g., Pelanggan -> WhatsApp Monitor)
+function initSubgroupAccordion() {
+    window.toggleWhatsAppSubmenu = function (e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var subgroup = document.querySelector('.sidebar-subgroup[data-subgroup="pelanggan"]');
+        if (!subgroup) return;
+        var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+        if (toggleBtn && typeof toggleBtn.__doToggle === 'function') {
+            toggleBtn.__doToggle(e);
+        }
+    };
+
+    document.querySelectorAll('.sidebar-subgroup').forEach(function (subgroup) {
+        var name = subgroup.dataset.subgroup;
+        var saved = localStorage.getItem('sidebar-subgroup-' + name);
+        var items = subgroup.querySelector('.sidebar-subgroup-items');
+        var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+        var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+        var mainLink = subgroup.querySelector('.sidebar-subgroup-link');
+        if (!items) return;
+
+        function ensureParentExpanded() {
+            var parentGroup = subgroup.closest('.sidebar-group');
+            if (parentGroup) {
+                var parentItems = parentGroup.querySelector('.sidebar-group-items');
+                if (parentItems) {
+                    parentItems.style.maxHeight = 'none';
+                }
+            }
+        }
+
+        var hasActive = items.dataset.hasActive === 'true';
+        var expand = hasActive || saved === '1';
+
+        if (expand) {
+            items.style.transition = 'none';
+            items.style.maxHeight = 'none';
+            items.classList.remove('max-h-0');
+            items.setAttribute('data-expanded', '1');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+            if (arrow) arrow.classList.add('rotate-90');
+            ensureParentExpanded();
+            void items.offsetHeight;
+            items.style.transition = '';
+        }
+
+        function doToggle(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var isExpanded = items.getAttribute('data-expanded') === '1';
+            if (isExpanded) {
+                items.style.maxHeight = items.scrollHeight + 'px';
+                void items.offsetHeight;
+                items.style.maxHeight = '0px';
+                items.classList.add('max-h-0');
+                items.setAttribute('data-expanded', '0');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.classList.remove('rotate-90');
+                localStorage.setItem('sidebar-subgroup-' + name, '0');
+            } else {
+                items.classList.remove('max-h-0');
+                items.style.maxHeight = items.scrollHeight + 'px';
+                items.setAttribute('data-expanded', '1');
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                if (arrow) arrow.classList.add('rotate-90');
+                localStorage.setItem('sidebar-subgroup-' + name, '1');
+                ensureParentExpanded();
+
+                var onSubEnd = function (ev) {
+                    if (ev.propertyName === 'max-height' && items.getAttribute('data-expanded') === '1') {
+                        items.style.maxHeight = 'none';
+                    }
+                    items.removeEventListener('transitionend', onSubEnd);
+                };
+                items.addEventListener('transitionend', onSubEnd);
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.__doToggle = doToggle;
+            if (!toggleBtn.dataset.bound) {
+                toggleBtn.dataset.bound = '1';
+                toggleBtn.addEventListener('click', function (e) {
+                    doToggle(e);
+                });
+            }
+        }
+
+        if (mainLink && !mainLink.dataset.bound) {
+            mainLink.dataset.bound = '1';
+            mainLink.addEventListener('click', function (e) {
+                var currentPath = window.location.pathname.replace(/\/+$/, '');
+                var linkPath = new URL(mainLink.href).pathname.replace(/\/+$/, '');
+                if (currentPath === linkPath) {
+                    doToggle(e);
+                }
+            });
+        }
+    });
+}
+
+// Keep sidebar nav scroll position across full-page menu navigation
+function initSidebarScrollRestore() {
+    var scrollArea = document.querySelector('#app-sidebar .sidebar-scroll-area');
+    if (!scrollArea) return;
+
+    var KEY = 'sidebar-scroll-top';
+
+    function save() {
+        sessionStorage.setItem(KEY, String(scrollArea.scrollTop));
+    }
+
+    var saved = parseInt(sessionStorage.getItem(KEY) || '0', 10);
+    if (!isNaN(saved) && saved > 0) {
+        scrollArea.scrollTop = saved;
+    }
+
+    var ticking = false;
+    scrollArea.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+            save();
+            ticking = false;
+        });
+    }, { passive: true });
+
+    var sidebar = document.getElementById('app-sidebar');
+    if (sidebar) {
+        sidebar.addEventListener('click', function (e) {
+            if (e.target.closest('a.sidebar-nav-link')) save();
+        });
+    }
 }
 
 // Toast auto-dismiss
 function initToastAutoDismiss() {
     var toastSuccess = document.getElementById('toast-success');
     if (toastSuccess) {
-        setTimeout(function() {
+        setTimeout(function () {
             toastSuccess.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(function() { toastSuccess.remove(); }, 300);
+            setTimeout(function () { toastSuccess.remove(); }, 300);
         }, 3500);
     }
     var toastError = document.getElementById('toast-error');
     if (toastError) {
-        setTimeout(function() {
+        setTimeout(function () {
             toastError.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(function() { toastError.remove(); }, 300);
+            setTimeout(function () { toastError.remove(); }, 300);
         }, 4000);
     }
 }
@@ -66,8 +363,6 @@ function initShellInteractions() {
         toggle.addEventListener('click', function () {
             sidebar.classList.remove('-translate-x-full');
             if (backdrop) backdrop.classList.remove('hidden');
-            var scrollArea = sidebar.querySelector('.sidebar-scroll-area');
-            if (scrollArea) scrollArea.scrollTop = 0;
         });
     }
 
@@ -80,12 +375,21 @@ function initShellInteractions() {
     if (backdrop) backdrop.addEventListener('click', closeSidebar);
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeSidebar();
+        // Only close sidebar on Escape if mobile sidebar is actually open
+        if (e.key === 'Escape' && sidebar && !sidebar.classList.contains('-translate-x-full') && !window.matchMedia('(min-width: 1024px)').matches) {
+            closeSidebar();
+        }
+        // Ctrl+B / Cmd+B: toggle sidebar pin (desktop only)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+            e.preventDefault();
+            var pinToggle = document.getElementById('pin-sidebar-toggle');
+            if (pinToggle && window.matchMedia('(min-width: 1024px)').matches) pinToggle.click();
+        }
     });
 
     // Sidebar Group Accordion
-    document.querySelectorAll('.sidebar-group-header').forEach(function(header) {
-        header.addEventListener('click', function() {
+    document.querySelectorAll('.sidebar-group-header').forEach(function (header) {
+        header.addEventListener('click', function () {
             var group = this.closest('.sidebar-group');
             var items = group.querySelector('.sidebar-group-items');
             var arrow = this.querySelector('.sidebar-group-arrow');
@@ -94,17 +398,30 @@ function initShellInteractions() {
             var isExpanded = items.getAttribute('data-expanded') === '1';
 
             if (isExpanded) {
+                items.style.maxHeight = items.scrollHeight + 'px';
+                void items.offsetHeight;
                 items.style.maxHeight = '0px';
+                items.classList.add('max-h-0');
                 items.setAttribute('data-expanded', '0');
                 this.setAttribute('aria-expanded', 'false');
+                if (arrow) arrow.classList.remove('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '0');
             } else {
-                items.style.maxHeight = '999px';
+                items.classList.remove('max-h-0');
+                items.style.maxHeight = items.scrollHeight + 'px';
                 items.setAttribute('data-expanded', '1');
                 this.setAttribute('aria-expanded', 'true');
+                if (arrow) arrow.classList.add('rotate-90');
                 localStorage.setItem('sidebar-group-' + groupName, '1');
+
+                var onGroupEnd = function (ev) {
+                    if (ev.propertyName === 'max-height' && items.getAttribute('data-expanded') === '1') {
+                        items.style.maxHeight = 'none';
+                    }
+                    items.removeEventListener('transitionend', onGroupEnd);
+                };
+                items.addEventListener('transitionend', onGroupEnd);
             }
-            arrow.classList.toggle('rotate-90');
         });
     });
 
@@ -112,28 +429,40 @@ function initShellInteractions() {
     document.addEventListener('submit', function (e) {
         var form = e.target;
         if (form.method.toLowerCase() === 'post' && form.querySelector('input[name="_method"][value="DELETE"]')) {
+            // Jangan intercept jika form berasal dari komponen x-modal-confirm-delete atau sudah terkonfirmasi
+            if (form.id === 'modal-confirm-delete-form' || form.dataset.confirmed === 'true' || form.closest('#modal-confirm-delete')) {
+                return;
+            }
+
             if (!form.dataset.confirmed) {
                 e.preventDefault();
+
+                // Jika x-modal-confirm-delete tersedia secara global, gunakan modal tersebut
+                if (typeof window.confirmDelete === 'function') {
+                    window.confirmDelete(form.action);
+                    return;
+                }
+
                 var modal = document.createElement('div');
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (
                     '<div class="modal-container-custom mx-4 max-w-md">' +
-                        '<div class="modal-header-custom">' +
-                            '<h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>' +
-                            '<button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>' +
-                        '</div>' +
-                        '<div class="modal-body-custom leading-relaxed">' +
-                            'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan dan dapat memengaruhi integritas relasi data transaksi.' +
-                        '</div>' +
-                        '<div class="modal-footer-custom">' +
-                            '<button type="button" id="confirm-cancel" class="btn-secondary">Batal</button>' +
-                            '<button type="button" id="confirm-submit" class="btn-destructive">Hapus</button>' +
-                        '</div>' +
+                    '<div class="modal-header-custom">' +
+                    '<h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Konfirmasi Hapus</h3>' +
+                    '<button type="button" id="confirm-x" class="text-gray-400 hover:text-gray-600 font-bold text-base">&times;</button>' +
+                    '</div>' +
+                    '<div class="modal-body-custom leading-relaxed">' +
+                    'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan dan dapat memengaruhi integritas relasi data transaksi.' +
+                    '</div>' +
+                    '<div class="modal-footer-custom">' +
+                    '<button type="button" id="confirm-cancel" class="btn-secondary">Batal</button>' +
+                    '<button type="button" id="confirm-submit" class="btn-destructive">Hapus</button>' +
+                    '</div>' +
                     '</div>'
                 );
                 document.body.appendChild(modal);
 
-                var closeModal = function() { modal.remove(); };
+                var closeModal = function () { modal.remove(); };
                 modal.querySelector('#confirm-cancel').onclick = closeModal;
                 modal.querySelector('#confirm-x').onclick = closeModal;
                 modal.querySelector('#confirm-submit').onclick = function () {
@@ -148,10 +477,16 @@ function initShellInteractions() {
     // Universal Form Submission Loading States
     document.addEventListener('submit', function (e) {
         var form = e.target;
-        if (form.action.includes('logout') || form.dataset.confirmed === 'false') return;
+        if (
+            form.action.includes('logout') ||
+            form.dataset.confirmed === 'false' ||
+            form.dataset.liveFilter === 'true' ||
+            form.hasAttribute('data-no-loading')
+        ) return;
         var btn = form.querySelector('button[type="submit"]');
         if (btn) {
-            setTimeout(function() {
+            setTimeout(function () {
+                if (e.defaultPrevented) return;
                 btn.disabled = true;
                 btn.innerHTML = btn.dataset.loadingText || 'Memproses...';
             }, 10);
@@ -243,15 +578,15 @@ function initIdleAutoLogout() {
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (
                     '<div class="modal-container-custom mx-4 max-w-md">' +
-                        '<div class="modal-header-custom">' +
-                            '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
-                        '</div>' +
-                        '<div class="modal-body-custom leading-relaxed">' +
-                            'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
-                        '</div>' +
-                        '<div class="modal-footer-custom">' +
-                            '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
-                        '</div>' +
+                    '<div class="modal-header-custom">' +
+                    '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
+                    '</div>' +
+                    '<div class="modal-body-custom leading-relaxed">' +
+                    'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
+                    '</div>' +
+                    '<div class="modal-footer-custom">' +
+                    '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
+                    '</div>' +
                     '</div>'
                 );
                 document.body.appendChild(modal);
@@ -309,12 +644,16 @@ function initIdleAutoLogout() {
 window.Layout = {
     initSidebarExpand: initSidebarExpand,
     initSidebarGroupRestore: initSidebarGroupRestore,
+    initSubgroupAccordion: initSubgroupAccordion,
+    initSidebarScrollRestore: initSidebarScrollRestore,
     initToastAutoDismiss: initToastAutoDismiss,
     initShellInteractions: initShellInteractions,
     initIdleAutoLogout: initIdleAutoLogout,
-    initAll: function() {
+    initAll: function () {
         initSidebarExpand();
         initSidebarGroupRestore();
+        initSubgroupAccordion();
+        initSidebarScrollRestore();
         initToastAutoDismiss();
         initShellInteractions();
         initIdleAutoLogout();
@@ -322,8 +661,8 @@ window.Layout = {
 };
 
 // Auto-init on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     window.Layout.initAll();
 });
 
-export { initSidebarExpand, initSidebarGroupRestore, initToastAutoDismiss, initShellInteractions, initIdleAutoLogout };
+export { initSidebarExpand, initSidebarGroupRestore, initSubgroupAccordion, initSidebarScrollRestore, initToastAutoDismiss, initShellInteractions, initIdleAutoLogout };

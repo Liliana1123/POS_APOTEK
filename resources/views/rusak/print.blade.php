@@ -339,7 +339,7 @@ $petugas = $log?->user_name;
                 </td>
 
                 <td>
-                    : {{ $rusak->tanggal?->format('d-m-Y') ?? '-' }}
+                    : @tanggalId($rusak->tanggal)
                 </td>
             </tr>
 
@@ -379,7 +379,7 @@ $petugas = $log?->user_name;
                 </td>
 
                 <td>
-                    : {{ $rusak->detailPenerimaan->expired_date?->format('d-m-Y') ?? '-' }}
+                    : @tanggalId($rusak->detailPenerimaan->expired_date)
                 </td>
             </tr>
 

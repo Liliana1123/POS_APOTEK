@@ -494,11 +494,11 @@ $apotek = \Illuminate\Support\Facades\Cache::remember('info_apotek', now()->addH
                     </td>
 
                     <td class="text-right">
-                        Rp {{ number_format($item->harga_beli, 0, ',', '.') }}
+                        @rupiah($item->harga_beli)
                     </td>
 
                     <td class="text-right">
-                        Rp {{ number_format($item->harga_beli * $item->jumlah, 0, ',', '.') }}
+                        @rupiah($item->harga_beli * $item->jumlah)
                     </td>
                 </tr>
                 @endforeach
@@ -510,28 +510,28 @@ $apotek = \Illuminate\Support\Facades\Cache::remember('info_apotek', now()->addH
             <div class="total-row">
                 <span>Total Belanja</span>
                 <span>
-                    Rp {{ number_format($penerimaan->totalFaktur(), 0, ',', '.') }}
+                    @rupiah($penerimaan->totalFaktur())
                 </span>
             </div>
 
             <div class="total-row">
                 <span>PPN (11%)</span>
                 <span>
-                    Rp {{ number_format($penerimaan->ppn, 0, ',', '.') }}
+                    @rupiah($penerimaan->ppn)
                 </span>
             </div>
 
             <div class="total-row grand-total">
                 <span>Total Tagihan</span>
                 <span>
-                    Rp {{ number_format($penerimaan->totalTagihan(), 0, ',', '.') }}
+                    @rupiah($penerimaan->totalTagihan())
                 </span>
             </div>
 
             <div class="total-row">
                 <span>Total Dibayar</span>
                 <span>
-                    Rp {{ number_format($penerimaan->totalDibayar(), 0, ',', '.') }}
+                    @rupiah($penerimaan->totalDibayar())
                 </span>
             </div>
 
@@ -539,7 +539,7 @@ $apotek = \Illuminate\Support\Facades\Cache::remember('info_apotek', now()->addH
             <div class="total-row" style="color: #dc2626; font-weight: bold;">
                 <span>Kekurangan Pembayaran</span>
                 <span>
-                    Rp {{ number_format($penerimaan->sisaTagihan(), 0, ',', '.') }}
+                    @rupiah($penerimaan->sisaTagihan())
                 </span>
             </div>
             @endif
@@ -548,7 +548,7 @@ $apotek = \Illuminate\Support\Facades\Cache::remember('info_apotek', now()->addH
             <div class="total-row" style="color: #dc2626; font-weight: bold;">
                 <span>Kelebihan Pembayaran</span>
                 <span>
-                    Rp {{ number_format($penerimaan->kelebihanPembayaran(), 0, ',', '.') }}
+                    @rupiah($penerimaan->kelebihanPembayaran())
                 </span>
             </div>
             @endif
@@ -585,7 +585,7 @@ $apotek = \Illuminate\Support\Facades\Cache::remember('info_apotek', now()->addH
                         </td>
 
                         <td class="text-right">
-                            Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
+                            @rupiah($pembayaran->jumlah)
                         </td>
 
                         <td>

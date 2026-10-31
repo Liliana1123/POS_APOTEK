@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class Penerimaan extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Filterable;
 
     protected $fillable = [
         'user_id',

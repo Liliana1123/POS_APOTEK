@@ -19,32 +19,8 @@ class PenjualanController extends Controller
     {
         $query = Penjualan::with(['user', 'pelanggan', 'detail']);
 
-        // Pencarian nomor faktur
-        if ($request->filled('cari')) {
-            $query->where(
-                'no_faktur',
-                'like',
-                '%' . $request->cari . '%'
-            );
-        }
-
-        // Filter tanggal awal
-        if ($request->filled('tanggal_awal')) {
-            $query->whereDate(
-                'tanggal',
-                '>=',
-                $request->tanggal_awal
-            );
-        }
-
-        // Filter tanggal akhir
-        if ($request->filled('tanggal_akhir')) {
-            $query->whereDate(
-                'tanggal',
-                '<=',
-                $request->tanggal_akhir
-            );
-        }
+        $query->search(['no_faktur'], $request->cari);
+        $query->dateRange('tanggal', $request->tanggal_awal, $request->tanggal_akhir);
 
         // Sorting No. Invoice Fitur Penjualan
         $sort = $request->input('sort', 'no_faktur');
@@ -114,11 +90,40 @@ class PenjualanController extends Controller
                 ];
             });
 
-        // Cuma barang yang aktif & masih ada stok yang bisa dijual
-        // eager-load stok aggregate (withSum) dan batch FEFO pertama agar tidak terjadi N+1 per baris
-        $barangs = Barang::withSum(['detailPenerimaan' => fn($q) => $q->where('aktif', true)], 'stok')
-            ->with('batchFefoFirst')
-            ->where('aktif', true)
+        $today = now()->startOfDay()->toDateString();
+
+        // Cuma barang yang aktif & masih ada stok layak jual (stok > 0 dan belum kedaluwarsa)
+        // eager-load stok aggregate (withSum) dan batch FEFO pertama, satuan, serta kategori
+        $barangs = Barang::where('aktif', true)
+            ->whereHas('detailPenerimaan', function ($q) use ($today) {
+                $q->where('aktif', true)
+                    ->where('stok', '>', 0)
+                    ->where(function ($sub) use ($today) {
+                        $sub->whereNull('expired_date')
+                            ->orWhereDate('expired_date', '>=', $today);
+                    });
+            })
+            ->withSum(['detailPenerimaan' => function ($q) use ($today) {
+                $q->where('aktif', true)
+                    ->where('stok', '>', 0)
+                    ->where(function ($sub) use ($today) {
+                        $sub->whereNull('expired_date')
+                            ->orWhereDate('expired_date', '>=', $today);
+                    });
+            }], 'stok')
+            ->with([
+                'satuan',
+                'kategori',
+                'detailPenerimaan' => function ($q) use ($today) {
+                    $q->where('aktif', true)
+                        ->where('stok', '>', 0)
+                        ->where(function ($sub) use ($today) {
+                            $sub->whereNull('expired_date')
+                                ->orWhereDate('expired_date', '>=', $today);
+                        })
+                        ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC');
+                }
+            ])
             ->get();
 
         // Precompute custom discount % untuk SEMUA barang aktif dalam sekali query (tidak dipanggil per-barang)
@@ -160,16 +165,26 @@ class PenjualanController extends Controller
             }
         }
 
-        $barangs = $barangs->filter(fn($b) => $b->detail_penerimaan_sum_stok > 0)
-            ->map(fn($b) => [
+        $barangs = $barangs->map(function ($b) use ($discountMap) {
+            $firstFefo = $b->detailPenerimaan->first();
+            $stokLayak = (int) ($b->detail_penerimaan_sum_stok ?? 0);
+
+            return [
                 'id'                  => $b->id,
                 'kode_apotek'         => $b->kode_apotek,
                 'nama'                => $b->nama,
-                'stok'                => (int) $b->detail_penerimaan_sum_stok,
-                'harga'               => $b->batchFefoFirst->first()?->harga_jual,
+                'satuan'              => $b->satuan?->nama,
+                'stok'                => $stokLayak,
+                'harga'               => $firstFefo?->harga_jual,
+                'no_batch'            => $firstFefo?->no_batch ?? ($b->kode_apotek ? 'B-' . $b->kode_apotek : 'B-001'),
+                'expired_date'        => $firstFefo?->expired_date?->format('Y-m-d'),
+                'barcode'             => $b->barcode,
+                'kategori'            => $b->kategori?->nama,
                 'butuh_resep'         => $b->butuh_resep,
                 'diskon_custom_percent' => $discountMap[$b->id] ?? 0,
-            ])
+            ];
+        })
+            ->filter(fn($b) => $b['stok'] > 0 && $b['harga'] !== null)
             ->values();
 
         return view('penjualan.create', compact('pelanggans', 'barangs'));
@@ -434,6 +449,8 @@ class PenjualanController extends Controller
                     }
                 }
 
+                $isResep = ($data['jenis_transaksi'] ?? '') === 'resep';
+
                 $penjualan = Penjualan::create([
                     'user_id' => $request->user()->id,
                     'pelanggan_id' => $data['pelanggan_id'] ?? null,
@@ -443,9 +460,9 @@ class PenjualanController extends Controller
                     'metode_pembayaran' => $data['metode_pembayaran'],
                     'due_date' => $finalDueDate,
                     'jenis_transaksi' => $data['jenis_transaksi'],
-                    'nama_dokter' => $data['nama_dokter'] ?? null,
-                    'id_dokter' => $data['id_dokter'] ?? null,
-                    'alamat_lembaga' => $data['alamat_lembaga'] ?? null,
+                    'nama_dokter' => $isResep ? ($data['nama_dokter'] ?? null) : null,
+                    'id_dokter' => $isResep ? ($data['id_dokter'] ?? null) : null,
+                    'alamat_lembaga' => $isResep ? ($data['alamat_lembaga'] ?? null) : null,
                 ]);
 
                 $totalFaktur = 0;
@@ -461,12 +478,19 @@ class PenjualanController extends Controller
                     // Diskon gabungan di-cap maksimal 50%
                     $totalDiskonPercent = min(50, $diskonMemberPercent + $diskonCustomPercent);
 
-                    // Ambil batch aktif & masih ada stok, urut FEFO (expired paling dekat duluan)
+                    $tglTransaksi = !empty($data['tanggal']) ? $data['tanggal'] : now()->toDateString();
+
+                    // Ambil batch aktif, stok > 0, dan belum kedaluwarsa, diurutkan FEFO murni:
+                    // Expired paling dekat duluan, batch tanpa expired ditaruh terakhir, tie-break id ASC
                     $batches = $barang->detailPenerimaan()
                         ->lockForUpdate()
                         ->where('aktif', true)
                         ->where('stok', '>', 0)
-                        ->orderBy('expired_date')
+                        ->where(function ($sub) use ($tglTransaksi) {
+                            $sub->whereNull('expired_date')
+                                ->orWhereDate('expired_date', '>=', $tglTransaksi);
+                        })
+                        ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END, expired_date ASC, id ASC')
                         ->get();
 
                     foreach ($batches as $batch) {
@@ -563,10 +587,11 @@ class PenjualanController extends Controller
                             }
                         }
 
-                        $batch->decrement('stok', $ambil);
-                        if ($batch->stok - $ambil <= 0) {
-                            $batch->update(['aktif' => false]);
-                        }
+                        $sisaStokBatch = max(0, $batch->stok - $ambil);
+                        $batch->update([
+                            'stok' => $sisaStokBatch,
+                            'aktif' => $sisaStokBatch > 0,
+                        ]);
 
                         $totalFaktur += $subtotal;
                         $sisaJumlah -= $ambil;
@@ -600,7 +625,7 @@ class PenjualanController extends Controller
 
     public function show(Penjualan $penjualan)
     {
-        $penjualan->load(['user', 'pelanggan', 'detail.detailPenerimaan.barang']);
+        $penjualan->load(['user', 'pelanggan', 'detail.detailPenerimaan.barang.satuan']);
 
         return view('penjualan.show', compact('penjualan'));
     }
@@ -610,7 +635,7 @@ class PenjualanController extends Controller
         $penjualan->load([
             'user',
             'pelanggan',
-            'detail.detailPenerimaan.barang',
+            'detail.detailPenerimaan.barang.satuan',
             'discountUsages',
         ]);
 
@@ -627,6 +652,17 @@ class PenjualanController extends Controller
         $penjualanData = $penjualan->toArray();
         $penjualanData['member_discount_percent_used'] = $memberDiscountPercent;
         $penjualanData['due_date_formatted'] = $penjualan->due_date ? $penjualan->due_date->format('d M Y') : null;
+
+        $isResep = strtolower((string) ($penjualan->jenis_transaksi ?? '')) === 'resep';
+        $penjualanData['is_resep'] = $isResep;
+        $penjualanData['jenis_transaksi'] = $isResep ? 'resep' : 'non_resep';
+        $penjualanData['id_dokter'] = $isResep ? $penjualan->id_dokter : null;
+        $penjualanData['nama_dokter'] = $isResep ? $penjualan->nama_dokter : null;
+        $penjualanData['alamat_lembaga'] = $isResep ? $penjualan->alamat_lembaga : null;
+        $penjualanData['tanggal_formatted'] = $penjualan->tanggal ? $penjualan->tanggal->format('d M Y') : null;
+        $penjualanData['jam_formatted'] = $penjualan->created_at
+            ? $penjualan->created_at->setTimezone('Asia/Jakarta')->format('H:i')
+            : null;
 
         return response()->json([
             'penjualan' => $penjualanData,

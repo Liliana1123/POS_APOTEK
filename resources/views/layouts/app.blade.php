@@ -3,6 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function() {
+            try {
+                if ((localStorage.getItem('sidebar-pinned') === '1' || sessionStorage.getItem('sidebar-keep-expanded') === '1') &&
+                    window.matchMedia('(min-width: 1024px)').matches) {
+                    document.documentElement.classList.add('sidebar-keep-expanded', 'sidebar-preload');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>@yield('title', 'POS Apotek')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -18,16 +28,48 @@
     <style>
         @media print {
 
+            html,
+            body {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background-color: #ffffff !important;
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            body>div,
+            main {
+                display: block !important;
+                position: static !important;
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                width: 100% !important;
+                flex: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
             aside#app-sidebar,
             #sidebar-backdrop,
             nav,
             footer,
-            .app-global-footer {
+            .app-global-footer,
+            #mobile-sidebar-toggle,
+            .print\:hidden,
+            #toast-success,
+            #toast-error {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
                 min-height: 0 !important;
                 max-height: 0 !important;
+                width: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 position: absolute !important;
@@ -42,8 +84,7 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
-    <!-- Sidebar -->
-    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full lg:translate-x-0 lg:static lg:flex lg:w-24 lg:hover:w-64 transition-all duration-200 ease-in-out print:hidden">
+    <aside id="app-sidebar" class="group fixed top-0 left-0 h-screen w-72 max-w-[85vw] bg-blue-700 border-r border-blue-800 flex flex-col justify-between z-50 shrink-0 self-start transform -translate-x-full transition-transform duration-300 ease-in-out lg:transition-none lg:translate-x-0 lg:static lg:flex lg:w-24 print:hidden">
         <!-- Pinned Sidebar Header -->
         <div class="sidebar-header shrink-0 px-5 py-5 flex justify-between items-center">
             @php
@@ -69,7 +110,22 @@
                     {{ $apotek?->nama_apotek ?? 'APOTEK KITA' }}
                 </span>
             </div>
-            <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none" aria-label="Tutup menu">
+            <!-- Pin Sidebar Toggle (Desktop) -->
+            <button id="pin-sidebar-toggle"
+                type="button"
+                class="hidden lg:flex sidebar-nav-label text-blue-200 hover:text-white p-1.5 rounded-lg hover:bg-blue-600/50 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none transition-colors"
+                title="Kunci sidebar tetap terbuka (Pin - Ctrl+B)"
+                aria-label="Kunci sidebar (Ctrl+B)">
+                <svg id="pin-icon-unpinned" class="w-4 h-4 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+                <svg id="pin-icon-pinned" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="12" y1="17" x2="12" y2="22"></line>
+                    <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+                </svg>
+            </button>
+            <button id="close-sidebar" class="lg:hidden text-blue-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg p-1 transition-colors" aria-label="Tutup menu">
                 <x-heroicon-o-x-mark class="w-5 h-5" aria-hidden="true" />
             </button>
         </div>
@@ -98,13 +154,15 @@
                 $masterActive = request()->routeIs('barang.*') || request()->routeIs('kategori.*')
                 || request()->routeIs('satuan.*') || request()->routeIs('pabrik.*')
                 || request()->routeIs('supplier.*') || request()->routeIs('pelanggan.*')
+                || request()->routeIs('whatsapp-monitor.*')
                 || request()->routeIs('user.*') || request()->routeIs('pengaturan.*')
-                || request()->routeIs('permission.*');
+                || request()->routeIs('backup.*');
                 $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                 || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
                 || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
                 || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan')
-                || $u->isSuperAdmin();
+                || $u->isSuperAdmin()
+                || $u->isAdmin();
                 @endphp
 
                 <!-- Group: Master Data -->
@@ -114,7 +172,7 @@
                     <x-nav-link route="barang.index" pattern="barang.*" icon="archive-box" label="Barang / Produk" />
                     @endif
                     @if ($u->hasPermission('master.kategori'))
-                    <x-nav-link route="kategori.index" pattern="kategori.*" icon="percent-badge" label="Kategori" />
+                    <x-nav-link route="kategori.index" pattern="kategori.*" icon="squares-2x2" label="Kategori" />
                     @endif
                     @if ($u->hasPermission('master.satuan'))
                     <x-nav-link route="satuan.index" pattern="satuan.*" icon="scale" label="Satuan" />
@@ -126,7 +184,29 @@
                     <x-nav-link route="supplier.index" pattern="supplier.*" icon="building-office-2" label="Supplier" />
                     @endif
                     @if ($u->hasPermission('master.pelanggan'))
-                    <x-nav-link route="pelanggan.index" pattern="pelanggan.*" icon="user" label="Pelanggan / Member" />
+                    @php
+                    $pelangganActive = request()->routeIs('pelanggan.*') || request()->is('pelanggan*');
+                    $waMonitorActive = request()->routeIs('whatsapp-monitor.*') || request()->is('whatsapp-monitor*');
+                    $pelangganRowClass = $pelangganActive
+                    ? 'sidebar-nav-active bg-white text-blue-800 font-semibold shadow-xs'
+                    : 'text-blue-100 hover:bg-blue-600/60 hover:text-white';
+                    @endphp
+                    <div class="sidebar-subgroup" data-subgroup="pelanggan">
+                        <div class="flex items-center justify-between rounded-lg transition-colors {{ $pelangganRowClass }}">
+                            <a href="{{ route('pelanggan.index') }}" title="Pelanggan / Member" class="sidebar-nav-link sidebar-subgroup-link sidebar-nav-child flex items-center gap-2.5 px-3 py-1.5 flex-1 min-w-0 transition-colors focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none {{ $pelangganActive ? 'text-blue-800 font-semibold' : 'text-blue-100 hover:text-white' }}">
+                                <x-dynamic-component component="heroicon-o-user" class="w-4 h-4 shrink-0 opacity-80 group-hover:opacity-100" aria-hidden="true" />
+                                <span class="sidebar-nav-label truncate whitespace-nowrap font-medium text-xs">Pelanggan / Member</span>
+                            </a>
+                            <button type="button" aria-expanded="{{ $waMonitorActive ? 'true' : 'false' }}" class="sidebar-subgroup-toggle relative z-10 p-1.5 mr-1 bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 cursor-pointer {{ $pelangganActive ? 'text-blue-800 hover:text-blue-950' : 'text-blue-300 hover:text-white' }}" title="Buka/Tutup Submenu WhatsApp Monitor" aria-label="Buka/Tutup Submenu WhatsApp Monitor">
+                                <x-heroicon-o-chevron-right class="sidebar-subgroup-arrow w-3.5 h-3.5 shrink-0 transition-transform duration-300 pointer-events-none {{ $waMonitorActive ? 'rotate-90' : '' }}" aria-hidden="true" />
+                            </button>
+                        </div>
+                        <div class="sidebar-subgroup-items overflow-hidden {{ $waMonitorActive ? '' : 'max-h-0' }} transition-all duration-300 ease-in-out flex flex-col space-y-1 my-1" data-has-active="{{ $waMonitorActive ? 'true' : 'false' }}" @if($waMonitorActive) data-expanded="1" style="max-height: none;" @endif>
+                            @if ($u->hasPermission('master.pelanggan') || $u->isSuperAdmin())
+                            <x-nav-link route="whatsapp-monitor.index" pattern="whatsapp-monitor.*" icon="chat-bubble-left-right" label="WhatsApp Monitor" />
+                            @endif
+                        </div>
+                    </div>
                     @endif
                     @if ($u->hasPermission('sistem.kelola-user'))
                     <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
@@ -134,25 +214,32 @@
                     @if ($u->hasPermission('sistem.pengaturan'))
                     <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
                     @endif
+                    @if ($u->isAdmin() || $u->isSuperAdmin())
+                    <x-nav-link route="backup.index" pattern="backup.*" icon="circle-stack" label="Backup Database" />
+                    @endif
                 </x-sidebar-group>
                 @endif
 
                 <!-- Group: Transaksi -->
                 @php
+                $adaTransaksi = $u->hasPermission('transaksi.penjualan') || $u->hasPermission('transaksi.penerimaan')
+                || $u->hasPermission('transaksi.rusak');
                 $transaksiActive = request()->routeIs('penjualan.*') || request()->routeIs('penerimaan.*')
                 || request()->routeIs('rusak.*');
                 @endphp
+                @if ($adaTransaksi)
                 <x-sidebar-group name="transaksi" icon="banknotes" icon-type="s" label="Transaksi" :has-active="$transaksiActive">
                     @if ($u->hasPermission('transaksi.penjualan'))
                     <x-nav-link route="penjualan.index" pattern="penjualan.*" icon="shopping-cart" label="Penjualan (Kasir)" />
                     @endif
                     @if ($u->hasPermission('transaksi.penerimaan'))
-                    <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan barang" />
+                    <x-nav-link route="penerimaan.index" pattern="penerimaan.*" icon="truck" label="Penerimaan Barang" />
                     @endif
                     @if ($u->hasPermission('transaksi.rusak'))
-                    <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang rusak" />
+                    <x-nav-link route="rusak.index" pattern="rusak.*" icon="exclamation-triangle" label="Barang Rusak" />
                     @endif
                 </x-sidebar-group>
+                @endif
 
                 <!-- Group: Laporan -->
                 @if ($u->hasPermission('laporan.stok') || $u->hasPermission('laporan.penerimaan')
@@ -160,22 +247,22 @@
                 || $u->hasPermission('laporan.laba-rugi') || $u->hasPermission('laporan.diskon'))
                 <x-sidebar-group name="laporan" icon="chart-bar" icon-type="s" label="Laporan" :has-active="request()->routeIs('laporan.*')">
                     @if ($u->hasPermission('laporan.stok'))
-                    <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan stok" />
+                    <x-nav-link route="laporan.stok" icon="document-chart-bar" label="Laporan Stok" />
                     @endif
                     @if ($u->hasPermission('laporan.penerimaan'))
-                    <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan penerimaan" />
+                    <x-nav-link route="laporan.penerimaan" icon="document-duplicate" label="Laporan Penerimaan" />
                     @endif
                     @if ($u->hasPermission('laporan.penjualan'))
-                    <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan penjualan" />
+                    <x-nav-link route="laporan.penjualan" icon="currency-dollar" label="Laporan Penjualan" />
                     @endif
                     @if ($u->hasPermission('laporan.rusak'))
-                    <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan barang rusak" />
+                    <x-nav-link route="laporan.rusak" icon="no-symbol" label="Laporan Barang Rusak" />
                     @endif
                     @if ($u->hasPermission('laporan.laba-rugi'))
-                    <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan laba-rugi" />
+                    <x-nav-link route="laporan.laba-rugi" icon="chart-pie" label="Laporan Laba Rugi" />
                     @endif
                     @if ($u->hasPermission('laporan.diskon'))
-                    <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan diskon" />
+                    <x-nav-link route="laporan.diskon" icon="ticket" label="Laporan Diskon" />
                     @endif
                 </x-sidebar-group>
                 @endif
@@ -196,9 +283,13 @@
                 @endif
 
                 @if ($u->isSuperAdmin())
-                <x-sidebar-group name="izin" icon="shield-check" icon-type="s" label="Izin Akses" :has-active="request()->routeIs('permission.*')">
-                    <x-nav-link route="permission.index" pattern="permission.*" icon="adjustments-horizontal" label="Izin Akses" />
-                </x-sidebar-group>
+                <x-nav-link
+                    route="permission.index"
+                    pattern="permission.*"
+                    icon="shield-check"
+                    icon-type="s"
+                    label="Izin Akses"
+                    variant="top" />
                 @endif
 
             </nav>
@@ -206,8 +297,8 @@
 
         <!-- Sidebar Profile Card (Bottom) -->
         <div class="sidebar-footer shrink-0 px-6 py-4 border-t border-blue-600 bg-blue-800 flex items-center justify-between">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md" aria-hidden="true">
+            <div class="flex items-center gap-3 min-w-0" title="{{ $u?->name }} ({{ ucfirst($u?->role) }})">
+                <div class="w-12 h-12 rounded-full bg-white text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-md cursor-default" aria-label="Profil: {{ $u?->name }}">
                     {{ $u ? strtoupper(substr($u->name, 0, 2)) : '' }}
                 </div>
                 <div class="sidebar-footer-info min-w-0 overflow-hidden whitespace-nowrap">
@@ -217,38 +308,108 @@
             </div>
             <form method="POST" action="{{ route('logout') }}" class="sidebar-footer-logout shrink-0 overflow-hidden">
                 @csrf
-                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1" title="Logout" aria-label="Logout">
+                <button type="submit" class="text-blue-200 hover:text-red-400 transition-colors p-1 rounded-md focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none" title="Logout" aria-label="Logout">
                     <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
                 </button>
             </form>
         </div>
     </aside>
+    <script>
+        (function() {
+            try {
+                document.querySelectorAll('.sidebar-group').forEach(function(group) {
+                    var name = group.dataset.group;
+                    var saved = localStorage.getItem('sidebar-group-' + name);
+                    var items = group.querySelector('.sidebar-group-items');
+                    if (!items) return;
+                    var hasActive = items.dataset.hasActive === 'true';
+                    var expand = hasActive || saved === '1';
+                    if (expand) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = 'none';
+                        items.classList.remove('max-h-0');
+                        items.setAttribute('data-expanded', '1');
+                        var btn = group.querySelector('.sidebar-group-header');
+                        if (btn) btn.setAttribute('aria-expanded', 'true');
+                        var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+                        if (arrow) arrow.classList.add('rotate-90');
+                    } else if (saved === '0' && !hasActive) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = '0px';
+                        items.classList.add('max-h-0');
+                        items.setAttribute('data-expanded', '0');
+                        var btn = group.querySelector('.sidebar-group-header');
+                        if (btn) btn.setAttribute('aria-expanded', 'false');
+                        var arrow = group.querySelector('.sidebar-group-header .sidebar-group-arrow');
+                        if (arrow) arrow.classList.remove('rotate-90');
+                    }
+                });
+
+                document.querySelectorAll('.sidebar-subgroup').forEach(function(subgroup) {
+                    var name = subgroup.dataset.subgroup;
+                    var saved = localStorage.getItem('sidebar-subgroup-' + name);
+                    var items = subgroup.querySelector('.sidebar-subgroup-items');
+                    var arrow = subgroup.querySelector('.sidebar-subgroup-arrow');
+                    var toggleBtn = subgroup.querySelector('.sidebar-subgroup-toggle');
+                    if (!items) return;
+                    var hasActive = items.dataset.hasActive === 'true';
+                    var expand = hasActive || saved === '1';
+                    if (expand) {
+                        items.style.transition = 'none';
+                        items.style.maxHeight = 'none';
+                        items.classList.remove('max-h-0');
+                        items.setAttribute('data-expanded', '1');
+                        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+                        if (arrow) arrow.classList.add('rotate-90');
+                    }
+                });
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <!-- Top Navbar (Sticky) -->
-        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-3 flex justify-between items-center print:hidden shadow-xs">
-            <div class="flex items-center gap-3">
+        <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-2.5 flex justify-between items-center print:hidden shadow-xs">
+            <div class="flex items-center gap-3 md:gap-5 flex-1 min-w-0 pr-4">
                 <button id="mobile-sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none" aria-label="Buka menu">
                     <x-heroicon-o-bars-3 class="w-5 h-5" aria-hidden="true" />
                 </button>
-                <span class="font-bold text-sm text-gray-800 uppercase tracking-wide">@yield('title', 'Dashboard')</span>
+
+                <!-- Quick Search Input Trigger (Desktop) -->
+                <button type="button"
+                    id="global-quick-search-trigger"
+                    class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 border border-gray-200 rounded-lg transition-all w-52 md:w-72 shadow-2xs group focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    title="Cari obat, transaksi faktur, atau menu">
+                    <x-heroicon-o-magnifying-glass class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                    <span class="truncate text-gray-400 group-hover:text-gray-600 font-normal">Cari obat, faktur, menu...</span>
+                </button>
+
+                <!-- Quick Search Icon (Mobile) -->
+                <button type="button"
+                    id="mobile-quick-search-trigger"
+                    class="sm:hidden p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                    title="Pencarian cepat">
+                    <x-heroicon-o-magnifying-glass class="w-5 h-5" />
+                </button>
             </div>
 
-            <div class="flex items-center gap-3 md:gap-4 text-xs">
+            <div class="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
+                <!-- Keyboard Shortcuts Trigger Button -->
+                <button type="button"
+                    onclick="openKeyboardShortcutsModal()"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 rounded-lg transition-all shadow-2xs group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    title="Panduan Pintasan Keyboard (Tekan ?)">
+                    <x-heroicon-o-command-line class="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                    <span class="hidden md:inline font-medium text-slate-600 group-hover:text-blue-700">Pintasan</span>
+                    <span class="font-mono text-[10px] font-bold bg-white text-slate-500 group-hover:text-blue-600 border border-slate-200 group-hover:border-blue-200 px-1.5 py-0.5 rounded shadow-2xs">?</span>
+                </button>
+
                 <!-- Real-time Clock Widget -->
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-lg text-slate-700 shadow-2xs font-medium">
                     <x-heroicon-o-clock class="w-4 h-4 text-blue-600 shrink-0" />
                     <span id="realtime-clock" class="font-mono text-[11px] sm:text-xs tracking-tight">--:--:--</span>
                 </div>
-
-                <form method="POST" action="{{ route('logout') }}" class="inline md:hidden">
-                    @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1" aria-label="Logout">
-                        <x-heroicon-o-arrow-right-start-on-rectangle class="w-4 h-4" aria-hidden="true" />
-                        Logout
-                    </button>
-                </form>
             </div>
         </nav>
 
@@ -261,23 +422,19 @@
         @include('layouts.footer')
     </div>
 
-    <!-- Session Flash Toast Notifications -->
-    @if (session('success'))
-    <div id="toast-success" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="status" aria-live="polite">
-        <x-heroicon-o-check-circle class="w-5 h-5 text-green-500 shrink-0" aria-hidden="true" />
-        <span>{{ session('success') }}</span>
-        <button onclick="document.getElementById('toast-success').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
-    </div>
-    @endif
+    <!-- Global Reusable Toast Notification (Top-Center) -->
+    <x-toast />
 
-    @if (session('error'))
-    <div id="toast-error" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 transition-all duration-300 transform translate-y-0 opacity-100 border border-gray-800" role="alert" aria-live="assertive">
-        <x-heroicon-o-x-circle class="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
-        <span>{{ session('error') }}</span>
-        <button onclick="document.getElementById('toast-error').remove()" class="ml-2 font-bold text-gray-400 hover:text-white text-sm" aria-label="Tutup notifikasi">&times;</button>
-    </div>
-    @endif
+    <!-- Global Reusable Universal Confirmation Modal (Delete & Actions) -->
+    <x-modal-confirm />
 
+    {{-- Global Quick Search Modal (Ctrl + K) --}}
+    <x-global-quick-search />
+
+    {{-- Global Keyboard Shortcuts Guide Modal (?) --}}
+    <x-keyboard-shortcut-modal />
+
+    @stack('scripts')
 </body>
 
 </html>

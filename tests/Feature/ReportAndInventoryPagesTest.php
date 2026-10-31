@@ -24,7 +24,7 @@ class ReportAndInventoryPagesTest extends TestCase
             'penerimaan.index' => 'Daftar Penerimaan Barang',
             'rusak.index' => 'Daftar Pencatatan Barang Rusak',
             'laporan.penerimaan' => 'Laporan Penerimaan Barang',
-            'laporan.rusak' => 'Laporan Barang Rusak atau Kadaluarsa',
+            'laporan.rusak' => 'Laporan Barang Rusak',
             'laporan.penjualan' => 'Laporan Penjualan',
             'laporan.stok' => 'Laporan Ketersediaan Stok dan Kadaluarsa',
         ];

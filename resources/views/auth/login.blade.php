@@ -20,6 +20,7 @@ $abbr = ($apotek?->nama_apotek ?? '')
     <link rel="icon" type="{{ pathinfo($apotek?->logo, PATHINFO_EXTENSION) == 'png' ? 'image/png' : 'image/x-icon' }}" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('vendor/captcha/css/captcha.css') }}">
     @stack('styles')
 </head>
 
@@ -70,25 +71,23 @@ $abbr = ($apotek?->nama_apotek ?? '')
                             <input type="password" name="password" id="password" required
                                 class="form-input h-11 w-full border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 pr-11">
                             <button type="button" id="password-toggle" tabindex="-1"
-                                class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600"
+                                class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-600 transition-all duration-200 transform hover:scale-115 active:scale-90 cursor-pointer"
                                 aria-label="Tampilkan password">
-                                <x-heroicon-o-eye class="h-5 w-5 show-icon" />
-                                <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden" />
+                                <x-heroicon-o-eye class="h-5 w-5 show-icon transition-transform duration-200" />
+                                <x-heroicon-o-eye-slash class="h-5 w-5 hide-icon hidden transition-transform duration-200" />
                             </button>
                         </div>
                     </div>
 
                     <div class="space-y-1">
                         @include('captcha::captcha', ['type' => 'image', 'difficulty' => 'easy', 'style' => 'modern'])
+<<<<<<< HEAD
                         @error('captcha')
                         <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
+=======
+>>>>>>> f60378b0ce85b6a1b9274cf3aadd745abecc213c
                     </div>
-
-                    <label class="flex items-center gap-2 text-sm text-slate-600">
-                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                        Ingat saya
-                    </label>
 
                     <button type="submit"
                         class="btn-primary h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-sm font-semibold shadow-lg shadow-blue-200 transition hover:from-blue-700 hover:to-indigo-700">
@@ -110,8 +109,12 @@ $abbr = ($apotek?->nama_apotek ?? '')
             btn.addEventListener('click', () => {
                 const isText = input.type === 'text';
                 input.type = isText ? 'password' : 'text';
-                btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
-                btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+                btn.style.transform = 'scale(0.88) rotate(180deg)';
+                setTimeout(() => {
+                    btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
+                    btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+                    btn.style.transform = '';
+                }, 100);
                 clearTimeout(timer);
                 if (!isText) {
                     timer = setTimeout(() => {
@@ -122,6 +125,15 @@ $abbr = ($apotek?->nama_apotek ?? '')
                 }
             });
         })();
+    </script>
+
+    <script>
+        if (typeof window.LaravelCaptcha === 'undefined') {
+            window.LaravelCaptcha = function(id, options) {
+                this.id = id;
+                this.options = options || {};
+            };
+        }
     </script>
 
     @stack('scripts')

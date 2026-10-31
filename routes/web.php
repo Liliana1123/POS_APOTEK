@@ -16,7 +16,11 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\CustomDiscountController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\QuickSearchController;
+use App\Http\Controllers\WhatsAppPiutangController;
+use App\Http\Controllers\WhatsAppMonitorController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +30,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard')
+    ->middleware('auth');
+
+Route::get('/quick-search', [QuickSearchController::class, 'search'])
+    ->name('quick-search')
     ->middleware('auth');
 
 // Redirect halaman utama ke dashboard (atau ke login kalau belum login)
@@ -78,6 +86,19 @@ Route::middleware(['auth', 'permission:master.pelanggan'])->group(function () {
     Route::get('pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
     Route::get('pelanggan/{pelanggan}/piutang', [PembayaranPiutangController::class, 'pelanggan'])->name('pelanggan.piutang');
     Route::get('pelanggan/{pelanggan}', [PelangganController::class, 'show'])->name('pelanggan.show');
+    Route::get('pelanggan/{pelanggan}/whatsapp-piutang/preview', [WhatsAppPiutangController::class, 'preview'])->name('pelanggan.whatsapp-piutang.preview');
+    Route::post('pelanggan/{pelanggan}/whatsapp-piutang/send', [WhatsAppPiutangController::class, 'send'])->name('pelanggan.whatsapp-piutang.send');
+    Route::post('pelanggan/whatsapp-piutang/bulk-preview', [WhatsAppPiutangController::class, 'bulkPreview'])->name('pelanggan.whatsapp-piutang.bulk-preview');
+    Route::post('pelanggan/{pelanggan}/whatsapp-piutang/bulk-send', [WhatsAppPiutangController::class, 'sendBulkItem'])->name('pelanggan.whatsapp-piutang.bulk-send');
+    Route::get('whatsapp-templates', [WhatsAppPiutangController::class, 'getTemplates'])->name('whatsapp-templates.index');
+    Route::post('whatsapp-templates', [WhatsAppPiutangController::class, 'storeTemplate'])->name('whatsapp-templates.store');
+    Route::put('whatsapp-templates/{template}', [WhatsAppPiutangController::class, 'updateTemplate'])->name('whatsapp-templates.update');
+    Route::delete('whatsapp-templates/{template}', [WhatsAppPiutangController::class, 'destroyTemplate'])->name('whatsapp-templates.destroy');
+
+    Route::get('whatsapp-monitor', [WhatsAppMonitorController::class, 'index'])->name('whatsapp-monitor.index');
+    Route::get('whatsapp-monitor/{id}', [WhatsAppMonitorController::class, 'show'])->name('whatsapp-monitor.show');
+    Route::get('whatsapp-monitor/{id}/follow-up', [WhatsAppMonitorController::class, 'getFollowUp'])->name('whatsapp-monitor.follow-up.get');
+    Route::post('whatsapp-monitor/{id}/follow-up', [WhatsAppMonitorController::class, 'updateFollowUp'])->name('whatsapp-monitor.follow-up.update');
 });
 
 Route::middleware(['auth', 'permission:master.barang:kelola'])->group(function () {
@@ -140,6 +161,9 @@ Route::middleware(['auth', 'permission:transaksi.rusak'])->group(function () {
 
 Route::middleware(['auth', 'permission:laporan.stok'])->prefix('laporan')->name('laporan.')->group(function () {
     Route::get('/stok', [LaporanController::class, 'stok'])->name('stok');
+    Route::get('/stok/batch/{id}/riwayat-penjualan', [LaporanController::class, 'riwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan');
+    Route::get('/stok/batch/{id}/riwayat-penjualan/cetak', [LaporanController::class, 'cetakRiwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan.cetak');
+    Route::get('/stok/batch/{id}/riwayat-penjualan/export', [LaporanController::class, 'exportRiwayatPenjualanBatch'])->name('stok.batch.riwayat-penjualan.export');
 });
 
 Route::middleware(['auth', 'permission:laporan.penerimaan'])->prefix('laporan')->name('laporan.')->group(function () {
@@ -189,4 +213,13 @@ Route::middleware(['auth', 'superadmin'])->prefix('izin-akses')->name('permissio
     Route::get('/', [PermissionController::class, 'index'])->name('index');
     Route::post('/', [PermissionController::class, 'update'])->name('update');
     Route::post('reset', [PermissionController::class, 'reset'])->name('reset');
+});
+
+// Backup & Restore Database (Khusus Admin dan Superadmin)
+Route::middleware(['auth', 'admin_or_superadmin'])->prefix('backup')->name('backup.')->group(function () {
+    Route::get('/', [BackupController::class, 'index'])->name('index');
+    Route::post('/', [BackupController::class, 'store'])->name('store');
+    Route::get('/download/{filename}', [BackupController::class, 'download'])->name('download');
+    Route::post('/restore', [BackupController::class, 'restore'])->name('restore');
+    Route::delete('/{filename}', [BackupController::class, 'destroy'])->name('destroy');
 });

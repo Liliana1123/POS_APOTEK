@@ -3,6 +3,15 @@
 
 @section('content')
 
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+    }
+</style>
+
 @php
 $apotek = \Illuminate\Support\Facades\Cache::remember(
 'info_apotek',
@@ -17,66 +26,29 @@ fn () => \App\Models\InfoApotek::first()
 {{-- ========================================================= --}}
 <div class="print-only">
 
-    {{-- KOP APOTEK --}}
-    <div class="print-kop">
-        @if($apotek?->logo)
-        <img
-            src="{{ asset('storage/' . $apotek->logo) }}"
-            alt="Logo {{ $apotek->nama_apotek }}"
-            class="print-kop-logo">
-        @endif
-
-        <div class="print-kop-info">
-            <h1>{{ $apotek?->nama_apotek ?? 'POS Apotek' }}</h1>
-
-            @if($apotek?->alamat)
-            <p>{{ $apotek->alamat }}</p>
-            @endif
-
-            @if($apotek?->telepon || $apotek?->email)
-            <p>
-                @if($apotek?->telepon) Telp: {{ $apotek->telepon }} @endif
-                @if($apotek?->telepon && $apotek?->email) &nbsp; | &nbsp; @endif
-                @if($apotek?->email) Email: {{ $apotek->email }} @endif
-            </p>
-            @endif
-
-            @if($apotek?->no_izin_sia || $apotek?->no_sipa)
-            <p>
-                @if($apotek?->no_izin_sia) SIA: {{ $apotek->no_izin_sia }} @endif
-                @if($apotek?->no_izin_sia && $apotek?->no_sipa) &nbsp;&nbsp;•&nbsp;&nbsp; @endif
-                @if($apotek?->no_sipa) SIPA: {{ $apotek->no_sipa }} @endif
-            </p>
-            @endif
-        </div>
-    </div>
-
-    {{-- JUDUL LAPORAN --}}
-    <div class="print-report-title">
-        <h2>LAPORAN HASIL PENJUALAN</h2>
-        <p>
-            Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
-            {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
-            @if(request('metode_pembayaran')) &nbsp;•&nbsp; Metode: {{ ucfirst(request('metode_pembayaran')) }} @endif
-            @if(request('jenis_transaksi')) &nbsp;•&nbsp; Jenis: {{ str_replace('_', ' ', ucfirst(request('jenis_transaksi'))) }} @endif
-            &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
-        </p>
-    </div>
+    {{-- KOP APOTEK & JUDUL LAPORAN --}}
+    <x-print-kop :apotek="$apotek" title="LAPORAN HASIL PENJUALAN">
+        Periode: {{ $dari ? \Carbon\Carbon::parse($dari)->translatedFormat('d F Y') : 'Semua Periode' }}
+        {{ $sampai ? 's/d ' . \Carbon\Carbon::parse($sampai)->translatedFormat('d F Y') : '' }}
+        @if(request('metode_pembayaran')) &nbsp;•&nbsp; Metode: {{ ucfirst(request('metode_pembayaran')) }} @endif
+        @if(request('jenis_transaksi')) &nbsp;•&nbsp; Jenis: {{ str_replace('_', ' ', ucfirst(request('jenis_transaksi'))) }} @endif
+        &nbsp;•&nbsp; Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}
+    </x-print-kop>
 
     {{-- TABEL CETAK: 1 baris = 1 transaksi penjualan sesuai 10 kolom wajib --}}
     <table class="table-custom table-penjualan print-table w-full">
         <thead class="table-custom-header">
             <tr>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
-                <th scope="col" class="w-[13%] text-center !px-2 py-3 whitespace-nowrap">No. Invoice</th>
-                <th scope="col" class="w-[14%] !px-2.5 py-3 break-words">Nama Pelanggan</th>
-                <th scope="col" class="w-[12%] text-center !px-2 py-3 break-words">Jenis Pelanggan</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Kasir</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Jenis Transaksi</th>
-                <th scope="col" class="w-[9%] text-center !px-2 py-3 whitespace-nowrap">Metode Pembayaran</th>
-                <th scope="col" class="w-[8%] text-center !px-2 py-3 whitespace-nowrap">Status Piutang</th>
-                <th scope="col" class="text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Kotor</th>
-                <th scope="col" class="text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Transaksi</th>
+                <th scope="col" class="col-penjualan-tanggal w-[9%] text-center !px-2 py-3 whitespace-nowrap">Tanggal</th>
+                <th scope="col" class="col-penjualan-faktur w-[13%] text-center !px-2 py-3 whitespace-nowrap">No. Invoice</th>
+                <th scope="col" class="col-penjualan-pelanggan w-[14%] !px-2.5 py-3 break-words">Nama Pelanggan</th>
+                <th scope="col" class="col-penjualan-jenis-pelanggan w-[12%] text-center !px-2 py-3 break-words">Jenis Pelanggan</th>
+                <th scope="col" class="col-penjualan-kasir w-[9%] text-center !px-2 py-3 whitespace-nowrap">Kasir</th>
+                <th scope="col" class="col-penjualan-jenis w-[9%] text-center !px-2 py-3 whitespace-nowrap">Jenis Transaksi</th>
+                <th scope="col" class="col-penjualan-metode w-[9%] text-center !px-2 py-3 whitespace-nowrap">Metode Pembayaran</th>
+                <th scope="col" class="col-penjualan-status-piutang w-[8%] text-center !px-2 py-3 whitespace-nowrap">Status Piutang</th>
+                <th scope="col" class="col-penjualan-kotor text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Kotor</th>
+                <th scope="col" class="col-penjualan-total text-right w-[8.5%] !px-2.5 py-3 whitespace-nowrap">Total Transaksi</th>
             </tr>
         </thead>
         <tbody class="table-custom-body">
@@ -119,305 +91,160 @@ fn () => \App\Models\InfoApotek::first()
                 @endphp
                 <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
                     {{-- 1. Tanggal --}}
-                    <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
-                        {{ $penjualan->tanggal ? $penjualan->tanggal->format('d M Y') : '—' }}
+                    <td class="col-penjualan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">
+                        @tanggalId($penjualan->tanggal)
                     </td>
 
                     {{-- 2. No. Invoice --}}
-                    <td class="text-center font-semibold text-gray-800 font-mono text-xs !px-2 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-faktur text-center font-semibold text-gray-800 font-mono text-xs !px-2 py-3 whitespace-nowrap">
                         {{ $penjualan->no_faktur }}
                     </td>
 
                     {{-- 3. Nama Pelanggan --}}
-                    <td class="font-medium text-gray-800 text-xs !px-2.5 py-3 break-words leading-snug">
+                    <td class="col-penjualan-pelanggan font-medium text-gray-800 text-xs !px-2.5 py-3 break-words leading-snug">
                         {{ $penjualan->pelanggan->nama ?? 'Umum' }}
                     </td>
 
                     {{-- 4. Jenis Pelanggan --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 break-words leading-snug text-center">
+                    <td class="col-penjualan-jenis-pelanggan text-gray-600 font-medium text-xs !px-2 py-3 break-words leading-snug text-center">
                         {{ $jenisPelanggan }}
                     </td>
 
                     {{-- 5. Kasir --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-kasir text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $penjualan->user->name ?? 'Admin' }}
                     </td>
 
                     {{-- 6. Jenis Transaksi --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-jenis text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $jenisTransaksi }}
                     </td>
 
                     {{-- 7. Metode Pembayaran --}}
-                    <td class="text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
+                    <td class="col-penjualan-metode text-gray-600 font-medium text-xs !px-2 py-3 whitespace-nowrap text-center">
                         {{ $metodeLabel }}
                     </td>
 
                     {{-- 8. Status Piutang --}}
-                    <td class="font-medium text-xs !px-2 py-3 whitespace-nowrap text-center {{ $statusPiutangText === 'Terlambat' ? 'text-red-600 font-semibold' : ($statusPiutangText === 'Lunas' ? 'text-emerald-600 font-semibold' : 'text-gray-600') }}">
+                    <td class="col-penjualan-status-piutang font-medium text-xs !px-2 py-3 whitespace-nowrap text-center {{ $statusPiutangText === 'Terlambat' ? 'text-red-600 font-semibold' : ($statusPiutangText === 'Lunas' ? 'text-emerald-600 font-semibold' : 'text-gray-600') }}">
                         {{ $statusPiutangText }}
                     </td>
 
                     {{-- 9. Total Kotor --}}
-                    <td class="table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-kotor table-num text-gray-600 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                         Rp {{ number_format($totalKotor, 0, ',', '.') }}
                     </td>
 
                     {{-- 10. Total Transaksi --}}
-                    <td class="table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
+                    <td class="col-penjualan-total table-num font-bold text-gray-800 font-mono text-right text-xs !px-2.5 py-3 whitespace-nowrap">
                         Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="10" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">Transaksi Tidak Ditemukan</div>
-                            <div class="empty-state-desc">Tidak ada data transaksi penjualan pada periode yang dipilih.</div>
-                        </div>
-                    </td>
-                </tr>
+                <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
                 @endforelse
         </tbody>
-        <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
-            <tr>
-                <td colspan="8" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">Total Akumulasi:</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-gray-800 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($omzet, 0, ',', '.') }}</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}</td>
-            </tr>
-        </tfoot>
     </table>
 
     {{-- ========================================================= --}}
     {{-- TANDA TANGAN (HANYA MUNCUL SAAT CETAK) --}}
     {{-- ========================================================= --}}
-    <div class="no-break print-signature">
-        <div class="print-signature-grid">
-            <div class="print-signature-box">
-                <p class="print-signature-title">Mengetahui,</p>
-                <p class="print-signature-role">Penanggung Jawab Apotek</p>
-                <div class="print-signature-space"></div>
-                <p class="print-signature-name">
-                    @if(!empty($apotek?->nama_apoteker_pj))
-                    {{ $apotek->nama_apoteker_pj }}
-                    @else
-                    (____________________)
-                    @endif
-                </p>
-                @if(!empty($apotek?->no_sipa))
-                <p class="print-signature-sipa">SIPA: {{ $apotek->no_sipa }}</p>
-                @endif
-            </div>
-            <div class="print-signature-box">
-                <p class="print-signature-title">Dibuat oleh,</p>
-                <p class="print-signature-role">Pembuat Laporan</p>
-                <div class="print-signature-space"></div>
-                <p class="print-signature-name">
-                    @if(!empty(auth()->user()?->name))
-                    {{ auth()->user()->name }}
-                    @else
-                    (____________________)
-                    @endif
-                </p>
-            </div>
-        </div>
-    </div>
+    <x-print-signature :apotek="$apotek" />
 
 </div>
 
-<!-- Page Header (layar) -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 print:hidden">
-    <div>
-        <h1>Laporan Penjualan</h1>
-        <p class="text-caption mt-1">Analisis ringkasan transaksi dan perolehan keuntungan penjualan.</p>
+<x-page-header
+    title="Laporan Penjualan"
+    subtitle="Analisis ringkasan transaksi dan perolehan keuntungan penjualan."
+    class="print:hidden">
+    <x-print-actions excel-id="export-excel-btn" />
+</x-page-header>
+
+<!-- Filter & Search Card -->
+<x-card-filter
+    :action="route('laporan.penjualan')"
+    :reset-url="route('laporan.penjualan')"
+    :grid="true"
+    grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+    :has-reset="request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang'])"
+    :live-search="true">
+    <input type="hidden" name="sort" id="filter-sort-input" value="{{ request('sort', $sort ?? 'tanggal') }}">
+    <input type="hidden" name="direction" id="filter-direction-input" value="{{ request('direction', $direction ?? 'asc') }}">
+
+    <div class="flex items-center gap-1.5">
+        <input
+            type="date"
+            id="dari"
+            name="dari"
+            value="{{ old('dari', $dari) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Awal"
+            title="Tanggal Awal">
+        <span class="inline-flex items-center text-gray-400 shrink-0">
+            <x-heroicon-m-minus class="w-3.5 h-3.5" />
+        </span>
+        <input
+            type="date"
+            id="sampai"
+            name="sampai"
+            value="{{ old('sampai', $sampai) }}"
+            class="form-input min-w-0"
+            aria-label="Tanggal Akhir"
+            title="Tanggal Akhir">
     </div>
 
-    {{-- Tombol Aksi --}}
-    <div class="flex gap-2 shrink-0">
-        {{-- Ekspor Excel --}}
-        <a
-            id="export-excel-btn"
-            href="{{ route('laporan.penjualan', array_merge(request()->query(), ['export' => 'excel', 'sort' => request('sort', $sort ?? 'tanggal'), 'direction' => request('direction', $direction ?? 'asc')])) }}"
-            class="btn-secondary py-2 px-4 flex items-center justify-center gap-1.5">
-            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-            Ekspor Excel
-        </a>
+    <select
+        id="metode_pembayaran"
+        name="metode_pembayaran"
+        class="form-input"
+        aria-label="Metode Pembayaran"
+        title="Metode Pembayaran">
+        <option value="">Metode: Semua</option>
+        <option value="cash" @selected(request('metode_pembayaran')==='cash' )>Cash</option>
+        <option value="qris" @selected(request('metode_pembayaran')==='qris' )>QRIS</option>
+        <option value="debit" @selected(request('metode_pembayaran')==='debit' )>Debit</option>
+        <option value="piutang" @selected(request('metode_pembayaran')==='piutang' )>Piutang</option>
+    </select>
 
-        {{-- Cetak Laporan --}}
-        <button
-            type="button"
-            onclick="printReport()"
-            class="btn-primary py-2 px-4">
-            Cetak Laporan
-        </button>
+    <select
+        id="pelanggan"
+        name="pelanggan"
+        class="form-input"
+        aria-label="Pelanggan/Member"
+        title="Pelanggan/Member">
+        <option value="">Pelanggan: Semua</option>
+        <option value="pelanggan_umum" @selected(request('pelanggan')==='pelanggan_umum' )>Pelanggan Umum</option>
+        <option value="pelanggan_tetap" @selected(request('pelanggan')==='pelanggan_tetap' )>Member Pelanggan Tetap</option>
+        <option value="keluarga_nakes" @selected(request('pelanggan')==='keluarga_nakes' )>Member Keluarga Nakes</option>
+        <option value="member_only" @selected(request('pelanggan')==='member_only' )>Member Only</option>
+    </select>
 
-    </div>
+    <select
+        id="jenis_transaksi"
+        name="jenis_transaksi"
+        class="form-input"
+        aria-label="Jenis Transaksi"
+        title="Jenis Transaksi">
+        <option value="">Transaksi: Semua</option>
+        <option value="non_resep" @selected(request('jenis_transaksi')==='non_resep' )>Non Resep</option>
+        <option value="resep" @selected(request('jenis_transaksi')==='resep' )>Resep</option>
+    </select>
 
-</div>
+    <select
+        id="status_piutang"
+        name="status_piutang"
+        class="form-input"
+        aria-label="Status Piutang"
+        title="Status Piutang">
+        <option value="">Piutang: Semua</option>
+        <option value="lunas" @selected(request('status_piutang')==='lunas' )>Lunas</option>
+        <option value="belum_lunas" @selected(request('status_piutang')==='belum_lunas' )>Belum Lunas</option>
+        <option value="terlambat" @selected(request('status_piutang')==='terlambat' )>Terlambat</option>
+    </select>
+</x-card-filter>
 
-<div class="card-base p-4 mb-6 laporan-filter-card print:hidden">
-
-    <form
-        method="GET"
-        action="{{ route('laporan.penjualan') }}"
-        class="space-y-4">
-        <input type="hidden" name="sort" id="filter-sort-input" value="{{ request('sort', $sort ?? 'tanggal') }}">
-        <input type="hidden" name="direction" id="filter-direction-input" value="{{ request('direction', $direction ?? 'asc') }}">
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {{-- Tanggal Awal --}}
-            <div>
-                <label for="dari" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Awal
-                </label>
-
-                <input
-                    type="date"
-                    id="dari"
-                    name="dari"
-                    value="{{ $dari }}"
-                    class="form-input">
-            </div>
-
-            {{-- Tanggal Akhir --}}
-            <div>
-                <label for="sampai" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Tanggal Akhir
-                </label>
-
-                <input
-                    type="date"
-                    id="sampai"
-                    name="sampai"
-                    value="{{ $sampai }}"
-                    class="form-input">
-            </div>
-
-            {{-- Metode Pembayaran --}}
-            <div>
-                <label for="metode_pembayaran" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Metode Pembayaran
-                </label>
-
-                <select
-                    id="metode_pembayaran"
-                    name="metode_pembayaran"
-                    class="form-input">
-                    <option value="">Semua</option>
-                    <option value="cash" @selected(request('metode_pembayaran')==='cash' )>
-                        Cash
-                    </option>
-                    <option value="qris" @selected(request('metode_pembayaran')==='qris' )>
-                        QRIS
-                    </option>
-                    <option value="debit" @selected(request('metode_pembayaran')==='debit' )>
-                        Debit
-                    </option>
-                    <option value="piutang" @selected(request('metode_pembayaran')==='piutang' )>
-                        Piutang
-                    </option>
-                </select>
-            </div>
-
-            {{-- Pelanggan / Member --}}
-            <div>
-                <label for="pelanggan" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Pelanggan/Member
-                </label>
-
-                <select
-                    id="pelanggan"
-                    name="pelanggan"
-                    class="form-input">
-                    <option value="">Semua</option>
-
-                    <option value="pelanggan_umum" @selected(request('pelanggan')==='pelanggan_umum' )>
-                        Pelanggan Umum
-                    </option>
-
-                    <option value="pelanggan_tetap" @selected(request('pelanggan')==='pelanggan_tetap' )>
-                        Member Pelanggan Tetap
-                    </option>
-
-                    <option value="keluarga_nakes" @selected(request('pelanggan')==='keluarga_nakes' )>
-                        Member Keluarga Nakes
-                    </option>
-
-                    <option value="member_only" @selected(request('pelanggan')==='member_only' )>
-                        Member Only
-                    </option>
-                </select>
-            </div>
-
-            {{-- Jenis Transaksi --}}
-            <div>
-                <label for="jenis_transaksi" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Jenis Transaksi
-                </label>
-
-                <select
-                    id="jenis_transaksi"
-                    name="jenis_transaksi"
-                    class="form-input">
-                    <option value="">Semua</option>
-
-                    <option value="non_resep" @selected(request('jenis_transaksi')==='non_resep' )>
-                        Non Resep
-                    </option>
-
-                    <option value="resep" @selected(request('jenis_transaksi')==='resep' )>
-                        Resep
-                    </option>
-                </select>
-            </div>
-
-            {{-- Status Piutang --}}
-            <div>
-                <label for="status_piutang" class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5 font-sans">
-                    Status Piutang
-                </label>
-
-                <select
-                    id="status_piutang"
-                    name="status_piutang"
-                    class="form-input">
-                    <option value="">Semua</option>
-
-                    <option value="lunas" @selected(request('status_piutang')==='lunas' )>
-                        Lunas
-                    </option>
-
-                    <option value="belum_lunas" @selected(request('status_piutang')==='belum_lunas' )>
-                        Belum Lunas
-                    </option>
-
-                    <option value="terlambat" @selected(request('status_piutang')==='terlambat' )>
-                        Terlambat
-                    </option>
-                </select>
-            </div>
-        </div>
-
-        {{-- Area Tombol Filter --}}
-        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
-            @if(request()->anyFilled(['dari', 'sampai', 'metode_pembayaran', 'pelanggan', 'jenis_transaksi', 'status_piutang']))
-            <a
-                href="{{ route('laporan.penjualan') }}"
-                class="btn-secondary py-1.5 px-4 flex items-center justify-center">
-                Clear
-            </a>
-            @endif
-
-            <button
-                type="submit"
-                class="btn-primary flex items-center gap-2">
-                <x-heroicon-o-funnel class="w-4 h-4" />
-                <span>Filter</span>
-            </button>
-        </div>
-
-    </form>
-
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
 </div>
 
 <!-- Summary Cards (layar) -->
@@ -444,8 +271,12 @@ fn () => \App\Models\InfoApotek::first()
                     Jumlah Transaksi
                 </span>
 
-                <strong class="mt-1 block text-sm sm:text-base lg:text-lg font-bold text-blue-600 tracking-tight">
-                    {{ $jumlahTransaksi }} kali
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                    style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                    data-countup="true"
+                    data-target="{{ (float)$jumlahTransaksi }}"
+                    data-suffix=" X">
+                    {{ $jumlahTransaksi }} X
                 </strong>
             </div>
 
@@ -455,8 +286,12 @@ fn () => \App\Models\InfoApotek::first()
                     Transaksi Member
                 </span>
 
-                <strong class="mt-1 block text-sm sm:text-base lg:text-lg font-bold text-blue-600 tracking-tight">
-                    {{ $transaksiMember }} kali
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                    style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                    data-countup="true"
+                    data-target="{{ (float)$transaksiMember }}"
+                    data-suffix=" X">
+                    {{ $transaksiMember }} X
                 </strong>
             </div>
 
@@ -466,8 +301,12 @@ fn () => \App\Models\InfoApotek::first()
                     Transaksi Umum
                 </span>
 
-                <strong class="mt-1 block text-sm sm:text-base lg:text-lg font-bold text-blue-600 tracking-tight">
-                    {{ $transaksiNonMember }} kali
+                <strong class="mt-1 block text-xl sm:text-2xl font-extrabold text-blue-600 tracking-tight"
+                    style="font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.25;"
+                    data-countup="true"
+                    data-target="{{ (float)$transaksiNonMember }}"
+                    data-suffix=" X">
+                    {{ $transaksiNonMember }} X
                 </strong>
             </div>
 
@@ -498,7 +337,11 @@ fn () => \App\Models\InfoApotek::first()
                     Omzet Kotor
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-orange-600 tracking-tight" style="color: #ea580c;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-orange-600 tracking-tight"
+                    style="color: #ea580c;"
+                    data-countup="true"
+                    data-target="{{ (float)$omzet }}"
+                    data-prefix="Rp ">
                     Rp {{ number_format($omzet, 0, ',', '.') }}
                 </strong>
             </div>
@@ -511,7 +354,11 @@ fn () => \App\Models\InfoApotek::first()
                     Total Potongan Diskon
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-purple-600 tracking-tight" style="color: #9333ea;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-purple-600 tracking-tight"
+                    style="color: #9333ea;"
+                    data-countup="true"
+                    data-target="{{ (float)$totalDiskon }}"
+                    data-prefix="Rp ">
                     Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                 </strong>
             </div>
@@ -524,7 +371,11 @@ fn () => \App\Models\InfoApotek::first()
                     Penjualan Bersih (Net)
                 </span>
 
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-emerald-600 tracking-tight" style="color: #059669;">
+                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-emerald-600 tracking-tight"
+                    style="color: #059669;"
+                    data-countup="true"
+                    data-target="{{ (float)$totalPenjualanBersih }}"
+                    data-prefix="Rp ">
                     Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
                 </strong>
             </div>
@@ -545,8 +396,11 @@ fn () => \App\Models\InfoApotek::first()
                 <tr>
 
                     <th scope="col" class="w-[14%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                        <button
-                            type="button"
+                        @php
+                        $nextInvoiceDirection = ($sort === 'no_faktur' && $direction === 'asc') ? 'desc' : 'asc';
+                        @endphp
+                        <a
+                            href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'no_faktur', 'direction' => $nextInvoiceDirection]) }}"
                             data-sort="invoice"
                             id="btn-sort-invoice"
                             class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -555,12 +409,15 @@ fn () => \App\Models\InfoApotek::first()
                             <span id="icon-sort-invoice" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                                 <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                             </span>
-                        </button>
+                        </a>
                     </th>
 
                     <th scope="col" class="w-[11%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                        <button
-                            type="button"
+                        @php
+                        $nextDateDirection = ($sort === 'tanggal' && $direction === 'asc') ? 'desc' : 'asc';
+                        @endphp
+                        <a
+                            href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'tanggal', 'direction' => $nextDateDirection]) }}"
                             data-sort="tanggal"
                             id="btn-sort-tanggal"
                             class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -569,7 +426,7 @@ fn () => \App\Models\InfoApotek::first()
                             <span id="icon-sort-tanggal" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                                 <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                             </span>
-                        </button>
+                        </a>
                     </th>
 
                     <th scope="col" class="w-[18%] min-w-[12rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
@@ -628,7 +485,7 @@ fn () => \App\Models\InfoApotek::first()
 
                     {{-- Tanggal --}}
                     <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                        {{ $penjualan->tanggal->format('d M Y') }}
+                        @tanggalId($penjualan->tanggal)
                     </td>
 
                     {{-- Pelanggan --}}
@@ -647,7 +504,7 @@ fn () => \App\Models\InfoApotek::first()
                             $statusMember = trim((string) $penjualan->pelanggan->status_member);
 
                             $memberVariant = match($statusMember) {
-                            'Member Keluarga Nakes' => 'info',
+                            'Member Keluarga Nakes' => 'indigo',
                             'Member Only' => 'warning',
                             default => 'success',
                             };
@@ -767,307 +624,20 @@ fn () => \App\Models\InfoApotek::first()
                 </tr>
 
                 @empty
-
-                <tr>
-                    <td colspan="9" class="p-0">
-                        <div class="empty-state-container">
-                            <div class="empty-state-title">
-                                Transaksi Tidak Ditemukan
-                            </div>
-
-                            <div class="empty-state-desc">
-                                Tidak ada data transaksi pada filter yang dipilih.
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-
+                <x-empty-state colspan="9" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
                 @endforelse
 
             </tbody>
-
-            {{-- Table Footer: Total Akumulasi --}}
-            @if($penjualans->count() > 0)
-            <tfoot>
-                <tr class="bg-gray-50/75 border-t border-gray-200 font-bold text-xs align-middle">
-                    <td colspan="7" class="!px-3.5 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">
-                        Total Akumulasi
-                    </td>
-
-                    <td class="table-num !px-3.5 py-3.5 !text-left text-gray-800 font-mono text-sm font-bold whitespace-nowrap">
-                        Rp {{ number_format($omzet, 0, ',', '.') }}
-                    </td>
-
-                    <td class="table-num !px-3.5 py-3.5 !text-left text-blue-700 font-mono text-sm font-bold whitespace-nowrap">
-                        Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </tfoot>
-            @endif
 
         </table>
     </div>
 
     {{-- Pagination & Informasi Data --}}
-    @if($penjualans->count() > 0)
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-white px-4 sm:px-5 py-3.5 print:hidden">
-
-        <div class="text-xs text-slate-500">
-            Menampilkan
-            <span id="page-item-count" class="font-semibold text-slate-700">
-                {{ min(15, $penjualans->count()) }}
-            </span>
-            dari
-            <span class="font-semibold text-slate-700">
-                {{ $penjualans->count() }}
-            </span>
-            data
-        </div>
-
-        <div id="pagination-controls" class="flex items-center gap-1">
-            {{-- Di-render dinamis oleh JavaScript --}}
-        </div>
-
+    <div class="pagination-container mt-4 print:hidden">
+        {{ $penjualans->links('vendor.pagination.apotek') }}
     </div>
-    @endif
 
 </div>
-
-@if($penjualans->count() > 0)
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tableBody = document.getElementById('table-laporan-body');
-        let rows = Array.from(document.querySelectorAll('.penjualan-row'));
-        const totalRows = rows.length;
-        const pageSize = 15; // 15 baris per halaman
-        const totalPages = Math.ceil(totalRows / pageSize);
-        let currentPage = 1;
-
-        const paginationContainer = document.getElementById('pagination-controls');
-        const pageItemCountEl = document.getElementById('page-item-count');
-
-        // Sorting state (default tanggal ascending)
-        const urlParams = new URLSearchParams(window.location.search);
-        let currentSort = urlParams.get('sort') || @json($sort ?? 'tanggal');
-        let currentDirection = (urlParams.get('direction') || @json($direction ?? 'asc')).toLowerCase();
-
-        if (!['invoice', 'no_faktur', 'tanggal'].includes(currentSort)) {
-            currentSort = 'tanggal';
-        }
-        if (currentSort === 'no_faktur') {
-            currentSort = 'invoice';
-        }
-        if (!['asc', 'desc'].includes(currentDirection)) {
-            currentDirection = 'asc';
-        }
-
-        const iconUpDown = '<svg class="h-3.5 w-3.5 text-white/60 group-hover:text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.25 9.24a.75.75 0 011.1.02L10 15.148l2.7-2.888a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.05-1.04z" clip-rule="evenodd" /></svg>';
-        const iconUp = '<svg class="h-3.5 w-3.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clip-rule="evenodd" /></svg>';
-        const iconDown = '<svg class="h-3.5 w-3.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>';
-
-        function sortRows(sortKey, direction) {
-            if (!tableBody || rows.length === 0) return;
-
-            rows.sort((a, b) => {
-                if (sortKey === 'invoice') {
-                    const valA = a.dataset.invoice || '';
-                    const valB = b.dataset.invoice || '';
-                    const cmp = valA.localeCompare(valB, undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
-                    });
-                    if (cmp !== 0) {
-                        return direction === 'asc' ? cmp : -cmp;
-                    }
-                    const dateA = a.dataset.tanggal || '';
-                    const dateB = b.dataset.tanggal || '';
-                    return dateA.localeCompare(dateB);
-                } else {
-                    // tanggal
-                    const dateA = a.dataset.tanggal || '';
-                    const dateB = b.dataset.tanggal || '';
-                    const dateCmp = dateA.localeCompare(dateB);
-                    if (dateCmp !== 0) {
-                        return direction === 'asc' ? dateCmp : -dateCmp;
-                    }
-                    const invA = a.dataset.invoice || '';
-                    const invB = b.dataset.invoice || '';
-                    return invA.localeCompare(invB, undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
-                    });
-                }
-            });
-
-            // Terapkan ulang urutan pada DOM dan perbarui warna belang selang-seling baris
-            rows.forEach((row, idx) => {
-                tableBody.appendChild(row);
-                row.classList.remove('bg-white', 'bg-gray-200');
-                row.classList.add(idx % 2 === 0 ? 'bg-white' : 'bg-gray-200');
-            });
-        }
-
-        function updateSortVisuals() {
-            const iconInvoice = document.getElementById('icon-sort-invoice');
-            const iconTanggal = document.getElementById('icon-sort-tanggal');
-
-            if (iconInvoice) {
-                if (currentSort === 'invoice') {
-                    iconInvoice.innerHTML = currentDirection === 'asc' ? iconUp : iconDown;
-                } else {
-                    iconInvoice.innerHTML = iconUpDown;
-                }
-            }
-
-            if (iconTanggal) {
-                if (currentSort === 'tanggal') {
-                    iconTanggal.innerHTML = currentDirection === 'asc' ? iconUp : iconDown;
-                } else {
-                    iconTanggal.innerHTML = iconUpDown;
-                }
-            }
-
-            // Sinkronisasi tombol Ekspor Excel
-            const exportBtn = document.getElementById('export-excel-btn') || document.querySelector('a[href*="export=excel"]');
-            if (exportBtn) {
-                try {
-                    const url = new URL(exportBtn.href, window.location.origin);
-                    url.searchParams.set('sort', currentSort === 'invoice' ? 'no_faktur' : 'tanggal');
-                    url.searchParams.set('direction', currentDirection);
-                    exportBtn.href = url.pathname + url.search;
-                } catch (e) {
-                    // ignore
-                }
-            }
-
-            // Sinkronisasi form filter
-            const hiddenSort = document.getElementById('filter-sort-input');
-            const hiddenDir = document.getElementById('filter-direction-input');
-            if (hiddenSort) hiddenSort.value = currentSort === 'invoice' ? 'no_faktur' : 'tanggal';
-            if (hiddenDir) hiddenDir.value = currentDirection;
-
-            // Sinkronisasi URL address bar tanpa reload
-            try {
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('sort', currentSort === 'invoice' ? 'no_faktur' : 'tanggal');
-                currentUrl.searchParams.set('direction', currentDirection);
-                window.history.replaceState({}, '', currentUrl.toString());
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        // Event listener tombol sort No. Invoice
-        const btnInvoice = document.getElementById('btn-sort-invoice');
-        if (btnInvoice) {
-            btnInvoice.addEventListener('click', function() {
-                if (currentSort === 'invoice') {
-                    currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort = 'invoice';
-                    currentDirection = 'asc';
-                }
-                sortRows(currentSort, currentDirection);
-                updateSortVisuals();
-                renderPage(1);
-            });
-        }
-
-        // Event listener tombol sort Tanggal
-        const btnTanggal = document.getElementById('btn-sort-tanggal');
-        if (btnTanggal) {
-            btnTanggal.addEventListener('click', function() {
-                if (currentSort === 'tanggal') {
-                    currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSort = 'tanggal';
-                    currentDirection = 'asc';
-                }
-                sortRows(currentSort, currentDirection);
-                updateSortVisuals();
-                renderPage(1);
-            });
-        }
-
-        function renderPage(page) {
-            currentPage = page;
-            const start = (page - 1) * pageSize;
-            const end = start + pageSize;
-
-            rows.forEach((row, idx) => {
-                if (idx >= start && idx < end) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            const visibleCount = Math.min(end, totalRows) - start;
-            if (pageItemCountEl) {
-                pageItemCountEl.textContent = visibleCount;
-            }
-
-            renderPaginationButtons();
-        }
-
-        function renderPaginationButtons() {
-            if (!paginationContainer) return;
-            paginationContainer.innerHTML = '';
-
-            if (totalPages <= 1) return;
-
-            // Tombol Prev
-            const prevBtn = document.createElement('button');
-            prevBtn.type = 'button';
-            prevBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-            currentPage === 1
-                ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-        }`;
-            prevBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.08 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', () => {
-                if (currentPage > 1) renderPage(currentPage - 1);
-            });
-            paginationContainer.appendChild(prevBtn);
-
-            // Nomor Halaman
-            for (let p = 1; p <= totalPages; p++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.type = 'button';
-                pageBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-                p === currentPage
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-2xs font-bold'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-            }`;
-                pageBtn.textContent = p;
-                pageBtn.addEventListener('click', () => renderPage(p));
-                paginationContainer.appendChild(pageBtn);
-            }
-
-            // Tombol Next
-            const nextBtn = document.createElement('button');
-            nextBtn.type = 'button';
-            nextBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-            currentPage === totalPages
-                ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-        }`;
-            nextBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', () => {
-                if (currentPage < totalPages) renderPage(currentPage + 1);
-            });
-            paginationContainer.appendChild(nextBtn);
-        }
-
-        // Jalankan sorting ascending saat load pertama
-        sortRows(currentSort, currentDirection);
-        updateSortVisuals();
-        renderPage(1);
-    });
-</script>
-@endif
 
 <script>
     function printReport() {

@@ -18,6 +18,7 @@ class PelangganController extends Controller
             'pelanggan_tetap',
             'keluarga_nakes',
             'member_only',
+            'umum',
         ];
 
         if (!in_array($status, $allowedStatuses, true)) {
@@ -39,14 +40,22 @@ class PelangganController extends Controller
         $query = Pelanggan::query();
 
         try {
-            $query->where('is_member', true);
+            if ($status === 'umum') {
+                $query->where('is_member', false);
+            } else {
+                $query->where('is_member', true);
 
-            if ($status === 'pelanggan_tetap') {
-                $query->where('status_member', 'Member Pelanggan Tetap');
-            } elseif ($status === 'keluarga_nakes') {
-                $query->where('status_member', 'Member Keluarga Nakes');
-            } elseif ($status === 'member_only') {
-                $query->where('status_member', 'Member Only');
+                if ($status === 'pelanggan_tetap') {
+                    $query->where(function ($q) {
+                        $q->where('status_member', 'Member Pelanggan Tetap')
+                            ->orWhereNull('status_member')
+                            ->orWhere('status_member', '');
+                    });
+                } elseif ($status === 'keluarga_nakes') {
+                    $query->where('status_member', 'Member Keluarga Nakes');
+                } elseif ($status === 'member_only') {
+                    $query->where('status_member', 'Member Only');
+                }
             }
 
             if ($statusPiutang === 'lunas') {
@@ -72,15 +81,7 @@ class PelangganController extends Controller
                     });
             }
 
-            if ($request->filled('cari')) {
-                $search = $request->input('cari');
-
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhere('telepon', 'like', "%{$search}%")
-                        ->orWhere('member_id', 'like', "%{$search}%");
-                });
-            }
+            $query->search(['nama', 'telepon', 'member_id'], $request->input('cari'));
 
             $pelanggans = $query
                 ->withCount('penjualan')
@@ -148,6 +149,9 @@ class PelangganController extends Controller
                     'is_member' => (bool) $pelanggan->is_member,
                     'member_aktif' => (bool) $pelanggan->member_aktif,
                     'status_member' => $pelanggan->status_member,
+                    'member_since' => $pelanggan->member_since ? \Carbon\Carbon::parse($pelanggan->member_since)->format('d M Y') : ($pelanggan->created_at ? \Carbon\Carbon::parse($pelanggan->created_at)->format('d M Y') : '-'),
+                    'tanggal_lahir' => $pelanggan->tanggal_lahir ? \Carbon\Carbon::parse($pelanggan->tanggal_lahir)->format('d M Y') : '-',
+                    'keterangan' => $pelanggan->keterangan ?: '-',
                     'custom_discount_percentage' => $pelanggan->custom_discount_percentage !== null
                         ? (float) $pelanggan->custom_discount_percentage
                         : null,
@@ -250,6 +254,7 @@ class PelangganController extends Controller
         }
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Membership berhasil ditambahkan.');
             return response()->json([
                 'success' => true,
                 'message' => 'Membership berhasil ditambahkan.',
@@ -285,6 +290,7 @@ class PelangganController extends Controller
         $pelanggan->update($data);
 
         if ($request->expectsJson()) {
+            session()->flash('success', 'Data pelanggan/member berhasil diperbarui.');
             return response()->json([
                 'success' => true,
                 'message' => 'Data pelanggan/member berhasil diperbarui.',
@@ -317,9 +323,14 @@ class PelangganController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:30',
+            'telepon' => 'required|string|max:30',
             'status_member' => 'required|in:Member Pelanggan Tetap,Member Keluarga Nakes,Member Only',
             'custom_discount_percentage' => 'nullable|numeric|min:0|max:100',
+        ], [
+            'nama.required' => 'Nama member wajib diisi.',
+            'telepon.required' => 'Nomor HP wajib diisi.',
+            'status_member.required' => 'Jenis member wajib dipilih.',
+            'status_member.in' => 'Jenis member tidak valid.',
         ]);
 
         $telepon = $request->input('telepon');
