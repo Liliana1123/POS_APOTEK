@@ -2,7 +2,7 @@
 @section('title', 'Barang Rusak')
 
 @section('content')
-<x-page-header title="Daftar Pencatatan Barang Rusak" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
+<x-page-header title="Daftar Pencatatan Barang Rusak dan Kadaluwarsa" subtitle="Kelola dan laporkan obat rusak atau kadaluarsa.">
     <button type="button" onclick="openTambahRusak()" class="btn-primary flex items-center gap-2">
         <x-heroicon-o-plus class="w-4 h-4" />
         <span>Catat Barang Rusak</span>

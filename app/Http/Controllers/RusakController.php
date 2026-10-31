@@ -34,7 +34,8 @@ class RusakController extends Controller
             $query->whereDate('tanggal', $request->tanggal);
         } else {
             if ($tanggalMulai && $tanggalAkhir) {
-                $query->whereBetween('tanggal', [$tanggalMulai, $tanggalAkhir]);
+                $query->whereDate('tanggal', '>=', $tanggalMulai)
+                    ->whereDate('tanggal', '<=', $tanggalAkhir);
             } elseif ($tanggalMulai) {
                 $query->whereDate('tanggal', '>=', $tanggalMulai);
             } elseif ($tanggalAkhir) {
@@ -60,7 +61,11 @@ class RusakController extends Controller
 
     public function show(Rusak $rusak)
     {
-        $rusak->load('detailPenerimaan.barang');
+        $rusak->load('detailPenerimaan.barang.kategori');
+
+        if (request()->expectsJson()) {
+            return response()->json($rusak);
+        }
 
         return view('rusak.show', compact('rusak'));
     }
@@ -117,6 +122,7 @@ class RusakController extends Controller
 
             $batch->stok += $rusak->jumlah;
             $batch->aktif = true;
+            $batch->dipindahkan_ke_rusak = false;
             $batch->save();
 
             \App\Models\ActivityLog::log(

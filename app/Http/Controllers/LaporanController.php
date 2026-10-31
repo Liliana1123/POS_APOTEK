@@ -32,6 +32,7 @@ class LaporanController extends Controller
         $barangs = collect(); // unused, kept for view compatibility
 
         $query = DetailPenerimaan::with(['barang.kategori', 'penerimaan.supplier'])
+            ->where('dipindahkan_ke_rusak', false)
             ->withSum('detailPenjualan as stok_terjual', 'jumlah')
             ->withSum('rusak as stok_rusak', 'jumlah');
 
@@ -232,6 +233,89 @@ class LaporanController extends Controller
             'totalStokRusak',
             'totalSisaStok'
         ));
+    }
+
+    /**
+     * Pindahkan batch barang kedaluwarsa ke Catatan Barang Rusak.
+     */
+    public function pindahKeBarangRusak(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $batch = DetailPenerimaan::with(['barang.kategori'])->lockForUpdate()->findOrFail($id);
+
+            // Validasi apakah sudah pernah dipindahkan
+            if ($batch->dipindahkan_ke_rusak) {
+                DB::rollBack();
+                $msg = 'Batch barang ini sudah pernah dipindahkan ke Catatan Barang Rusak.';
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json(['success' => false, 'message' => $msg], 422);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+
+            $today = now()->startOfDay();
+            $expiredDate = $batch->expired_date ? \Carbon\Carbon::parse($batch->expired_date)->startOfDay() : null;
+
+            if (!$expiredDate || $expiredDate->gt($today)) {
+                DB::rollBack();
+                $msg = 'Hanya barang dengan status Kadaluarsa yang dapat dipindahkan ke Catatan Barang Rusak.';
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json(['success' => false, 'message' => $msg], 422);
+                }
+                return redirect()->back()->with('error', $msg);
+            }
+
+            // Hitung sisa stok mutasi
+            $stokTerjual = (int) DetailPenjualan::where('detail_penerimaan_id', $batch->id)->sum('jumlah');
+            $stokRusak = (int) Rusak::where('detail_penerimaan_id', $batch->id)->sum('jumlah');
+            $sisaStok = max(0, (int) $batch->jumlah - $stokTerjual - $stokRusak);
+            if ($sisaStok === 0 && (int) $batch->stok > 0) {
+                $sisaStok = (int) $batch->stok;
+            }
+
+            // Catat ke tabel rusaks
+            Rusak::create([
+                'detail_penerimaan_id' => $batch->id,
+                'tanggal' => now()->toDateString(),
+                'jumlah' => $sisaStok,
+                'keterangan' => 'Kadaluarsa - Dipindahkan dari Laporan Monitoring Stok',
+            ]);
+
+            // Tandai batch sebagai dipindahkan ke barang rusak & nonaktifkan stok aktifnya
+            $batch->update([
+                'dipindahkan_ke_rusak' => true,
+                'stok' => 0,
+                'aktif' => false,
+            ]);
+
+            // Catat log aktivitas
+            ActivityLog::log(
+                'Catat Barang Rusak',
+                "Obat: {$batch->barang->nama}, Batch: {$batch->no_batch}, Jumlah: {$sisaStok}, Alasan: Kadaluarsa (Dipindahkan dari Laporan Stok)",
+                ActivityLog::CATEGORY_INVENTARIS
+            );
+
+            DB::commit();
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Barang berhasil dipindahkan ke Catatan Barang Rusak.',
+                    'batch_id' => $batch->id,
+                    'sisa_stok' => $sisaStok,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Barang berhasil dipindahkan ke Catatan Barang Rusak.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $msg = 'Gagal memindahkan barang: ' . $e->getMessage();
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $msg], 500);
+            }
+            return redirect()->back()->with('error', $msg);
+        }
     }
 
     /**

@@ -14,12 +14,13 @@ class DetailPenerimaan extends Model
 
     protected $fillable = [
         'penerimaan_id', 'barang_id', 'no_batch', 'harga_beli', 'harga_jual',
-        'expired_date', 'no_rak', 'jumlah', 'stok', 'aktif',
+        'expired_date', 'no_rak', 'jumlah', 'stok', 'aktif', 'dipindahkan_ke_rusak',
     ];
 
     protected $casts = [
         'expired_date' => 'date',
         'aktif' => 'boolean',
+        'dipindahkan_ke_rusak' => 'boolean',
     ];
 
     public function penerimaan(): BelongsTo

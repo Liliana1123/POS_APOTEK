@@ -10,7 +10,8 @@
             size: A4 landscape;
             margin: 10mm;
         }
-        .batch-history-row {
+        .batch-history-row,
+        .col-stok-aksi {
             display: none !important;
         }
     }
@@ -139,7 +140,7 @@
             </p>
         </div>
         <div class="text-xs font-medium text-gray-500 print:text-[8px]">
-            Total: <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->total() }}</span> batch
+            Total: <span id="total-batch-count" class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->total() }}</span> batch
         </div>
     </div>
 
@@ -149,6 +150,9 @@
             <table class="table-custom table-stok print-table w-full min-w-[62rem]">
                 <thead class="table-custom-header">
                     <tr>
+                        <th scope="col" class="col-stok-aksi text-center w-12 !px-2 print:hidden no-print">
+                            Aksi
+                        </th>
                         <th scope="col" class="col-stok-no w-10 text-center !px-2">
                             No
                         </th>
@@ -204,6 +208,7 @@
                             $stokRusak = (int) ($item->stok_rusak ?? 0);
                             $sisaStok = $stokAwal - $stokTerjual - $stokRusak;
                             $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
+                            $isKadaluarsa = $expiredDate && ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today));
                         @endphp
 
                         <tr 
@@ -214,6 +219,32 @@
                             data-no-batch="{{ $item->no_batch ?? '—' }}"
                             title="Klik untuk melihat riwayat penjualan batch ini"
                         >
+                            <!-- Aksi (Sisi Kiri Kolom No) -->
+                            <td class="col-stok-aksi text-center !px-2 whitespace-nowrap print:hidden no-print">
+                                @if ($isKadaluarsa)
+                                    <button type="button"
+                                        class="btn-pindah-rusak btn-secondary !p-1.5 rounded-lg text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border-gray-200 hover:border-rose-300 transition-all duration-150 shadow-xs cursor-pointer inline-flex items-center justify-center"
+                                        title="Pindah ke Catatan Barang Rusak"
+                                        onclick="event.stopPropagation(); triggerPindahRusak(this);"
+                                        data-batch-id="{{ $item->id }}"
+                                        data-barang-nama="{{ $item->barang->nama ?? '—' }}"
+                                        data-no-batch="{{ $item->no_batch ?? '—' }}"
+                                        data-expired="{{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}"
+                                        data-sisa-stok="{{ $sisaStok }}"
+                                        data-url="{{ route('laporan.stok.batch.pindah-rusak', $item->id) }}"
+                                        aria-label="Pindahkan ke Catatan Barang Rusak">
+                                        <svg class="w-4 h-4 shrink-0 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M8 21h8" />
+                                            <path d="M12 15v6" />
+                                            <path d="M6 3h12l-1 7a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5L6 3z" />
+                                            <path d="M12 3l-1.5 3.5 3 2.5-2.5 3" />
+                                        </svg>
+                                    </button>
+                                @else
+                                    <span class="text-gray-300 font-mono select-none text-xs">—</span>
+                                @endif
+                            </td>
+
                             <!-- No -->
                             <td class="col-stok-no table-num text-center">
                                 {{ ($stokPerBatch->firstItem() ?? 1) + $index }}
@@ -280,14 +311,14 @@
                             id="batch-history-row-{{ $item->id }}" 
                             class="batch-history-row hidden print:hidden no-print bg-slate-50 border-b border-blue-200"
                         >
-                            <td colspan="12" class="p-0">
+                            <td colspan="13" class="p-0">
                                 <div id="batch-history-container-{{ $item->id }}" class="p-4 sm:p-5 bg-gradient-to-b from-blue-50/40 via-white to-slate-50 border-t border-blue-100 shadow-inner">
                                     {{-- Konten dimuat secara asinkron lewat JS --}}
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <x-empty-state colspan="12" />
+                        <x-empty-state colspan="13" />
                     @endforelse
                 </tbody>
 
@@ -558,6 +589,177 @@
                 toggleBatchHistory(batchId, barangNama, noBatch);
             });
         });
+    });
+
+    // =========================================================================
+    // FITUR PEMINDAHAN BARANG KADALUARSA KE CATATAN BARANG RUSAK
+    // =========================================================================
+    window.triggerPindahRusak = function(btn) {
+        if (!btn) return;
+        const batchId = btn.dataset.batchId;
+        const barangNama = btn.dataset.barangNama || '—';
+        const noBatch = btn.dataset.noBatch || '—';
+        const expired = btn.dataset.expired || '—';
+        const sisaStok = btn.dataset.sisaStok || '0';
+        const postUrl = btn.dataset.url || `/laporan/stok/batch/${batchId}/pindah-rusak`;
+
+        const dialogTitle = 'Konfirmasi Pemindahan Barang Rusak';
+        const dialogMsg = `
+            <div class="space-y-3">
+                <p class="text-sm text-gray-600 leading-relaxed text-center">
+                    Apakah Anda yakin ingin memindahkan barang ini ke Catatan Barang Rusak? Barang yang dipindahkan tidak akan ditampilkan lagi pada laporan monitoring stok.
+                </p>
+                <div class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3 text-xs space-y-1.5 text-left text-slate-700">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 font-medium">Nama Barang:</span>
+                        <span class="font-bold text-slate-900">${escapeHtml(barangNama)}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 font-medium">Nomor Batch:</span>
+                        <span class="font-mono font-bold text-slate-900">${escapeHtml(noBatch)}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 font-medium">Tanggal Kedaluwarsa:</span>
+                        <span class="font-semibold text-rose-600">${escapeHtml(expired)}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 font-medium">Stok Tersisa:</span>
+                        <span class="font-bold text-rose-600">${escapeHtml(sisaStok)} unit</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (typeof window.confirmAction === 'function') {
+            window.confirmAction({
+                title: dialogTitle,
+                message: dialogMsg,
+                type: 'info',
+                confirmText: 'Ya, Pindahkan',
+                cancelText: 'Batal',
+                loadingText: 'Memindahkan Data...',
+                onConfirm: function () {
+                    executePindahRusak(postUrl, batchId);
+                }
+            });
+        } else {
+            if (confirm(`Apakah Anda yakin ingin memindahkan barang ini ke Catatan Barang Rusak? Barang yang dipindahkan tidak akan ditampilkan lagi pada laporan monitoring stok.\n\nBarang: ${barangNama}\nBatch: ${noBatch}\nKadaluarsa: ${expired}\nSisa Stok: ${sisaStok} unit`)) {
+                executePindahRusak(postUrl, batchId);
+            }
+        }
+    };
+
+    // Alias untuk kompatibilitas
+    window.pindahKeBarangRusakConfirm = function(batchId, barangNama, noBatch, sisaStok, expired) {
+        const btn = document.querySelector(`.btn-pindah-rusak[data-batch-id="${batchId}"]`);
+        if (btn) {
+            window.triggerPindahRusak(btn);
+        } else {
+            const dummyBtn = {
+                dataset: {
+                    batchId: batchId,
+                    barangNama: barangNama,
+                    noBatch: noBatch,
+                    expired: expired || '—',
+                    sisaStok: sisaStok,
+                    url: `/laporan/stok/batch/${batchId}/pindah-rusak`
+                }
+            };
+            window.triggerPindahRusak(dummyBtn);
+        }
+    };
+
+    window.executePindahRusak = function(postUrl, batchId) {
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        
+        fetch(postUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(async (response) => {
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (e) {
+                data = { message: 'Terjadi kesalahan pada respon server.' };
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Gagal memindahkan barang ke Catatan Barang Rusak.');
+            }
+            return data;
+        })
+        .then(result => {
+            // 1. Tutup modal konfirmasi terlebih dahulu
+            const showSuccessNotification = function () {
+                // Tampilkan alert berhasil SETELAH modal konfirmasi benar-benar tertutup
+                if (typeof window.showToast === 'function') {
+                    window.showToast(result.message || 'Barang berhasil dipindahkan ke Catatan Barang Rusak.', 'success');
+                }
+            };
+
+            if (typeof window.closeConfirmModal === 'function') {
+                window.closeConfirmModal(showSuccessNotification);
+            } else {
+                const modal = document.getElementById('modal-confirm');
+                if (modal) {
+                    modal.classList.add('hidden', 'opacity-0');
+                }
+                showSuccessNotification();
+            }
+
+            // 2. Hapus baris secara mulus dari DOM tanpa reload halaman
+            const row = document.getElementById(`batch-row-${batchId}`);
+            const historyRow = document.getElementById(`batch-history-row-${batchId}`);
+            if (row) {
+                row.classList.add('transition-all', 'duration-300', 'opacity-0', 'bg-rose-50');
+                setTimeout(() => {
+                    row.remove();
+                    if (historyRow) historyRow.remove();
+
+                    // Perbarui total batch di header
+                    const countEl = document.getElementById('total-batch-count');
+                    if (countEl) {
+                        const cur = parseInt(countEl.textContent.replace(/\D/g, '') || '0', 10);
+                        if (cur > 0) countEl.textContent = (cur - 1);
+                    }
+
+                    // Jika seluruh baris pada halaman telah dipindahkan / tabel kosong
+                    const remaining = document.querySelectorAll('.table-stok tbody .batch-row');
+                    if (remaining.length === 0) {
+                        window.location.reload();
+                    }
+                }, 300);
+            }
+        })
+        .catch(err => {
+            // Ketika proses gagal:
+            // 1. Hentikan status loading pada modal agar tombol aktif kembali dan pengguna dapat mencoba lagi atau membatalkan
+            if (typeof window.resetConfirmLoading === 'function') {
+                window.resetConfirmLoading();
+            }
+
+            // 2. Modal konfirmasi tetap terbuka, tampilkan pesan alert error
+            if (typeof window.showToast === 'function') {
+                window.showToast(err.message || 'Terjadi kesalahan sistem saat memindahkan barang.', 'error');
+            } else {
+                alert(err.message || 'Gagal memindahkan barang.');
+            }
+        });
+    };
+
+    // Delegasi klik tombol aksi pindah barang rusak (cadangan tambahan)
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-pindah-rusak');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        triggerPindahRusak(btn);
     });
 </script>
 
