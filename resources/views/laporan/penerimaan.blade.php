@@ -146,9 +146,10 @@
             </tbody>
         </table>
     </div>
-    <div class="pagination-container mt-4 print:hidden">
-        {{ $items->links('vendor.pagination.apotek') }}
-    </div>
+</div>
+
+<div class="pagination-container mt-4 print:hidden">
+    {{ $items->links('vendor.pagination.apotek') }}
 </div>
 
 {{-- ========================================================= --}}

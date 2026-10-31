@@ -644,12 +644,11 @@
 
         </table>
     </div>
+</div>
 
-    {{-- Pagination & Informasi Data --}}
-    <div class="pagination-container mt-4 print:hidden">
-        {{ $penjualans->links('vendor.pagination.apotek') }}
-    </div>
-
+{{-- Pagination & Informasi Data --}}
+<div class="pagination-container mt-4 print:hidden">
+    {{ $penjualans->links('vendor.pagination.apotek') }}
 </div>
 
 <script>

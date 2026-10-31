@@ -325,9 +325,10 @@
             </table>
         </div>
     </div>
-    <div class="pagination-container mt-4 print:hidden">
-        {{ $stokPerBatch->links('vendor.pagination.apotek') }}
-    </div>
+</div>
+
+<div class="pagination-container mt-4 print:hidden">
+    {{ $stokPerBatch->links('vendor.pagination.apotek') }}
 </div>
 
 {{-- ========================================================= --}}
