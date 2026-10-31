@@ -421,6 +421,181 @@
                 </div>
             </div>
 
+            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+            <!-- Section 4: Latar Belakang Layout & Dashboard -->
+            @php
+                $currentBgType = old('background_type', $apotek->background_type ?? 'default');
+                $currentBgOpacity = old('background_opacity', $apotek->background_opacity ?? 40);
+                $isCustom = $currentBgType === 'custom';
+                $hasCustomImage = !empty($apotek->background_image);
+                $customTitle = $hasCustomImage ? '2. Gambar / Pola Kustom' : '2. Motif Batik Elegan (Bawaan)';
+                $customSubtext = $hasCustomImage
+                    ? 'Tampilan gambar latar belakang kustom yang Anda unggah di bagian belakang layout.'
+                    : 'Tampilan bernuansa motif batik klasik di bagian belakang layout.';
+                $customStatusLabel = $hasCustomImage ? 'Gambar Kustom Aktif' : 'Motif Batik Aktif';
+                $modeLabel = $isCustom ? ($hasCustomImage ? 'Gambar Kustom' : 'Motif Batik') : 'Abu-Abu Polos';
+            @endphp
+            <div class="card-base !p-0 overflow-hidden border border-slate-200/90 shadow-2xs">
+                <input type="hidden" id="input-background-type" name="background_type" value="{{ $currentBgType }}">
+
+                <!-- Header Kartu Berwarna Biru Sesuai Tema Halaman -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3.5 !text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="!text-white text-xs font-bold uppercase tracking-wider font-sans" style="color: #ffffff !important;">
+                            Latar Belakang Layout & Dashboard
+                        </h3>
+                        <p class="text-xs !text-blue-100 mt-0.5" style="color: #dbeafe !important;">
+                            Pilih tema warna latar belakang paling belakang untuk seluruh halaman dashboard & aplikasi.
+                        </p>
+                    </div>
+                    <span id="badge-current-mode" class="inline-flex items-center gap-1.5 text-[10px] font-semibold !text-white bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-xs shrink-0 self-start sm:self-center" style="color: #ffffff !important;">
+                        <span id="badge-mode-dot" class="w-1.5 h-1.5 rounded-full {{ $isCustom ? 'bg-emerald-400' : 'bg-slate-300' }}"></span>
+                        <span id="badge-mode-text">Mode: {{ $modeLabel }}</span>
+                    </span>
+                </div>
+
+                <div class="p-5 space-y-5 bg-white">
+                    <!-- Option Cards Grid (2 Options) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Option 1: Abu-Abu Polos (Default) -->
+                        <div id="card-bg-default"
+                             class="rounded-xl p-4 transition-all duration-200 cursor-pointer border relative {{ !$isCustom ? 'border-2 border-blue-600 ring-2 ring-blue-100 bg-blue-50/20' : 'border-slate-200 hover:border-slate-300 bg-white' }}"
+                             role="button"
+                             tabindex="0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-800">1. Abu-Abu Polos (Default)</span>
+                                <span id="check-bg-default" class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-2xs {{ !$isCustom ? '' : 'hidden' }}">
+                                    <x-heroicon-s-check class="w-3.5 h-3.5" />
+                                </span>
+                            </div>
+
+                            <div class="h-24 rounded-lg bg-[#f3f4f6] border border-slate-200/90 flex items-center justify-center my-3 shadow-2xs">
+                                <span class="text-xs font-medium text-slate-600">Warna Solid Grey (#f3f4f6)</span>
+                            </div>
+
+                            <p class="text-[11px] text-slate-500 leading-relaxed">
+                                Tampilan bersih standar dengan warna dasar abu-abu lembut.
+                            </p>
+                        </div>
+
+                        <!-- Option 2: Motif / Gambar Kustom -->
+                        <div id="card-bg-custom"
+                             class="rounded-xl p-4 transition-all duration-200 cursor-pointer border relative {{ $isCustom ? 'border-2 border-blue-600 ring-2 ring-blue-100 bg-blue-50/20' : 'border-slate-200 hover:border-slate-300 bg-white' }}"
+                             role="button"
+                             tabindex="0">
+                            <div class="flex items-center justify-between">
+                                <span id="card-custom-title" class="text-xs font-bold text-slate-800">{{ $customTitle }}</span>
+                                <span id="check-bg-custom" class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-2xs {{ $isCustom ? '' : 'hidden' }}">
+                                    <x-heroicon-s-check class="w-3.5 h-3.5" />
+                                </span>
+                            </div>
+
+                            <div class="h-24 rounded-lg bg-slate-100 border border-slate-200/90 flex items-center justify-center my-3 overflow-hidden relative shadow-2xs">
+                                <div id="bg-box-preview-img"
+                                     class="absolute inset-0"
+                                     style="background-image: url('{{ $apotek->background_url }}'); background-repeat: repeat; background-size: auto; opacity: {{ $currentBgOpacity / 100 }};">
+                                </div>
+                                <span class="relative z-10 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-slate-800 backdrop-blur-xs shadow-xs border border-white/80">
+                                    <span id="box-status-label">{{ $customStatusLabel }}</span>&nbsp;(<span id="box-opacity-text">{{ $currentBgOpacity }}</span>%)
+                                </span>
+                            </div>
+
+                            <p id="card-custom-subtext" class="text-[11px] text-slate-500 leading-relaxed">
+                                {{ $customSubtext }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Panel Inset 1: Kelembutan / Transparansi Latar Belakang -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-sans">
+                                    Kelembutan / Transparansi Latar Belakang (Dissolve)
+                                </h4>
+                                <p class="text-[11px] text-slate-500 mt-0.5">
+                                    Atur seberapa samar/transparan gambar latar agar teks & kartu dashboard tetap sangat jelas dan kontras.
+                                </p>
+                            </div>
+                            <span id="slider-opacity-pill" class="self-start sm:self-center text-xs font-bold text-white bg-blue-600 px-3 py-1 rounded-full shadow-2xs shrink-0">
+                                {{ $currentBgOpacity }}% Transparansi
+                            </span>
+                        </div>
+
+                        <div class="pt-1">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-semibold text-slate-600 shrink-0">Sangat Soft (5%)</span>
+                                <input type="range"
+                                       id="input-bg-opacity"
+                                       name="background_opacity"
+                                       min="5"
+                                       max="60"
+                                       step="1"
+                                       value="{{ $currentBgOpacity }}"
+                                       class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                                <span class="text-xs font-semibold text-slate-600 shrink-0">Pekat (60%)</span>
+                            </div>
+                            @error('background_opacity') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Panel Inset 2: Upload Gambar / Pola Latar Belakang -->
+                    <div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 space-y-3">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-sans">
+                                Upload Gambar / Pola Latar Belakang
+                            </h4>
+                            <p class="text-[11px] text-slate-500 mt-0.5">
+                                Unggah gambar pola, wallpaper, atau motif baru (PNG/JPG), atau gunakan motif batik bawaan sistem.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-1">
+                            <!-- Thumbnail Preview -->
+                            <div class="w-24 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs relative">
+                                <img id="bg-thumbnail-img"
+                                     src="{{ $apotek->background_url }}"
+                                     alt="Preview Latar Belakang"
+                                     class="w-full h-full object-cover">
+                            </div>
+
+                            <!-- Upload Metadata & Trigger Button -->
+                            <div class="flex-1 w-full space-y-2">
+                                <p class="text-xs text-slate-500">
+                                    Format PNG / JPG / WEBP • Maks 5MB • Seamless pattern atau wallpaper disarankan
+                                </p>
+                                <p class="text-xs font-semibold text-emerald-600">
+                                    Ukuran: <span id="bg-file-size-text">{{ $apotek->background_file_size_formatted }}</span>
+                                </p>
+                                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                                    <button type="button"
+                                            id="btn-trigger-bg-upload"
+                                            class="btn-secondary inline-flex items-center gap-2 hover:bg-slate-100 border-slate-300 text-slate-700 shadow-2xs font-semibold text-xs py-1.5 px-3.5">
+                                        <x-heroicon-o-arrow-up-tray class="w-4 h-4 text-slate-600" />
+                                        <span>Unggah Gambar Latar</span>
+                                    </button>
+                                    <button type="button"
+                                            id="btn-reset-default-batik"
+                                            class="btn-secondary inline-flex items-center gap-1.5 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 border-slate-300 text-slate-600 shadow-2xs font-semibold text-xs py-1.5 px-3"
+                                            title="Muat ulang motif batik bawaan sistem">
+                                        <x-heroicon-o-arrow-path class="w-4 h-4 text-slate-500" />
+                                        <span>Gunakan Motif Batik Bawaan</span>
+                                    </button>
+                                    <input type="hidden" id="input-reset-bg-default" name="reset_background_default" value="0">
+                                    <input type="file"
+                                           id="input-bg-file"
+                                           name="background_image"
+                                           accept="image/png,image/jpeg,image/webp,image/jpg"
+                                           class="hidden">
+                                </div>
+                                @error('background_image') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Form Action Footer Card -->
             <div class="card-base bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl shadow-2xs">
                 <span class="text-xs text-slate-500 text-center sm:text-left">
@@ -597,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmText: 'Ya, Kosongkan Form',
                 cancelText: 'Batal',
                 onConfirm: () => {
-                    document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]), textarea[name]').forEach(el => {
+                    document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]):not([name="background_type"]):not([name="background_opacity"]):not([name="reset_background_default"]), textarea[name]').forEach(el => {
                         el.value = '';
                         el.dispatchEvent(new Event('input'));
                     });
@@ -620,6 +795,197 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
+        });
+    }
+
+    // Background Layout & Motif Real-time Synchronizer
+    const inputBgType = document.getElementById('input-background-type');
+    const inputBgOpacity = document.getElementById('input-bg-opacity');
+    const inputBgFile = document.getElementById('input-bg-file');
+    const inputResetBgDefault = document.getElementById('input-reset-bg-default');
+    const btnTriggerBgUpload = document.getElementById('btn-trigger-bg-upload');
+    const btnResetDefaultBatik = document.getElementById('btn-reset-default-batik');
+
+    const cardBgDefault = document.getElementById('card-bg-default');
+    const cardBgCustom = document.getElementById('card-bg-custom');
+    const cardCustomTitle = document.getElementById('card-custom-title');
+    const cardCustomSubtext = document.getElementById('card-custom-subtext');
+    const boxStatusLabel = document.getElementById('box-status-label');
+    const checkBgDefault = document.getElementById('check-bg-default');
+    const checkBgCustom = document.getElementById('check-bg-custom');
+    const badgeCurrentMode = document.getElementById('badge-current-mode');
+    const badgeModeDot = document.getElementById('badge-mode-dot');
+    const badgeModeText = document.getElementById('badge-mode-text');
+    const sliderOpacityPill = document.getElementById('slider-opacity-pill');
+    const boxOpacityText = document.getElementById('box-opacity-text');
+    const bgBoxPreviewImg = document.getElementById('bg-box-preview-img');
+    const bgThumbnailImg = document.getElementById('bg-thumbnail-img');
+    const bgFileSizeText = document.getElementById('bg-file-size-text');
+    const appBgOverlay = document.getElementById('app-background-overlay');
+
+    let isCustomUploaded = {{ !empty($apotek->background_image) ? 'true' : 'false' }};
+
+    const defaultBatikUrl = "{{ asset('images/batik-pattern.png') }}";
+    const defaultBatikSize = "{{ file_exists(public_path('images/batik-pattern.png')) ? number_format(filesize(public_path('images/batik-pattern.png')) / 1024, 2) . ' KB' : '23.88 KB' }}";
+
+    function applyBgMode(mode) {
+        if (!inputBgType) return;
+        inputBgType.value = mode;
+
+        if (mode === 'default') {
+            if (badgeModeDot) badgeModeDot.className = 'w-1.5 h-1.5 rounded-full bg-slate-300';
+            if (badgeModeText) badgeModeText.textContent = 'Mode: Abu-Abu Polos';
+
+            if (cardBgDefault) {
+                cardBgDefault.classList.add('border-2', 'border-blue-600', 'ring-2', 'ring-blue-100', 'bg-blue-50/20');
+                cardBgDefault.classList.remove('border-slate-200', 'hover:border-slate-300', 'bg-white');
+            }
+            if (checkBgDefault) checkBgDefault.classList.remove('hidden');
+
+            if (cardBgCustom) {
+                cardBgCustom.classList.remove('border-2', 'border-blue-600', 'ring-2', 'ring-blue-100', 'bg-blue-50/20');
+                cardBgCustom.classList.add('border-slate-200', 'hover:border-slate-300', 'bg-white');
+            }
+            if (checkBgCustom) checkBgCustom.classList.add('hidden');
+
+            if (appBgOverlay) {
+                appBgOverlay.classList.add('hidden');
+                appBgOverlay.style.opacity = '0';
+            }
+        } else {
+            if (badgeModeDot) badgeModeDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+            if (badgeModeText) badgeModeText.textContent = isCustomUploaded ? 'Mode: Gambar Kustom' : 'Mode: Motif Batik';
+
+            if (cardBgCustom) {
+                cardBgCustom.classList.add('border-2', 'border-blue-600', 'ring-2', 'ring-blue-100', 'bg-blue-50/20');
+                cardBgCustom.classList.remove('border-slate-200', 'hover:border-slate-300', 'bg-white');
+            }
+            if (checkBgCustom) checkBgCustom.classList.remove('hidden');
+
+            if (cardBgDefault) {
+                cardBgDefault.classList.remove('border-2', 'border-blue-600', 'ring-2', 'ring-blue-100', 'bg-blue-50/20');
+                cardBgDefault.classList.add('border-slate-200', 'hover:border-slate-300', 'bg-white');
+            }
+            if (checkBgDefault) checkBgDefault.classList.add('hidden');
+
+            if (appBgOverlay) {
+                appBgOverlay.classList.remove('hidden');
+                const opacityVal = inputBgOpacity ? (parseFloat(inputBgOpacity.value) / 100) : 0.4;
+                appBgOverlay.style.opacity = opacityVal;
+            }
+        }
+    }
+
+    if (cardBgDefault) {
+        cardBgDefault.addEventListener('click', () => applyBgMode('default'));
+        cardBgDefault.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                applyBgMode('default');
+            }
+        });
+    }
+
+    if (cardBgCustom) {
+        cardBgCustom.addEventListener('click', () => applyBgMode('custom'));
+        cardBgCustom.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                applyBgMode('custom');
+            }
+        });
+    }
+
+    if (inputBgOpacity) {
+        inputBgOpacity.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (sliderOpacityPill) sliderOpacityPill.textContent = val + '% Transparansi';
+            if (boxOpacityText) boxOpacityText.textContent = val;
+            if (bgBoxPreviewImg) bgBoxPreviewImg.style.opacity = (val / 100);
+
+            if (appBgOverlay && inputBgType && inputBgType.value === 'custom') {
+                appBgOverlay.style.opacity = (val / 100);
+            }
+        });
+    }
+
+    if (btnTriggerBgUpload && inputBgFile) {
+        btnTriggerBgUpload.addEventListener('click', () => {
+            inputBgFile.click();
+        });
+
+        inputBgFile.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (inputResetBgDefault) inputResetBgDefault.value = '0';
+
+            // Maksimal 5 MB
+            if (file.size > 5 * 1024 * 1024) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast('Ukuran file maksimal 5MB.', 'error');
+                } else {
+                    alert('Ukuran file maksimal 5MB.');
+                }
+                this.value = '';
+                return;
+            }
+
+            let formattedSize = '';
+            if (file.size >= 1048576) {
+                formattedSize = (file.size / 1048576).toFixed(2) + ' MB';
+            } else {
+                formattedSize = (file.size / 1024).toFixed(2) + ' KB';
+            }
+            if (bgFileSizeText) bgFileSizeText.textContent = formattedSize;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const dataUrl = e.target.result;
+                if (bgThumbnailImg) bgThumbnailImg.src = dataUrl;
+                if (bgBoxPreviewImg) bgBoxPreviewImg.style.backgroundImage = 'url("' + dataUrl + '")';
+                if (appBgOverlay) {
+                    appBgOverlay.style.backgroundImage = 'url("' + dataUrl + '")';
+                }
+
+                // Update texts for custom uploaded image
+                isCustomUploaded = true;
+                if (cardCustomTitle) cardCustomTitle.textContent = '2. Gambar / Pola Kustom';
+                if (cardCustomSubtext) cardCustomSubtext.textContent = 'Tampilan gambar latar belakang kustom yang Anda unggah di bagian belakang layout.';
+                if (boxStatusLabel) boxStatusLabel.textContent = 'Gambar Kustom Aktif';
+
+                // Automatically switch to custom mode
+                applyBgMode('custom');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (btnResetDefaultBatik) {
+        btnResetDefaultBatik.addEventListener('click', () => {
+            if (inputResetBgDefault) inputResetBgDefault.value = '1';
+            if (inputBgFile) inputBgFile.value = '';
+
+            // Update texts back to default batik
+            isCustomUploaded = false;
+            if (cardCustomTitle) cardCustomTitle.textContent = '2. Motif Batik Elegan (Bawaan)';
+            if (cardCustomSubtext) cardCustomSubtext.textContent = 'Tampilan bernuansa motif batik klasik di bagian belakang layout.';
+            if (boxStatusLabel) boxStatusLabel.textContent = 'Motif Batik Aktif';
+
+            // Update live preview back to default batik
+            if (bgThumbnailImg) bgThumbnailImg.src = defaultBatikUrl;
+            if (bgBoxPreviewImg) bgBoxPreviewImg.style.backgroundImage = 'url("' + defaultBatikUrl + '")';
+            if (bgFileSizeText) bgFileSizeText.textContent = defaultBatikSize;
+            if (appBgOverlay) {
+                appBgOverlay.style.backgroundImage = 'url("' + defaultBatikUrl + '")';
+            }
+
+            // Ensure mode is set to custom (Motif Batik)
+            applyBgMode('custom');
+
+            if (typeof window.showToast === 'function') {
+                window.showToast('Motif batik bawaan berhasil dimuat ulang. Klik "Simpan Pengaturan" untuk menyimpan permanen.', 'info');
+            }
         });
     }
 });

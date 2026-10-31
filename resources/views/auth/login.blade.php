@@ -24,8 +24,13 @@
     @stack('styles')
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex flex-col justify-between">
-    <div class="flex-1 flex items-center justify-center p-4 w-full">
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex flex-col justify-between relative overflow-x-hidden">
+    @if(($apotek?->background_type ?? 'default') === 'custom')
+        <div class="fixed inset-0 pointer-events-none z-0"
+             style="background-image: url('{{ $apotek->background_url }}'); background-repeat: repeat; opacity: {{ ($apotek->background_opacity ?? 40) / 100 }};"
+             aria-hidden="true"></div>
+    @endif
+    <div class="flex-1 flex items-center justify-center p-4 w-full relative z-10">
         <div class="w-full max-w-md">
             <div class="rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-sky-100 backdrop-blur-sm">
                 <div class="mb-6 text-center">

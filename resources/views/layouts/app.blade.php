@@ -56,6 +56,7 @@
 
             aside#app-sidebar,
             #sidebar-backdrop,
+            #app-background-overlay,
             nav,
             footer,
             .app-global-footer,
@@ -79,7 +80,19 @@
     </style>
 </head>
 
-<body class="bg-gray-100 h-screen overflow-hidden flex">
+<body class="bg-gray-100 h-screen overflow-hidden flex relative">
+    @php
+        $bgType = $apotek?->background_type ?? 'default';
+        $bgOpacity = ($apotek?->background_opacity ?? 40) / 100;
+        $bgUrl = $apotek?->background_url ?? asset('images/batik-pattern.png');
+    @endphp
+
+    <!-- App Global Background Layer -->
+    <div id="app-background-overlay"
+         class="fixed inset-0 pointer-events-none transition-opacity duration-300 {{ $bgType === 'custom' ? '' : 'hidden' }}"
+         style="background-image: url('{{ $bgUrl }}'); background-repeat: repeat; background-size: auto; opacity: {{ $bgType === 'custom' ? $bgOpacity : 0 }}; z-index: 0;"
+         aria-hidden="true"></div>
+
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity" aria-hidden="true"></div>
 
@@ -369,7 +382,7 @@
     </script>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden">
+    <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden relative z-10">
         <!-- Top Navbar (Sticky) -->
         <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-5 py-2.5 flex justify-between items-center print:hidden shadow-xs">
             <div class="flex items-center gap-3 md:gap-5 flex-1 min-w-0 pr-4">

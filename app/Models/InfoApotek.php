@@ -24,7 +24,37 @@ class InfoApotek extends Model
         'nama_apoteker_pj',
         'no_sipa',
         'logo',
+        'background_type',
+        'background_image',
+        'background_opacity',
     ];
+
+    public function getBackgroundUrlAttribute(): string
+    {
+        if ($this->background_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->background_image)) {
+            return asset('storage/' . $this->background_image);
+        }
+
+        return asset('images/batik-pattern.png');
+    }
+
+    public function getBackgroundFileSizeFormattedAttribute(): string
+    {
+        if ($this->background_image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->background_image)) {
+            $bytes = \Illuminate\Support\Facades\Storage::disk('public')->size($this->background_image);
+            if ($bytes >= 1048576) {
+                return number_format($bytes / 1048576, 2) . ' MB';
+            }
+            return number_format($bytes / 1024, 2) . ' KB';
+        }
+
+        if (file_exists(public_path('images/batik-pattern.png'))) {
+            $bytes = filesize(public_path('images/batik-pattern.png'));
+            return number_format($bytes / 1024, 2) . ' KB';
+        }
+
+        return '0 KB';
+    }
 
     protected static function booted(): void
     {
