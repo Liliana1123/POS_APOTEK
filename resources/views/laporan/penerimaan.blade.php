@@ -74,7 +74,7 @@
         <input
             type="date"
             name="dari"
-            value="{{ $dari }}"
+            value="{{ old('dari', $dari) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
@@ -85,7 +85,7 @@
         <input
             type="date"
             name="sampai"
-            value="{{ $sampai }}"
+            value="{{ old('sampai', $sampai) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Akhir"
             title="Tanggal Akhir"
@@ -108,6 +108,10 @@
     </select>
 </x-card-filter>
 
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
+
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
     <div class="overflow-x-auto print-table-wrapper">
@@ -127,7 +131,7 @@
             <tbody class="table-custom-body">
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="col-penerimaan-no table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
+                        <td class="col-penerimaan-no table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ ($items->firstItem() ?? 1) + $index }}</td>
                         <td class="col-penerimaan-tanggal text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">@tanggalId($item->penerimaan->tanggal, 'd F Y')</td>
                         <td class="col-penerimaan-faktur font-semibold text-gray-800 font-mono text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->no_faktur }}</td>
                         <td class="col-penerimaan-supplier text-gray-600 font-medium text-xs !px-2.5 py-3 break-words leading-snug">{{ $item->penerimaan->supplier->nama ?? '—' }}</td>
@@ -140,13 +144,10 @@
                     <x-empty-state colspan="8" :search-term="request('search')" />
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                <tr>
-                    <td colspan="7" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Nilai Penerimaan:</td>
-                    <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalNilai, 0, ',', '.') }}</td>
-                </tr>
-            </tfoot>
         </table>
+    </div>
+    <div class="pagination-container mt-4 print:hidden">
+        {{ $items->links('vendor.pagination.apotek') }}
     </div>
 </div>
 

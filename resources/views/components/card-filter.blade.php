@@ -167,6 +167,33 @@
                 }
             });
 
+            // Sinkronisasi alert/error validasi filter
+            var oldAlert = document.querySelector('.filter-alert-container');
+            var newAlert = doc.querySelector('.filter-alert-container');
+            if (oldAlert && newAlert) {
+                oldAlert.innerHTML = newAlert.innerHTML;
+                oldAlert.className = newAlert.className;
+            } else if (oldAlert && !newAlert) {
+                oldAlert.innerHTML = '';
+                oldAlert.classList.add('hidden');
+            }
+
+            // Jika sedang reset, kembalikan nilai input (misal tanggal awal/akhir ke default bulan berjalan)
+            var newForm = doc.querySelector('form[data-live-filter="true"]');
+            if (newForm && form.dataset.isResetting === 'true') {
+                newForm.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(function(newEl) {
+                    var el = form.querySelector('[name="' + newEl.name + '"]');
+                    if (el) {
+                        if (newEl.type === 'checkbox' || newEl.type === 'radio') {
+                            el.checked = newEl.checked;
+                        } else {
+                            el.value = newEl.value;
+                        }
+                    }
+                });
+                delete form.dataset.isResetting;
+            }
+
             if (pagContainer && isPaginationElement(pagContainer)) {
                 if (newPag && newPag.innerHTML.trim() !== '') {
                     pagContainer.innerHTML = newPag.innerHTML;
@@ -273,6 +300,7 @@
         });
 
         updateClearButtonState(form);
+        form.dataset.isResetting = 'true';
         var resetUrl = form.dataset.resetUrl || form.getAttribute('action');
         fetchFilteredData(form, resetUrl, true);
     });

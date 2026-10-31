@@ -144,13 +144,6 @@
                 <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
             @endforelse
         </tbody>
-        <tfoot class="bg-gray-50/50 border-t font-bold text-xs">
-            <tr>
-                <td colspan="8" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">Total Akumulasi:</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-gray-800 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($omzet, 0, ',', '.') }}</td>
-                <td class="table-num !px-2.5 py-3.5 text-right text-emerald-700 font-mono text-xs font-bold whitespace-nowrap">Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}</td>
-            </tr>
-        </tfoot>
     </table>
 
     {{-- ========================================================= --}}
@@ -183,7 +176,7 @@
             type="date"
             id="dari"
             name="dari"
-            value="{{ $dari }}"
+            value="{{ old('dari', $dari) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
@@ -195,7 +188,7 @@
             type="date"
             id="sampai"
             name="sampai"
-            value="{{ $sampai }}"
+            value="{{ old('sampai', $sampai) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Akhir"
             title="Tanggal Akhir"
@@ -255,6 +248,10 @@
         <option value="terlambat" @selected(request('status_piutang') === 'terlambat')>Terlambat</option>
     </select>
 </x-card-filter>
+
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
 
 <!-- Summary Cards (layar) -->
 <div class="laporan-summary-cards grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-3.5 mb-4 print:hidden">
@@ -408,8 +405,11 @@
             <tr>
 
                 <th scope="col" class="w-[14%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                    <button
-                        type="button"
+                    @php
+                        $nextInvoiceDirection = ($sort === 'no_faktur' && $direction === 'asc') ? 'desc' : 'asc';
+                    @endphp
+                    <a
+                        href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'no_faktur', 'direction' => $nextInvoiceDirection]) }}"
                         data-sort="invoice"
                         id="btn-sort-invoice"
                         class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -419,12 +419,15 @@
                         <span id="icon-sort-invoice" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                             <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                         </span>
-                    </button>
+                    </a>
                 </th>
 
                 <th scope="col" class="w-[11%] min-w-[8rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                    <button
-                        type="button"
+                    @php
+                        $nextDateDirection = ($sort === 'tanggal' && $direction === 'asc') ? 'desc' : 'asc';
+                    @endphp
+                    <a
+                        href="{{ request()->fullUrlWithQuery(['page' => null, 'sort' => 'tanggal', 'direction' => $nextDateDirection]) }}"
                         data-sort="tanggal"
                         id="btn-sort-tanggal"
                         class="inline-flex items-center justify-center gap-1.5 w-full text-[10px] !font-bold uppercase tracking-wider text-white hover:text-white/80 transition-colors cursor-pointer group focus:outline-none"
@@ -434,7 +437,7 @@
                         <span id="icon-sort-tanggal" class="sort-icon-container inline-flex items-center text-white/70 group-hover:text-white">
                             <x-heroicon-o-chevron-up-down class="h-3.5 w-3.5 opacity-80" />
                         </span>
-                    </button>
+                    </a>
                 </th>
 
                 <th scope="col" class="w-[18%] min-w-[12rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
@@ -639,278 +642,15 @@
 
             </tbody>
 
-            {{-- Table Footer: Total Akumulasi --}}
-            @if($penjualans->count() > 0)
-                <tfoot>
-                    <tr class="bg-gray-50/75 border-t border-gray-200 font-bold text-xs align-middle">
-                        <td colspan="7" class="!px-3.5 py-3.5 text-right uppercase tracking-wider text-gray-600 font-semibold">
-                            Total Akumulasi
-                        </td>
-
-                        <td class="table-num !px-3.5 py-3.5 !text-left text-gray-800 font-mono text-sm font-bold whitespace-nowrap">
-                            Rp {{ number_format($omzet, 0, ',', '.') }}
-                        </td>
-
-                        <td class="table-num !px-3.5 py-3.5 !text-left text-blue-700 font-mono text-sm font-bold whitespace-nowrap">
-                            Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
-                        </td>
-                    </tr>
-                </tfoot>
-            @endif
-
         </table>
     </div>
 
     {{-- Pagination & Informasi Data --}}
-    @if($penjualans->count() > 0)
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-slate-100 bg-white px-4 sm:px-5 py-3.5 print:hidden">
-
-            <div class="text-xs text-slate-500">
-                Menampilkan
-                <span id="page-item-count" class="font-semibold text-slate-700">
-                    {{ min(15, $penjualans->count()) }}
-                </span>
-                dari
-                <span class="font-semibold text-slate-700">
-                    {{ $penjualans->count() }}
-                </span>
-                data
-            </div>
-
-            <div id="pagination-controls" class="flex items-center gap-1">
-                {{-- Di-render dinamis oleh JavaScript --}}
-            </div>
-
-        </div>
-    @endif
+    <div class="pagination-container mt-4 print:hidden">
+        {{ $penjualans->links('vendor.pagination.apotek') }}
+    </div>
 
 </div>
-
-<script>
-function initPenjualanTablePagination() {
-    const tableBody = document.getElementById('table-laporan-body');
-    let rows = Array.from(document.querySelectorAll('.penjualan-row'));
-    const totalRows = rows.length;
-    const pageSize = 15; // 15 baris per halaman
-    const totalPages = Math.ceil(totalRows / pageSize);
-    let currentPage = 1;
-
-    const paginationContainer = document.getElementById('pagination-controls');
-    const pageItemCountEl = document.getElementById('page-item-count');
-
-    if (!tableBody || totalRows === 0) {
-        if (paginationContainer) paginationContainer.innerHTML = '';
-        return;
-    }
-
-    // Sorting state (default tanggal ascending)
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentSort = urlParams.get('sort') || @json($sort ?? 'tanggal');
-    let currentDirection = (urlParams.get('direction') || @json($direction ?? 'asc')).toLowerCase();
-
-    if (!['invoice', 'no_faktur', 'tanggal'].includes(currentSort)) {
-        currentSort = 'tanggal';
-    }
-    if (currentSort === 'no_faktur') {
-        currentSort = 'invoice';
-    }
-    if (!['asc', 'desc'].includes(currentDirection)) {
-        currentDirection = 'asc';
-    }
-
-    const iconUpDown = '<svg class="h-3.5 w-3.5 text-white/60 group-hover:text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.25 9.24a.75.75 0 011.1.02L10 15.148l2.7-2.888a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.05-1.04z" clip-rule="evenodd" /></svg>';
-    const iconUp = '<svg class="h-3.5 w-3.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clip-rule="evenodd" /></svg>';
-    const iconDown = '<svg class="h-3.5 w-3.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>';
-
-    function sortRows(sortKey, direction) {
-        if (!tableBody || rows.length === 0) return;
-
-        rows.sort((a, b) => {
-            if (sortKey === 'invoice') {
-                const valA = a.dataset.invoice || '';
-                const valB = b.dataset.invoice || '';
-                const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
-                if (cmp !== 0) {
-                    return direction === 'asc' ? cmp : -cmp;
-                }
-                const dateA = a.dataset.tanggal || '';
-                const dateB = b.dataset.tanggal || '';
-                return dateA.localeCompare(dateB);
-            } else {
-                // tanggal
-                const dateA = a.dataset.tanggal || '';
-                const dateB = b.dataset.tanggal || '';
-                const dateCmp = dateA.localeCompare(dateB);
-                if (dateCmp !== 0) {
-                    return direction === 'asc' ? dateCmp : -dateCmp;
-                }
-                const invA = a.dataset.invoice || '';
-                const invB = b.dataset.invoice || '';
-                return invA.localeCompare(invB, undefined, { numeric: true, sensitivity: 'base' });
-            }
-        });
-
-        rows.forEach((row, idx) => {
-            tableBody.appendChild(row);
-            row.classList.remove('bg-white', 'bg-gray-200');
-            row.classList.add(idx % 2 === 0 ? 'bg-white' : 'bg-gray-200');
-        });
-    }
-
-    function updateSortVisuals() {
-        const iconInvoice = document.getElementById('icon-sort-invoice');
-        const iconTanggal = document.getElementById('icon-sort-tanggal');
-
-        if (iconInvoice) {
-            if (currentSort === 'invoice') {
-                iconInvoice.innerHTML = currentDirection === 'asc' ? iconUp : iconDown;
-            } else {
-                iconInvoice.innerHTML = iconUpDown;
-            }
-        }
-
-        if (iconTanggal) {
-            if (currentSort === 'tanggal') {
-                iconTanggal.innerHTML = currentDirection === 'asc' ? iconUp : iconDown;
-            } else {
-                iconTanggal.innerHTML = iconUpDown;
-            }
-        }
-
-        const exportBtn = document.getElementById('export-excel-btn') || document.querySelector('a[href*="export=excel"]');
-        if (exportBtn) {
-            try {
-                const url = new URL(exportBtn.href, window.location.origin);
-                url.searchParams.set('sort', currentSort === 'invoice' ? 'no_faktur' : 'tanggal');
-                url.searchParams.set('direction', currentDirection);
-                exportBtn.href = url.pathname + url.search;
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        const hiddenSort = document.getElementById('filter-sort-input');
-        const hiddenDir = document.getElementById('filter-direction-input');
-        if (hiddenSort) hiddenSort.value = currentSort === 'invoice' ? 'no_faktur' : 'tanggal';
-        if (hiddenDir) hiddenDir.value = currentDirection;
-
-        try {
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('sort', currentSort === 'invoice' ? 'no_faktur' : 'tanggal');
-            currentUrl.searchParams.set('direction', currentDirection);
-            window.history.replaceState({}, '', currentUrl.toString());
-        } catch (e) {
-            // ignore
-        }
-    }
-
-    const btnInvoice = document.getElementById('btn-sort-invoice');
-    if (btnInvoice) {
-        btnInvoice.onclick = function () {
-            if (currentSort === 'invoice') {
-                currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort = 'invoice';
-                currentDirection = 'asc';
-            }
-            sortRows(currentSort, currentDirection);
-            updateSortVisuals();
-            renderPage(1);
-        };
-    }
-
-    const btnTanggal = document.getElementById('btn-sort-tanggal');
-    if (btnTanggal) {
-        btnTanggal.onclick = function () {
-            if (currentSort === 'tanggal') {
-                currentDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort = 'tanggal';
-                currentDirection = 'asc';
-            }
-            sortRows(currentSort, currentDirection);
-            updateSortVisuals();
-            renderPage(1);
-        };
-    }
-
-    function renderPage(page) {
-        currentPage = page;
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-
-        rows.forEach((row, idx) => {
-            if (idx >= start && idx < end) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        const visibleCount = Math.min(end, totalRows) - start;
-        if (pageItemCountEl) {
-            pageItemCountEl.textContent = visibleCount;
-        }
-
-        renderPaginationButtons();
-    }
-
-    function renderPaginationButtons() {
-        if (!paginationContainer) return;
-        paginationContainer.innerHTML = '';
-
-        if (totalPages <= 1) return;
-
-        const prevBtn = document.createElement('button');
-        prevBtn.type = 'button';
-        prevBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-            currentPage === 1
-                ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-        }`;
-        prevBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.08 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" /></svg>';
-        prevBtn.disabled = currentPage === 1;
-        prevBtn.onclick = () => {
-            if (currentPage > 1) renderPage(currentPage - 1);
-        };
-        paginationContainer.appendChild(prevBtn);
-
-        for (let p = 1; p <= totalPages; p++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.type = 'button';
-            pageBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-                p === currentPage
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-2xs font-bold'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-            }`;
-            pageBtn.textContent = p;
-            pageBtn.onclick = () => renderPage(p);
-            paginationContainer.appendChild(pageBtn);
-        }
-
-        const nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = `h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition ${
-            currentPage === totalPages
-                ? 'border-slate-200 text-slate-300 cursor-not-allowed bg-slate-50'
-                : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
-        }`;
-        nextBtn.innerHTML = '<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" /></svg>';
-        nextBtn.disabled = currentPage === totalPages;
-        nextBtn.onclick = () => {
-            if (currentPage < totalPages) renderPage(currentPage + 1);
-        };
-        paginationContainer.appendChild(nextBtn);
-    }
-
-    sortRows(currentSort, currentDirection);
-    updateSortVisuals();
-    renderPage(1);
-}
-
-document.addEventListener('DOMContentLoaded', initPenjualanTablePagination);
-document.addEventListener('live-filter:updated', initPenjualanTablePagination);
-</script>
 
 <script>
     function printReport() {
@@ -933,4 +673,3 @@ document.addEventListener('live-filter:updated', initPenjualanTablePagination);
     });
 </script>
 @endsection
-

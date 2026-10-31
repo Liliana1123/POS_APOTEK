@@ -59,7 +59,7 @@
     :reset-url="route('laporan.stok')"
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
-    :has-reset="request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok', 'tanggal', 'dari', 'sampai'])"
+    :has-reset="request()->anyFilled(['nama', 'barang', 'kategori_id', 'supplier_id', 'batch', 'no_batch', 'status_expired', 'status_stok'])"
     :live-search="true">
     <div class="relative sm:col-span-2 lg:col-span-2">
         <input
@@ -139,7 +139,7 @@
             </p>
         </div>
         <div class="text-xs font-medium text-gray-500 print:text-[8px]">
-            Menampilkan <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->count() }}</span> batch
+            Total: <span class="font-semibold text-gray-700 print:text-gray-900">{{ $stokPerBatch->total() }}</span> batch
         </div>
     </div>
 
@@ -216,7 +216,7 @@
                         >
                             <!-- No -->
                             <td class="col-stok-no table-num text-center">
-                                {{ $index + 1 }}
+                                {{ ($stokPerBatch->firstItem() ?? 1) + $index }}
                             </td>
 
                             <!-- Barang -->
@@ -291,30 +291,11 @@
                     @endforelse
                 </tbody>
 
-                @if ($stokPerBatch->isNotEmpty())
-                    <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                        <tr>
-                            <td colspan="7" class="!px-3 py-3 text-right uppercase tracking-wider text-gray-600">
-                                Total (Ringkasan Data Tampil):
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-gray-800 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokAwal, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-indigo-700 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokTerjual, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right text-rose-700 font-bold whitespace-nowrap">
-                                {{ number_format($totalStokRusak, 0, ',', '.') }}
-                            </td>
-                            <td class="table-num !px-2 py-3 text-right {{ $totalSisaStok <= 0 ? 'text-red-600' : 'text-emerald-700' }} font-bold whitespace-nowrap">
-                                {{ number_format($totalSisaStok, 0, ',', '.') }}
-                            </td>
-                            <td class="!px-2 py-3"></td>
-                        </tr>
-                    </tfoot>
-                @endif
             </table>
         </div>
+    </div>
+    <div class="pagination-container mt-4 print:hidden">
+        {{ $stokPerBatch->links('vendor.pagination.apotek') }}
     </div>
 </div>
 

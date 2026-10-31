@@ -63,7 +63,7 @@
         <input
             type="date"
             name="dari"
-            value="{{ $dari }}"
+            value="{{ old('dari', $dari) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Awal"
             title="Tanggal Awal"
@@ -74,13 +74,17 @@
         <input
             type="date"
             name="sampai"
-            value="{{ $sampai }}"
+            value="{{ old('sampai', $sampai) }}"
             class="form-input min-w-0"
             aria-label="Tanggal Akhir"
             title="Tanggal Akhir"
         >
     </div>
 </x-card-filter>
+
+<div class="filter-alert-container mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 {{ $dateError ? '' : 'hidden' }}" role="alert">
+    {{ $dateError }}
+</div>
 
 <!-- Table Card -->
 <div class="table-custom-container print-table-wrapper">
@@ -100,7 +104,7 @@
             <tbody class="table-custom-body">
                 @forelse ($items as $index => $item)
                     <tr class="{{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-200' }}">
-                        <td class="table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ $index + 1 }}</td>
+                        <td class="table-num text-center text-xs text-gray-500 !px-1.5 py-3">{{ ($items->firstItem() ?? 1) + $index }}</td>
                         <td class="text-center font-mono text-gray-600 text-xs !px-2 py-3 whitespace-nowrap">@tanggalId($item->tanggal, 'd F Y')</td>
                         <td class="font-medium text-gray-800 text-xs !px-3 py-3 break-words leading-snug">{{ $item->detailPenerimaan->barang->nama ?? '—' }}</td>
                         <td class="font-mono text-gray-600 text-center text-xs !px-2 py-3 whitespace-nowrap">{{ $item->detailPenerimaan->no_batch ?? '—' }}</td>
@@ -112,14 +116,10 @@
                     <x-empty-state colspan="7" />
                 @endforelse
             </tbody>
-            <tfoot class="bg-gray-50/50 border-t border-[#D1D5DB] font-bold text-xs">
-                <tr>
-                    <td colspan="5" class="!px-3 py-3.5 text-right uppercase tracking-wider text-gray-600">Total Kerugian Finansial:</td>
-                    <td class="table-num !px-2.5 py-3.5 text-right text-red-650 font-mono text-sm font-bold whitespace-nowrap">Rp {{ number_format($totalKerugian, 0, ',', '.') }}</td>
-                    <td class="!px-2.5 py-3.5"></td>
-                </tr>
-            </tfoot>
         </table>
+    </div>
+    <div class="pagination-container mt-4 print:hidden">
+        {{ $items->links('vendor.pagination.apotek') }}
     </div>
 </div>
 
