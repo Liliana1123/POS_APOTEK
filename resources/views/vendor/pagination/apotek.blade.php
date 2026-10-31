@@ -29,11 +29,7 @@
 
             <div>
                 <p class="text-sm text-gray-700 leading-5 dark:text-gray-600">
-                    Menampilkan
-                    <span class="font-medium">{{ $paginator->firstItem() ?? 0 }} – {{ $paginator->lastItem() ?? 0 }}</span>
-                    dari
-                    <span class="font-medium">{{ $paginator->total() }}</span>
-                    data
+                    Menampilkan {{ $paginator->firstItem() ?? 0 }}–{{ $paginator->lastItem() ?? 0 }} dari {{ $paginator->total() }} data
                 </p>
             </div>
 
