@@ -6,6 +6,7 @@
     'deleteUrl' => null,
     'deleteConfirm' => 'Yakin ingin menghapus data ini?',
     'deleteItem' => '',
+    'deleteDetailLabel' => null,
     'showUrl' => null,
     'align' => 'justify-start',
 ])
@@ -63,6 +64,7 @@
                 aria-label="Hapus"
                 data-confirm-delete="{{ $deleteUrl }}"
                 @if($deleteItem) data-item-name="{{ $deleteItem }}" @endif
+                @if($deleteDetailLabel) data-confirm-detail-label="{{ $deleteDetailLabel }}" @endif
                 @if($deleteConfirm) data-confirm-message="{{ $deleteConfirm }}" @endif>
                 <x-heroicon-o-trash class="w-4 h-4" />
             </button>

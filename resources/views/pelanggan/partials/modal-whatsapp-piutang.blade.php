@@ -28,9 +28,10 @@
 
             <button type="button"
                 onclick="closeWhatsAppPiutangPreview()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Tutup">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -169,9 +170,10 @@
 
             <button type="button"
                 onclick="closeWhatsAppCategoryModal()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Tutup">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -399,9 +401,10 @@
 
             <button type="button"
                 onclick="closeWhatsAppEditorModal()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Tutup">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -646,9 +649,10 @@
             <button type="button"
                 id="btnBatalKirimWhatsAppX"
                 onclick="closeWhatsAppPiutangConfirm()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Batal">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Batal"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -767,9 +771,10 @@
 
                 <button type="button"
                     onclick="closeTemplateManageModal()"
-                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                    title="Tutup">
-                    <x-heroicon-o-x-mark class="h-5 w-5" />
+                    class="btn-secondary !p-1.5 modal-close-btn"
+                    title="Tutup"
+                    aria-label="Tutup">
+                    <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
                 </button>
             </div>
         </div>
@@ -863,9 +868,10 @@
 
             <button type="button"
                 onclick="closeTemplateFormModal()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Batal / Tutup">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Batal / Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -1000,9 +1006,10 @@
 
             <button type="button"
                 onclick="closeBulkWhatsAppConfirmModal()"
-                class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                title="Batal">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Batal"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 

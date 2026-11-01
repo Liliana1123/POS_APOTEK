@@ -25,11 +25,11 @@
             <button
                 type="button"
                 onclick="closeDetailModal()"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition"
-                title="Tutup (Esc)"
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
                 aria-label="Tutup"
             >
-                <x-heroicon-o-x-mark class="w-5 h-5" />
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -68,8 +68,42 @@
                             </div>
                         </div>
 
-                        <!-- Telepon & Alamat -->
+                        <!-- Tanggal Lahir, Telepon, Alamat, Member Sejak, Saldo Piutang -->
                         <div class="modal-profile-contact space-y-3" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
+                            <!-- Member Sejak -->
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                    <x-heroicon-o-identification class="w-4 h-4" />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-[10px] font-medium text-gray-400">Member Sejak</div>
+                                    <div id="detail-member-since" class="text-xs font-bold text-gray-800 break-words">-</div>
+                                </div>
+                            </div>
+
+                            <!-- Saldo Piutang -->
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                    <x-heroicon-o-banknotes class="w-4 h-4" />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-[10px] font-medium text-gray-400">Saldo Piutang</div>
+                                    <div id="detail-saldo-piutang-text" class="text-xs font-bold text-gray-800 break-words">Rp 0</div>
+                                </div>
+                            </div>
+
+                            <!-- Tanggal Lahir -->
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                    <x-heroicon-o-calendar-days class="w-4 h-4" />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-[10px] font-medium text-gray-400">Tanggal Lahir</div>
+                                    <div id="detail-tanggal-lahir" class="text-xs font-bold text-gray-800 break-words">-</div>
+                                </div>
+                            </div>
+
+                            <!-- No. Telp -->
                             <div class="flex items-center gap-3">
                                 <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
                                     <x-heroicon-o-phone class="w-4 h-4" />
@@ -80,6 +114,7 @@
                                 </div>
                             </div>
 
+                            <!-- Alamat -->
                             <div class="flex items-start gap-3">
                                 <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 mt-0.5">
                                     <x-heroicon-o-map-pin class="w-4 h-4" />
@@ -101,31 +136,6 @@
                                 <div id="detail-benefit-diskon" class="text-xs font-bold text-emerald-600 truncate">
                                     Diskon 10%
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Informasi Detail Profil -->
-                        <div class="pt-3 border-t border-gray-100 space-y-2.5 text-xs">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-gray-500 font-medium text-[11px]">Status Member</span>
-                                <span id="detail-status-member-pill" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-right">
-                                    Member Pelanggan Tetap
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-gray-500 font-medium text-[11px]">Member Sejak</span>
-                                <span id="detail-member-since" class="text-gray-800 font-semibold text-right">-</span>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-gray-500 font-medium text-[11px]">Tanggal Lahir</span>
-                                <span id="detail-tanggal-lahir" class="text-gray-800 font-semibold text-right">-</span>
-                            </div>
-
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-gray-500 font-medium text-[11px]">Saldo Piutang</span>
-                                <span id="detail-saldo-piutang-text" class="text-gray-800 font-bold text-right">Rp 0</span>
                             </div>
                         </div>
 
@@ -568,8 +578,11 @@ function openDetailModal(pelangganId) {
 
     document.getElementById('detail-member-since').textContent = '-';
     document.getElementById('detail-tanggal-lahir').textContent = '-';
-    document.getElementById('detail-saldo-piutang-text').textContent = 'Rp 0';
-    document.getElementById('detail-saldo-piutang-text').className = 'text-gray-800 font-bold text-right';
+    const saldoPiutangTextReset = document.getElementById('detail-saldo-piutang-text');
+    if (saldoPiutangTextReset) {
+        saldoPiutangTextReset.textContent = 'Rp 0';
+        saldoPiutangTextReset.className = 'text-xs font-bold text-gray-800 break-words';
+    }
 
     document.getElementById('detail-total-belanja').textContent = 'Rp 0';
     document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
@@ -655,9 +668,9 @@ function openDetailModal(pelangganId) {
         if (saldoPiutangTextEl) {
             saldoPiutangTextEl.textContent = formattedPiutang;
             if (saldoPiutang > 0) {
-                saldoPiutangTextEl.className = 'text-red-600 font-bold text-right';
+                saldoPiutangTextEl.className = 'text-xs font-bold text-red-600 break-words';
             } else {
-                saldoPiutangTextEl.className = 'text-gray-800 font-bold text-right';
+                saldoPiutangTextEl.className = 'text-xs font-bold text-gray-800 break-words';
             }
         }
 

@@ -30,11 +30,10 @@
 
             <button type="button"
                 onclick="closePiutangPaymentModal()"
-                class="piutang-close-btn"
-                title="Tutup">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -273,23 +272,7 @@
     margin: 3px 0 0 0;
 }
 
-#piutangPaymentModal .piutang-close-btn {
-    color: #94a3b8;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-}
 
-#piutangPaymentModal .piutang-close-btn:hover {
-    color: #475569;
-    background-color: #f1f5f9;
-}
 
 /* Body */
 #piutangPaymentModal .piutang-body {
