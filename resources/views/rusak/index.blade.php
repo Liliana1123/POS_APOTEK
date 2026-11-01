@@ -165,7 +165,9 @@
     </div>
 </div>
 
-<x-pagination :paginator="$rusaks" />
+<div class="pagination-container mt-4 print:hidden">
+    {{ $rusaks->links('vendor.pagination.apotek') }}
+</div>
 
     @php
         $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')

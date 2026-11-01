@@ -13,8 +13,7 @@ class PaginationViewTest extends TestCase
         $html = $paginator->links('vendor.pagination.apotek')->render();
 
         $this->assertStringContainsString('Menampilkan', $html);
-        $this->assertStringContainsString('<span class="font-medium">0 – 0</span>', $html);
-        $this->assertStringContainsString('<span class="font-medium">0</span>', $html);
+        $this->assertStringContainsString('0–0', $html);
         $this->assertStringContainsString('text-sm leading-5 text-slate-500', $html);
         $this->assertStringNotContainsString('Showing', $html);
         $this->assertStringNotContainsString('results', $html);
@@ -31,8 +30,7 @@ class PaginationViewTest extends TestCase
         );
         $html = $paginator->links('vendor.pagination.apotek')->render();
 
-        $this->assertStringContainsString('<span class="font-medium">1 – 15</span>', $html);
-        $this->assertStringContainsString('<span class="font-medium">16</span>', $html);
+        $this->assertStringContainsString('Menampilkan 1–15 dari 16 data', $html);
         $this->assertStringContainsString('cari=obat&amp;page=2', $html);
         $this->assertStringContainsString('aria-label="Berikutnya"', $html);
         $this->assertStringContainsString('aria-disabled="true" aria-label="Sebelumnya"', $html);
@@ -49,7 +47,7 @@ class PaginationViewTest extends TestCase
         );
         $html = $paginator->links('vendor.pagination.apotek')->render();
 
-        $this->assertStringContainsString('<span class="font-medium">16 – 16</span>', $html);
+        $this->assertStringContainsString('Menampilkan 16–16 dari 16 data', $html);
         $this->assertStringContainsString('aria-label="Sebelumnya"', $html);
         $this->assertStringContainsString('aria-disabled="true" aria-label="Berikutnya"', $html);
         $this->assertStringContainsString('cari=obat&amp;page=1', $html);
@@ -60,7 +58,7 @@ class PaginationViewTest extends TestCase
         $paginator = new LengthAwarePaginator([1], 1, 15, 1);
         $html = $paginator->links('vendor.pagination.apotek')->render();
 
-        $this->assertStringContainsString('<span class="font-medium">1 – 1</span>', $html);
+        $this->assertStringContainsString('Menampilkan 1–1 dari 1 data', $html);
         $this->assertStringContainsString('aria-disabled="true" aria-label="Sebelumnya"', $html);
         $this->assertStringContainsString('aria-disabled="true" aria-label="Berikutnya"', $html);
     }
@@ -74,6 +72,19 @@ class PaginationViewTest extends TestCase
             str_contains($contents, '<x-pagination') || str_contains($contents, "links('vendor.pagination.apotek')")
         );
         $this->assertStringContainsString('vendor.pagination.apotek', $componentContents);
+    }
+
+    public function test_penerimaan_and_rusak_index_declare_shared_indonesian_pagination_outside_table(): void
+    {
+        $penerimaanContents = file_get_contents(resource_path('views/penerimaan/index.blade.php'));
+        $this->assertStringContainsString("links('vendor.pagination.apotek')", $penerimaanContents);
+        $this->assertStringContainsString('pagination-container', $penerimaanContents);
+        $this->assertTrue(strpos($penerimaanContents, 'pagination-container') > strpos($penerimaanContents, 'table-custom-container'));
+
+        $rusakContents = file_get_contents(resource_path('views/rusak/index.blade.php'));
+        $this->assertStringContainsString("links('vendor.pagination.apotek')", $rusakContents);
+        $this->assertStringContainsString('pagination-container', $rusakContents);
+        $this->assertTrue(strpos($rusakContents, 'pagination-container') > strpos($rusakContents, 'table-custom-container'));
     }
 }
 
