@@ -354,9 +354,10 @@
             });
         };
 
-        window.closeConfirmModal = function () {
+        window.closeConfirmModal = function (callbackOrForce = null) {
             if (!initElements()) return;
-            if (isLoading) return; // Mencegah modal tertutup saat sedang loading
+
+            stopLoading();
 
             if (contentEl) {
                 contentEl.classList.remove('scale-100', 'opacity-100');
@@ -366,7 +367,9 @@
             setTimeout(() => {
                 modalEl.classList.add('hidden');
                 currentCallback = null;
-                stopLoading();
+                if (typeof callbackOrForce === 'function') {
+                    callbackOrForce();
+                }
             }, 200);
         };
 

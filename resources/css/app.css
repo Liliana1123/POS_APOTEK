@@ -1684,7 +1684,7 @@ body {
     min-height: 350px;
 }
 
-.dashboard-reference .main-action-column>.dashboard-card:first-child {
+.dashboard-reference .main-action-column>.dashboard-card {
     min-height: 270px;
 }
 
