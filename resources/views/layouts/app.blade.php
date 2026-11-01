@@ -408,7 +408,7 @@
                 </button>
             </div>
             
-            <div class="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
+            <div class="hidden sm:flex items-center gap-2 sm:gap-3 text-xs shrink-0">
                 <!-- Keyboard Shortcuts Trigger Button -->
                 <button type="button"
                         onclick="openKeyboardShortcutsModal()"
