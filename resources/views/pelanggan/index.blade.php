@@ -252,6 +252,7 @@
                                         aria-label="Hapus"
                                         data-confirm-delete="{{ route('pelanggan.destroy', $pelanggan) }}"
                                         data-item-name="{{ $pelanggan->nama }}"
+                                        data-confirm-detail-label="Nama Pelanggan:"
                                         data-confirm-message="Yakin ingin menghapus data pelanggan ini?">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
@@ -345,4 +346,30 @@
 @include('pelanggan.partials.modal-card')
 @include('pelanggan.partials.modal-piutang')
 @include('pelanggan.partials.modal-whatsapp-piutang')
+
+<style>
+    /* Penyelarasan tombol silang close pada popup fitur pelanggan */
+    #modal-pelanggan .modal-pelanggan-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.375rem !important;
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-border-custom, #e2e8f0);
+        background-color: var(--color-surface, #ffffff);
+        color: var(--color-text-main, #1e293b);
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    #modal-pelanggan .modal-pelanggan-close:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+    }
+    #modal-pelanggan .modal-pelanggan-close svg {
+        width: 1rem !important;
+        height: 1rem !important;
+        pointer-events: none;
+    }
+</style>
 @endsection

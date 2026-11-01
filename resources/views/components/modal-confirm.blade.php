@@ -338,13 +338,17 @@
         /**
          * Backward-compatible Delete Confirmation
          */
-        window.confirmDelete = function (actionUrl, itemName = '', customMessage = '', customLoadingText = '') {
+        window.confirmDelete = function (actionUrl, itemName = '', customMessage = '', customLoadingText = '', customDetailLabel = '') {
+            let defaultLabel = 'Item:';
+            if (window.location.pathname.includes('pelanggan')) {
+                defaultLabel = 'Nama Pelanggan:';
+            }
             window.confirmAction({
                 action: actionUrl,
                 title: 'Konfirmasi Hapus',
                 message: customMessage || 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.',
                 detail: itemName,
-                detailLabel: 'Item:',
+                detailLabel: customDetailLabel || defaultLabel,
                 type: 'danger',
                 icon: 'trash',
                 method: 'DELETE',
@@ -447,8 +451,9 @@
                     const itemName = trigger.getAttribute('data-item-name') || '';
                     const message = trigger.getAttribute('data-confirm-message') || '';
                     const loadingText = trigger.getAttribute('data-confirm-loading-text') || 'Menghapus Data...';
+                    const detailLabel = trigger.getAttribute('data-confirm-detail-label') || trigger.getAttribute('data-detail-label') || '';
                     if (actionUrl) {
-                        window.confirmDelete(actionUrl, itemName, message, loadingText);
+                        window.confirmDelete(actionUrl, itemName, message, loadingText, detailLabel);
                     }
                 }
             });
