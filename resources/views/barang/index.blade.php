@@ -29,8 +29,14 @@
     :grid="true"
     grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
     :live-search="true"
-    :has-reset="request()->anyFilled(['cari', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
+    :has-reset="request()->anyFilled(['cari', 'golongan_obat', 'kategori_id', 'butuh_resep', 'aktif', 'stok'])">
     <x-search-input name="cari" placeholder="Cari nama, kode, KFA, merk..." class="sm:col-span-2 md:col-span-2 lg:col-span-2" />
+    <select name="golongan_obat" class="form-input" aria-label="Golongan Obat" title="Golongan Obat">
+        <option value="">Golongan: Semua</option>
+        @foreach (\App\Models\Barang::GOLONGAN_OBAT as $key => $info)
+            <option value="{{ $key }}" @selected(request('golongan_obat') === $key)>{{ $info['label'] }}</option>
+        @endforeach
+    </select>
     <select name="kategori_id" class="form-input" aria-label="Kategori" title="Kategori">
         <option value="">Kategori: Semua</option>
         @foreach ($kategoris as $k)
@@ -64,6 +70,7 @@
                     <th scope="col" class="text-center w-36">Aksi</th>
                     <th scope="col" class="w-32">Kode Apotek</th>
                     <th scope="col" class="w-32">Kode KFA</th>
+                    <th scope="col" class="text-center w-24">Golongan</th>
                     <th scope="col">Nama Barang</th>
                     <th scope="col" class="w-40">Merk</th>
                     <th scope="col" class="w-28">Satuan</th>
@@ -96,6 +103,7 @@
                                 :edit-data="$canManageBarang ? [
                                     'kode_apotek' => $barang->kode_apotek,
                                     'kode_kfa' => $barang->kode_kfa,
+                                    'golongan_obat' => $barang->golongan_obat,
                                     'nama' => $barang->nama,
                                     'merk' => $barang->merk,
                                     'kategori_id' => $barang->kategori_id,
@@ -119,6 +127,9 @@
                                         'id' => $barang->id,
                                         'kode_apotek' => $barang->kode_apotek ?? '—',
                                         'kode_kfa' => $barang->kode_kfa ?? '—',
+                                        'golongan_obat' => $barang->golongan_obat,
+                                        'golongan_label' => $barang->golongan_obat_label ?? '—',
+                                        'golongan_logo' => $barang->golongan_obat_logo,
                                         'nama' => $barang->nama,
                                         'merk' => $barang->merk ?? '—',
                                         'barcode' => $barang->barcode ?? '—',
@@ -140,6 +151,18 @@
                         </td>
                         <td><x-copyable :text="$barang->kode_apotek" /></td>
                         <td><x-copyable :text="$barang->kode_kfa" /></td>
+                        <td class="text-center">
+                            @if ($barang->golongan_obat_logo)
+                                <img src="{{ $barang->golongan_obat_logo }}"
+                                     alt="{{ $barang->golongan_obat_label }}"
+                                     title="{{ $barang->golongan_obat_label }}"
+                                     class="w-7 h-7 mx-auto object-contain inline-block drop-shadow-sm hover:scale-110 transition-transform cursor-help"
+                                     loading="lazy"
+                                     decoding="async">
+                            @else
+                                <span class="text-gray-300 font-sans select-none">—</span>
+                            @endif
+                        </td>
                         <td class="font-medium text-gray-800">{{ $barang->nama }}</td>
                         <td>{{ $barang->merk ?: '—' }}</td>
                         <td>{{ $barang->satuan->nama ?? '—' }}</td>
@@ -154,7 +177,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-empty-state colspan="8" />
+                    <x-empty-state colspan="9" />
                 @endforelse
             </tbody>
         </table>
@@ -191,7 +214,22 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <x-form.input name="kode_kfa" label="Kode KFA (Opsional)" placeholder="Contoh: KFA-12345..." />
+            <div>
+                <label for="golongan_obat" class="block text-xs font-semibold text-gray-500 mb-1 font-sans">
+                    Golongan Obat (Opsional)
+                </label>
+                <select id="golongan_obat" name="golongan_obat" class="form-input">
+                    <option value="">Bukan Obat / Belum Ditentukan</option>
+                    @foreach (\App\Models\Barang::GOLONGAN_OBAT as $key => $info)
+                        <option value="{{ $key }}">{{ $info['label'] }} ({{ $info['desc'] }})</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <x-form.input name="merk" label="Merk (Opsional)" placeholder="Contoh: Kimia Farma, Kalbe..." />
+            <x-form.input name="barcode" label="Barcode (Opsional)" placeholder="Scan / ketik barcode..." />
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -201,7 +239,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <x-form.input name="barcode" label="Barcode (Opsional)" placeholder="Scan / ketik barcode..." />
             <x-form.input type="number" name="stok_minimum" label="Stok Minimum" required min="0" placeholder="0" />
         </div>
         <div class="space-y-2">

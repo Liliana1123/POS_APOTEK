@@ -24,6 +24,10 @@ class BarangController extends Controller
             $query->where('kategori_id', $request->kategori_id);
         }
 
+        if ($request->filled('golongan_obat')) {
+            $query->where('golongan_obat', $request->golongan_obat);
+        }
+
         $query->filterStatus('aktif', $request->aktif);
 
         if ($request->filled('butuh_resep')) {
@@ -79,6 +83,7 @@ class BarangController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'kode_kfa' => 'nullable|string|max:100',
+            'golongan_obat' => 'nullable|string|in:' . implode(',', array_keys(Barang::GOLONGAN_OBAT)),
             'merk' => 'nullable|string|max:255',
             'kategori_id' => 'required|exists:kategoris,id',
             'satuan_id' => 'required|exists:satuans,id',
@@ -119,6 +124,7 @@ class BarangController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'kode_kfa' => 'nullable|string|max:100',
+            'golongan_obat' => 'nullable|string|in:' . implode(',', array_keys(Barang::GOLONGAN_OBAT)),
             'merk' => 'nullable|string|max:255',
             'kategori_id' => 'required|exists:kategoris,id',
             'satuan_id' => 'required|exists:satuans,id',
@@ -242,6 +248,7 @@ class BarangController extends Controller
             'No',
             'Kode Apotek',
             'Kode KFA',
+            'Golongan Obat',
             'Nama Barang / Produk',
             'Merk',
             'Kategori',
@@ -260,6 +267,7 @@ class BarangController extends Controller
                 $index + 1,
                 $barang->kode_apotek ?? '-',
                 $barang->kode_kfa ?? '-',
+                $barang->golongan_obat_label ?? '-',
                 $barang->nama,
                 $barang->merk ?? '-',
                 $barang->kategori->nama ?? '-',

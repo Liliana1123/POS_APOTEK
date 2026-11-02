@@ -10,10 +10,61 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Barang extends Model
 {
     use Filterable;
+
+    public const GOLONGAN_OBAT = [
+        'bebas' => [
+            'label' => 'Obat Bebas',
+            'desc' => 'Lingkaran Hijau',
+            'logo' => 'images/golongan-obat/bebas.webp',
+        ],
+        'bebas_terbatas' => [
+            'label' => 'Obat Bebas Terbatas',
+            'desc' => 'Lingkaran Biru',
+            'logo' => 'images/golongan-obat/bebas-terbatas.webp',
+        ],
+        'keras' => [
+            'label' => 'Obat Keras',
+            'desc' => 'Lingkaran Merah "K"',
+            'logo' => 'images/golongan-obat/keras.webp',
+        ],
+        'narkotika' => [
+            'label' => 'Narkotika',
+            'desc' => 'Palang Medali Merah',
+            'logo' => 'images/golongan-obat/narkotika.webp',
+        ],
+        'jamu' => [
+            'label' => 'Jamu',
+            'desc' => 'Ranting Daun Hijau',
+            'logo' => 'images/golongan-obat/jamu.webp',
+        ],
+        'oht' => [
+            'label' => 'Obat Herbal Terstandar (OHT)',
+            'desc' => 'Tiga Bintang Hijau',
+            'logo' => 'images/golongan-obat/oht.webp',
+        ],
+        'fitofarmaka' => [
+            'label' => 'Fitofarmaka',
+            'desc' => 'Kristal Salju Hijau',
+            'logo' => 'images/golongan-obat/fitofarmaka.webp',
+        ],
+    ];
+
     protected $fillable = [
-        'kode_apotek', 'kode_kfa', 'nama', 'merk', 'kategori_id', 'satuan_id', 'pabrik_id',
+        'kode_apotek', 'kode_kfa', 'golongan_obat', 'nama', 'merk', 'kategori_id', 'satuan_id', 'pabrik_id',
         'barcode', 'butuh_resep', 'stok_minimum', 'aktif',
     ];
+
+    public function getGolonganObatLabelAttribute(): ?string
+    {
+        return self::GOLONGAN_OBAT[$this->golongan_obat]['label'] ?? null;
+    }
+
+    public function getGolonganObatLogoAttribute(): ?string
+    {
+        return isset(self::GOLONGAN_OBAT[$this->golongan_obat])
+            ? asset(self::GOLONGAN_OBAT[$this->golongan_obat]['logo'])
+            : null;
+    }
 
     /**
      * Generate Kode Apotek otomatis dengan format HURUF-NOMOR (contoh: P-0001).
