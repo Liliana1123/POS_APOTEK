@@ -520,6 +520,11 @@ function initShellInteractions() {
 
 // Idle Auto-Logout (30 menit, sinkron antar tab)
 function initIdleAutoLogout() {
+    var path = window.location.pathname.replace(/\/+$/, '');
+    if (path.endsWith('/login') || document.querySelector('form[action*="login"]')) {
+        return;
+    }
+
     (function () {
         var IDLE = 30 * 60 * 1000;
         var WARN = 30 * 1000;
@@ -574,6 +579,9 @@ function initIdleAutoLogout() {
 
         function showWarning(remaining) {
             if (!modal || !modal.isConnected) {
+                var idleMins = Math.round(IDLE / 60000);
+                var idleText = idleMins >= 1 ? (idleMins + ' menit') : (Math.round(IDLE / 1000) + ' detik');
+
                 modal = document.createElement('div');
                 modal.className = 'modal-backdrop-custom';
                 modal.innerHTML = (
@@ -582,7 +590,7 @@ function initIdleAutoLogout() {
                     '<h3 class="text-xs font-bold uppercase tracking-wider text-amber-600">Peringatan Sesi</h3>' +
                     '</div>' +
                     '<div class="modal-body-custom leading-relaxed">' +
-                    'Kamu tidak melakukan aktivitas selama 30 menit. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
+                    'Kamu tidak melakukan aktivitas selama ' + idleText + '. Sesi akan berakhir dalam <strong id="idle-countdown">' + remaining + '</strong> detik.' +
                     '</div>' +
                     '<div class="modal-footer-custom">' +
                     '<button type="button" id="idle-resume" class="btn-primary">Lanjutkan Sesi</button>' +
@@ -591,7 +599,14 @@ function initIdleAutoLogout() {
                 );
                 document.body.appendChild(modal);
                 var resumeBtn = modal.querySelector('#idle-resume');
-                if (resumeBtn) resumeBtn.addEventListener('click', touch);
+                if (resumeBtn) {
+                    resumeBtn.focus();
+                    resumeBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        touch();
+                        hideWarning();
+                    });
+                }
 
                 var last = parseInt(localStorage.getItem('pos_apotek_last_activity') || '0', 10);
                 if (countdownTimer) clearInterval(countdownTimer);
@@ -617,9 +632,16 @@ function initIdleAutoLogout() {
         }
 
         function activityHandler() {
+            // Fase 2: Jika modal peringatan sedang aktif muncul di layar,
+            // abaikan semua gerakan kursor/scroll/ketik acak.
+            // Pengguna harus secara eksplisit menekan tombol "Lanjutkan Sesi".
+            if (modal && modal.isConnected) {
+                return;
+            }
+
+            // Fase 1: Deteksi aktivitas normal sebelum modal muncul
             var t = now();
             if (t - lastTouch >= 2000) { lastTouch = t; touch(); }
-            hideWarning();
         }
 
         touch();

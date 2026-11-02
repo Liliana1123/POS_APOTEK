@@ -20,7 +20,7 @@
     <link rel="icon" type="{{ pathinfo($apotek?->logo, PATHINFO_EXTENSION) == 'png' ? 'image/png' : 'image/x-icon' }}" href="{{ $apotek?->logo ? asset('storage/' . $apotek->logo) : asset('favicon.ico') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('vendor/captcha/css/captcha.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/captcha/css/captcha.css') }}?v={{ file_exists(public_path('vendor/captcha/css/captcha.css')) ? filemtime(public_path('vendor/captcha/css/captcha.css')) : time() }}">
     @stack('styles')
 </head>
 
@@ -122,6 +122,37 @@
                         btn.querySelector('.hide-icon').classList.add('hidden');
                     }, 3000);
                 }
+            });
+        })();
+    </script>
+
+    <script>
+        (() => {
+            // Auto Refresh Captcha setiap 5 menit sesuai masa kedaluwarsa sesi captcha
+            const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 menit
+            let captchaTimer = null;
+
+            function triggerCaptchaRefresh() {
+                const container = document.querySelector('.captcha-container');
+                if (container && typeof window.refreshCaptcha === 'function') {
+                    window.refreshCaptcha(container.id);
+                }
+            }
+
+            function resetTimer() {
+                if (captchaTimer) clearInterval(captchaTimer);
+                captchaTimer = setInterval(triggerCaptchaRefresh, AUTO_REFRESH_INTERVAL);
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                resetTimer();
+
+                // Reset timer jika user mengklik tombol refresh secara manual
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.captcha-refresh')) {
+                        resetTimer();
+                    }
+                });
             });
         })();
     </script>
