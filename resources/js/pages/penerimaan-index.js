@@ -448,12 +448,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnBatalTambah = document.getElementById('btn-batal-tambah');
 
     let rowIndexTambah = 0;
+    let currentTotalTagihanTambah = 0;
     const tbodyTambah = document.getElementById('item-rows-tambah');
     const templateTambah = document.getElementById('row-template-tambah');
     const emptyHintTambah = document.getElementById('empty-hint-tambah');
     const totalFakturTambah = document.getElementById('total-faktur-tambah');
     const ppnTambah = document.getElementById('ppn_tambah');
     const totalTagihanTambah = document.getElementById('total-tagihan-tambah');
+    const pembayaranPertamaTambah = document.getElementById('pembayaran_pertama_tambah');
+    const btnSinkronPembayaranTambah = document.getElementById('btn-sinkron-pembayaran-tambah');
     const oldItemsTambah = JSON.parse(document.getElementById('penerimaan-old-items')?.textContent || '[]');
     const serverErrorsTambah = JSON.parse(document.getElementById('penerimaan-server-errors')?.textContent || '[]');
 
@@ -475,7 +478,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (totalFakturTambah) totalFakturTambah.textContent = formatRupiah(total);
         const nilaiPpn = total * 0.11;
         if (ppnTambah) ppnTambah.value = formatRupiah(nilaiPpn);
-        if (totalTagihanTambah) totalTagihanTambah.textContent = formatRupiah(total + nilaiPpn);
+        currentTotalTagihanTambah = total + nilaiPpn;
+        if (totalTagihanTambah) totalTagihanTambah.textContent = formatRupiah(currentTotalTagihanTambah);
     }
 
     function tambahBarisPenerimaan() {
@@ -567,6 +571,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const btnTambahItem = document.getElementById('btn-tambah-item-tambah');
         if (btnTambahItem) {
             btnTambahItem.addEventListener('click', tambahBarisPenerimaan);
+        }
+
+        if (btnSinkronPembayaranTambah) {
+            btnSinkronPembayaranTambah.addEventListener('click', function () {
+                updateTotalTambah();
+                const nominal = Number.isInteger(currentTotalTagihanTambah)
+                    ? currentTotalTagihanTambah
+                    : Math.round(currentTotalTagihanTambah * 100) / 100;
+
+                if (pembayaranPertamaTambah) {
+                    pembayaranPertamaTambah.value = nominal;
+                    pembayaranPertamaTambah.dispatchEvent(new Event('input', { bubbles: true }));
+                    pembayaranPertamaTambah.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
         }
 
         if (tbodyTambah) {

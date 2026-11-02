@@ -101,6 +101,16 @@
                 <span>Total Tagihan:</span>
                 <span id="total-tagihan-tambah" class="text-blue-700 font-mono">Rp 0</span>
             </div>
+
+            <div class="mt-3.5 flex justify-end">
+                <button type="button"
+                    id="btn-sinkron-pembayaran-tambah"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-white border border-blue-500 hover:bg-blue-50 hover:border-blue-600 active:bg-blue-100 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                    title="Sinkronkan ke Pembayaran">
+                    <x-heroicon-o-arrow-path class="w-4 h-4 text-blue-600 shrink-0" />
+                    <span>Sinkronkan ke Pembayaran</span>
+                </button>
+            </div>
         </div>
 
         <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">

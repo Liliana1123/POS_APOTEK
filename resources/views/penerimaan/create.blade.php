@@ -135,14 +135,21 @@
             <span id="total-tagihan" class="text-blue-700 font-mono">Rp 0</span>
         </div>
 
+        <div class="mt-3.5 flex justify-end">
+            <button type="button"
+                id="btn-sinkron-pembayaran"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-white border border-blue-500 hover:bg-blue-50 hover:border-blue-600 active:bg-blue-100 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                title="Sinkronkan ke Pembayaran">
+                <x-heroicon-o-arrow-path class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Sinkronkan ke Pembayaran</span>
+            </button>
         </div>
-            <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-        </div>
+    </div>
 
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">Pembayaran Saat Penerimaan</label>
-            <input type="number" name="pembayaran_pertama" id="pembayaran_pertama" value="{{ old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono">
+            <input type="number" name="pembayaran_pertama" id="pembayaran_pertama" value="{{ old('pembayaran_pertama', 0) }}" min="0" step="0.01" class="form-input text-right font-mono" data-terbilang="true">
         </div>
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jatuh Tempo</label>
@@ -206,12 +213,15 @@
 
 <script>
 let rowIndex = 0;
+let currentTotalTagihan = 0;
 const tbody = document.getElementById('item-rows');
 const template = document.getElementById('row-template');
 const emptyHint = document.getElementById('empty-hint');
 const totalFaktur = document.getElementById('total-faktur');
 const ppn = document.getElementById('ppn');
 const totalTagihan = document.getElementById('total-tagihan');
+const btnSinkronPembayaran = document.getElementById('btn-sinkron-pembayaran');
+const pembayaranPertamaInput = document.getElementById('pembayaran_pertama');
 
 function formatRupiah(value) { return 'Rp ' + Math.round(value).toLocaleString('id-ID'); }
 
@@ -227,7 +237,8 @@ function updateTotal() {
     totalFaktur.textContent = formatRupiah(total);
     const nilaiPpn = total * 0.11;
     ppn.value = formatRupiah(nilaiPpn);
-    totalTagihan.textContent = formatRupiah(total + nilaiPpn);
+    currentTotalTagihan = total + nilaiPpn;
+    totalTagihan.textContent = formatRupiah(currentTotalTagihan);
 }
 
 function getFocusableInputs(row) {
@@ -294,6 +305,22 @@ const oldItems = @json(old('items', []));
 document.getElementById('btn-tambah-item').addEventListener('click', function () {
     tambahBaris(true);
 });
+
+// Tombol sinkronisasi nominal total tagihan ke pembayaran saat penerimaan
+if (btnSinkronPembayaran) {
+    btnSinkronPembayaran.addEventListener('click', function () {
+        updateTotal();
+        const nominal = Number.isInteger(currentTotalTagihan)
+            ? currentTotalTagihan
+            : Math.round(currentTotalTagihan * 100) / 100;
+
+        if (pembayaranPertamaInput) {
+            pembayaranPertamaInput.value = nominal;
+            pembayaranPertamaInput.dispatchEvent(new Event('input', { bubbles: true }));
+            pembayaranPertamaInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
 
 // Hapus baris
 tbody.addEventListener('click', function (e) {
