@@ -5,10 +5,10 @@
         <div class="flex items-center justify-center">
             @php
                 $logoPath = null;
-                if (file_exists(public_path('images/logo-kinaryatama.jpg'))) {
-                    $logoPath = asset('images/logo-kinaryatama.jpg');
-                } elseif (file_exists(public_path('images/company-logo.jpg'))) {
-                    $logoPath = asset('images/company-logo.jpg');
+                if (file_exists(public_path('images/logo-kinaryatama.webp'))) {
+                    $logoPath = asset('images/logo-kinaryatama.webp');
+                } elseif (file_exists(public_path('images/company-logo.webp'))) {
+                    $logoPath = asset('images/company-logo.webp');
                 }
             @endphp
 

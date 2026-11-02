@@ -35,7 +35,7 @@ class InfoApotek extends Model
             return asset('storage/' . $this->background_image);
         }
 
-        return asset('images/batik-pattern.png');
+        return asset('images/batik-pattern.webp');
     }
 
     public function getBackgroundFileSizeFormattedAttribute(): string
@@ -48,8 +48,8 @@ class InfoApotek extends Model
             return number_format($bytes / 1024, 2) . ' KB';
         }
 
-        if (file_exists(public_path('images/batik-pattern.png'))) {
-            $bytes = filesize(public_path('images/batik-pattern.png'));
+        if (file_exists(public_path('images/batik-pattern.webp'))) {
+            $bytes = filesize(public_path('images/batik-pattern.webp'));
             return number_format($bytes / 1024, 2) . ' KB';
         }
 

@@ -36,10 +36,15 @@ class PengaturanController extends Controller
             'no_izin_sia' => 'nullable|string|max:100',
             'nama_apoteker_pj' => 'nullable|string|max:255',
             'no_sipa' => 'nullable|string|max:100',
-            'logo' => 'nullable|image|max:2048',
+            'logo' => 'nullable|image|max:1024',
             'background_type' => 'nullable|in:default,custom',
             'background_opacity' => 'nullable|integer|min:5|max:100',
-            'background_image' => 'nullable|image|max:5120',
+            'background_image' => 'nullable|image|max:1024',
+        ], [
+            'logo.image' => 'File logo harus berupa gambar.',
+            'logo.max' => 'Ukuran file logo maksimal 1MB.',
+            'background_image.image' => 'File gambar latar harus berupa gambar.',
+            'background_image.max' => 'Ukuran file gambar latar maksimal 1MB.',
         ]);
 
         $user = $request->user();

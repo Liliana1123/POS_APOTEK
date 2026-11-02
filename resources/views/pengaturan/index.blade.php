@@ -414,7 +414,7 @@
                                    class="form-input file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
                             @error('logo') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
                             <p class="text-[11px] text-slate-400">
-                                Format: PNG, JPG, WEBP. Maksimal 2 MB. Kosongkan jika tidak ingin mengubah logo saat ini.
+                                Format: PNG, JPG, WEBP. Maksimal 1 MB. Kosongkan jika tidak ingin mengubah logo saat ini.
                             </p>
                         </div>
                     </div>
@@ -562,7 +562,7 @@
                             <!-- Upload Metadata & Trigger Button -->
                             <div class="flex-1 w-full space-y-2">
                                 <p class="text-xs text-slate-500">
-                                    Format PNG / JPG / WEBP • Maks 5MB • Seamless pattern atau wallpaper disarankan
+                                    Format PNG / JPG / WEBP • Maks 1MB • Seamless pattern atau wallpaper disarankan
                                 </p>
                                 <p class="text-xs font-semibold text-emerald-600">
                                     Ukuran: <span id="bg-file-size-text">{{ $apotek->background_file_size_formatted }}</span>
@@ -739,6 +739,17 @@ document.addEventListener('DOMContentLoaded', () => {
         inputLogo.addEventListener('change', function () {
             const file = this.files[0];
             if (file) {
+                // Maksimal 1 MB
+                if (file.size > 1 * 1024 * 1024) {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('Ukuran file logo maksimal 1MB.', 'error');
+                    } else {
+                        alert('Ukuran file logo maksimal 1MB.');
+                    }
+                    this.value = '';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     if (prevLogoImg) {
@@ -825,8 +836,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isCustomUploaded = {{ !empty($apotek->background_image) ? 'true' : 'false' }};
 
-    const defaultBatikUrl = "{{ asset('images/batik-pattern.png') }}";
-    const defaultBatikSize = "{{ file_exists(public_path('images/batik-pattern.png')) ? number_format(filesize(public_path('images/batik-pattern.png')) / 1024, 2) . ' KB' : '23.88 KB' }}";
+    const defaultBatikUrl = "{{ asset('images/batik-pattern.webp') }}";
+    const defaultBatikSize = "{{ file_exists(public_path('images/batik-pattern.webp')) ? number_format(filesize(public_path('images/batik-pattern.webp')) / 1024, 2) . ' KB' : '4.68 KB' }}";
 
     function applyBgMode(mode) {
         if (!inputBgType) return;
@@ -920,12 +931,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (inputResetBgDefault) inputResetBgDefault.value = '0';
 
-            // Maksimal 5 MB
-            if (file.size > 5 * 1024 * 1024) {
+            // Maksimal 1 MB
+            if (file.size > 1 * 1024 * 1024) {
                 if (typeof window.showToast === 'function') {
-                    window.showToast('Ukuran file maksimal 5MB.', 'error');
+                    window.showToast('Ukuran file gambar latar maksimal 1MB.', 'error');
                 } else {
-                    alert('Ukuran file maksimal 5MB.');
+                    alert('Ukuran file gambar latar maksimal 1MB.');
                 }
                 this.value = '';
                 return;

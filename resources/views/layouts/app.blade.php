@@ -84,7 +84,7 @@
     @php
         $bgType = $apotek?->background_type ?? 'default';
         $bgOpacity = ($apotek?->background_opacity ?? 40) / 100;
-        $bgUrl = $apotek?->background_url ?? asset('images/batik-pattern.png');
+        $bgUrl = $apotek?->background_url ?? asset('images/batik-pattern.webp');
     @endphp
 
     <!-- App Global Background Layer -->
