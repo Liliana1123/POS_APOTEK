@@ -1601,11 +1601,11 @@ function eksekusiKirimWhatsApp() {
  * 2. SELEKSI CHECKBOX MASSAL
  * ========================================================== */
 function getCheckedMemberBoxes() {
-    return Array.from(document.querySelectorAll('.member-checkbox:checked'));
+    return Array.from(document.querySelectorAll('.member-checkbox:checked')).filter(cb => cb.offsetParent !== null);
 }
 
 function getAllMemberBoxes() {
-    return Array.from(document.querySelectorAll('.member-checkbox'));
+    return Array.from(document.querySelectorAll('.member-checkbox')).filter(cb => cb.offsetParent !== null);
 }
 
 function updateBulkActionBar() {
@@ -1618,6 +1618,7 @@ function updateBulkActionBar() {
     const totalPiutangText = document.getElementById('bulkSelectedTotalPiutang');
     const btnCountText = document.getElementById('bulkBtnCountText');
     const masterCheckbox = document.getElementById('checkAllMember');
+    const masterCheckboxMobile = document.getElementById('checkAllMemberMobile');
 
     if (countText) countText.textContent = count;
     if (btnCountText) btnCountText.textContent = count;
@@ -1642,29 +1643,36 @@ function updateBulkActionBar() {
         }
     }
 
-    if (masterCheckbox && allBoxes.length > 0) {
-        if (count === allBoxes.length) {
-            masterCheckbox.checked = true;
-            masterCheckbox.indeterminate = false;
-        } else if (count > 0) {
-            masterCheckbox.checked = false;
-            masterCheckbox.indeterminate = true;
-        } else {
-            masterCheckbox.checked = false;
-            masterCheckbox.indeterminate = false;
+    [masterCheckbox, masterCheckboxMobile].forEach(mCb => {
+        if (mCb && allBoxes.length > 0) {
+            if (count === allBoxes.length) {
+                mCb.checked = true;
+                mCb.indeterminate = false;
+            } else if (count > 0) {
+                mCb.checked = false;
+                mCb.indeterminate = true;
+            } else {
+                mCb.checked = false;
+                mCb.indeterminate = false;
+            }
+        } else if (mCb) {
+            mCb.checked = false;
+            mCb.indeterminate = false;
         }
-    } else if (masterCheckbox) {
-        masterCheckbox.checked = false;
-        masterCheckbox.indeterminate = false;
-    }
+    });
 }
 
-function handleMemberCheckboxChange() {
+function handleMemberCheckboxChange(sourceCb) {
+    if (sourceCb && sourceCb.dataset && sourceCb.dataset.id) {
+        document.querySelectorAll('.member-checkbox[data-id="' + sourceCb.dataset.id + '"]').forEach(cb => {
+            if (cb !== sourceCb) cb.checked = sourceCb.checked;
+        });
+    }
     updateBulkActionBar();
 }
 
 function toggleSelectAllMember(master) {
-    const allBoxes = getAllMemberBoxes();
+    const allBoxes = document.querySelectorAll('.member-checkbox');
     allBoxes.forEach(cb => {
         cb.checked = master.checked;
     });

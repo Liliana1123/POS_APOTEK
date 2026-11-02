@@ -103,7 +103,8 @@
 
 <!-- Table Custom Wrapper (Pola Penerimaan Barang) -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-full">
             <thead class="table-custom-header">
                 <tr>
@@ -199,14 +200,14 @@
 
                         <!-- Status Follow-up (Terpisah dari status pengiriman) -->
                         <td class="text-center whitespace-nowrap">
-                            <span id="row-followup-badge-{{ $log->id }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold {{ $log->status_follow_up_badge_class }}">
+                            <span id="row-followup-badge-{{ $log->id }}" class="row-followup-badge-{{ $log->id }} inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold {{ $log->status_follow_up_badge_class }}">
                                 {{ $log->status_follow_up_label }}
                             </span>
                         </td>
 
                         <!-- Terakhir Update Follow-up -->
                         <td class="whitespace-nowrap text-xs text-gray-600 font-mono">
-                            <span id="row-followup-time-{{ $log->id }}">
+                            <span id="row-followup-time-{{ $log->id }}" class="row-followup-time-{{ $log->id }}">
                                 @tanggalWaktuId($log->waktu_follow_up)
                             </span>
                         </td>
@@ -225,6 +226,99 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse($logs as $index => $log)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                            {{ $log->nama_member ?: ($log->pelanggan?->nama ?? '-') }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5 font-mono">
+                            {{ $log->nomor_whatsapp ?: ($log->pelanggan?->telepon ?? '-') }}
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        @if($log->status === 'terkirim')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                Terkirim
+                            </span>
+                        @elseif($log->status === 'menunggu')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                Menunggu
+                            </span>
+                        @elseif($log->status === 'gagal')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">
+                                Gagal
+                            </span>
+                        @elseif($log->status === 'dibatalkan')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                Dibatalkan
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
+                                {{ ucfirst($log->status) }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Jenis Pesan</span>
+                        <span class="font-medium text-gray-800 mt-0.5 block truncate">{{ $log->kategori_label }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Status Follow-up</span>
+                        <div class="mt-0.5">
+                            <span class="row-followup-badge-{{ $log->id }} inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-semibold {{ $log->status_follow_up_badge_class }}">
+                                {{ $log->status_follow_up_label }}
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Tanggal Kirim</span>
+                        <span class="font-mono text-gray-600 mt-0.5 block text-[11px]">@tanggalWaktuId($log->waktu_kirim)</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Dikirim Oleh</span>
+                        <span class="text-gray-700 mt-0.5 block truncate">{{ $log->user?->name ?? '-' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">#{{ $logs->firstItem() + $index }}</span>
+                    <div class="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            onclick="openWhatsAppDetailModal({{ $log->id }})"
+                            title="Lihat detail pengiriman"
+                            class="btn-secondary !p-1.5 btn-action-detail cursor-pointer"
+                            style="color: #2563EB;">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+
+                        <button
+                            type="button"
+                            onclick="openFollowUpModal({{ $log->id }})"
+                            title="Update Status Follow-up"
+                            class="btn-secondary !p-1.5 btn-action-followup cursor-pointer hover:bg-emerald-50 hover:border-emerald-300"
+                            style="color: #059669;">
+                            <x-heroicon-o-chat-bubble-bottom-center-text class="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state
+                :as-card="true"
+                title="Belum ada riwayat pengiriman"
+                description="Riwayat pengiriman pesan WhatsApp akan muncul secara otomatis saat admin mengirim pesan perorangan maupun massal."
+            />
+        @endforelse
     </div>
 </div>
 
@@ -883,17 +977,15 @@ function submitFollowUpForm(event) {
         textarea.value = '';
         document.getElementById('fuCharCounter').textContent = '0/1000';
 
-        // 3. Update Baris Tabel secara instan (tanpa reload halaman)
-        const rowBadge = document.getElementById(`row-followup-badge-${currentFollowUpLogId}`);
-        if (rowBadge) {
-            rowBadge.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${resData.status_follow_up_badge_class}`;
-            rowBadge.textContent = resData.status_follow_up_label;
-        }
+        // 3. Update Baris Tabel & Kartu Mobile secara instan (tanpa reload halaman)
+        document.querySelectorAll(`.row-followup-badge-${currentFollowUpLogId}`).forEach(el => {
+            el.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${resData.status_follow_up_badge_class}`;
+            el.textContent = resData.status_follow_up_label;
+        });
 
-        const rowTime = document.getElementById(`row-followup-time-${currentFollowUpLogId}`);
-        if (rowTime) {
-            rowTime.textContent = resData.waktu_follow_up;
-        }
+        document.querySelectorAll(`.row-followup-time-${currentFollowUpLogId}`).forEach(el => {
+            el.textContent = resData.waktu_follow_up;
+        });
 
         // 4. Perbarui daftar riwayat pada modal
         const container = document.getElementById('fuHistoryContainer');

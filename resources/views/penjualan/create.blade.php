@@ -254,7 +254,7 @@
 
             <!-- Cart Table (Tabel Keranjang) -->
             <div class="flex-1 overflow-x-auto min-h-[220px] max-h-[290px] overflow-y-auto pr-1">
-                <table class="w-full text-left text-xs border-collapse">
+                <table class="w-full text-left text-xs border-collapse min-w-[30rem] sm:min-w-full">
                     <thead>
                         <tr class="text-slate-400 text-[11px] font-medium border-b border-slate-100">
                             <th class="py-2 pl-1 w-8 text-center">No</th>

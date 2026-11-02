@@ -76,7 +76,8 @@
 
 <!-- Table Custom Wrapper --> 
 <div class="table-custom-container w-full min-w-0 max-w-full">
-    <div class="table-pelanggan-wrapper">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block table-pelanggan-wrapper">
         <table class="table-custom table-pelanggan">
             <colgroup>
                 <col style="width: 250px;">
@@ -156,7 +157,7 @@
                                         data-sisa-formatted="Rp {{ number_format($sisaPiutangNilai, 0, ',', '.') }}"
                                         data-jatuh-tempo="{{ $pengingat['jatuh_tempo_pesan'] ?? '-' }}"
                                         title="Pilih member ini untuk pesan WhatsApp"
-                                        onchange="handleMemberCheckboxChange()">
+                                        onchange="handleMemberCheckboxChange(this)">
                                 @else
                                     <input type="checkbox"
                                         disabled
@@ -311,6 +312,209 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        {{-- Mobile Bulk Select Header Bar --}}
+        <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-200 text-xs text-gray-600 font-medium">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox"
+                    id="checkAllMemberMobile"
+                    class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer"
+                    title="Pilih semua member di halaman ini"
+                    onchange="toggleSelectAllMember(this)">
+                <span>Pilih Semua Member</span>
+            </label>
+            <span class="text-[11px] text-gray-400 font-mono">{{ $pelanggans->count() }} data</span>
+        </div>
+
+        @forelse ($pelanggans as $index => $pelanggan)
+            @php
+                $pengingat = $pelanggan->pengingat_piutang;
+                $hasPiutang = ($pengingat !== null && ($pengingat['total_sisa'] ?? 0) > 0);
+                $sisaPiutangNilai = $pengingat ? $pengingat['total_sisa'] : ($pelanggan->saldo_piutang ?? 0);
+                $isActiveMember = ($pelanggan->is_member && $pelanggan->member_aktif);
+                $canManagePelanggan = auth()->user()->canManage('master.pelanggan');
+                $jatuhTempo = $pelanggan->jatuh_tempo_aktif;
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                {{-- Header --}}
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                        @if($isActiveMember)
+                            <input type="checkbox"
+                                class="member-checkbox mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer shrink-0"
+                                value="{{ $pelanggan->id }}"
+                                data-id="{{ $pelanggan->id }}"
+                                data-nama="{{ $pelanggan->nama }}"
+                                data-telepon="{{ $pelanggan->telepon }}"
+                                data-has-piutang="{{ $hasPiutang ? '1' : '0' }}"
+                                data-sisa="{{ $sisaPiutangNilai }}"
+                                data-sisa-formatted="Rp {{ number_format($sisaPiutangNilai, 0, ',', '.') }}"
+                                data-jatuh-tempo="{{ $pengingat['jatuh_tempo_pesan'] ?? '-' }}"
+                                title="Pilih member ini"
+                                onchange="handleMemberCheckboxChange(this)">
+                        @else
+                            <input type="checkbox"
+                                disabled
+                                class="mt-0.5 w-4 h-4 rounded text-gray-300 border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed shrink-0"
+                                title="Bukan member aktif.">
+                        @endif
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                                {{ $pelanggan->nama }}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 font-mono">
+                                <span>{{ $pelanggan->telepon ?? 'Tanpa No. HP' }}</span>
+                                @if($pelanggan->member_id)
+                                    <span class="text-gray-300">•</span>
+                                    <span class="text-blue-600 font-semibold">{{ $pelanggan->member_id }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <x-status-badge type="member" :status="$pelanggan->status_member ?: 'Member Pelanggan Tetap'" class="whitespace-nowrap" />
+                    </div>
+                </div>
+
+                {{-- Metrics Grid --}}
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Status Piutang</span>
+                        <div class="mt-0.5 flex items-center gap-1.5">
+                            <x-status-badge type="pembayaran" :status="($pelanggan->saldo_piutang ?? 0) <= 0" />
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Jatuh Tempo</span>
+                        <div class="mt-0.5">
+                            @if ($jatuhTempo)
+                                @php
+                                    $today = \Illuminate\Support\Carbon::today();
+                                    $due = \Illuminate\Support\Carbon::parse($jatuhTempo);
+                                @endphp
+                                <span class="font-medium text-gray-800">@tanggalId($due)</span>
+                                @if ($due->lt($today))
+                                    <span class="inline-flex text-[9px] font-bold text-red-600 bg-red-50 border border-red-200 px-1 py-0.2 rounded ml-1">Terlambat</span>
+                                @elseif ($due->isSameDay($today))
+                                    <span class="inline-flex text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded ml-1">Hari ini</span>
+                                @endif
+                            @else
+                                <span class="text-gray-400 font-mono">-</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Diskon</span>
+                        <span class="font-semibold text-green-600 mt-0.5 block">Rp {{ number_format($pelanggan->total_diskon ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Belanja</span>
+                        <span class="font-bold text-gray-900 mt-0.5 block">Rp {{ number_format($pelanggan->total_belanja ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                {{-- Action Bar --}}
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span class="text-[11px] text-gray-400">Aksi Member</span>
+                    <div class="flex items-center gap-1">
+                        <!-- Detail Modal -->
+                        <button
+                            type="button"
+                            onclick="openDetailModal({{ $pelanggan->id }})"
+                            class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                            style="color: #2563EB;"
+                            title="Lihat Detail"
+                            aria-label="Lihat Detail">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+
+                        <!-- Edit Modal -->
+                        @if($canManagePelanggan)
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-edit-pelanggan hover:bg-amber-50 hover:border-amber-300 transition-colors"
+                                style="color: #F59E0B;"
+                                title="Edit"
+                                aria-label="Edit"
+                                data-id="{{ $pelanggan->id }}"
+                                data-nama="{{ $pelanggan->nama }}"
+                                data-telepon="{{ $pelanggan->telepon }}"
+                                data-alamat="{{ $pelanggan->alamat }}"
+                                data-tanggal_lahir="{{ $pelanggan->tanggal_lahir }}"
+                                data-status_member="{{ $pelanggan->status_member ?: 'Member Pelanggan Tetap' }}"
+                                data-custom_discount_percentage="{{ $pelanggan->custom_discount_percentage }}">
+                                <x-heroicon-o-pencil-square class="w-4 h-4" />
+                            </button>
+                        @endif
+
+                        <!-- Print Card -->
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 btn-print-member-card hover:bg-slate-50 transition-colors"
+                            style="color: #000000;"
+                            title="Cetak Kartu Member"
+                            aria-label="Cetak Kartu Member"
+                            data-nama="{{ $pelanggan->nama }}"
+                            data-member-id="{{ $pelanggan->member_id }}"
+                            data-total-belanja="{{ $pelanggan->total_belanja ?? 0 }}"
+                            data-status-member="{{ $pelanggan->status_member ?: 'Member Pelanggan Tetap' }}"
+                            data-custom-discount="{{ $pelanggan->custom_discount_percentage }}"
+                            data-is-active="{{ ($pelanggan->is_member && $pelanggan->member_aktif) ? '1' : '0' }}"
+                            data-discount="{{ $pelanggan->diskon_percent }}"
+                            onclick="openCardModalFromBtn(this)">
+                            <x-heroicon-o-printer class="w-4 h-4" />
+                        </button>
+
+                        <!-- Piutang Payment -->
+                        @if($pelanggan->is_member && $pelanggan->member_aktif && ($pelanggan->saldo_piutang ?? 0) > 0)
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                                style="color: #16A34A;"
+                                title="Pembayaran Piutang"
+                                aria-label="Pembayaran Piutang"
+                                onclick="openPiutangPaymentModal({{ $pelanggan->id }})">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </button>
+                        @endif
+
+                        <!-- WhatsApp -->
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                            style="color: #10B981;"
+                            title="Kirim Pesan WhatsApp ke {{ $pelanggan->nama }}"
+                            aria-label="Kirim Pesan WhatsApp ke {{ $pelanggan->nama }}"
+                            onclick="openIndividualWhatsAppModal({{ $pelanggan->id }})">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M20.45 3.55A11.9 11.9 0 0012.01 0C5.39 0 .02 5.37.02 12c0 2.11.55 4.18 1.6 6L0 24l6.19-1.62a11.97 11.97 0 005.82 1.5h.01c6.62 0 12-5.37 12-12 0-3.21-1.25-6.23-3.57-8.38zM12.02 21.88h-.01a9.92 9.92 0 01-5.06-1.39l-.36-.21-3.76.99 1-3.66-.23-.38a9.93 9.93 0 01-1.52-5.23c0-5.48 4.46-9.94 9.95-9.94 2.65 0 5.15 1.03 7.03 2.91a9.88 9.88 0 012.91 7.03c0 5.48-4.46 9.94-9.94 9.94zm5.45-7.44c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.95 1.17-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5a9.05 9.05 0 01-1.68-2.08c-.18-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.24-.24-.58-.49-.5-.67-.51h-.58c-.2 0-.52.07-.79.37-.28.3-1.05 1.03-1.05 2.51s1.08 2.91 1.23 3.12c.15.2 2.12 3.24 5.14 4.54.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"/>
+                            </svg>
+                        </button>
+
+                        <!-- Delete -->
+                        @if($canManagePelanggan)
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                                style="color: #DC2626;"
+                                title="Hapus"
+                                aria-label="Hapus"
+                                data-confirm-delete="{{ route('pelanggan.destroy', $pelanggan) }}"
+                                data-item-name="{{ $pelanggan->nama }}"
+                                data-confirm-detail-label="Nama Pelanggan:"
+                                data-confirm-message="Yakin ingin menghapus data pelanggan ini?">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

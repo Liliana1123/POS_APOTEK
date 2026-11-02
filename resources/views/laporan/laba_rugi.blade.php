@@ -731,9 +731,10 @@
         </div>
 
         {{-- Isi Daftar Tabel --}}
-        <div class="p-5 overflow-y-auto flex-1">
-            <div class="border border-slate-100 rounded-xl overflow-hidden">
-                <table class="w-full text-xs">
+        <div class="p-4 sm:p-5 overflow-y-auto flex-1">
+            {{-- Desktop Table View --}}
+            <div class="hidden sm:block border border-slate-100 rounded-xl overflow-x-auto">
+                <table class="w-full text-xs min-w-[38rem]">
                     <thead>
                         <tr class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-100">
                             <th class="text-center w-10 py-2.5 px-2">No</th>
@@ -788,6 +789,48 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Mobile List View --}}
+            <div class="sm:hidden divide-y divide-slate-100 border border-slate-150 rounded-xl overflow-hidden bg-white">
+                @forelse($daftarBeban as $idx => $item)
+                    <div class="p-3 space-y-1.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                                    {{ $item->kategori }}
+                                </span>
+                                <div class="text-[11px] text-slate-500 font-mono mt-1">
+                                    @tanggalId($item->tanggal) • {{ $item->user->name ?? 'Admin' }}
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0 flex items-center gap-1.5">
+                                <span class="font-mono font-bold text-orange-600 text-xs">
+                                    Rp {{ number_format($item->nominal, 0, ',', '.') }}
+                                </span>
+                                <button
+                                    type="button"
+                                    class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Hapus beban"
+                                    aria-label="Hapus beban"
+                                    data-confirm-delete="{{ route('laporan.laba-rugi.beban.destroy', $item) }}"
+                                    data-item-name="{{ $item->nama_beban }} (Rp {{ number_format($item->nominal, 0, ',', '.') }})"
+                                    data-confirm-message="Yakin ingin menghapus catatan beban operasional ini?">
+                                    <x-heroicon-o-trash class="w-4 h-4 text-rose-500" />
+                                </button>
+                            </div>
+                        </div>
+                        @if($item->keterangan)
+                            <div class="text-xs text-slate-700 bg-slate-50 rounded p-1.5">
+                                {{ $item->keterangan }}
+                            </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="text-center py-8 text-slate-400 text-xs">
+                        Belum ada beban operasional yang dicatat pada rentang waktu ini.
+                    </div>
+                @endforelse
             </div>
         </div>
 

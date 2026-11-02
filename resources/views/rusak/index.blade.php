@@ -62,7 +62,8 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -162,6 +163,86 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($rusaks as $index => $rusak)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                            {{ $rusak->detailPenerimaan->barang->nama ?? '—' }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            @tanggalId($rusak->tanggal, 'd F Y')
+                        </div>
+                    </div>
+                    <div class="shrink-0 text-right">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Jumlah Rusak</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+                            {{ $rusak->jumlah }} unit
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">No. Batch</span>
+                        <span class="font-mono font-medium text-gray-800 mt-0.5 block">{{ $rusak->detailPenerimaan->no_batch ?? '—' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Keterangan</span>
+                        <span class="font-medium text-gray-700 mt-0.5 block truncate" title="{{ $rusak->keterangan }}">{{ $rusak->keterangan ?? '-' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">#{{ $rusaks->firstItem() + $index }}</span>
+                    <div class="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                            style="color: #2563EB;"
+                            title="Lihat Detail"
+                            onclick="openDetailRusak({{ $rusak->id }})">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transition-colors"
+                            style="color: #F59E0B;"
+                            title="Edit"
+                            onclick="openEditRusak({{ $rusak->id }})">
+                            <x-heroicon-o-pencil-square class="w-4 h-4" />
+                        </button>
+
+                        <a
+                            href="{{ route('rusak.print', $rusak) }}"
+                            class="btn-secondary !p-1.5 hover:bg-slate-50 transition-colors"
+                            title="Print"
+                            target="_blank">
+                            <x-heroicon-o-printer class="w-4 h-4" />
+                        </a>
+
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                            style="color: #DC2626;"
+                            title="Hapus"
+                            aria-label="Hapus"
+                            data-confirm-delete="{{ route('rusak.destroy', $rusak) }}"
+                            data-item-name="{{ $rusak->detailPenerimaan?->barang?->nama ?? 'Barang Rusak' }} (Batch: {{ $rusak->detailPenerimaan?->no_batch ?? '-' }})"
+                            data-confirm-message="Apakah Anda yakin ingin menghapus data barang rusak ini? Stok akan dikembalikan ke batch terkait.">
+                            <x-heroicon-o-trash class="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

@@ -1415,8 +1415,8 @@
                 </a>
             </div>
 
-            <div class="w-full flex-1 overflow-y-auto max-h-[480px] rounded-xl border border-gray-200/90 shadow-2xs">
-                <table class="table-compact w-full text-left table-fixed">
+            <div class="w-full flex-1 overflow-x-auto overflow-y-auto max-h-[480px] rounded-xl border border-gray-200/90 shadow-2xs">
+                <table class="table-compact w-full text-left table-fixed min-w-[28rem] sm:min-w-full">
                     <thead>
                         <tr>
                             <th class="w-[8%] text-center sticky-header">No</th>
@@ -1511,7 +1511,7 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
-                    <table class="table-compact w-full text-left">
+                    <table class="table-compact w-full text-left min-w-[24rem] sm:min-w-full">
                         <thead>
                             <tr>
                                 <th class="w-12 text-center sticky-header">Rank</th>
@@ -1594,7 +1594,7 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
-                    <table class="table-compact w-full text-left">
+                    <table class="table-compact w-full text-left min-w-[24rem] sm:min-w-full">
                         <thead>
                             <tr>
                                 <th class="w-12 text-center sticky-header">No</th>
@@ -1682,7 +1682,7 @@
                     </div>
 
                     <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-xl border border-gray-200/90 shadow-2xs">
-                        <table class="table-compact w-full text-left" id="table-kinerja-karyawan">
+                        <table class="table-compact w-full text-left min-w-[26rem] sm:min-w-full" id="table-kinerja-karyawan">
                             <thead>
                                 <tr>
                                     <th class="w-12 text-center sticky-header">Rank</th>
@@ -1775,7 +1775,7 @@
                 </div>
 
                 <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-xl border border-gray-200/90 shadow-2xs">
-                    <table class="table-compact w-full text-left" id="table-dokter-resep">
+                    <table class="table-compact w-full text-left min-w-[30rem] sm:min-w-full" id="table-dokter-resep">
                         <thead>
                             <tr>
                                 <th class="w-12 text-center sticky-header">Rank</th>
@@ -1879,7 +1879,7 @@
         <!-- Modal Body Table -->
         <div class="p-4 overflow-y-auto flex-1">
             <div class="overflow-x-auto rounded-xl border border-gray-200/90 shadow-2xs">
-                <table class="table-compact w-full text-left" id="table-modal-dokter">
+                <table class="table-compact w-full text-left min-w-[30rem] sm:min-w-full" id="table-modal-dokter">
                     <thead>
                         <tr>
                             <th class="w-12 text-center sticky-header">Rank</th>

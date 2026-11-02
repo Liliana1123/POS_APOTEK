@@ -397,7 +397,8 @@
 
 <!-- Data Table Card (Layar) -->
 <div id="tabel-laporan-layar" class="table-custom-container print:hidden">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom table-penjualan w-full min-w-[76rem]">
 
             {{-- Table Header --}}
@@ -643,6 +644,70 @@
             </tbody>
 
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($penjualans as $index => $penjualan)
+            @php
+                $diskonFaktur = $penjualan->detail->sum('diskon');
+                $totalKotor = $penjualan->total + $diskonFaktur;
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <a href="{{ route('penjualan.show', $penjualan) . '?from=laporan_penjualan&' . http_build_query(request()->query()) }}" class="font-bold text-blue-600 hover:underline font-mono text-xs sm:text-sm">
+                            {{ $penjualan->no_faktur }}
+                        </a>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            @tanggalId($penjualan->tanggal)
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total</span>
+                        <span class="font-bold text-gray-900 text-sm font-mono">Rp {{ number_format($penjualan->total, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Pelanggan</span>
+                        <div class="mt-0.5 font-medium text-gray-800">
+                            {{ $penjualan->pelanggan->nama ?? 'Umum' }}
+                            @if($penjualan->pelanggan && $penjualan->pelanggan->is_member)
+                                <div class="mt-0.5">
+                                    <x-badge variant="success" class="text-[9px]">Member</x-badge>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Kasir</span>
+                        <span class="font-medium text-gray-800 mt-0.5 block truncate">{{ $penjualan->user->name ?? 'Admin' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Jenis & Metode</span>
+                        <span class="font-medium text-gray-700 mt-0.5 block capitalize">
+                            {{ $penjualan->jenis_transaksi === 'resep' ? 'Resep' : 'Non Resep' }} • {{ $penjualan->metode_pembayaran }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Kotor</span>
+                        <span class="font-mono text-gray-600 mt-0.5 block">Rp {{ number_format($totalKotor, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1 text-xs">
+                    <span class="text-[11px] text-gray-400">#{{ $index + 1 }}</span>
+                    <a href="{{ route('penjualan.show', $penjualan) . '?from=laporan_penjualan&' . http_build_query(request()->query()) }}" class="text-blue-600 hover:text-blue-800 font-semibold text-xs inline-flex items-center gap-1">
+                        <span>Lihat Rincian</span>
+                        <x-heroicon-o-chevron-right class="w-3.5 h-3.5" />
+                    </a>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
+        @endforelse
     </div>
 </div>
 

@@ -428,7 +428,7 @@
         </nav>
 
         <!-- Main Content Wrapper -->
-        <main class="flex-1 p-6 w-full pb-8">
+        <main class="flex-1 p-3 sm:p-5 md:p-6 w-full pb-8">
             @yield('content')
         </main>
 

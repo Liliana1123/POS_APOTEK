@@ -57,7 +57,7 @@
 <!-- Table List: Pemenuhan Pesanan & Rincian Fisik Batch -->
 <div class="card-base p-0 mb-4 overflow-hidden border border-slate-200">
     <div class="overflow-x-auto">
-        <table class="table-detail-penerimaan w-full">
+        <table class="table-detail-penerimaan w-full min-w-[64rem]">
             <thead>
                 <tr>
                     <th scope="col" class="w-10 text-center">No</th>

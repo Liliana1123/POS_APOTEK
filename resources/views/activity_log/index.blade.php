@@ -145,7 +145,8 @@
 
 <!-- Table Card (Tampilan Layar) -->
 <div class="table-custom-container print:hidden">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[56rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -218,6 +219,76 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($logs as $index => $log)
+            @php
+                $cat = $log->kategori ?? 'sistem';
+                $catBadges = [
+                    'penjualan'  => 'bg-blue-50 text-blue-700 border-blue-200',
+                    'inventaris' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                    'member'     => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    'promo'      => 'bg-amber-50 text-amber-700 border-amber-200',
+                    'keuangan'   => 'bg-purple-50 text-purple-700 border-purple-200',
+                    'keamanan'   => 'bg-slate-100 text-slate-700 border-slate-300',
+                    'sistem'     => 'bg-gray-100 text-gray-700 border-gray-200',
+                ];
+                $catBadgeClass = $catBadges[$cat] ?? $catBadges['sistem'];
+                $catLabel = $categories[$cat]['label'] ?? ucfirst($cat);
+
+                $actionLower = strtolower($log->action);
+                if (str_contains($actionLower, 'register') || str_contains($actionLower, 'upgrade')) {
+                    $badgeVariant = 'success';
+                } elseif (str_contains($actionLower, 'promo') || str_contains($actionLower, 'diskon')) {
+                    $badgeVariant = 'warning';
+                } elseif (str_contains($actionLower, 'penjualan') || str_contains($actionLower, 'penerimaan')) {
+                    $badgeVariant = 'info';
+                } elseif (str_contains($actionLower, 'delete') || str_contains($actionLower, 'hapus') || str_contains($actionLower, 'rusak') || str_contains($actionLower, 'batal') || str_contains($actionLower, 'void')) {
+                    $badgeVariant = 'danger';
+                } elseif (str_contains($actionLower, 'login') || str_contains($actionLower, 'logout')) {
+                    $badgeVariant = 'secondary';
+                } else {
+                    $badgeVariant = 'secondary';
+                }
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border {{ $catBadgeClass }}">
+                            {{ $catLabel }}
+                        </span>
+                        <div class="text-[11px] text-gray-400 font-mono mt-1">
+                            @tanggalWaktuId($log->created_at, 'd M Y H:i:s')
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <x-badge :variant="$badgeVariant">{{ $log->action }}</x-badge>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">User / Staf:</span>
+                        <div class="font-medium text-gray-900 text-right">
+                            {{ $log->user->name ?? $log->user_name }}
+                            @if(optional($log->user)->role)
+                                <span class="text-[10px] text-gray-500 font-mono">({{ ucfirst($log->user->role) }})</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="pt-1.5 border-t border-gray-100">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider mb-0.5">Rincian Target:</span>
+                        <div class="text-gray-700 break-words leading-relaxed">
+                            {{ $log->target ?? '—' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" title="Audit Log Kosong" description="Tidak ditemukan catatan log audit aktivitas user yang sesuai dengan filter atau kategori yang dipilih." />
+        @endforelse
     </div>
 </div>
 

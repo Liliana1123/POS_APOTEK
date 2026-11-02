@@ -34,7 +34,8 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -84,6 +85,53 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($backups as $index => $b)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 font-mono text-xs break-all leading-snug">
+                            {{ $b['name'] }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                            <span class="font-mono text-gray-700 font-medium">{{ $b['size'] }}</span>
+                            <span class="text-gray-300">•</span>
+                            <span>{{ $b['date'] }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400 font-mono">#{{ sprintf('%02d', $index + 1) }}</span>
+                    <x-table-action
+                        :delete-url="route('backup.destroy', $b['name'])"
+                        :delete-item="$b['name']"
+                        delete-confirm="Yakin ingin menghapus file backup ini?">
+                        <a href="{{ route('backup.download', $b['name']) }}"
+                           class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                           style="color: #2563EB;"
+                           title="Simpan ke local device"
+                           aria-label="Simpan ke local device">
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                        </a>
+
+                        <button type="button"
+                                onclick="openRestoreModal('{{ $b['name'] }}')"
+                                class="btn-secondary !p-1.5 hover:bg-amber-50 hover:border-amber-300 transition-colors cursor-pointer"
+                                style="color: #F59E0B;"
+                                title="Restore Database"
+                                aria-label="Restore Database">
+                            <x-heroicon-o-arrow-path class="w-4 h-4" />
+                        </button>
+                    </x-table-action>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

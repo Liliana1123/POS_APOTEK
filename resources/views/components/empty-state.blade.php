@@ -6,6 +6,7 @@
     'desc' => null,
     'search' => null,
     'hasFilter' => null,
+    'asCard' => false,
 ])
 
 @php
@@ -32,20 +33,36 @@
     $finalDesc = $description ?? $desc ?? $message ?? $defaultDesc;
 @endphp
 
-<tr>
-    <td colspan="{{ $colspan }}" class="p-0">
-        <div class="empty-state-container">
-            <div class="empty-state-title">
-                {{ $finalTitle }}
-            </div>
-            <div class="empty-state-desc">
-                {{ $finalDesc }}
-            </div>
-            @if(isset($slot) && $slot->isNotEmpty())
-                <div class="mt-3 flex items-center justify-center gap-2">
-                    {{ $slot }}
-                </div>
-            @endif
+@if($asCard)
+    <div class="empty-state-container p-6 sm:p-8 text-center">
+        <div class="empty-state-title">
+            {{ $finalTitle }}
         </div>
-    </td>
-</tr>
+        <div class="empty-state-desc">
+            {{ $finalDesc }}
+        </div>
+        @if(isset($slot) && $slot->isNotEmpty())
+            <div class="mt-3 flex items-center justify-center gap-2">
+                {{ $slot }}
+            </div>
+        @endif
+    </div>
+@else
+    <tr>
+        <td colspan="{{ $colspan }}" class="p-0">
+            <div class="empty-state-container">
+                <div class="empty-state-title">
+                    {{ $finalTitle }}
+                </div>
+                <div class="empty-state-desc">
+                    {{ $finalDesc }}
+                </div>
+                @if(isset($slot) && $slot->isNotEmpty())
+                    <div class="mt-3 flex items-center justify-center gap-2">
+                        {{ $slot }}
+                    </div>
+                @endif
+            </div>
+        </td>
+    </tr>
+@endif

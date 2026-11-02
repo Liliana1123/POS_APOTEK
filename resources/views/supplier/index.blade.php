@@ -20,7 +20,8 @@
 </x-card-filter>
 
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -56,6 +57,56 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($suppliers as $index => $supplier)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                            {{ $supplier->nama }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            PIC: <span class="text-gray-700 font-medium">{{ $supplier->pic ?? '—' }}</span>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <span class="font-mono text-gray-400 text-xs bg-gray-100 px-2 py-0.5 rounded">ID #{{ sprintf('%02d', $supplier->id) }}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-1.5 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Telepon:</span>
+                        @if($supplier->telepon)
+                            <a href="tel:{{ $supplier->telepon }}" class="font-mono text-blue-600 hover:underline font-medium">{{ $supplier->telepon }}</a>
+                        @else
+                            <span class="text-gray-400 font-mono">—</span>
+                        @endif
+                    </div>
+                    <div class="pt-1 border-t border-gray-100">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Alamat:</span>
+                        <span class="text-gray-600 mt-0.5 block leading-relaxed">{{ $supplier->alamat ?: 'Tidak ada alamat tercatat.' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">Aksi Supplier</span>
+                    <x-table-action
+                        edit-class="{{ auth()->user()->canManage('master.supplier') ? 'btn-edit-supplier' : '' }}"
+                        :edit-id="auth()->user()->canManage('master.supplier') ? $supplier->id : null"
+                        :edit-data="auth()->user()->canManage('master.supplier') ? ['nama' => $supplier->nama, 'telepon' => $supplier->telepon, 'alamat' => $supplier->alamat, 'pic' => $supplier->pic] : null"
+                        :delete-url="auth()->user()->canManage('master.supplier') ? route('supplier.destroy', $supplier) : null"
+                        :delete-item="$supplier->nama"
+                        delete-confirm="Yakin ingin menghapus supplier ini?"
+                    />
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

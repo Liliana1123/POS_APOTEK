@@ -28,7 +28,8 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[50rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -101,6 +102,84 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($users as $index => $user)
+            @php
+                $canEditUser = $canManageUser && (! $user->isSuperAdmin() || $isSuper);
+                $canDeleteUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper) && ! $user->penerimaan()->exists() && ! $user->penjualan()->exists();
+                $canToggleUser = $canManageUser && $user->id !== auth()->id() && (! $user->isSuperAdmin() || $isSuper);
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                        <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs shadow-2xs">
+                            {{ strtoupper(substr($user->name, 0, 2)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                                {{ $user->name }}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-0.5 truncate">
+                                {{ $user->email }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex flex-col items-end gap-1">
+                        <x-status-badge type="aktif" :status="$user->aktif" />
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Role:</span>
+                        <x-status-badge type="role" :status="$user->role" />
+                    </div>
+                    <div class="text-right">
+                        <span class="font-mono text-gray-400 text-[11px]">ID #{{ sprintf('%02d', $user->id) }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">Aksi Akun</span>
+                    <x-table-action
+                        edit-class="{{ $canEditUser ? 'btn-edit-user' : '' }}"
+                        :edit-id="$canEditUser ? $user->id : null"
+                        :edit-data="$canEditUser ? ['name' => $user->name, 'email' => $user->email, 'role' => $user->role] : null"
+                        :delete-url="$canDeleteUser ? route('user.destroy', $user) : null"
+                        :delete-item="$user->name"
+                        delete-confirm="Yakin ingin menghapus user ini? Tindakan ini permanen.">
+                        
+                        @if($canToggleUser)
+                            <button type="button"
+                                data-confirm-action="{{ route('user.toggle', $user) }}"
+                                data-confirm-method="PATCH"
+                                data-confirm-title="{{ $user->aktif ? 'Nonaktifkan Akun User' : 'Aktifkan Akun User' }}"
+                                data-confirm-message="Apakah Anda yakin ingin {{ $user->aktif ? 'menonaktifkan akun user ini? User tidak akan dapat login sampai diaktifkan kembali.' : 'mengaktifkan kembali akun user ini agar dapat login dan mengakses sistem?' }}"
+                                data-confirm-detail="{{ $user->name }} ({{ $user->email }})"
+                                data-confirm-detail-label="User:"
+                                data-confirm-type="{{ $user->aktif ? 'warning' : 'info' }}"
+                                data-confirm-btn-text="{{ $user->aktif ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan' }}"
+                                data-confirm-loading-text="{{ $user->aktif ? 'Menonaktifkan...' : 'Mengaktifkan...' }}"
+                                class="btn-secondary !p-1.5 {{ $user->aktif ? 'hover:bg-red-50 hover:border-red-300' : 'hover:bg-green-50 hover:border-green-300' }} transition-colors"
+                                style="color: {{ $user->aktif ? '#DC2626' : '#16A34A' }};"
+                                title="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}"
+                                aria-label="{{ $user->aktif ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}">
+                                @if($user->aktif)
+                                    <x-heroicon-o-user-minus class="w-4 h-4" />
+                                @else
+                                    <x-heroicon-o-user-plus class="w-4 h-4" />
+                                @endif
+                            </button>
+                        @endif
+                    </x-table-action>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

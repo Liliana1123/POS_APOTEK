@@ -144,10 +144,62 @@
         </div>
     </div>
 
-    <div class="table-custom-container print-table-wrapper">
-        <div class="overflow-x-auto print-table-wrapper">
+    <div class="table-custom-container">
+        {{-- Tampilan Cetak --}}
+        <div class="hidden print:block print-table-wrapper">
+            <table class="table-custom table-stok print-table w-full">
+                <thead class="table-custom-header">
+                    <tr>
+                        <th scope="col" class="col-stok-aksi text-center w-12 !px-2 print:hidden no-print">Aksi</th>
+                        <th scope="col" class="col-stok-no w-10 text-center !px-2">No</th>
+                        <th scope="col" class="col-stok-barang w-44 max-w-[12rem] !px-2.5">Barang</th>
+                        <th scope="col" class="col-stok-kategori w-28 max-w-[7.5rem] !px-2 whitespace-nowrap">Kategori</th>
+                        <th scope="col" class="col-stok-batch w-24 text-center !px-2 whitespace-nowrap">No. Batch</th>
+                        <th scope="col" class="col-stok-rak w-20 text-center !px-2 whitespace-nowrap">No. Rak</th>
+                        <th scope="col" class="col-stok-expired text-center w-28 !px-2 whitespace-nowrap">Expired</th>
+                        <th scope="col" class="col-stok-status-exp text-center w-24 !px-2 whitespace-nowrap">Status Expired</th>
+                        <th scope="col" class="col-stok-awal text-right w-16 !px-2 whitespace-nowrap">Stok Awal</th>
+                        <th scope="col" class="col-stok-terjual text-right w-16 !px-2 whitespace-nowrap">Stok Terjual</th>
+                        <th scope="col" class="col-stok-rusak text-right w-16 !px-2 whitespace-nowrap">Stok Rusak</th>
+                        <th scope="col" class="col-stok-sisa text-right w-16 !px-2 whitespace-nowrap">Sisa Stok</th>
+                        <th scope="col" class="col-stok-status-stok text-center w-20 !px-2 whitespace-nowrap">Status Stok</th>
+                    </tr>
+                </thead>
+                <tbody class="table-custom-body">
+                    @forelse ($stokPerBatch as $index => $item)
+                        @php
+                            $today = now()->startOfDay();
+                            $expiredDate = $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->startOfDay() : null;
+                            $stokAwal = (int) $item->jumlah;
+                            $stokTerjual = (int) ($item->stok_terjual ?? 0);
+                            $stokRusak = (int) ($item->stok_rusak ?? 0);
+                            $sisaStok = $stokAwal - $stokTerjual - $stokRusak;
+                            $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
+                        @endphp
+                        <tr>
+                            <td class="col-stok-no table-num text-center">{{ ($stokPerBatch->firstItem() ?? 1) + $index }}</td>
+                            <td class="col-stok-barang font-medium text-gray-800 !px-2.5 max-w-[12rem] break-words text-xs leading-snug">{{ $item->barang->nama ?? '—' }}</td>
+                            <td class="col-stok-kategori text-gray-600 !px-2 text-xs max-w-[7.5rem] truncate">{{ $item->barang->kategori->nama ?? '—' }}</td>
+                            <td class="col-stok-batch font-mono text-gray-600 text-center !px-2 whitespace-nowrap">{{ $item->no_batch ?? '—' }}</td>
+                            <td class="col-stok-rak font-mono text-gray-600 text-center !px-2 whitespace-nowrap">{{ $item->no_rak ?? '—' }}</td>
+                            <td class="col-stok-expired text-center font-mono !px-2 whitespace-nowrap">@tanggalId($expiredDate, 'd F Y')</td>
+                            <td class="col-stok-status-exp text-center !px-2 whitespace-nowrap"><x-status-badge type="expired" :date="$expiredDate" /></td>
+                            <td class="col-stok-awal table-num font-medium text-gray-700 !px-2 text-right whitespace-nowrap">{{ number_format($stokAwal, 0, ',', '.') }}</td>
+                            <td class="col-stok-terjual table-num font-semibold text-indigo-600 !px-2 text-right whitespace-nowrap">{{ number_format($stokTerjual, 0, ',', '.') }}</td>
+                            <td class="col-stok-rusak table-num font-semibold text-rose-600 !px-2 text-right whitespace-nowrap">{{ number_format($stokRusak, 0, ',', '.') }}</td>
+                            <td class="col-stok-sisa table-num font-bold {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }} !px-2 text-right whitespace-nowrap">{{ number_format($sisaStok, 0, ',', '.') }}</td>
+                            <td class="col-stok-status-stok text-center !px-2 whitespace-nowrap"><x-status-badge type="stok" :stok="$sisaStok" :min="$stokMinimum" /></td>
+                        </tr>
+                    @empty
+                        <x-empty-state colspan="12" />
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-            <table class="table-custom table-stok print-table w-full min-w-[62rem]">
+        {{-- Tampilan Layar Desktop --}}
+        <div class="hidden md:block overflow-x-auto print:hidden">
+            <table class="table-custom table-stok w-full min-w-[62rem]">
                 <thead class="table-custom-header">
                     <tr>
                         <th scope="col" class="col-stok-aksi text-center w-12 !px-2 print:hidden no-print">
@@ -217,6 +269,7 @@
                             data-batch-id="{{ $item->id }}"
                             data-barang-nama="{{ $item->barang->nama ?? '—' }}"
                             data-no-batch="{{ $item->no_batch ?? '—' }}"
+                            data-no-faktur="{{ $item->penerimaan->no_faktur ?? '' }}"
                             title="Klik untuk melihat riwayat penjualan batch ini"
                         >
                             <!-- Aksi (Sisi Kiri Kolom No) -->
@@ -324,6 +377,105 @@
 
             </table>
         </div>
+
+        {{-- Tampilan Mobile Card --}}
+        <div class="md:hidden divide-y divide-gray-150 mobile-card-list print:hidden">
+            @forelse ($stokPerBatch as $index => $item)
+                @php
+                    $today = now()->startOfDay();
+                    $expiredDate = $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->startOfDay() : null;
+                    $stokAwal = (int) $item->jumlah;
+                    $stokTerjual = (int) ($item->stok_terjual ?? 0);
+                    $stokRusak = (int) ($item->stok_rusak ?? 0);
+                    $sisaStok = $stokAwal - $stokTerjual - $stokRusak;
+                    $stokMinimum = (int) ($item->barang->stok_minimum ?? 0);
+                    $isKadaluarsa = $expiredDate && ($expiredDate->isSameDay($today) || $expiredDate->isBefore($today));
+                @endphp
+                <div id="batch-card-{{ $item->id }}" class="batch-card mobile-card-item p-4 space-y-3 bg-white" data-no-faktur="{{ $item->penerimaan->no_faktur ?? '' }}">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-bold text-gray-900 text-sm">
+                                {{ $item->barang->nama ?? '—' }}
+                            </h3>
+                            <div class="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                                <span>{{ $item->barang->kategori->nama ?? '—' }}</span>
+                                <span>•</span>
+                                <span class="font-mono text-gray-700 font-medium">Batch: {{ $item->no_batch ?? '—' }}</span>
+                            </div>
+                        </div>
+                        @if ($isKadaluarsa)
+                            <div class="shrink-0">
+                                <button type="button"
+                                    class="btn-pindah-rusak btn-secondary !p-1.5 rounded-lg text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border-gray-200 hover:border-rose-300 transition-all duration-150 shadow-xs cursor-pointer inline-flex items-center justify-center"
+                                    title="Pindah ke Catatan Barang Rusak"
+                                    onclick="event.stopPropagation(); triggerPindahRusak(this);"
+                                    data-batch-id="{{ $item->id }}"
+                                    data-barang-nama="{{ $item->barang->nama ?? '—' }}"
+                                    data-no-batch="{{ $item->no_batch ?? '—' }}"
+                                    data-expired="{{ $expiredDate ? $expiredDate->translatedFormat('d F Y') : '—' }}"
+                                    data-sisa-stok="{{ $sisaStok }}"
+                                    data-url="{{ route('laporan.stok.batch.pindah-rusak', $item->id) }}"
+                                    aria-label="Pindahkan ke Catatan Barang Rusak">
+                                    <svg class="w-4 h-4 shrink-0 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M8 21h8" />
+                                        <path d="M12 15v6" />
+                                        <path d="M6 3h12l-1 7a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5L6 3z" />
+                                        <path d="M12 3l-1.5 3.5 3 2.5-2.5 3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Status Badges --}}
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <x-status-badge type="expired" :date="$expiredDate" />
+                        <x-status-badge type="stok" :stok="$sisaStok" :min="$stokMinimum" />
+                        @if($item->no_rak)
+                            <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono font-medium">Rak: {{ $item->no_rak }}</span>
+                        @endif
+                    </div>
+
+                    {{-- Stok Numbers Grid --}}
+                    <div class="grid grid-cols-4 gap-1.5 bg-gray-50 rounded-lg p-2.5 text-center border border-gray-150">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-wider">Awal</span>
+                            <span class="font-medium text-gray-700 text-xs mt-0.5 block font-mono">{{ number_format($stokAwal, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-wider">Terjual</span>
+                            <span class="font-semibold text-indigo-600 text-xs mt-0.5 block font-mono">{{ number_format($stokTerjual, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-wider">Rusak</span>
+                            <span class="font-semibold text-rose-600 text-xs mt-0.5 block font-mono">{{ number_format($stokRusak, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] uppercase font-bold text-gray-400 block tracking-wider">Sisa</span>
+                            <span class="font-bold text-xs mt-0.5 block font-mono {{ $sisaStok <= 0 ? 'text-red-600' : ($sisaStok <= $stokMinimum ? 'text-amber-600' : 'text-emerald-700') }}">{{ number_format($sisaStok, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-500 pt-0.5">
+                        <span>Expired: <span class="font-mono text-gray-700 font-medium">@tanggalId($expiredDate, 'd F Y')</span></span>
+                        <button type="button" 
+                            onclick="toggleBatchHistory({{ $item->id }}, '{{ addslashes($item->barang->nama ?? '—') }}', '{{ addslashes($item->no_batch ?? '—') }}')"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                            <x-heroicon-o-clock class="w-3.5 h-3.5" />
+                            <span>Riwayat Penjualan</span>
+                        </button>
+                    </div>
+
+                    {{-- Collapsible Riwayat Penjualan Mobile --}}
+                    <div id="batch-history-mobile-{{ $item->id }}" class="batch-history-mobile hidden pt-2 border-t border-gray-150">
+                        <div id="batch-history-container-mobile-{{ $item->id }}" class="p-3 bg-gradient-to-b from-blue-50/50 via-white to-slate-50 rounded-lg border border-blue-100 shadow-inner">
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <x-empty-state :as-card="true" />
+            @endforelse
+        </div>
     </div>
 </div>
 
@@ -374,6 +526,24 @@
     function toggleBatchHistory(batchId, barangNama, noBatch) {
         const historyRow = document.getElementById(`batch-history-row-${batchId}`);
         const batchRow = document.getElementById(`batch-row-${batchId}`);
+        const historyMobile = document.getElementById(`batch-history-mobile-${batchId}`);
+
+        // Periksa apakah layar mobile
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile && historyMobile) {
+            const isCurrentlyOpen = !historyMobile.classList.contains('hidden');
+
+            // Tutup semua panel riwayat mobile yang lain
+            document.querySelectorAll('.batch-history-mobile').forEach(el => el.classList.add('hidden'));
+
+            if (isCurrentlyOpen) return;
+
+            historyMobile.classList.remove('hidden');
+            loadBatchHistoryData(batchId, barangNama, noBatch, true);
+            return;
+        }
+
         if (!historyRow || !batchRow) return;
 
         const isCurrentlyOpen = !historyRow.classList.contains('hidden');
@@ -396,18 +566,21 @@
         batchRow.classList.add('batch-row-active');
 
         // Ambil dan tampilkan data
-        loadBatchHistoryData(batchId, barangNama, noBatch);
+        loadBatchHistoryData(batchId, barangNama, noBatch, false);
     }
 
     function closeBatchHistory(batchId) {
         const historyRow = document.getElementById(`batch-history-row-${batchId}`);
         const batchRow = document.getElementById(`batch-row-${batchId}`);
+        const historyMobile = document.getElementById(`batch-history-mobile-${batchId}`);
         if (historyRow) historyRow.classList.add('hidden');
         if (batchRow) batchRow.classList.remove('batch-row-active');
+        if (historyMobile) historyMobile.classList.add('hidden');
     }
 
-    function loadBatchHistoryData(batchId, barangNama, noBatch) {
-        const container = document.getElementById(`batch-history-container-${batchId}`);
+    function loadBatchHistoryData(batchId, barangNama, noBatch, isMobile = false) {
+        const containerId = isMobile ? `batch-history-container-mobile-${batchId}` : `batch-history-container-${batchId}`;
+        const container = document.getElementById(containerId);
         if (!container) return;
 
         // Gunakan cache jika data batch ini sudah pernah dimuat dalam sesi ini
@@ -457,7 +630,7 @@
                     <span class="text-xs font-semibold">${escapeHtml(err.message || 'Gagal memuat riwayat penjualan.')}</span>
                     <button 
                         type="button" 
-                        onclick="delete batchHistoryCache[${batchId}]; loadBatchHistoryData(${batchId}, '${escapeHtml(barangNama)}', '${escapeHtml(noBatch)}')"
+                        onclick="delete batchHistoryCache[${batchId}]; loadBatchHistoryData(${batchId}, '${escapeHtml(barangNama)}', '${escapeHtml(noBatch)}', ${isMobile})"
                         class="text-xs px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-md transition-colors mt-1 font-semibold cursor-pointer"
                     >
                         Coba Lagi
@@ -714,29 +887,34 @@
                 showSuccessNotification();
             }
 
-            // 2. Hapus baris secara mulus dari DOM tanpa reload halaman
+            // 2. Hapus baris dan kartu secara mulus dari DOM tanpa reload halaman
             const row = document.getElementById(`batch-row-${batchId}`);
             const historyRow = document.getElementById(`batch-history-row-${batchId}`);
+            const card = document.getElementById(`batch-card-${batchId}`);
             if (row) {
                 row.classList.add('transition-all', 'duration-300', 'opacity-0', 'bg-rose-50');
-                setTimeout(() => {
-                    row.remove();
-                    if (historyRow) historyRow.remove();
-
-                    // Perbarui total batch di header
-                    const countEl = document.getElementById('total-batch-count');
-                    if (countEl) {
-                        const cur = parseInt(countEl.textContent.replace(/\D/g, '') || '0', 10);
-                        if (cur > 0) countEl.textContent = (cur - 1);
-                    }
-
-                    // Jika seluruh baris pada halaman telah dipindahkan / tabel kosong
-                    const remaining = document.querySelectorAll('.table-stok tbody .batch-row');
-                    if (remaining.length === 0) {
-                        window.location.reload();
-                    }
-                }, 300);
             }
+            if (card) {
+                card.classList.add('transition-all', 'duration-300', 'opacity-0', 'bg-rose-50');
+            }
+            setTimeout(() => {
+                if (row) row.remove();
+                if (historyRow) historyRow.remove();
+                if (card) card.remove();
+
+                // Perbarui total batch di header
+                const countEl = document.getElementById('total-batch-count');
+                if (countEl) {
+                    const cur = parseInt(countEl.textContent.replace(/\D/g, '') || '0', 10);
+                    if (cur > 0) countEl.textContent = (cur - 1);
+                }
+
+                // Jika seluruh baris pada halaman telah dipindahkan / tabel kosong
+                const remaining = document.querySelectorAll('.table-stok tbody .batch-row, .mobile-card-list .batch-card');
+                if (remaining.length === 0) {
+                    window.location.reload();
+                }
+            }, 300);
         })
         .catch(err => {
             // Ketika proses gagal:

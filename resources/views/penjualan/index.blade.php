@@ -134,7 +134,8 @@
 
 {{-- Table --}}
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[67rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -265,6 +266,83 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($penjualans as $index => $penjualan)
+            @php
+                $diskonTotal = $penjualan->detail->sum('diskon');
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <x-copyable :text="$penjualan->no_faktur" class="font-bold text-gray-900 text-sm font-mono" />
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            @tanggalId($penjualan->tanggal)
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total</span>
+                        <span class="font-extrabold text-blue-700 text-sm font-mono">@rupiah($penjualan->total)</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Pelanggan</span>
+                        <div class="mt-0.5 font-medium text-gray-800">
+                            @if($penjualan->pelanggan && $penjualan->pelanggan->is_member)
+                                <span>{{ $penjualan->pelanggan->nama }}</span>
+                                <div class="mt-0.5">
+                                    <x-status-badge type="member" :value="$penjualan->pelanggan->status_member ?: 'Member Pelanggan Tetap'" />
+                                </div>
+                            @else
+                                <span class="text-gray-600">Umum</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Kasir</span>
+                        <span class="font-medium text-gray-800 mt-0.5 block truncate">{{ $penjualan->user->name }}</span>
+                    </div>
+                    @if($diskonTotal > 0)
+                        <div class="col-span-2 pt-1 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                            <span class="text-gray-500">Hemat Diskon:</span>
+                            <span class="font-semibold text-red-600 font-mono">@rupiah($diskonTotal)</span>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">Transaksi #{{ $index + 1 }}</span>
+                    <div class="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors inline-flex items-center justify-center"
+                            style="color: #2563EB;"
+                            title="Lihat Detail Penjualan"
+                            aria-label="Lihat Detail Penjualan"
+                            onclick="bukaDetailPenjualan({{ $penjualan->id }})">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+
+                        <a
+                            href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'penjualan_index']) }}"
+                            class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors inline-flex items-center justify-center"
+                            style="color: #000000;"
+                            title="Lihat Struk Penjualan"
+                            aria-label="Lihat Struk Penjualan">
+                            <x-heroicon-o-printer class="w-4 h-4" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

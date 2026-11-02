@@ -38,7 +38,8 @@
 
 <!-- Table Card -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[55rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -103,6 +104,75 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($discounts as $index => $discount)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                            {{ $discount->nama }}
+                        </div>
+                        <div class="mt-1 flex items-center gap-2">
+                            <span class="text-emerald-600 font-bold font-mono text-base">{{ $discount->persentase }}%</span>
+                            <x-badge type="info">{{ $discount->cakupan }}</x-badge>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <x-status-badge type="promo" :value="$discount" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Tanggal Mulai</span>
+                        <span class="font-mono font-medium text-gray-700 mt-0.5 block">@tanggalId($discount->tanggal_mulai)</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Tanggal Selesai</span>
+                        <span class="font-mono font-medium text-gray-700 mt-0.5 block">@tanggalId($discount->tanggal_selesai)</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">Promo #{{ $index + 1 }}</span>
+                    <x-table-action
+                        edit-class="btn-edit-promo"
+                        :edit-id="$discount->id"
+                        :edit-data="[
+                            'nama' => $discount->nama,
+                            'persentase' => $discount->persentase,
+                            'aktif' => $discount->aktif ? '1' : '0',
+                            'tanggal_mulai' => $discount->tanggal_mulai->format('Y-m-d'),
+                            'tanggal_selesai' => $discount->tanggal_selesai->format('Y-m-d'),
+                            'cakupan' => $discount->cakupan,
+                            'kategori_ids' => $discount->kategoris->pluck('id')->toArray(),
+                            'barang_ids' => $discount->barangs->pluck('id')->toArray(),
+                        ]"
+                        :delete-url="route('custom-discount.destroy', $discount)"
+                        :delete-item="$discount->nama"
+                        delete-confirm="Yakin ingin menghapus promo diskon ini?">
+                        <form action="{{ route('custom-discount.toggle', $discount) }}" method="POST" class="inline toggle-promo-form">
+                            @csrf
+                            <button type="submit"
+                                    class="btn-secondary !p-1.5 hover:bg-slate-100 transition-colors {{ $discount->aktif ? 'text-slate-500 hover:text-red-600' : 'text-slate-500 hover:text-emerald-600' }}"
+                                    title="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}"
+                                    aria-label="{{ $discount->aktif ? 'Nonaktifkan Promo' : 'Aktifkan Promo' }}">
+                                @if($discount->aktif)
+                                    <x-heroicon-o-pause-circle class="w-4 h-4 text-amber-600" />
+                                @else
+                                    <x-heroicon-o-play-circle class="w-4 h-4 text-emerald-600" />
+                                @endif
+                            </button>
+                        </form>
+                    </x-table-action>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" title="Promo Kosong" description="Belum ada custom discount atau promo terdaftar di sistem." />
+        @endforelse
     </div>
 </div>
 

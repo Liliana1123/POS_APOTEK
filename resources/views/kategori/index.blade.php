@@ -21,11 +21,11 @@
 
 <div class="table-custom-container">
     <div class="overflow-x-auto">
-        <table class="table-custom min-w-[50rem]">
+        <table class="table-custom w-full">
             <thead class="table-custom-header">
                 <tr>
-                    <th scope="col" class="text-center w-36">Aksi</th>
-                    <th scope="col" class="w-16">ID</th>
+                    <th scope="col" class="text-left w-24 sm:w-32 pl-3">Aksi</th>
+                    <th scope="col" class="w-12 sm:w-16">ID</th>
                     <th scope="col">Nama Kategori</th>
                 </tr>
             </thead>

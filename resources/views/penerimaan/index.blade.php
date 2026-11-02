@@ -73,7 +73,8 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
        <table class="table-custom min-w-[100rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -222,6 +223,127 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($penerimaans as $index => $penerimaan)
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                {{-- Header --}}
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <x-copyable :text="$penerimaan->no_faktur" class="font-bold text-gray-900 text-sm font-mono" />
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            @tanggalId($penerimaan->tanggal, 'd F Y')
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <x-status-badge type="pembayaran" :status="$penerimaan->lunas" />
+                    </div>
+                </div>
+
+                {{-- Metrics Grid --}}
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Supplier</span>
+                        <span class="font-medium text-gray-800 mt-0.5 block truncate">{{ $penerimaan->supplier->nama ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Status Penerimaan</span>
+                        <div class="mt-0.5">
+                            <x-status-badge type="penerimaan" :status="$penerimaan->statusPenerimaan()" />
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Tagihan</span>
+                        <span class="font-bold text-gray-900 font-mono mt-0.5 block">@rupiah($penerimaan->totalTagihan())</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Sisa Tagihan</span>
+                        <span class="font-bold text-red-600 font-mono mt-0.5 block">@rupiah($penerimaan->sisaTagihan())</span>
+                    </div>
+                    @if($penerimaan->jatuh_tempo)
+                        <div class="col-span-2 pt-1 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                            <span class="text-gray-500">Jatuh Tempo:</span>
+                            <span class="font-medium text-gray-800">@tanggalId($penerimaan->jatuh_tempo, 'd F Y')</span>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Action Bar --}}
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">Penerimaan #{{ $index + 1 }}</span>
+                    <div class="flex items-center gap-1 flex-wrap justify-end">
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 btn-detail-penerimaan hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                            style="color: #2563EB;"
+                            title="Lihat Detail"
+                            data-url="{{ route('penerimaan.show', $penerimaan) }}">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+
+                        @if ($penerimaan->canBeEdited())
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-edit-penerimaan hover:bg-amber-50 hover:border-amber-300 transition-colors"
+                                style="color: #F59E0B;"
+                                title="Edit Faktur dan Detail"
+                                data-url="{{ route('penerimaan.edit', $penerimaan) }}">
+                                <x-heroicon-o-pencil-square class="w-4 h-4" />
+                            </button>
+                        @endif
+
+                        @if (!$penerimaan->lunas)
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-payment-penerimaan hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                                style="color: #16A34A;"
+                                title="Pembayaran"
+                                data-id="{{ $penerimaan->id }}">
+                                <x-heroicon-o-banknotes class="w-4 h-4" />
+                            </button>
+                        @endif
+
+                        @if ($penerimaan->statusPenerimaan() === 'BELUM LENGKAP')
+                            <button
+                                type="button"
+                                class="btn-secondary !p-1.5 btn-susulan-penerimaan hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                                style="color: #7C3AED;"
+                                title="Penerimaan Susulan"
+                                data-id="{{ $penerimaan->id }}"
+                                data-url="{{ route('penerimaan.susulan.form', $penerimaan, false) }}">
+                                <x-heroicon-o-arrow-path class="w-4 h-4" />
+                            </button>
+                        @endif
+
+                        <a
+                            href="{{ route('penerimaan.print', $penerimaan) }}"
+                            class="btn-secondary !p-1.5 hover:bg-slate-50 transition-colors"
+                            title="Print"
+                            target="_blank">
+                            <x-heroicon-o-printer class="w-4 h-4" />
+                        </a>
+
+                        <button
+                            type="button"
+                            class="btn-secondary !p-1.5 cursor-pointer hover:bg-red-50 hover:border-red-300 transition-colors"
+                            style="color: #DC2626;"
+                            title="Hapus"
+                            aria-label="Hapus"
+                            data-confirm-delete="{{ route('penerimaan.destroy', $penerimaan) }}"
+                            data-item-name="Faktur: {{ $penerimaan->no_faktur }}"
+                            data-confirm-message="Yakin ingin menghapus data faktur penerimaan barang ini? Stok barang terkait akan disesuaikan.">
+                            <x-heroicon-o-trash class="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

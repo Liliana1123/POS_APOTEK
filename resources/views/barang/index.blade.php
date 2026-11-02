@@ -57,7 +57,8 @@
 
 <!-- Table Custom Wrapper -->
 <div class="table-custom-container">
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[72rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -158,6 +159,119 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($barangs as $index => $barang)
+            @php
+                $stok = $barang->stokTotal();
+                $statusStok = 'Aman';
+                $statusStokBadge = 'badge-success';
+                if ($stok <= 0) {
+                    $statusStok = 'Habis';
+                    $statusStokBadge = 'badge-danger';
+                } elseif ($stok <= $barang->stok_minimum) {
+                    $statusStok = 'Menipis';
+                    $statusStokBadge = 'badge-warning';
+                }
+                $canManageBarang = auth()->user()->canManage('master.barang');
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2.5 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-bold text-gray-900 text-sm leading-snug break-words">
+                            {{ $barang->nama }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-1.5">
+                            <span>{{ $barang->merk ?: 'Tanpa Merk' }}</span>
+                            <span class="text-gray-300">•</span>
+                            <span class="text-gray-600 font-medium">{{ $barang->kategori->nama ?? '—' }}</span>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <x-status-badge type="aktif" :status="$barang->aktif" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs py-2 px-3 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Kode Apotek</span>
+                        <div class="mt-0.5"><x-copyable :text="$barang->kode_apotek" /></div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Kode KFA</span>
+                        <div class="mt-0.5"><x-copyable :text="$barang->kode_kfa" /></div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Satuan</span>
+                        <span class="font-medium text-gray-700 mt-0.5 block">{{ $barang->satuan->nama ?? '—' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Stok</span>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <span class="font-bold text-gray-900">{{ $stok }}</span>
+                            <x-status-badge type="stok" :stok="$stok" :min="$barang->stok_minimum" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                    <span class="text-[11px] text-gray-400">
+                        Min. Stok: {{ $barang->stok_minimum }} {{ $barang->satuan->nama ?? '' }}
+                    </span>
+                    <x-table-action
+                        edit-class="{{ $canManageBarang ? 'btn-edit-barang' : '' }}"
+                        :edit-id="$canManageBarang ? $barang->id : null"
+                        :edit-data="$canManageBarang ? [
+                            'kode_apotek' => $barang->kode_apotek,
+                            'kode_kfa' => $barang->kode_kfa,
+                            'nama' => $barang->nama,
+                            'merk' => $barang->merk,
+                            'kategori_id' => $barang->kategori_id,
+                            'satuan_id' => $barang->satuan_id,
+                            'pabrik_id' => $barang->pabrik_id,
+                            'barcode' => $barang->barcode,
+                            'stok_minimum' => $barang->stok_minimum,
+                            'butuh_resep' => (int) $barang->butuh_resep,
+                            'aktif' => (int) $barang->aktif
+                        ] : null"
+                        :delete-url="$canManageBarang ? route('barang.destroy', $barang) : null"
+                        :delete-item="$barang->nama"
+                        delete-confirm="Yakin ingin menghapus barang ini?">
+                        
+                        <button type="button"
+                            class="btn-secondary !p-1.5 hover:bg-blue-50 hover:border-blue-300 transition-colors btn-detail-barang"
+                            style="color: #2563EB;"
+                            title="Lihat Detail"
+                            aria-label="Lihat Detail"
+                            data-json="{{ json_encode([
+                                'id' => $barang->id,
+                                'kode_apotek' => $barang->kode_apotek ?? '—',
+                                'kode_kfa' => $barang->kode_kfa ?? '—',
+                                'nama' => $barang->nama,
+                                'merk' => $barang->merk ?? '—',
+                                'barcode' => $barang->barcode ?? '—',
+                                'kategori' => $barang->kategori->nama ?? '—',
+                                'satuan' => $barang->satuan->nama ?? '—',
+                                'pabrik' => $barang->pabrik->nama ?? '—',
+                                'supplier' => $barang->supplierNama(),
+                                'stok' => $stok,
+                                'stok_minimum' => $barang->stok_minimum,
+                                'status_stok' => $statusStok,
+                                'status_stok_badge' => $statusStokBadge,
+                                'butuh_resep' => $barang->butuh_resep ? 'Wajib Resep Dokter' : 'Bebas (Tanpa Resep)',
+                                'aktif' => $barang->aktif ? 'Aktif' : 'Nonaktif',
+                                'edit_url' => route('barang.edit', $barang),
+                            ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG) }}">
+                            <x-heroicon-o-eye class="w-4 h-4" />
+                        </button>
+                    </x-table-action>
+                </div>
+            </div>
+        @empty
+            <x-empty-state :as-card="true" />
+        @endforelse
     </div>
 </div>
 

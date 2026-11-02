@@ -44,57 +44,66 @@
     {{-- TAB 1: IZIN MENU & HALAMAN                               --}}
     {{-- ======================================================== --}}
     <div id="tab-content-pages" class="tab-pane">
-        <div class="table-custom-container">
-            <table class="table-custom min-w-[56rem]">
-                <thead class="table-custom-header">
-                    <tr>
-                        <th rowspan="2" scope="col" class="w-12 text-center">No</th>
-                        <th rowspan="2" scope="col" class="w-44">Modul / Menu</th>
-                        <th rowspan="2" scope="col" class="w-72">Halaman / Fitur</th>
-                        @foreach ($roles as $role => $meta)
-                            <th colspan="2" scope="colgroup" class="text-center border-l border-blue-500">
-                                {{ $meta['label'] }}
-                                @if ($meta['kunci'] ?? false)
-                                    <span class="block text-[10px] font-normal text-blue-200 normal-case">selalu aktif</span>
-                                @endif
-                            </th>
-                        @endforeach
-                    </tr>
-                    <tr>
-                        @foreach ($roles as $role => $meta)
-                            <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24 border-l border-blue-500">Access</th>
-                            <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24">CRUD</th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody class="table-custom-body">
-                    @php $no = 1; @endphp
-                    @foreach ($pagePermissions as $perm)
-                        <tr class="{{ $no % 2 === 1 ? 'bg-white' : 'bg-gray-50/75' }} hover:bg-blue-50/30 transition-colors">
-                            <td class="text-center text-gray-400 font-medium">{{ $no++ }}</td>
-                            <td class="text-gray-600 text-xs font-semibold">
-                                <span class="badge-chip bg-slate-100 text-slate-700">{{ $perm->group }}</span>
-                            </td>
-                            <td class="font-bold text-gray-800 text-sm">{{ $perm->label }}</td>
+        <div class="lg:hidden flex items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50/80 border border-blue-200/80 px-3 py-1.5 rounded-lg mb-2.5">
+            <x-heroicon-o-arrows-right-left class="w-4 h-4 text-blue-500 shrink-0" />
+            <span>Geser tabel ke samping untuk mengatur hak akses seluruh role.</span>
+        </div>
 
+        <div class="table-custom-container">
+            <div class="overflow-x-auto">
+                <table class="table-custom min-w-[56rem]">
+                    <thead class="table-custom-header">
+                        <tr>
+                            <th rowspan="2" scope="col" class="w-12 text-center">No</th>
+                            <th rowspan="2" scope="col" class="w-44">Modul / Menu</th>
+                            <th rowspan="2" scope="col" class="w-72">Halaman / Fitur</th>
                             @foreach ($roles as $role => $meta)
-                                @foreach (['view' => 'Access', 'manage' => 'CRUD'] as $level => $label)
-                                    <td class="text-center">
-                                        <input type="checkbox"
-                                            name="{{ $level }}[{{ $role }}][{{ $perm->id }}]"
-                                            value="1"
-                                            @checked($matrix[$perm->id][$role][$level] ?? false)
-                                            @disabled($meta['kunci'] ?? false)
-                                            aria-label="{{ $label }} {{ $meta['label'] }} — {{ $perm->label }}"
-                                            title="{{ $meta['label'] }} · {{ $label }}"
-                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed">
-                                    </td>
-                                @endforeach
+                                <th colspan="2" scope="colgroup" class="text-center border-l border-blue-500">
+                                    {{ $meta['label'] }}
+                                    @if ($meta['kunci'] ?? false)
+                                        <span class="block text-[10px] font-normal text-blue-200 normal-case">selalu aktif</span>
+                                    @endif
+                                </th>
                             @endforeach
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        <tr>
+                            @foreach ($roles as $role => $meta)
+                                <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24 border-l border-blue-500">Access</th>
+                                <th scope="col" class="text-center bg-blue-100 text-blue-900 w-24">CRUD</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="table-custom-body">
+                        @php $no = 1; @endphp
+                        @foreach ($pagePermissions as $perm)
+                            <tr class="{{ $no % 2 === 1 ? 'bg-white' : 'bg-gray-50/75' }} hover:bg-blue-50/30 transition-colors">
+                                <td class="text-center text-gray-400 font-medium">{{ $no++ }}</td>
+                                <td class="text-gray-600 text-xs font-semibold">
+                                    <span class="badge-chip bg-slate-100 text-slate-700">{{ $perm->group }}</span>
+                                </td>
+                                <td class="font-bold text-gray-800 text-sm">{{ $perm->label }}</td>
+
+                                @foreach ($roles as $role => $meta)
+                                    @foreach (['view' => 'Access', 'manage' => 'CRUD'] as $level => $label)
+                                        <td class="text-center p-1.5 sm:p-2">
+                                            <label class="flex items-center justify-center p-1 min-h-[32px] cursor-pointer">
+                                                <input type="checkbox"
+                                                    name="{{ $level }}[{{ $role }}][{{ $perm->id }}]"
+                                                    value="1"
+                                                    @checked($matrix[$perm->id][$role][$level] ?? false)
+                                                    @disabled($meta['kunci'] ?? false)
+                                                    aria-label="{{ $label }} {{ $meta['label'] }} — {{ $perm->label }}"
+                                                    title="{{ $meta['label'] }} · {{ $label }}"
+                                                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed">
+                                            </label>
+                                        </td>
+                                    @endforeach
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -109,8 +118,14 @@
             </div>
         </div>
 
+        <div class="lg:hidden flex items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50/80 border border-blue-200/80 px-3 py-1.5 rounded-lg mb-2.5">
+            <x-heroicon-o-arrows-right-left class="w-4 h-4 text-blue-500 shrink-0" />
+            <span>Geser tabel ke samping untuk mengatur visibilitas seluruh role.</span>
+        </div>
+
         <div class="table-custom-container">
-            <table class="table-custom min-w-[56rem]">
+            <div class="overflow-x-auto">
+                <table class="table-custom min-w-[56rem]">
                 <thead class="table-custom-header">
                     <tr>
                         <th scope="col" class="w-12 text-center">No</th>
@@ -155,15 +170,17 @@
                                 </td>
 
                                 @foreach ($roles as $role => $meta)
-                                    <td class="text-center border-l border-gray-100">
-                                        <input type="checkbox"
-                                            name="view[{{ $role }}][{{ $perm->id }}]"
-                                            value="1"
-                                            @checked($matrix[$perm->id][$role]['view'] ?? false)
-                                            @disabled($meta['kunci'] ?? false)
-                                            aria-label="Tampilkan {{ $perm->label }} untuk {{ $meta['label'] }}"
-                                            title="Tampilkan untuk {{ $meta['label'] }}"
-                                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed">
+                                    <td class="text-center p-1.5 sm:p-2 border-l border-gray-100">
+                                        <label class="flex items-center justify-center p-1 min-h-[32px] cursor-pointer">
+                                            <input type="checkbox"
+                                                name="view[{{ $role }}][{{ $perm->id }}]"
+                                                value="1"
+                                                @checked($matrix[$perm->id][$role]['view'] ?? false)
+                                                @disabled($meta['kunci'] ?? false)
+                                                aria-label="Tampilkan {{ $perm->label }} untuk {{ $meta['label'] }}"
+                                                title="Tampilkan untuk {{ $meta['label'] }}"
+                                                class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed">
+                                        </label>
                                     </td>
                                 @endforeach
                             </tr>
@@ -171,6 +188,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 

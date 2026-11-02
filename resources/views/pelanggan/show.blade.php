@@ -102,7 +102,8 @@
         <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Riwayat Transaksi Pelanggan / Member</h3>
     </div>
     
-    <div class="overflow-x-auto">
+    {{-- Desktop Table View --}}
+    <div class="hidden md:block overflow-x-auto">
         <table class="table-custom min-w-[45rem]">
             <thead class="table-custom-header">
                 <tr>
@@ -139,6 +140,42 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card View --}}
+    <div class="md:hidden divide-y divide-gray-150 mobile-card-list">
+        @forelse ($penjualans as $penjualan)
+            @php
+                $totalDiskon = $penjualan->detail()->sum('diskon');
+            @endphp
+            <div class="mobile-card-item p-4 space-y-2 bg-white">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <a href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'pelanggan']) }}" class="font-bold text-blue-600 hover:underline font-mono text-sm">
+                            {{ $penjualan->no_faktur }}
+                        </a>
+                        <div class="text-xs text-gray-500 mt-0.5">
+                            @tanggalId($penjualan->tanggal)
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total</span>
+                        <span class="font-bold text-gray-900 text-sm font-mono">@rupiah($penjualan->total)</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-xs pt-1 border-t border-gray-100">
+                    <span class="text-emerald-600 font-medium">Hemat: @rupiah($totalDiskon)</span>
+                    <a href="{{ route('penjualan.show', ['penjualan' => $penjualan, 'from' => 'pelanggan']) }}" class="btn-secondary !py-1 !px-2.5 text-xs font-semibold">
+                        Detail
+                    </a>
+                </div>
+            </div>
+        @empty
+            <div class="p-6 text-center text-gray-400 text-xs">
+                <div class="font-bold text-gray-700 text-sm mb-1">Riwayat Transaksi Kosong</div>
+                <div>Membership ini belum pernah melakukan transaksi penjualan di apotek.</div>
+            </div>
+        @endforelse
     </div>
 </div>
 
