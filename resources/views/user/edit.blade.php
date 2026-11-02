@@ -39,7 +39,15 @@
 
         <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1.5 font-sans">Password</label>
-            <input type="password" name="password" class="form-input" placeholder="Kosongkan jika tidak ingin mengubah password">
+            <div class="relative">
+                <input type="password" name="password" id="edit-password" class="form-input pr-10" placeholder="Kosongkan jika tidak ingin mengubah password">
+                <button type="button" id="edit-password-toggle" tabindex="-1"
+                    class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                    aria-label="Tampilkan password" title="Tampilkan / Sembunyikan Password">
+                    <x-heroicon-o-eye class="w-4 h-4 show-icon" />
+                    <x-heroicon-o-eye-slash class="w-4 h-4 hide-icon hidden" />
+                </button>
+            </div>
             @error('password') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
@@ -50,3 +58,20 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var input = document.getElementById('edit-password');
+        var btn = document.getElementById('edit-password-toggle');
+        if (!input || !btn) return;
+
+        btn.addEventListener('click', function () {
+            var isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+            btn.querySelector('.show-icon').classList.toggle('hidden', !isText);
+            btn.querySelector('.hide-icon').classList.toggle('hidden', isText);
+        });
+    });
+</script>
+@endpush

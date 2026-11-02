@@ -13,14 +13,19 @@ $alamatApotek = $apotek?->alamat_lengkap ?: ($apotek?->alamat ?: '');
 
         <!-- Modal Header -->
         <div class="modal-card-header no-print">
-            <div>
-                <h3 class="modal-card-title flex items-center gap-2">
-                    <x-heroicon-o-identification class="w-5 h-5 text-blue-600 inline-block" />
-                    <span>Kartu Member Pelanggan</span>
-                </h3>
-                <p class="modal-card-subtitle">
-                    Format fisik standar kartu ATM / ID Card (86 mm × 54 mm)
-                </p>
+            <div class="flex items-center gap-3.5">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-2xs border border-blue-100/60">
+                    <x-heroicon-o-identification class="w-5 h-5" />
+                </div>
+
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 tracking-tight">
+                        Kartu Member Pelanggan
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Format fisik standar kartu ATM / ID Card (86 mm × 54 mm)
+                    </p>
+                </div>
             </div>
 
             <div class="modal-card-header-actions">
@@ -38,8 +43,8 @@ $alamatApotek = $apotek?->alamat_lengkap ?: ($apotek?->alamat ?: '');
                 </div>
 
                 <!-- Close Button -->
-                <button type="button" onclick="closeCardModal()" class="btn-modal-icon-close" title="Tutup">
-                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                <button type="button" onclick="closeCardModal()" class="btn-secondary !p-1.5 modal-close-btn" title="Tutup" aria-label="Tutup">
+                    <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
                 </button>
             </div>
         </div>
@@ -273,26 +278,28 @@ $alamatApotek = $apotek?->alamat_lengkap ?: ($apotek?->alamat ?: '');
     }
 
     .modal-card-header {
-        padding: 16px 28px;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 16px 24px;
+        border-bottom: 1px solid #f3f4f6;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #fafafa;
+        gap: 16px;
+        background: #ffffff;
     }
 
     .modal-card-title {
         font-size: 16px;
-        font-weight: 800;
-        color: #0f172a;
-        line-height: 1.2;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
     }
 
     .modal-card-subtitle {
         font-size: 12px;
-        color: #64748b;
-        margin-top: 3px;
-        line-height: 1.2;
+        color: #6b7280;
+        margin-top: 2px;
+        line-height: 1.25;
     }
 
     .modal-card-header-actions {
@@ -337,23 +344,6 @@ $alamatApotek = $apotek?->alamat_lengkap ?: ($apotek?->alamat ?: '');
         display: none !important;
     }
 
-    .btn-modal-icon-close {
-        border: none;
-        background: transparent;
-        color: #94a3b8;
-        padding: 6px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
-    }
-
-    .btn-modal-icon-close:hover {
-        background: #f1f5f9;
-        color: #334155;
-    }
 
     .modal-card-body {
         padding: 30px 24px;

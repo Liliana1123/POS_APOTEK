@@ -23,11 +23,13 @@ class DetailPenerimaan extends Model
         'jumlah',
         'stok',
         'aktif',
+        'dipindahkan_ke_rusak',
     ];
 
     protected $casts = [
         'expired_date' => 'date',
         'aktif' => 'boolean',
+        'dipindahkan_ke_rusak' => 'boolean',
     ];
 
     public function penerimaan(): BelongsTo

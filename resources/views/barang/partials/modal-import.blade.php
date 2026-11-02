@@ -1,9 +1,9 @@
-<!-- Modal Import Barang -->
+<!-- Modal Impor Barang -->
 <div id="modal-import-barang-backdrop" class="fixed inset-0 bg-slate-900/40 z-50 hidden transition-opacity"></div>
 <div id="modal-import-barang" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-[5vh] sm:pt-[10vh] px-4">
     <div class="w-full max-w-md bg-white rounded-xl shadow-2xl relative max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
-            <h3 class="text-sm font-bold text-gray-800">Import Data Master Barang</h3>
+            <h3 class="text-sm font-bold text-gray-800">Impor Data Master Barang</h3>
             <button type="button" id="btn-close-import-modal" class="text-gray-400 hover:text-gray-600 transition-colors p-1" aria-label="Tutup">
                 <x-heroicon-o-x-mark class="w-5 h-5" />
             </button>
@@ -35,7 +35,7 @@
                         <input type="file" id="input-file-import-csv" name="file" accept=".csv,text/csv,text/plain" required class="sr-only">
                         <div class="dropzone-default-content flex flex-col items-center justify-center space-y-1.5 transition-opacity">
                             <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+                                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                             </div>
                             <div class="text-xs font-semibold text-slate-700">
                                 <span class="text-blue-600 underline">Klik untuk unggah</span> atau seret file ke sini
@@ -60,8 +60,8 @@
             <div class="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100 shrink-0 bg-gray-50/50">
                 <button type="button" id="btn-cancel-import-modal" class="btn-secondary py-1.5 px-4">Batal</button>
                 <button type="submit" id="btn-submit-import" class="btn-primary py-1.5 px-5 flex items-center gap-2">
-                    <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-                    <span>Upload & Import</span>
+                    <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+                    <span>Unggah & Impor</span>
                 </button>
             </div>
         </form>

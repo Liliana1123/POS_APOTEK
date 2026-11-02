@@ -457,6 +457,7 @@
     </div>
 
     {{-- ACTION BUTTONS --}}
+<<<<<<< HEAD
     <div class="flex gap-2 pt-2">
         <button
             type="submit"
@@ -465,11 +466,22 @@
             Simpan Perubahan
         </button>
 
+=======
+    <div class="flex justify-end items-center gap-2.5 pt-4">
+>>>>>>> b02074ac90e8d584a6d0374caedd9afc93a5d4f5
         <button
             type="button"
             id="btn-batal-edit"
             class="btn-secondary">
             Batal
+        </button>
+
+        <button
+            type="submit"
+            id="btn-simpan-edit"
+            class="btn-primary"
+        >
+            Simpan Perubahan
         </button>
     </div>
 

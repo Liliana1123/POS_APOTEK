@@ -362,21 +362,22 @@
     aria-modal="true"
     aria-labelledby="judulDetailPenjualan">
     <div
-        class="relative w-full flex flex-col bg-white rounded-2xl shadow-2xl p-4 sm:p-5 overflow-hidden"
-        style="max-width: 900px; width: min(900px, 95vw); max-height: 85vh;">
+        id="modalDetailPenjualanContainer"
+        class="relative w-full flex flex-col bg-white rounded-2xl shadow-2xl p-4 sm:p-5 overflow-hidden transition-all duration-150"
+        style="max-width: 920px; width: min(920px, 95vw); max-height: 85vh;">
         {{-- Header Modal --}}
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shrink-0">
-                    <x-heroicon-o-document-text class="h-5 w-5 text-blue-600" />
+            <div class="flex items-center gap-3.5">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shadow-2xs border border-blue-100/60">
+                    <x-heroicon-o-document-text class="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                     <h2
                         id="judulDetailPenjualan"
-                        class="text-base sm:text-lg font-bold text-slate-800 leading-tight">
+                        class="text-base font-bold text-gray-900 tracking-tight">
                         Detail Penjualan
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">
+                    <p class="text-xs text-gray-500 mt-0.5">
                         Informasi lengkap transaksi penjualan
                     </p>
                 </div>
@@ -385,9 +386,10 @@
             <button
                 type="button"
                 onclick="tutupDetailPenjualan()"
-                class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Tutup modal">
-                <x-heroicon-o-x-mark class="h-5 w-5" />
+                class="btn-secondary !p-1.5 modal-close-btn"
+                title="Tutup"
+                aria-label="Tutup">
+                <x-heroicon-o-x-mark class="w-4 h-4 pointer-events-none" />
             </button>
         </div>
 
@@ -403,7 +405,7 @@
             <button
                 type="button"
                 onclick="tutupDetailPenjualan()"
-                class="rounded-xl border border-blue-400 px-6 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 cursor-pointer shadow-sm">
+                class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition active:scale-98">
                 Tutup
             </button>
         </div>
@@ -525,6 +527,17 @@
             const metode = penjualan.metode_pembayaran || '-';
             const isPiutang = String(penjualan.metode_pembayaran || '').toLowerCase() === 'piutang';
 
+            const modalContainer = document.getElementById('modalDetailPenjualanContainer');
+            if (modalContainer) {
+                if (isPiutang) {
+                    modalContainer.style.maxWidth = '1060px';
+                    modalContainer.style.width = 'min(1060px, 96vw)';
+                } else {
+                    modalContainer.style.maxWidth = '920px';
+                    modalContainer.style.width = 'min(920px, 95vw)';
+                }
+            }
+
             const isResep = (penjualan.is_resep === true) ||
                 String(penjualan.jenis_transaksi || '').toLowerCase() === 'resep';
             const idDokter = isResep && penjualan.id_dokter ? String(penjualan.id_dokter).trim() : '';
@@ -533,48 +546,49 @@
 
             isiModal.innerHTML = `
                 {{-- Kartu Informasi Transaksi --}}
-                <div class="grid grid-cols-2 sm:grid-cols-3 ${isPiutang ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-2 sm:gap-2.5">
+                <div class="grid grid-cols-2 sm:grid-cols-3 ${isPiutang ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-2 sm:gap-2.5 items-stretch">
 
                     {{-- No. Invoice --}}
-                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-                            <span class="text-[11px] font-medium text-slate-400">No. Invoice</span>
+                            <span class="text-[11px] font-medium text-slate-400 whitespace-nowrap truncate" title="No. Invoice">No. Invoice</span>
                         </div>
-                        <p class="font-bold text-[13px] text-slate-800 break-all leading-tight font-mono">
-                            ${escapeHtml(penjualan.no_faktur)}
-                        </p>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs sm:text-[12.5px] text-slate-800 font-mono tracking-tight whitespace-nowrap truncate leading-tight" title="${escapeHtml(penjualan.no_faktur)}">
+                                ${escapeHtml(penjualan.no_faktur)}
+                            </p>
+                        </div>
                     </div>
 
                     {{-- Tanggal dan Jam --}}
-                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span class="text-[11px] font-medium text-slate-400">Tanggal dan Jam</span>
+                            <span class="text-[11px] font-medium text-slate-400 whitespace-nowrap truncate" title="Tanggal dan Jam">Tanggal dan Jam</span>
                         </div>
-                        <div class="text-[13px] font-bold text-slate-800 leading-tight flex items-center gap-2">
+                        <div class="min-w-0 text-xs sm:text-[12.5px] font-bold text-slate-800 leading-tight flex items-center gap-1.5 whitespace-nowrap truncate">
                             <span>${escapeHtml(displayTanggal)}</span>
-
                             ${displayJam ? `
-                                <span class="font-normal text-[#9fbcfaff]">|</span>
+                                <span class="font-normal text-blue-300">|</span>
                                 <span>${escapeHtml(displayJam)}</span>
                             ` : ''}
                         </div>
                     </div>
 
                     {{-- Pelanggan --}}
-                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            <span class="text-[11px] font-medium text-slate-400">Pelanggan</span>
+                            <span class="text-[11px] font-medium text-slate-400 whitespace-nowrap truncate" title="Pelanggan">Pelanggan</span>
                         </div>
-                        <div class="flex flex-col items-start gap-1">
-                            <p class="font-bold text-[13px] text-slate-800 leading-tight">
+                        <div class="min-w-0 flex flex-col justify-end">
+                            <p class="font-bold text-xs sm:text-[12.5px] text-slate-800 leading-tight truncate" title="${escapeHtml(pelanggan)}">
                                 ${escapeHtml(pelanggan)}
                             </p>
                             ${
                                 isMember
-                                    ? `<span class="inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-[9px] leading-tight font-semibold uppercase tracking-normal
+                                    ? `<span class="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[8.5px] leading-tight font-semibold uppercase tracking-tight mt-1 truncate max-w-full
                                         ${ memberVariant === 'indigo' ? 'bg-indigo-50 text-indigo-700'
                                          : memberVariant === 'info' ? 'bg-blue-50 text-blue-700'
                                          : memberVariant === 'warning' ? 'bg-amber-50 text-amber-700'
@@ -587,37 +601,43 @@
                     </div>
 
                     {{-- Kasir --}}
-                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-                            <span class="text-[11px] font-medium text-slate-400">Kasir</span>
+                            <span class="text-[11px] font-medium text-slate-400 whitespace-nowrap truncate" title="Kasir">Kasir</span>
                         </div>
-                        <p class="font-bold text-[13px] text-slate-800 leading-tight">
-                            ${escapeHtml(kasir)}
-                        </p>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs sm:text-[12.5px] text-slate-800 leading-tight truncate" title="${escapeHtml(kasir)}">
+                                ${escapeHtml(kasir)}
+                            </p>
+                        </div>
                     </div>
 
                     {{-- Metode Pembayaran --}}
-                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-blue-100/90 bg-white p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                            <span class="text-[11px] font-medium text-slate-400">Metode Pembayaran</span>
+                            <span class="text-[11px] font-medium text-slate-400 whitespace-nowrap truncate" title="Metode Pembayaran">Metode Pembayaran</span>
                         </div>
-                        <p class="font-bold text-[13px] text-slate-800 uppercase leading-tight">
-                            ${escapeHtml(metode)}
-                        </p>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs sm:text-[12.5px] text-slate-800 uppercase leading-tight truncate" title="${escapeHtml(metode)}">
+                                ${escapeHtml(metode)}
+                            </p>
+                        </div>
                     </div>
 
                     ${isPiutang ? `
                     {{-- Jatuh Tempo --}}
-                    <div class="min-w-0 rounded-xl border border-amber-200 bg-amber-50/20 p-2.5 sm:p-3 flex flex-col justify-between min-h-[64px]">
-                        <div class="flex items-center gap-1.5 mb-1">
+                    <div class="min-w-0 rounded-xl border border-amber-200 bg-amber-50/20 p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[70px] sm:min-h-[72px] shadow-2xs">
+                        <div class="flex items-center gap-1.5 mb-1.5 min-w-0 shrink-0">
                             <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span class="text-[11px] font-semibold text-amber-600">Jatuh Tempo</span>
+                            <span class="text-[11px] font-semibold text-amber-600 whitespace-nowrap truncate" title="Jatuh Tempo">Jatuh Tempo</span>
                         </div>
-                        <p class="font-bold text-[13px] text-slate-800 leading-tight">
-                            ${escapeHtml(penjualan.due_date_formatted || '-')}
-                        </p>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs sm:text-[12.5px] text-slate-800 leading-tight whitespace-nowrap truncate" title="${escapeHtml(penjualan.due_date_formatted || '-')}">
+                                ${escapeHtml(penjualan.due_date_formatted || '-')}
+                            </p>
+                        </div>
                     </div>
                     ` : ''}
 
@@ -754,6 +774,11 @@
 
     function tutupDetailPenjualan() {
         const modal = document.getElementById('modalDetailPenjualan');
+        const modalContainer = document.getElementById('modalDetailPenjualanContainer');
+        if (modalContainer) {
+            modalContainer.style.maxWidth = '920px';
+            modalContainer.style.width = 'min(920px, 95vw)';
+        }
 
         modal.classList.add('hidden');
         modal.classList.remove('flex');

@@ -77,6 +77,19 @@ class UserController extends Controller
             abort(403, 'Akun Superadmin hanya bisa diubah oleh Superadmin.');
         }
 
+        if ($user->id === $request->user()->id && $user->isSuperAdmin() && $data['role'] !== 'superadmin') {
+            $superadminCount = User::where('role', 'superadmin')->count();
+            if ($superadminCount <= 1) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Tidak dapat mengubah role karena Anda adalah satu-satunya Superadmin di sistem.',
+                        'errors' => ['role' => ['Anda adalah satu-satunya Superadmin di sistem.']],
+                    ], 422);
+                }
+                return back()->withErrors(['role' => 'Tidak dapat mengubah role karena Anda adalah satu-satunya Superadmin di sistem.']);
+            }
+        }
+
         $update = [
             'name' => $data['name'],
             'email' => $data['email'],

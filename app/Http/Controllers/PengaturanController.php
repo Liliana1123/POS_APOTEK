@@ -37,7 +37,39 @@ class PengaturanController extends Controller
             'nama_apoteker_pj' => 'nullable|string|max:255',
             'no_sipa' => 'nullable|string|max:100',
             'logo' => 'nullable|image|max:2048',
+            'background_type' => 'nullable|in:default,custom',
+            'background_opacity' => 'nullable|integer|min:5|max:100',
+            'background_image' => 'nullable|image|max:5120',
         ]);
+
+        $user = $request->user();
+        $canManageBackground = $user && ($user->isAdmin() || $user->isSuperAdmin());
+
+        if ($canManageBackground) {
+            if ($request->boolean('reset_background_default')) {
+                if ($apotek->background_image) {
+                    Storage::disk('public')->delete($apotek->background_image);
+                }
+                $data['background_image'] = null;
+                $data['background_type'] = 'custom';
+            }
+
+            if ($request->filled('background_type')) {
+                $data['background_type'] = $request->input('background_type');
+            }
+            if ($request->filled('background_opacity')) {
+                $data['background_opacity'] = (int) $request->input('background_opacity');
+            }
+            if ($request->hasFile('background_image')) {
+                if ($apotek->background_image) {
+                    Storage::disk('public')->delete($apotek->background_image);
+                }
+                $data['background_image'] = $request->file('background_image')->store('info-apotek', 'public');
+                $data['background_type'] = 'custom';
+            }
+        } else {
+            unset($data['background_type'], $data['background_opacity'], $data['background_image']);
+        }
 
         if ($request->hasFile('logo')) {
             if ($apotek->logo) {

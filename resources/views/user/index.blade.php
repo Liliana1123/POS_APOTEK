@@ -139,10 +139,75 @@
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="role"></p>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">Password <span class="text-red-500">*</span></label>
-        <input type="password" name="password" class="form-input" placeholder="Minimal 8 karakter" {{ $errors->has('password') ? '' : 'required' }}>
+        <label class="block text-xs font-semibold text-gray-500 mb-1 font-sans">
+            Password <span class="text-red-500" data-create-only>*</span>
+        </label>
+        <div class="relative">
+            <input type="password" name="password" id="modal-user-password" class="form-input pr-10" placeholder="Minimal 8 karakter">
+            <button type="button" id="modal-user-password-toggle" tabindex="-1"
+                class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                aria-label="Tampilkan password" title="Tampilkan / Sembunyikan Password">
+                <x-heroicon-o-eye class="w-4 h-4 show-icon" />
+                <x-heroicon-o-eye-slash class="w-4 h-4 hide-icon hidden" />
+            </button>
+        </div>
         <p class="modal-field-error text-red-600 text-xs mt-1 hidden" data-error-for="password"></p>
         <p class="text-xs text-gray-500 mt-1" id="password-hint">Minimal 8 karakter. Kosongkan jika tidak ingin mengubah (saat edit).</p>
     </div>
 </x-modal-form>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var pwdInput = document.getElementById('modal-user-password');
+        var pwdToggle = document.getElementById('modal-user-password-toggle');
+        if (!pwdInput || !pwdToggle) return;
+
+        var showIcon = pwdToggle.querySelector('.show-icon');
+        var hideIcon = pwdToggle.querySelector('.hide-icon');
+
+        function setVisibility(show) {
+            pwdInput.type = show ? 'text' : 'password';
+            if (show) {
+                showIcon.classList.add('hidden');
+                hideIcon.classList.remove('hidden');
+            } else {
+                showIcon.classList.remove('hidden');
+                hideIcon.classList.add('hidden');
+            }
+        }
+
+        pwdToggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            var isText = pwdInput.type === 'text';
+            setVisibility(!isText);
+        });
+
+        // Reset ke masked password saat tombol Tambah User diklik
+        var btnTambah = document.querySelector('#btn-tambah-user');
+        if (btnTambah) {
+            btnTambah.addEventListener('click', function () {
+                setVisibility(false);
+            });
+        }
+
+        // Reset ke masked password saat tombol Edit diklik
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-edit-user')) {
+                setVisibility(false);
+            }
+        });
+
+        // Reset saat modal ditutup
+        var modalEl = document.getElementById('modal-user');
+        if (modalEl) {
+            modalEl.querySelectorAll('.modal-user-close').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    setVisibility(false);
+                });
+            });
+        }
+    });
+</script>
+@endpush
 @endsection
