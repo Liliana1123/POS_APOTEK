@@ -10,6 +10,7 @@
 
 <form action="{{ route('penerimaan.store') }}" method="POST" id="form-penerimaan" class="space-y-6">
     @csrf
+    <input type="hidden" name="items_json" id="items_json">
 
     <!-- Form Header Card -->
     <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
@@ -58,9 +59,15 @@
     <div class="card-base p-6">
         <div class="flex justify-between items-center mb-4 pb-2 border-b">
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
-            <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold">
-                + Tambah item barang
-            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-import-excel" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-emerald-700 bg-white border border-emerald-500 hover:bg-emerald-50 hover:border-emerald-600 active:bg-emerald-100 rounded-lg shadow-2xs transition-colors cursor-pointer" title="Import Data Obat dari Excel atau CSV">
+                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Import Excel</span>
+                </button>
+                <button type="button" id="btn-tambah-item" class="btn-secondary py-1 px-3 text-xs font-semibold cursor-pointer">
+                    + Tambah item barang
+                </button>
+            </div>
         </div>
 
        <div class="table-custom-container">
@@ -628,17 +635,153 @@ function applyServerErrorsCreate(errors) {
     }
 }
 
-document.getElementById('form-penerimaan').addEventListener('submit', function (e) {
-    if (tbody.children.length === 0) {
-        e.preventDefault();
-        alert('Tambahkan minimal 1 baris barang.');
-        return;
-    }
+const formCreate = document.getElementById('form-penerimaan');
+const btnSimpanCreate = formCreate.querySelector('button[type="submit"]');
 
-    if (!validateFormCreate()) {
+if (formCreate) {
+    formCreate.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+            e.preventDefault();
+        }
+    });
+
+    formCreate.addEventListener('submit', async function (e) {
         e.preventDefault();
-    }
-});
+        e.stopPropagation();
+
+        if (tbody.children.length === 0) {
+            alert('Tambahkan minimal 1 baris barang.');
+            return;
+        }
+
+        if (!validateFormCreate()) {
+            return;
+        }
+
+        if (btnSimpanCreate && btnSimpanCreate.disabled) return;
+
+        const items = [];
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const bId = row.querySelector('[name$="[barang_id]"]')?.value;
+            const nb = row.querySelector('[name$="[no_batch]"]')?.value;
+            const ed = row.querySelector('[name$="[expired_date]"]')?.value;
+            const hb = row.querySelector('.harga-beli')?.value ?? row.querySelector('[name$="[harga_beli]"]')?.value;
+            const hj = row.querySelector('.harga-jual')?.value ?? row.querySelector('[name$="[harga_jual]"]')?.value;
+            const nr = row.querySelector('[name$="[no_rak]"]')?.value;
+            const jd = row.querySelector('.jumlah-dipesan-field')?.value ?? row.querySelector('[name$="[jumlah_dipesan]"]')?.value;
+            const jt = row.querySelector('.jumlah-diterima-field')?.value ?? row.querySelector('[name$="[jumlah_diterima]"]')?.value;
+
+            if (bId || nb) {
+                items.push({
+                    barang_id: bId ? parseInt(bId, 10) : '',
+                    no_batch: nb ? String(nb).trim() : '',
+                    expired_date: ed ? String(ed).trim() : '',
+                    harga_beli: hb !== '' && hb !== null && hb !== undefined ? parseFloat(hb) : 0,
+                    harga_jual: hj !== '' && hj !== null && hj !== undefined ? parseFloat(hj) : 0,
+                    no_rak: nr ? String(nr).trim() : 'A-01',
+                    jumlah_dipesan: jd !== '' && jd !== null && jd !== undefined ? parseInt(jd, 10) : 1,
+                    jumlah_diterima: jt !== '' && jt !== null && jt !== undefined ? parseInt(jt, 10) : 0,
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            alert('Tambahkan minimal 1 baris barang.');
+            return;
+        }
+
+        const itemsJsonInput = document.getElementById('items_json');
+        if (itemsJsonInput) {
+            itemsJsonInput.value = JSON.stringify(items);
+        }
+
+        const payload = {
+            supplier_id: document.getElementById('supplier_id')?.value,
+            tanggal: document.getElementById('tanggal')?.value,
+            tanggal_faktur: formCreate.querySelector('[name="tanggal_faktur"]')?.value,
+            no_faktur: formCreate.querySelector('[name="no_faktur"]')?.value,
+            keterangan: formCreate.querySelector('[name="keterangan"]')?.value || '',
+            jatuh_tempo: formCreate.querySelector('[name="jatuh_tempo"]')?.value || null,
+            pembayaran_pertama: document.getElementById('pembayaran_pertama')?.value || 0,
+            items: items,
+        };
+
+        const originalBtnHtml = btnSimpanCreate ? btnSimpanCreate.innerHTML : 'Simpan Faktur';
+        if (btnSimpanCreate) {
+            btnSimpanCreate.disabled = true;
+            btnSimpanCreate.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                Menyimpan Faktur...
+            `;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+            formCreate.querySelector('input[name="_token"]')?.value || '';
+
+        try {
+            const response = await fetch(formCreate.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                if (response.status === 422 && data.errors) {
+                    applyServerErrorsCreate(data.errors);
+                    const firstErrKey = Object.keys(data.errors)[0];
+                    const firstErrMsg = Array.isArray(data.errors[firstErrKey]) ? data.errors[firstErrKey][0] : data.errors[firstErrKey];
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(firstErrMsg || 'Terdapat kesalahan validasi formulir.', 'error');
+                    } else {
+                        alert(firstErrMsg || 'Terdapat kesalahan validasi formulir.');
+                    }
+                } else {
+                    const errorMsg = data.message || 'Terjadi kesalahan saat menyimpan faktur.';
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(errorMsg, 'error');
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+                if (btnSimpanCreate) {
+                    btnSimpanCreate.disabled = false;
+                    btnSimpanCreate.innerHTML = originalBtnHtml;
+                }
+                return;
+            }
+
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Penerimaan barang berhasil disimpan.', 'success');
+            }
+            setTimeout(() => {
+                window.location.href = data.redirect || '/penerimaan';
+            }, 400);
+
+        } catch (err) {
+            console.error('Error saat menyimpan faktur:', err);
+            if (btnSimpanCreate) {
+                btnSimpanCreate.disabled = false;
+                btnSimpanCreate.innerHTML = originalBtnHtml;
+            }
+            if (typeof window.showToast === 'function') {
+                window.showToast('Gagal menghubungi server. Silakan coba lagi.', 'error');
+            } else {
+                alert('Gagal menghubungi server. Silakan coba lagi.');
+            }
+        }
+    });
+}
 
 // Mulai dengan baris awal
 if (oldItems.length > 0) {
@@ -654,5 +797,105 @@ if (oldItems.length > 0) {
         applyServerErrorsCreate(@json($errors->toArray()));
     }, 50);
 @endif
+
+// Hook untuk import Excel pada create page
+window.insertImportedItemCreate = function(item) {
+    const html = template.innerHTML.replaceAll('__i__', rowIndex);
+    const tempTr = document.createElement('tbody');
+    tempTr.innerHTML = html;
+    const row = tempTr.firstElementChild;
+    tbody.appendChild(row);
+
+    const bId = row.querySelector('[name$="[barang_id]"]');
+    if (bId) {
+        bId.value = item.barang_id;
+        const opt = bId.selectedOptions[0];
+        const bcField = row.querySelector('.barcode-field');
+        const satField = row.querySelector('.satuan-field');
+        if (bcField) bcField.value = opt?.dataset.barcode || item.barcode || '';
+        if (satField) satField.value = opt?.dataset.satuan || item.satuan_nama || '';
+    }
+
+    const nb = row.querySelector('[name$="[no_batch]"]');
+    if (nb) nb.value = item.no_batch || '';
+
+    const ed = row.querySelector('[name$="[expired_date]"]');
+    if (ed) ed.value = item.expired_date || '';
+
+    const hb = row.querySelector('[name$="[harga_beli]"]');
+    if (hb) hb.value = (item.harga_beli !== null && item.harga_beli !== undefined) ? item.harga_beli : '';
+
+    const hj = row.querySelector('[name$="[harga_jual]"]');
+    if (hj) hj.value = (item.harga_jual !== null && item.harga_jual !== undefined) ? item.harga_jual : '';
+
+    const nr = row.querySelector('[name$="[no_rak]"]');
+    if (nr) nr.value = item.no_rak || 'A-01';
+
+    const jd = row.querySelector('[name$="[jumlah_dipesan]"]');
+    if (jd) jd.value = item.jumlah_dipesan || 1;
+
+    const jt = row.querySelector('[name$="[jumlah_diterima]"]');
+    if (jt) jt.value = item.jumlah_diterima || 1;
+
+    rowIndex++;
+};
+
+window.insertImportedItemsBatchCreate = function(items) {
+    if (!template || !tbody || !items || items.length === 0) return;
+    const fragment = document.createDocumentFragment();
+    const baseHtml = template.innerHTML;
+
+    items.forEach(item => {
+        const html = baseHtml.replaceAll('__i__', rowIndex);
+        const tempTr = document.createElement('tbody');
+        tempTr.innerHTML = html;
+        const row = tempTr.firstElementChild;
+
+        const bId = row.querySelector('[name$="[barang_id]"]');
+        if (bId) {
+            bId.value = item.barang_id;
+            const opt = bId.selectedOptions[0];
+            const bcField = row.querySelector('.barcode-field');
+            const satField = row.querySelector('.satuan-field');
+            if (bcField) bcField.value = opt?.dataset.barcode || item.barcode || '';
+            if (satField) satField.value = opt?.dataset.satuan || item.satuan_nama || '';
+        }
+
+        const nb = row.querySelector('[name$="[no_batch]"]');
+        if (nb) nb.value = item.no_batch || '';
+
+        const ed = row.querySelector('[name$="[expired_date]"]');
+        if (ed) ed.value = item.expired_date || '';
+
+        const hb = row.querySelector('[name$="[harga_beli]"]');
+        if (hb) hb.value = (item.harga_beli !== null && item.harga_beli !== undefined) ? item.harga_beli : '';
+
+        const hj = row.querySelector('[name$="[harga_jual]"]');
+        if (hj) hj.value = (item.harga_jual !== null && item.harga_jual !== undefined) ? item.harga_jual : '';
+
+        const nr = row.querySelector('[name$="[no_rak]"]');
+        if (nr) nr.value = item.no_rak || 'A-01';
+
+        const jd = row.querySelector('[name$="[jumlah_dipesan]"]');
+        if (jd) jd.value = item.jumlah_dipesan || 1;
+
+        const jt = row.querySelector('[name$="[jumlah_diterima]"]');
+        if (jt) jt.value = item.jumlah_diterima || 1;
+
+        fragment.appendChild(row);
+        rowIndex++;
+    });
+
+    tbody.appendChild(fragment);
+    const emptyHintEl = document.getElementById('empty-hint');
+    if (emptyHintEl) emptyHintEl.style.display = 'none';
+    updateTotal();
+};
+window.updateTotalCreate = updateTotal;
 </script>
+
+@vite('resources/js/pages/penerimaan-index.js')
+<!-- Modal Import Data Obat Excel/CSV -->
+@include('penerimaan.partials.modal-import-obat')
+
 @endsection
