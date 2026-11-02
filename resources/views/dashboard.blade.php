@@ -1053,27 +1053,88 @@ $actionConfigs = [
                             </p>
                         </div>
                     </div>
+
+                    {{-- Pill Header --}}
+                    @if ($activeAlertsCount > 0)
+                        <div class="flex items-center gap-1.5 text-[8.5px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            <span class="relative flex h-1.5 w-1.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                            </span>
+                            <span>{{ $activeAlertsCount }} Aksi</span>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-1 text-[8.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span>Terkendali</span>
+                        </div>
                     @endif
                 </div>
-                @endif
 
-                @if ($canTombolKasir)
-                <a href="{{ route('penjualan.create') }}" class="cashier-card block !p-3.5 text-white font-bold text-xs flex items-center justify-between shadow-md transition-all duration-200 group">
-                    <div class="flex items-center gap-2.5">
-                        <x-heroicon-o-calculator class="w-5 h-5 text-white shrink-0" />
-                        <div>
-                            <span class="text-xs font-extrabold tracking-wide block text-white">Buka Kasir</span>
-                            <span class="text-[9px] text-blue-100 font-medium block">Transaksi penjualan baru</span>
-                        </div>
-                    </div>
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-white/80 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
-                </a>
-                @endif
+                {{-- Alert List --}}
+                <div class="space-y-2">
+                    @foreach ($actionCenter as $kunci => $item)
+                        @php
+                            $cfg = $actionConfigs[$kunci] ?? [
+                                'label' => ucfirst($kunci),
+                                'badge' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                'dot' => 'bg-gray-500',
+                                'ping' => 'bg-gray-400',
+                                'arrow' => 'text-gray-400 group-hover:text-gray-600',
+                                'card' => 'border-gray-200',
+                            ];
+                            $itemCount = (int) ($item['count'] ?? 0);
+                            $hasCount = $itemCount > 0;
+                        @endphp
+
+                        <a href="{{ $item['route'] }}"
+                           class="group block p-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 {{ $hasCount ? $cfg['card'] . ' bg-white' : 'border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 hover:shadow-xs' }}">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 mb-1">
+                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold border transition-transform duration-200 group-hover:scale-[1.02] origin-left {{ $hasCount ? $cfg['badge'] : 'bg-gray-100 text-gray-600 border-gray-200' }}">
+                                            @if ($hasCount)
+                                                <span class="relative flex h-1.5 w-1.5">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 {{ $cfg['ping'] }}"></span>
+                                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 {{ $cfg['dot'] }}"></span>
+                                                </span>
+                                            @else
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                            @endif
+                                            <span>{{ $item['title'] ?? $cfg['label'] }}</span>
+                                        </span>
+
+                                        @if (!$hasCount)
+                                            <span class="text-[8px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+                                                Aman
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-black {{ $hasCount ? 'text-gray-900' : 'text-gray-400' }}">
+                                            {{ number_format($itemCount, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-[10px] font-medium {{ $hasCount ? 'text-gray-600 group-hover:text-gray-900' : 'text-gray-400' }} transition-colors truncate">
+                                            {{ $item['label'] }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="shrink-0 flex items-center">
+                                    <x-heroicon-o-chevron-right class="w-4 h-4 {{ $hasCount ? $cfg['arrow'] : 'text-gray-300 group-hover:text-gray-500' }} transition-transform duration-200 group-hover:translate-x-1.5" />
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
             </div>
             @endif
         </div>
         @endif
-        @endif
+    </div>
+    @endif
+    @endif
 
         {{-- ============================================================ --}}
         {{-- 4. INVENTORY + EXPIRY + BARANG YANG HARUS DIBELI             --}}
