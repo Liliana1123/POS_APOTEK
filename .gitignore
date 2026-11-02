@@ -14,18 +14,28 @@
 /auth.json
 /node_modules
 /public/build
-/public/hot
+/public/hot*
 /public/storage
 /storage/*.key
+/storage/*.php
 /storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# AI & Editor Tools
+.claude/
+.cursor/
 .opencode/
 
 # Manual Book Docs
 *MANUAL_BOOK*.md
 *manual_book*.md
 *manual-book*.md
+
+# Dev Roadmaps & Work Notes
+TODO_reusable.md
+modal-consolidation-roadmap.md
+ui-modernization-roadmap.md
+deadcode-removal.md
