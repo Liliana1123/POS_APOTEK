@@ -24,9 +24,14 @@ class InfoApotek extends Model
         'nama_apoteker_pj',
         'no_sipa',
         'logo',
+        'ppn_aktif',
         'background_type',
         'background_image',
         'background_opacity',
+    ];
+
+    protected $casts = [
+        'ppn_aktif' => 'boolean',
     ];
 
     public function getBackgroundUrlAttribute(): string

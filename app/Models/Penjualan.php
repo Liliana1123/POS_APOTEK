@@ -22,11 +22,26 @@ class Penjualan extends Model
         'nama_dokter',
         'id_dokter',
         'alamat_lembaga',
+        'kenakan_ppn',
+        'ppn_config_id',
+        'tarif_ppn_persen',
+        'metode_ppn',
+        'persentase_dpp',
+        'tipe_perlakuan_harga',
+        'subtotal_bersih',
+        'dpp_nominal',
+        'ppn_nominal',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'due_date' => 'date',
+        'kenakan_ppn' => 'boolean',
+        'tarif_ppn_persen' => 'decimal:2',
+        'persentase_dpp' => 'decimal:4',
+        'subtotal_bersih' => 'decimal:2',
+        'dpp_nominal' => 'decimal:2',
+        'ppn_nominal' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -37,6 +52,11 @@ class Penjualan extends Model
     public function pelanggan(): BelongsTo
     {
         return $this->belongsTo(Pelanggan::class);
+    }
+
+    public function pengaturanPpn(): BelongsTo
+    {
+        return $this->belongsTo(PengaturanPpn::class, 'ppn_config_id');
     }
 
     public function detail(): HasMany

@@ -68,7 +68,7 @@
                             </div>
                         </div>
 
-                        <!-- Tanggal Lahir, Telepon, Alamat, Member Sejak, Saldo Piutang -->
+                        <!-- Member Sejak, Tanggal Lahir, Telepon, Alamat -->
                         <div class="modal-profile-contact space-y-3" style="border-top: 1px solid #f1f5f9; padding-top: 14px;">
                             <!-- Member Sejak -->
                             <div class="flex items-center gap-3">
@@ -78,17 +78,6 @@
                                 <div class="min-w-0 flex-1">
                                     <div class="text-[10px] font-medium text-gray-400">Member Sejak</div>
                                     <div id="detail-member-since" class="text-xs font-bold text-gray-800 break-words">-</div>
-                                </div>
-                            </div>
-
-                            <!-- Saldo Piutang -->
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                                    <x-heroicon-o-banknotes class="w-4 h-4" />
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="text-[10px] font-medium text-gray-400">Saldo Piutang</div>
-                                    <div id="detail-saldo-piutang-text" class="text-xs font-bold text-gray-800 break-words">Rp 0</div>
                                 </div>
                             </div>
 
@@ -578,11 +567,6 @@ function openDetailModal(pelangganId) {
 
     document.getElementById('detail-member-since').textContent = '-';
     document.getElementById('detail-tanggal-lahir').textContent = '-';
-    const saldoPiutangTextReset = document.getElementById('detail-saldo-piutang-text');
-    if (saldoPiutangTextReset) {
-        saldoPiutangTextReset.textContent = 'Rp 0';
-        saldoPiutangTextReset.className = 'text-xs font-bold text-gray-800 break-words';
-    }
 
     document.getElementById('detail-total-belanja').textContent = 'Rp 0';
     document.getElementById('detail-saldo-piutang').textContent = 'Rp 0';
@@ -659,20 +643,10 @@ function openDetailModal(pelangganId) {
 
         document.getElementById('detail-benefit-diskon').textContent = benefitLabel;
 
-        // Saldo Piutang
+        // Saldo Piutang (Card Total Piutang)
         const saldoPiutang = Number(pelanggan.saldo_piutang || 0);
         const formattedPiutang = formatDetailRupiah(saldoPiutang);
         document.getElementById('detail-saldo-piutang').textContent = formattedPiutang;
-        
-        const saldoPiutangTextEl = document.getElementById('detail-saldo-piutang-text');
-        if (saldoPiutangTextEl) {
-            saldoPiutangTextEl.textContent = formattedPiutang;
-            if (saldoPiutang > 0) {
-                saldoPiutangTextEl.className = 'text-xs font-bold text-red-600 break-words';
-            } else {
-                saldoPiutangTextEl.className = 'text-xs font-bold text-gray-800 break-words';
-            }
-        }
 
         // Ringkasan Transaksi
         document.getElementById('detail-total-belanja').textContent = formatDetailRupiah(pelanggan.total_belanja);

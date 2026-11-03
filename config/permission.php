@@ -44,6 +44,7 @@ return [
         'master.pelanggan' => ['group' => 'Data Master', 'label' => 'Pelanggan / Member'],
         'sistem.kelola-user' => ['group' => 'Data Master', 'label' => 'Kelola User'],
         'sistem.pengaturan' => ['group' => 'Data Master', 'label' => 'Pengaturan Apotek'],
+        'sistem.pengaturan-pajak' => ['group' => 'Data Master', 'label' => 'Pengaturan Pajak (PPN)'],
 
         // Sidebar: Transaksi
         'transaksi.penjualan' => ['group' => 'Transaksi', 'label' => 'Penjualan (Kasir)'],
