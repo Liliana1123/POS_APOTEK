@@ -221,8 +221,8 @@
     </div>
 </div>
 
-<div class="mt-4 print:hidden pagination-container">
-    {{ $logs->links() }}
+<div class="print:hidden">
+    <x-pagination :paginator="$logs" />
 </div>
 
 <script>

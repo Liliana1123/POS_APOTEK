@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
         \Carbon\Carbon::setLocale('id');
         config(['app.locale' => 'id']);
 
+        \Illuminate\Pagination\Paginator::defaultView('vendor.pagination.apotek');
+        \Illuminate\Pagination\Paginator::defaultSimpleView('vendor.pagination.apotek');
+
         // Blade Directives: Currency & Date Formatting
         \Illuminate\Support\Facades\Blade::directive('rupiah', function ($expression) {
             return "<?php echo 'Rp ' . number_format((float)($expression ?? 0), 0, ',', '.'); ?>";

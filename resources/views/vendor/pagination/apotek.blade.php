@@ -1,135 +1,127 @@
-@if ($paginator->total() > 0)
-    <nav role="navigation" aria-label="Navigasi halaman">
+@if ($paginator->hasPages() || $paginator->total() > 0)
+@php
+    $current = $paginator->currentPage();
+    $last = $paginator->lastPage();
 
-        <div class="flex gap-2 items-center justify-between sm:hidden">
+    $range = [];
+    $pages = [];
+    $prev = null;
 
-            @if ($paginator->onFirstPage())
-                <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                    Sebelumnya
-                </span>
-            @else
-                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-800 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 dark:hover:text-gray-200">
-                    Sebelumnya
-                </a>
-            @endif
+    for ($i = 1; $i <= $last; $i++) {
+        if (
+            $i == 1 ||
+            $i == $last ||
+            ($i >= $current - 1 && $i <= $current + 1) ||
+            ($current <= 2 && $i <= 3) ||
+            ($current >= $last - 1 && $i >= $last - 2)
+        ) {
+            $range[] = $i;
+        }
+    }
 
-            @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-800 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 dark:hover:text-gray-200">
-                    Berikutnya
-                </a>
-            @else
-                <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                    Berikutnya
-                </span>
-            @endif
+    foreach ($range as $i) {
+        if ($prev !== null) {
+            if ($i - $prev === 2) {
+                $pages[] = $prev + 1;
+            } elseif ($i - $prev !== 1) {
+                $pages[] = '...';
+            }
+        }
+        $pages[] = $i;
+        $prev = $i;
+    }
+@endphp
 
+<nav role="navigation" aria-label="Navigasi halaman">
+    {{-- Tampilan Mobile: Ringkas (Sebelumnya, Halaman X / Y, Berikutnya) --}}
+    <div class="flex items-center justify-between sm:hidden text-xs">
+        @if ($paginator->onFirstPage())
+            <span class="inline-flex items-center px-3 py-1.5 font-medium text-gray-400 bg-white border border-gray-300 rounded-lg shadow-xs cursor-not-allowed">
+                Sebelumnya
+            </span>
+        @else
+            <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-xs hover:bg-gray-50 hover:text-blue-600 transition">
+                Sebelumnya
+            </a>
+        @endif
+
+        <span class="text-xs text-gray-600 font-medium">
+            Halaman <span class="text-gray-900 font-semibold">{{ $current }}</span> / {{ $last }}
+        </span>
+
+        @if ($paginator->hasMorePages())
+            <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-xs hover:bg-gray-50 hover:text-blue-600 transition">
+                Berikutnya
+            </a>
+        @else
+            <span class="inline-flex items-center px-3 py-1.5 font-medium text-gray-400 bg-white border border-gray-300 rounded-lg shadow-xs cursor-not-allowed">
+                Berikutnya
+            </span>
+        @endif
+    </div>
+
+    {{-- Tampilan Layar Sedang & Besar (Desktop / Laptop / Tablet) --}}
+    <div class="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div>
+            <p class="text-xs text-gray-600 leading-5">
+                Menampilkan <span class="font-medium text-gray-900">{{ $paginator->firstItem() ?? 0 }}</span>–<span class="font-medium text-gray-900">{{ $paginator->lastItem() ?? 0 }}</span> dari <span class="font-medium text-gray-900">{{ $paginator->total() }}</span> data
+            </p>
         </div>
 
-        <div class="hidden sm:flex-1 sm:flex sm:gap-2 sm:items-center sm:justify-between">
-
-            <div>
-                <p class="text-sm text-gray-700 leading-5 dark:text-gray-600">
-                    Menampilkan {{ $paginator->firstItem() ?? 0 }}–{{ $paginator->lastItem() ?? 0 }} dari {{ $paginator->total() }} data
-                </p>
-            </div>
-
-            <div>
-                <span class="inline-flex rtl:flex-row-reverse shadow-sm rounded-md">
-
-                    @if ($paginator->onFirstPage())
-                        <span aria-disabled="true" aria-label="Sebelumnya">
-                            <span class="inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-not-allowed rounded-l-md leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400" aria-hidden="true">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </span>
-                        </span>
-                    @else
-                        <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md leading-5 hover:text-gray-400 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-500 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:active:bg-gray-700 dark:focus:border-blue-800 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-gray-300" aria-label="Sebelumnya">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    @endif
-
-                    @foreach ($elements as $element)
-                        @if (is_string($element))
-                            <span aria-disabled="true">
-                                <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 cursor-default leading-5 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">{{ $element }}</span>
-                            </span>
-                        @endif
-
-                        @if (is_array($element))
-                            @foreach ($element as $page => $url)
-                                @if ($page == $paginator->currentPage())
-                                    <span aria-current="page">
-                                        <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 cursor-default leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">{{ $page }}</span>
-                                    </span>
-                                @else
-                                    <a href="{{ $url }}" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Ke halaman {{ $page }}">
-                                        {{ $page }}
-                                    </a>
-                                @endif
-                            @endforeach
-                        @endif
-                    @endforeach
-
-                    @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md leading-5 hover:text-gray-400 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-500 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:active:bg-gray-700 dark:focus:border-blue-800 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-gray-300" aria-label="Berikutnya">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </a>
-                    @else
-                        <span aria-disabled="true" aria-label="Berikutnya">
-                            <span class="inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-not-allowed rounded-r-md leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400" aria-hidden="true">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </span>
-                        </span>
-                    @endif
-                </span>
-            </div>
-        </div>
-    </nav>
-@else
-    <nav role="navigation" aria-label="Navigasi halaman">
-        <div class="hidden sm:flex-1 sm:flex sm:gap-2 sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm leading-5 text-slate-500">
-                    Menampilkan 0–0 dari {{ $paginator->total() }} data
-                </p>
-            </div>
-            <div>
-                <span class="inline-flex rtl:flex-row-reverse shadow-sm rounded-md">
+        <div>
+            <span class="inline-flex rtl:flex-row-reverse shadow-xs rounded-lg overflow-hidden border border-gray-300 divide-x divide-gray-300 bg-white">
+                {{-- Tombol Sebelumnya --}}
+                @if ($paginator->onFirstPage())
                     <span aria-disabled="true" aria-label="Sebelumnya">
-                        <span class="inline-flex items-center px-2 py-2 text-sm font-medium text-gray-400 bg-white border border-gray-300 cursor-not-allowed rounded-l-md leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400" aria-hidden="true">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <span class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-gray-300 bg-white cursor-not-allowed leading-5" aria-hidden="true" title="Halaman Pertama">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                             </svg>
                         </span>
                     </span>
-                    <span aria-disabled="true">
-                        <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 cursor-default leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">1</span>
-                    </span>
+                @else
+                    <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white leading-5 hover:text-blue-600 hover:bg-blue-50/50 transition duration-150" aria-label="Sebelumnya" title="Halaman Sebelumnya">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                @endif
+
+                {{-- Nomor-Nomor Halaman Ringkas --}}
+                @foreach ($pages as $page)
+                    @if ($page === '...')
+                        <span aria-disabled="true">
+                            <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-400 bg-white cursor-default leading-5 select-none">...</span>
+                        </span>
+                    @elseif ($page == $current)
+                        <span aria-current="page">
+                            <span class="inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 cursor-default leading-5">{{ $page }}</span>
+                        </span>
+                    @else
+                        <a href="{{ $paginator->url($page) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white leading-5 hover:text-blue-600 hover:bg-blue-50/60 transition duration-150" aria-label="Ke halaman {{ $page }}">
+                            {{ $page }}
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Tombol Berikutnya --}}
+                @if ($paginator->hasMorePages())
+                    <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-white leading-5 hover:text-blue-600 hover:bg-blue-50/50 transition duration-150" aria-label="Berikutnya" title="Halaman Berikutnya">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                @else
                     <span aria-disabled="true" aria-label="Berikutnya">
-                        <span class="inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-400 bg-white border border-gray-300 cursor-not-allowed rounded-r-md leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400" aria-hidden="true">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <span class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-gray-300 bg-white cursor-not-allowed leading-5" aria-hidden="true" title="Halaman Terakhir">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                             </svg>
                         </span>
                     </span>
-                </span>
-            </div>
-        </div>
-        <div class="flex gap-2 items-center justify-between sm:hidden">
-            <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-400 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                Sebelumnya
-            </span>
-            <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-400 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                Berikutnya
+                @endif
             </span>
         </div>
-    </nav>
+    </div>
+</nav>
 @endif
