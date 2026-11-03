@@ -144,27 +144,47 @@
                 $diskonPromo = $totalDiskon;
             }
         }
+        $subtotalKotor = ($penjualan->subtotal_bersih > 0 ? $penjualan->subtotal_bersih : ($penjualan->total - $penjualan->ppn_nominal)) + $totalDiskon;
     @endphp
 
-    @if ($totalDiskon > 0)
+    @if ($totalDiskon > 0 || $penjualan->kenakan_ppn)
         <div class="struk-discount border-t border-dashed mt-3 pt-3 text-[10px] text-gray-600 space-y-1">
-            <div class="flex justify-between">
-                <span>Subtotal Kotor</span>
-                <span>@rupiah($penjualan->total + $totalDiskon)</span>
-            </div>
-            @if ($diskonMember > 0)
-                <div class="flex justify-between text-green-600">
-                    <span>Diskon Member</span>
-                    <span>-@rupiah($diskonMember)</span>
+            @if ($totalDiskon > 0)
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>@rupiah($subtotalKotor)</span>
                 </div>
-            @endif
-            @if ($diskonPromo > 0)
-                <div class="flex justify-between text-green-600">
-                    <span>Diskon Promo</span>
-                    <span>-@rupiah($diskonPromo)</span>
-                </div>
+                @if ($diskonMember > 0)
+                    <div class="flex justify-between text-green-600">
+                        <span>Diskon Member</span>
+                        <span>-@rupiah($diskonMember)</span>
+                    </div>
+                @endif
+                @if ($diskonPromo > 0)
+                    <div class="flex justify-between text-green-600">
+                        <span>Diskon Promo</span>
+                        <span>-@rupiah($diskonPromo)</span>
+                    </div>
+                @endif
             @endif
 
+            @if ($penjualan->kenakan_ppn)
+                @if ($penjualan->metode_ppn === 'dpp_nilai_lain')
+                    <div class="flex justify-between text-gray-500">
+                        <span>DPP Nilai Lain ({{ number_format($penjualan->persentase_dpp, 2) }}%)</span>
+                        <span>@rupiah($penjualan->dpp_nominal)</span>
+                    </div>
+                @else
+                    <div class="flex justify-between text-gray-500">
+                        <span>DPP (Dasar Pengenaan Pajak)</span>
+                        <span>@rupiah($penjualan->dpp_nominal)</span>
+                    </div>
+                @endif
+                <div class="flex justify-between text-blue-800 font-semibold">
+                    <span>PPN ({{ number_format($penjualan->tarif_ppn_persen, 2) }}%{{ $penjualan->tipe_perlakuan_harga === 'inklusif' ? ' Inklusif' : '' }})</span>
+                    <span>@rupiah($penjualan->ppn_nominal)</span>
+                </div>
+            @endif
         </div>
     @endif
 

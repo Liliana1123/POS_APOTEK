@@ -199,9 +199,19 @@ Route::middleware(['auth', 'permission:sistem.kelola-user'])->group(function () 
     Route::get('user', [UserController::class, 'index'])->name('user.index');
 });
 
-Route::middleware(['auth', 'permission:sistem.pengaturan:kelola'])->group(function () {
-    Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
-    Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+Route::middleware(['auth'])->group(function () {
+    Route::get('pengaturan', [PengaturanController::class, 'index'])
+        ->name('pengaturan.index');
+    Route::put('pengaturan', [PengaturanController::class, 'update'])
+        ->middleware('permission:sistem.pengaturan:kelola')
+        ->name('pengaturan.update');
+
+    Route::post('pengaturan/ppn', [PengaturanController::class, 'storePpn'])
+        ->name('pengaturan.ppn.store');
+    Route::put('pengaturan/ppn/{ppn}', [PengaturanController::class, 'updatePpn'])
+        ->name('pengaturan.ppn.update');
+    Route::post('pengaturan/ppn/toggle-status', [PengaturanController::class, 'togglePpnStatus'])
+        ->name('pengaturan.ppn.toggle');
 });
 
 Route::middleware(['auth', 'permission:sistem.activity-log'])->group(function () {

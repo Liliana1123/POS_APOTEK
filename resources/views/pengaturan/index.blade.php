@@ -131,10 +131,11 @@
     </div>
 
     <!-- RIGHT COLUMN: Formulir Pengaturan -->
-    <div class="lg:col-span-8">
-        <form action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <div class="lg:col-span-8 space-y-6">
+        <form id="form-pengaturan" action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
+            <button type="submit" class="hidden" aria-hidden="true"></button>
 
             <!-- Section 1: Profil & Identitas Apotek -->
             <div class="card-base !p-0 overflow-hidden border border-slate-200/90 shadow-2xs">
@@ -595,25 +596,314 @@
                 </div>
             </div>
             @endif
+        </form>
 
-            <!-- Form Action Footer Card -->
-            <div class="card-base bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl shadow-2xs">
-                <span class="text-xs text-slate-500 text-center sm:text-left">
-                    Perubahan informasi akan langsung terbarui di seluruh modul dokumen dan laporan.
-                </span>
-                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <button type="button"
-                            id="btn-reset"
-                            class="btn-secondary">
-                        Clear
-                    </button>
-                    <button type="submit" class="btn-primary flex items-center gap-1.5">
-                        <x-heroicon-o-check class="w-4 h-4" />
-                        <span>Simpan Pengaturan</span>
-                    </button>
+        @if($canViewPpn ?? true)
+        <!-- Section 5: Pengaturan Pajak (PPN) -->
+        <div id="section-pengaturan-ppn" class="card-base !p-0 overflow-hidden border border-slate-200/90 shadow-2xs">
+            <!-- Header Kartu Berwarna Biru Sesuai Standar Tema Halaman -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3.5 !text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                        <x-heroicon-o-receipt-percent class="w-5 h-5 !text-white" />
+                    </div>
+                    <div>
+                        <h3 class="!text-white text-xs font-bold uppercase tracking-wider font-sans" style="color: #ffffff !important;">
+                            Pengaturan Pajak (PPN)
+                        </h3>
+                        <p class="text-xs !text-blue-100 mt-0.5" style="color: #dbeafe !important;">
+                            Kelola status pajak apotek, tarif dinamis, metode perhitungan DPP, dan jadwal masa berlaku transaksi.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                    <span class="inline-flex items-center gap-1.5 text-[10px] font-semibold !text-white bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-xs" style="color: #ffffff !important;">
+                        <span class="w-1.5 h-1.5 rounded-full {{ ($ppnAktif ?? true) ? 'bg-emerald-400' : 'bg-slate-300' }}"></span>
+                        <span>{{ ($ppnAktif ?? true) ? 'Sistem PPN Aktif' : 'Sistem PPN Nonaktif' }}</span>
+                    </span>
                 </div>
             </div>
-        </form>
+
+            <div class="p-5 space-y-5 bg-white">
+                <!-- Panel 1: Master Status Toggle & Ringkasan Tarif Aktif Saat Ini -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+                    <!-- Toggle Status PPN Apotek -->
+                    <div class="md:col-span-5 bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-700 font-sans">
+                                    Status Pengenaan PPN
+                                </span>
+                                @if($ppnAktif ?? true)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        Aktif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700 border border-slate-300">
+                                        Nonaktif
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed">
+                                @if($ppnAktif ?? true)
+                                    Fitur PPN aktif. Kasir dapat memilih mengenakan PPN pada setiap transaksi penjualan baru dengan tarif yang berlaku.
+                                @else
+                                    Fitur PPN dinonaktifkan. Checkbox "Kenakan PPN" pada kasir dikunci dan tidak dapat dicentang (PPN Rp0). Riwayat tarif tetap tersimpan aman.
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-200/70 mt-3 flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-700">Aktifkan Fitur PPN</span>
+                            @if($canManagePpn ?? true)
+                                <form action="{{ route('pengaturan.ppn.toggle') }}" method="POST" id="form-toggle-ppn">
+                                    @csrf
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox"
+                                               name="ppn_aktif"
+                                               value="1"
+                                               class="sr-only peer"
+                                               {{ ($ppnAktif ?? true) ? 'checked' : '' }}
+                                               onchange="this.form.submit()">
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </form>
+                            @else
+                                <span class="text-[11px] font-medium text-slate-400 italic">Hanya Superadmin / Admin Berizin</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Informasi Tarif yang Sedang Berlaku Hari Ini -->
+                    <div class="md:col-span-7 bg-blue-50/40 border border-blue-200/80 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-blue-900 font-sans flex items-center gap-1.5">
+                                    <x-heroicon-m-calendar class="w-4 h-4 text-blue-600" />
+                                    Tarif Berlaku Saat Ini ({{ now()->translatedFormat('d M Y') }})
+                                </span>
+                                @if($ppnAktifConfig)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+                                        {{ $ppnAktifConfig->nama }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                        Tidak Ada Tarif Aktif
+                                    </span>
+                                @endif
+                            </div>
+
+                            @if($ppnAktifConfig)
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3">
+                                    <div class="bg-white rounded-lg p-2.5 border border-blue-100 shadow-2xs">
+                                        <span class="block text-[10px] font-medium text-slate-500 uppercase">Tarif PPN</span>
+                                        <span class="text-sm font-bold text-blue-700">{{ number_format($ppnAktifConfig->tarif_persen, 2) }}%</span>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-2.5 border border-blue-100 shadow-2xs">
+                                        <span class="block text-[10px] font-medium text-slate-500 uppercase">Metode DPP</span>
+                                        <span class="text-xs font-bold text-slate-800 truncate block" title="{{ $ppnAktifConfig->metode_perhitungan === 'dpp_nilai_lain' ? 'DPP Nilai Lain (' . number_format($ppnAktifConfig->persentase_dpp, 2) . '%)' : 'Standar (100%)' }}">
+                                            {{ $ppnAktifConfig->metode_perhitungan === 'dpp_nilai_lain' ? 'Nilai Lain' : 'Standar' }}
+                                        </span>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-2.5 border border-blue-100 shadow-2xs">
+                                        <span class="block text-[10px] font-medium text-slate-500 uppercase">Tarif Efektif</span>
+                                        <span class="text-sm font-bold text-emerald-700">{{ number_format($ppnAktifConfig->tarif_efektif, 2) }}%</span>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-2.5 border border-blue-100 shadow-2xs">
+                                        <span class="block text-[10px] font-medium text-slate-500 uppercase">Perlakuan</span>
+                                        <span class="text-xs font-bold text-slate-800 truncate block">
+                                            {{ ucfirst($ppnAktifConfig->tipe_perlakuan_harga) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-[11px] text-slate-600 flex items-center justify-between">
+                                    <span>Masa Berlaku: <strong class="text-slate-800">{{ $ppnAktifConfig->periode_teks }}</strong></span>
+                                    <span class="text-slate-500 text-[10px]">Basis: {{ $ppnAktifConfig->tipe_perlakuan_harga === 'inklusif' ? 'Sudah termasuk PPN' : 'Belum termasuk PPN' }}</span>
+                                </div>
+                            @else
+                                <div class="bg-amber-50 rounded-lg p-3 border border-amber-200 text-xs text-amber-800 mt-2">
+                                    Tidak ada konfigurasi tarif PPN yang berlaku untuk tanggal hari ini. Silakan jadwalkan atau tambahkan tarif baru.
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="pt-3 border-t border-blue-200/70 mt-3 flex items-center justify-between">
+                            <span class="text-[11px] text-blue-900/80">Perubahan tarif baru tidak akan memengaruhi transaksi masa lalu.</span>
+                            @if($canManagePpn ?? true)
+                                <button type="button"
+                                        id="btn-buka-modal-tambah-ppn"
+                                        class="btn-primary inline-flex items-center gap-1.5 text-xs py-1.5 px-3">
+                                    <x-heroicon-s-plus class="w-3.5 h-3.5" />
+                                    <span>Perbarui / Jadwalkan Tarif</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Tabel Riwayat & Jadwal Perubahan Tarif PPN -->
+                <div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-sans flex items-center gap-1.5">
+                                <x-heroicon-m-clock class="w-4 h-4 text-slate-500" />
+                                Riwayat Perubahan & Jadwal Masa Berlaku Tarif PPN
+                            </h4>
+                            <p class="text-[11px] text-slate-500 mt-0.5">
+                                Catatan riwayat tarif sebelumnya, tarif berjalan, dan tarif yang dijadwalkan di masa mendatang.
+                            </p>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-2xs self-start sm:self-center">
+                            Total: {{ ($riwayatPpn ?? collect())->count() }} Konfigurasi
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-2xs">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-100/80 text-[11px] font-bold uppercase tracking-wider text-slate-700 border-b border-slate-200">
+                                <tr>
+                                    <th class="px-3 py-2.5 text-center w-10">No</th>
+                                    <th class="px-3 py-2.5">Nama & Keterangan</th>
+                                    <th class="px-3 py-2.5 text-center">Tarif</th>
+                                    <th class="px-3 py-2.5">Metode Perhitungan</th>
+                                    <th class="px-3 py-2.5 text-center">Tarif Efektif</th>
+                                    <th class="px-3 py-2.5">Perlakuan Harga</th>
+                                    <th class="px-3 py-2.5">Masa Berlaku</th>
+                                    <th class="px-3 py-2.5 text-center">Status</th>
+                                    <th class="px-3 py-2.5">Dibuat Oleh</th>
+                                    @if($canManagePpn ?? true)
+                                    <th class="px-3 py-2.5 text-center w-16">Aksi</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @forelse(($riwayatPpn ?? []) as $index => $row)
+                                    @php
+                                        $today = now()->toDateString();
+                                        $isPast = $row->tanggal_akhir && $row->tanggal_akhir->toDateString() < $today;
+                                        $isFuture = $row->tanggal_mulai && $row->tanggal_mulai->toDateString() > $today;
+                                        $isCurrent = !$isPast && !$isFuture && $row->is_aktif;
+                                    @endphp
+                                    <tr class="hover:bg-slate-50/80 transition-colors {{ $isCurrent ? 'bg-blue-50/30' : '' }}">
+                                        <td class="px-3 py-2.5 text-center text-slate-400 font-mono">{{ $index + 1 }}</td>
+                                        <td class="px-3 py-2.5">
+                                            <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                                                {{ $row->nama }}
+                                                @if($isCurrent)
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-600 text-white">Aktif</span>
+                                                @endif
+                                            </div>
+                                            @if($row->keterangan)
+                                                <div class="text-[11px] text-slate-500 mt-0.5 max-w-xs truncate" title="{{ $row->keterangan }}">
+                                                    {{ $row->keterangan }}
+                                                </div>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center font-bold text-blue-700 font-mono">
+                                            {{ number_format($row->tarif_persen, 2) }}%
+                                        </td>
+                                        <td class="px-3 py-2.5">
+                                            @if($row->metode_perhitungan === 'dpp_nilai_lain')
+                                                <span class="font-semibold text-slate-700">DPP Nilai Lain</span>
+                                                <span class="block text-[10px] text-slate-500 font-mono">DPP {{ number_format($row->persentase_dpp, 2) }}%</span>
+                                            @else
+                                                <span class="font-semibold text-slate-700">Tarif Langsung</span>
+                                                <span class="block text-[10px] text-slate-500 font-mono">DPP 100%</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center font-bold text-emerald-700 font-mono">
+                                            {{ number_format($row->tarif_efektif, 2) }}%
+                                        </td>
+                                        <td class="px-3 py-2.5">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium {{ $row->tipe_perlakuan_harga === 'inklusif' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
+                                                {{ ucfirst($row->tipe_perlakuan_harga) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2.5">
+                                            <div class="text-[11px] font-semibold text-slate-700">{{ $row->periode_teks }}</div>
+                                            @if($isPast)
+                                                <span class="text-[10px] text-slate-400">Telah Berakhir</span>
+                                            @elseif($isFuture)
+                                                <span class="text-[10px] text-amber-600 font-medium">Dijadwalkan</span>
+                                            @elseif($isCurrent)
+                                                <span class="text-[10px] text-emerald-600 font-medium">Berlaku Saat Ini</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2.5 text-center">
+                                            @if(!$row->is_aktif)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                                    Nonaktif
+                                                </span>
+                                            @elseif($isPast)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                                    Selesai
+                                                </span>
+                                            @elseif($isFuture)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                                    Dijadwalkan
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    Aktif
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2.5 text-[11px] text-slate-600">
+                                            <div>{{ $row->createdBy?->name ?? 'Sistem' }}</div>
+                                            <div class="text-[10px] text-slate-400">{{ $row->created_at ? $row->created_at->translatedFormat('d/m/Y H:i') : '-' }}</div>
+                                        </td>
+                                        @if($canManagePpn ?? true)
+                                        <td class="px-3 py-2.5 text-center">
+                                            <button type="button"
+                                                    class="btn-edit-ppn p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                                    data-id="{{ $row->id }}"
+                                                    data-nama="{{ $row->nama }}"
+                                                    data-tarif="{{ $row->tarif_persen }}"
+                                                    data-metode="{{ $row->metode_perhitungan }}"
+                                                    data-dpp="{{ $row->persentase_dpp }}"
+                                                    data-tipe="{{ $row->tipe_perlakuan_harga }}"
+                                                    data-mulai="{{ $row->tanggal_mulai ? $row->tanggal_mulai->toDateString() : '' }}"
+                                                    data-akhir="{{ $row->tanggal_akhir ? $row->tanggal_akhir->toDateString() : '' }}"
+                                                    data-aktif="{{ $row->is_aktif ? '1' : '0' }}"
+                                                    data-keterangan="{{ $row->keterangan }}"
+                                                    title="Edit Konfigurasi">
+                                                <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                        @endif
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ ($canManagePpn ?? true) ? 10 : 9 }}" class="px-3 py-6 text-center text-slate-400">
+                                            Belum ada riwayat tarif PPN tersimpan.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Form Action Footer Card -->
+        <div class="card-base bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl shadow-2xs">
+            <span class="text-xs text-slate-500 text-center sm:text-left">
+                Perubahan informasi akan langsung terbarui di seluruh modul dokumen dan laporan.
+            </span>
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <button type="button"
+                        id="btn-reset"
+                        class="btn-secondary">
+                    Clear
+                </button>
+                <button type="submit" form="form-pengaturan" class="btn-primary flex items-center gap-1.5">
+                    <x-heroicon-o-check class="w-4 h-4" />
+                    <span>Simpan Pengaturan</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -772,7 +1062,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmText: 'Ya, Kosongkan Form',
                 cancelText: 'Batal',
                 onConfirm: () => {
-                    document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]):not([name="background_type"]):not([name="background_opacity"]):not([name="reset_background_default"]), textarea[name]').forEach(el => {
+                    const formPengaturan = document.getElementById('form-pengaturan');
+                    const targetInputs = formPengaturan
+                        ? formPengaturan.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]):not([name="background_type"]):not([name="background_opacity"]):not([name="reset_background_default"]), textarea[name]')
+                        : document.querySelectorAll('input[name]:not([type="file"]):not([name="_token"]):not([name="_method"]):not([name="background_type"]):not([name="background_opacity"]):not([name="reset_background_default"]), textarea[name]');
+
+                    targetInputs.forEach(el => {
                         el.value = '';
                         el.dispatchEvent(new Event('input'));
                     });
@@ -988,6 +1283,503 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // ==========================================
+    // PPN Modals & Dynamic Calculations Handler
+    // ==========================================
+    const modalTambahPpn = document.getElementById('modal-tambah-ppn');
+    const btnBukaTambahPpn = document.getElementById('btn-buka-modal-tambah-ppn');
+    const btnTutupTambahPpn = document.getElementById('btn-tutup-modal-tambah-ppn');
+    const btnBatalTambahPpn = document.getElementById('btn-batal-modal-tambah-ppn');
+
+    const modalEditPpn = document.getElementById('modal-edit-ppn');
+    const formEditPpn = document.getElementById('form-edit-ppn');
+    const btnTutupEditPpn = document.getElementById('btn-tutup-modal-edit-ppn');
+    const btnBatalEditPpn = document.getElementById('btn-batal-modal-edit-ppn');
+
+    // Tambah PPN elements
+    const inputTarif = document.getElementById('input-ppn-tarif');
+    const selectMetode = document.getElementById('input-ppn-metode');
+    const inputDpp = document.getElementById('input-ppn-dpp');
+    const selectTipe = document.getElementById('input-ppn-tipe');
+    const previewEfektif = document.getElementById('preview-ppn-efektif');
+    const previewDppSim = document.getElementById('preview-ppn-sim-dpp');
+    const previewPpnSim = document.getElementById('preview-ppn-sim-ppn');
+    const previewTotalSim = document.getElementById('preview-ppn-sim-total');
+
+    function updateKalkulasiPpn() {
+        if (!inputTarif || !selectMetode || !inputDpp || !selectTipe) return;
+        const tarif = parseFloat(inputTarif.value) || 0;
+        let dppPersen = parseFloat(inputDpp.value) || 100;
+        const metode = selectMetode.value;
+        const tipe = selectTipe.value;
+
+        if (metode === 'standar') {
+            dppPersen = 100;
+            inputDpp.value = '100.0000';
+            inputDpp.readOnly = true;
+            inputDpp.classList.add('bg-slate-100');
+        } else {
+            inputDpp.readOnly = false;
+            inputDpp.classList.remove('bg-slate-100');
+        }
+
+        const tarifEfektif = (tarif * (dppPersen / 100));
+        if (previewEfektif) previewEfektif.textContent = tarifEfektif.toFixed(2) + '%';
+
+        // Simulasi subtotal Rp 100.000
+        const subtotal = 100000;
+        let dppNominal = 0;
+        let ppnNominal = 0;
+        let totalNominal = 0;
+
+        if (tipe === 'inklusif') {
+            const ratio = (tarif / 100) * (dppPersen / 100);
+            dppNominal = Math.round(subtotal / (1 + ratio));
+            ppnNominal = Math.round(subtotal - dppNominal);
+            totalNominal = subtotal;
+        } else {
+            dppNominal = Math.round(subtotal * (dppPersen / 100));
+            ppnNominal = Math.round(dppNominal * (tarif / 100));
+            totalNominal = subtotal + ppnNominal;
+        }
+
+        if (previewDppSim) previewDppSim.textContent = 'Rp ' + dppNominal.toLocaleString('id-ID');
+        if (previewPpnSim) previewPpnSim.textContent = 'Rp ' + ppnNominal.toLocaleString('id-ID');
+        if (previewTotalSim) previewTotalSim.textContent = 'Rp ' + totalNominal.toLocaleString('id-ID');
+    }
+
+    if (inputTarif) inputTarif.addEventListener('input', updateKalkulasiPpn);
+    if (selectMetode) selectMetode.addEventListener('change', updateKalkulasiPpn);
+    if (inputDpp) inputDpp.addEventListener('input', updateKalkulasiPpn);
+    if (selectTipe) selectTipe.addEventListener('change', updateKalkulasiPpn);
+
+    // Preset buttons
+    document.querySelectorAll('.btn-preset-ppn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nama = btn.getAttribute('data-nama');
+            const tarif = btn.getAttribute('data-tarif');
+            const metode = btn.getAttribute('data-metode');
+            const dpp = btn.getAttribute('data-dpp');
+            const tipe = btn.getAttribute('data-tipe');
+
+            if (document.getElementById('input-ppn-nama')) document.getElementById('input-ppn-nama').value = nama;
+            if (inputTarif) inputTarif.value = tarif;
+            if (selectMetode) selectMetode.value = metode;
+            if (inputDpp) inputDpp.value = dpp;
+            if (selectTipe) selectTipe.value = tipe;
+            updateKalkulasiPpn();
+        });
+    });
+
+    if (btnBukaTambahPpn && modalTambahPpn) {
+        btnBukaTambahPpn.addEventListener('click', () => {
+            modalTambahPpn.classList.remove('hidden');
+            updateKalkulasiPpn();
+        });
+    }
+
+    if (btnTutupTambahPpn && modalTambahPpn) {
+        btnTutupTambahPpn.addEventListener('click', () => modalTambahPpn.classList.add('hidden'));
+    }
+    if (btnBatalTambahPpn && modalTambahPpn) {
+        btnBatalTambahPpn.addEventListener('click', () => modalTambahPpn.classList.add('hidden'));
+    }
+
+    // Modal Edit PPN handler
+    document.querySelectorAll('.btn-edit-ppn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-id');
+            const nama = btn.getAttribute('data-nama');
+            const tarif = btn.getAttribute('data-tarif');
+            const metode = btn.getAttribute('data-metode');
+            const dpp = btn.getAttribute('data-dpp');
+            const tipe = btn.getAttribute('data-tipe');
+            const mulai = btn.getAttribute('data-mulai');
+            const akhir = btn.getAttribute('data-akhir');
+            const aktif = btn.getAttribute('data-aktif') === '1';
+            const keterangan = btn.getAttribute('data-keterangan');
+
+            if (formEditPpn) formEditPpn.action = `/pengaturan/ppn/${id}`;
+            if (document.getElementById('edit-ppn-nama')) document.getElementById('edit-ppn-nama').value = nama;
+            if (document.getElementById('edit-ppn-tarif')) document.getElementById('edit-ppn-tarif').value = tarif;
+            if (document.getElementById('edit-ppn-metode')) document.getElementById('edit-ppn-metode').value = metode;
+            if (document.getElementById('edit-ppn-dpp')) document.getElementById('edit-ppn-dpp').value = dpp;
+            if (document.getElementById('edit-ppn-tipe')) document.getElementById('edit-ppn-tipe').value = tipe;
+            if (document.getElementById('edit-ppn-mulai')) document.getElementById('edit-ppn-mulai').value = mulai;
+            if (document.getElementById('edit-ppn-akhir')) document.getElementById('edit-ppn-akhir').value = akhir;
+            if (document.getElementById('edit-ppn-aktif')) document.getElementById('edit-ppn-aktif').checked = aktif;
+            if (document.getElementById('edit-ppn-keterangan')) document.getElementById('edit-ppn-keterangan').value = keterangan || '';
+
+            if (modalEditPpn) modalEditPpn.classList.remove('hidden');
+        });
+    });
+
+    if (btnTutupEditPpn && modalEditPpn) {
+        btnTutupEditPpn.addEventListener('click', () => modalEditPpn.classList.add('hidden'));
+    }
+    if (btnBatalEditPpn && modalEditPpn) {
+        btnBatalEditPpn.addEventListener('click', () => modalEditPpn.classList.add('hidden'));
+    }
 });
 </script>
+
+<!-- ========================================== -->
+<!-- Modal Tambah / Jadwalkan Tarif PPN Baru     -->
+<!-- ========================================== -->
+<div id="modal-tambah-ppn" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <!-- Header Modal -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 flex items-center justify-between !text-white shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                    <x-heroicon-o-receipt-percent class="w-5 h-5 !text-white" />
+                </div>
+                <div>
+                    <h3 class="!text-white text-sm font-bold uppercase tracking-wider font-sans" style="color: #ffffff !important;">
+                        Tambah / Jadwalkan Tarif PPN Baru
+                    </h3>
+                    <p class="text-xs !text-blue-100 mt-0.5" style="color: #dbeafe !important;">
+                        Konfigurasikan tarif pajak, metode DPP nilai lain, dan tanggal masa berlaku.
+                    </p>
+                </div>
+            </div>
+            <button type="button" id="btn-tutup-modal-tambah-ppn" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- Form Modal -->
+        <form action="{{ route('pengaturan.ppn.store') }}" method="POST" class="overflow-y-auto p-5 space-y-4 flex-1">
+            @csrf
+
+            <!-- Preset Pintasan Cepat -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+                    Template / Pintasan Pengaturan Cepat:
+                </span>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button"
+                            class="btn-preset-ppn text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-blue-400 hover:text-blue-700 font-semibold shadow-2xs transition-colors"
+                            data-nama="PPN Standar 11%"
+                            data-tarif="11.00"
+                            data-metode="standar"
+                            data-dpp="100.0000"
+                            data-tipe="eksklusif">
+                        PPN 11% Standar
+                    </button>
+                    <button type="button"
+                            class="btn-preset-ppn text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-blue-400 hover:text-blue-700 font-semibold shadow-2xs transition-colors"
+                            data-nama="PPN Standar 12%"
+                            data-tarif="12.00"
+                            data-metode="standar"
+                            data-dpp="100.0000"
+                            data-tipe="eksklusif">
+                        PPN 12% Standar
+                    </button>
+                    <button type="button"
+                            class="btn-preset-ppn text-xs px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-blue-400 hover:text-blue-700 font-semibold shadow-2xs transition-colors"
+                            data-nama="PPN 12% (DPP Nilai Lain 11/12)"
+                            data-tarif="12.00"
+                            data-metode="dpp_nilai_lain"
+                            data-dpp="91.6667"
+                            data-tipe="eksklusif">
+                        PPN 12% Nilai Lain (Efektif 11%)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nama Konfigurasi -->
+            <div>
+                <label for="input-ppn-nama" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Nama / Label Konfigurasi <span class="text-rose-500 font-bold">*</span>
+                </label>
+                <input type="text"
+                       id="input-ppn-nama"
+                       name="nama"
+                       required
+                       placeholder="Contoh: PPN 12% Penyesuaian UU HPP"
+                       class="form-input bg-slate-50/50 hover:bg-white focus:bg-white transition-colors text-xs">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Tarif PPN -->
+                <div>
+                    <label for="input-ppn-tarif" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tarif PPN (%) <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="input-ppn-tarif"
+                               name="tarif_persen"
+                               step="0.01"
+                               min="0"
+                               max="100"
+                               value="11.00"
+                               required
+                               class="form-input bg-slate-50/50 hover:bg-white focus:bg-white transition-colors text-xs pr-8 font-mono">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                    </div>
+                </div>
+
+                <!-- Metode Perhitungan -->
+                <div>
+                    <label for="input-ppn-metode" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Metode Perhitungan <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <select id="input-ppn-metode" name="metode_perhitungan" required class="form-input bg-white text-xs">
+                        <option value="standar" selected>Tarif Langsung (DPP 100%)</option>
+                        <option value="dpp_nilai_lain">DPP Nilai Lain (Persentase Kustom)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Persentase DPP -->
+                <div>
+                    <label for="input-ppn-dpp" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Dasar Pengenaan Pajak (DPP) (%) <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="input-ppn-dpp"
+                               name="persentase_dpp"
+                               step="0.0001"
+                               min="0.0001"
+                               max="100"
+                               value="100.0000"
+                               required
+                               readonly
+                               class="form-input bg-slate-100 transition-colors text-xs pr-8 font-mono">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1">
+                        Pilih DPP Nilai Lain untuk mengedit (misal 91.6667% untuk skema 11/12).
+                    </p>
+                </div>
+
+                <!-- Tipe Perlakuan Harga Jual -->
+                <div>
+                    <label for="input-ppn-tipe" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Perlakuan Harga Jual Apotek <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <select id="input-ppn-tipe" name="tipe_perlakuan_harga" required class="form-input bg-white text-xs">
+                        <option value="eksklusif" selected>Eksklusif (Harga Belum Termasuk PPN)</option>
+                        <option value="inklusif">Inklusif (Harga Sudah Termasuk PPN)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">
+                        Eksklusif: PPN ditambahkan ke faktur. Inklusif: PPN diekstrak dari harga jual.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Panel Live Simulation Calculation -->
+            <div class="bg-blue-50/50 border border-blue-200/80 rounded-xl p-3.5 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-blue-900 uppercase tracking-wider font-sans">
+                        Simulasi Kalkulasi Transaksi (Contoh Subtotal Rp 100.000)
+                    </span>
+                    <span class="text-xs font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+                        Tarif Efektif: <span id="preview-ppn-efektif">11.00%</span>
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+                    <div class="bg-white rounded-lg p-2 border border-blue-100">
+                        <span class="block text-[10px] text-slate-500 font-sans">Dasar Pajak (DPP)</span>
+                        <span id="preview-ppn-sim-dpp" class="text-xs font-bold text-slate-800">Rp 100.000</span>
+                    </div>
+                    <div class="bg-white rounded-lg p-2 border border-blue-100">
+                        <span class="block text-[10px] text-slate-500 font-sans">Nominal PPN</span>
+                        <span id="preview-ppn-sim-ppn" class="text-xs font-bold text-blue-700">Rp 11.000</span>
+                    </div>
+                    <div class="bg-white rounded-lg p-2 border border-blue-100">
+                        <span class="block text-[10px] text-slate-500 font-sans">Total Faktur Kasir</span>
+                        <span id="preview-ppn-sim-total" class="text-xs font-bold text-emerald-700">Rp 111.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Tanggal Mulai -->
+                <div>
+                    <label for="input-ppn-mulai" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tanggal Mulai Berlaku <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <input type="date"
+                           id="input-ppn-mulai"
+                           name="tanggal_mulai"
+                           value="{{ now()->toDateString() }}"
+                           required
+                           class="form-input bg-white text-xs">
+                </div>
+
+                <!-- Tanggal Akhir -->
+                <div>
+                    <label for="input-ppn-akhir" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tanggal Akhir Berlaku (Opsional)
+                    </label>
+                    <input type="date"
+                           id="input-ppn-akhir"
+                           name="tanggal_akhir"
+                           class="form-input bg-white text-xs">
+                    <p class="text-[10px] text-slate-400 mt-1">Kosongkan jika berlaku tanpa batas waktu (sampai diubah).</p>
+                </div>
+            </div>
+
+            <!-- Auto Tutup Tarif Sebelumnya Checkbox -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-start gap-3">
+                <input type="checkbox"
+                       id="input-ppn-auto-tutup"
+                       name="auto_tutup_sebelumnya"
+                       value="1"
+                       checked
+                       class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 mt-0.5">
+                <label for="input-ppn-auto-tutup" class="text-xs text-slate-700 cursor-pointer">
+                    <strong class="font-semibold block text-slate-800">Otomatis Tutup Tarif Lama</strong>
+                    Jika dicentang, konfigurasi tarif aktif sebelumnya yang bertabrakan akan otomatis diatur tanggal akhirnya menjadi H-1 sebelum tanggal mulai tarif baru ini.
+                </label>
+            </div>
+
+            <!-- Keterangan -->
+            <div>
+                <label for="input-ppn-keterangan" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Keterangan / Dasar Hukum (Opsional)
+                </label>
+                <textarea id="input-ppn-keterangan"
+                          name="keterangan"
+                          rows="2"
+                          placeholder="Contoh: Mengacu pada PMK No. XX Tahun 2025 tentang penyesuaian tarif PPN..."
+                          class="form-input bg-white text-xs"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                <button type="button" id="btn-batal-modal-tambah-ppn" class="btn-secondary text-xs py-2 px-4">
+                    Batal
+                </button>
+                <button type="submit" class="btn-primary flex items-center gap-1.5 text-xs py-2 px-4">
+                    <x-heroicon-o-check class="w-4 h-4" />
+                    <span>Simpan & Terapkan Tarif</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Modal Edit Konfigurasi PPN                  -->
+<!-- ========================================== -->
+<div id="modal-edit-ppn" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <!-- Header Modal -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 flex items-center justify-between !text-white shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                    <x-heroicon-m-pencil-square class="w-5 h-5 !text-white" />
+                </div>
+                <div>
+                    <h3 class="!text-white text-sm font-bold uppercase tracking-wider font-sans" style="color: #ffffff !important;">
+                        Edit Konfigurasi Tarif PPN
+                    </h3>
+                    <p class="text-xs !text-blue-100 mt-0.5" style="color: #dbeafe !important;">
+                        Perbarui rincian, masa berlaku, atau status keaktifan konfigurasi.
+                    </p>
+                </div>
+            </div>
+            <button type="button" id="btn-tutup-modal-edit-ppn" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
+                <x-heroicon-o-x-mark class="w-5 h-5" />
+            </button>
+        </div>
+
+        <!-- Form Edit Modal -->
+        <form id="form-edit-ppn" method="POST" action="" class="overflow-y-auto p-5 space-y-4 flex-1">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label for="edit-ppn-nama" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Nama Konfigurasi <span class="text-rose-500 font-bold">*</span>
+                </label>
+                <input type="text" id="edit-ppn-nama" name="nama" required class="form-input bg-white text-xs">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit-ppn-tarif" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tarif PPN (%) <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <input type="number" id="edit-ppn-tarif" name="tarif_persen" step="0.01" min="0" max="100" required class="form-input bg-white text-xs font-mono">
+                </div>
+                <div>
+                    <label for="edit-ppn-metode" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Metode Perhitungan <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <select id="edit-ppn-metode" name="metode_perhitungan" required class="form-input bg-white text-xs">
+                        <option value="standar">Tarif Langsung (DPP 100%)</option>
+                        <option value="dpp_nilai_lain">DPP Nilai Lain</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit-ppn-dpp" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Persentase DPP (%) <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <input type="number" id="edit-ppn-dpp" name="persentase_dpp" step="0.0001" min="0.0001" max="100" required class="form-input bg-white text-xs font-mono">
+                </div>
+                <div>
+                    <label for="edit-ppn-tipe" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Perlakuan Harga <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <select id="edit-ppn-tipe" name="tipe_perlakuan_harga" required class="form-input bg-white text-xs">
+                        <option value="eksklusif">Eksklusif (Belum Termasuk PPN)</option>
+                        <option value="inklusif">Inklusif (Sudah Termasuk PPN)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit-ppn-mulai" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tanggal Mulai <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <input type="date" id="edit-ppn-mulai" name="tanggal_mulai" required class="form-input bg-white text-xs">
+                </div>
+                <div>
+                    <label for="edit-ppn-akhir" class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tanggal Akhir (Opsional)
+                    </label>
+                    <input type="date" id="edit-ppn-akhir" name="tanggal_akhir" class="form-input bg-white text-xs">
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">Status Keaktifan Konfigurasi</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="edit-ppn-aktif" name="is_aktif" value="1" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+
+            <div>
+                <label for="edit-ppn-keterangan" class="block text-xs font-semibold text-slate-700 mb-1">
+                    Keterangan
+                </label>
+                <textarea id="edit-ppn-keterangan" name="keterangan" rows="2" class="form-input bg-white text-xs"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                <button type="button" id="btn-batal-modal-edit-ppn" class="btn-secondary text-xs py-2 px-4">
+                    Batal
+                </button>
+                <button type="submit" class="btn-primary flex items-center gap-1.5 text-xs py-2 px-4">
+                    <x-heroicon-o-check class="w-4 h-4" />
+                    <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection

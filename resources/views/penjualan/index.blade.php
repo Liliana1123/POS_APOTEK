@@ -769,6 +769,18 @@
                             <span class="text-slate-500 font-medium whitespace-nowrap">Total Diskon</span>
                             <span class="text-slate-700 font-semibold tabular-nums text-right whitespace-nowrap">${rupiah(totalDiskon)}</span>
                         </div>
+                        ${
+                            penjualan.kenakan_ppn ? `
+                                <div class="flex items-center justify-between gap-8 w-64 sm:w-72 text-xs text-slate-500">
+                                    <span class="font-medium whitespace-nowrap">DPP Pajak</span>
+                                    <span class="font-semibold tabular-nums text-right whitespace-nowrap">${rupiah(penjualan.dpp_nominal)}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-8 w-64 sm:w-72 text-xs text-blue-700">
+                                    <span class="font-medium whitespace-nowrap">PPN (${penjualan.tarif_ppn_persen}%${penjualan.tipe_perlakuan_harga === 'inklusif' ? ' Inklusif' : ''})</span>
+                                    <span class="font-bold tabular-nums text-right whitespace-nowrap">${rupiah(penjualan.ppn_nominal)}</span>
+                                </div>
+                            ` : ''
+                        }
                         <div class="flex items-center justify-between gap-8 w-64 sm:w-72 border-t border-slate-100 pt-1.5">
                             <span class="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">Total Transaksi</span>
                             <span class="text-sm sm:text-base font-bold text-blue-600 tabular-nums text-right whitespace-nowrap">${rupiah(penjualan.total)}</span>

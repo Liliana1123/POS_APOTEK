@@ -99,6 +99,11 @@
                     <td class="!px-3 py-1.5 text-emerald-950 uppercase">Laba Bersih</td>
                     <td class="text-right !px-3 py-1.5 font-mono text-emerald-950">Rp {{ number_format($labaBersih, 0, ',', '.') }}</td>
                 </tr>
+                <tr class="bg-blue-50/50 text-[8.5px]">
+                    <td class="text-center !px-2 py-1 text-slate-400">ℹ️</td>
+                    <td class="!px-3 py-1 text-slate-600">Titipan PPN Terkumpul (Kewajiban Pajak)</td>
+                    <td class="text-right !px-3 py-1 font-mono text-blue-900">Rp {{ number_format($totalPpnKeluaran ?? 0, 0, ',', '.') }}</td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -489,6 +494,18 @@
                             <td class="py-2.5 px-3 text-blue-600 font-bold">Laba Bersih</td>
                             <td class="text-right py-2.5 px-4 font-mono font-bold text-blue-600">
                                 Rp {{ number_format($labaBersih, 0, ',', '.') }}
+                            </td>
+                        </tr>
+
+                        {{-- 8. Informasi PPN Terkumpul (Kewajiban Pajak / Tidak Memengaruhi Laba) --}}
+                        <tr class="bg-slate-50/80 border-t border-slate-200">
+                            <td class="text-center py-2 px-3 text-slate-400 font-medium text-xs">ℹ️</td>
+                            <td class="py-2 px-3 text-slate-600 font-medium">
+                                Titipan PPN Terkumpul (Kewajiban Pajak)
+                                <span class="block text-[10px] text-slate-400">Tidak diakui sebagai pendapatan apotek</span>
+                            </td>
+                            <td class="text-right py-2 px-4 font-mono font-semibold text-blue-700">
+                                Rp {{ number_format($totalPpnKeluaran ?? 0, 0, ',', '.') }}
                             </td>
                         </tr>
                     </tbody>
