@@ -1,5 +1,5 @@
 <!-- Global Reusable Footer -->
-<footer class="app-global-footer w-full bg-slate-100 border-t border-slate-200/90 py-5 px-4 text-center mt-auto shrink-0 print:hidden transition-colors">
+<footer class="app-global-footer relative z-10 w-full bg-slate-100 border-t border-slate-200/90 py-5 px-4 text-center mt-auto shrink-0 print:hidden transition-colors">
     <div class="max-w-7xl mx-auto flex flex-col items-center justify-center gap-2">
         <!-- Logo Perusahaan -->
         <div class="flex items-center justify-center">

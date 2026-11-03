@@ -30,7 +30,7 @@
              style="background-image: url('{{ $apotek->background_url }}'); background-repeat: repeat; opacity: {{ ($apotek->background_opacity ?? 40) / 100 }};"
              aria-hidden="true"></div>
     @endif
-    <div class="flex-1 flex items-center justify-center p-4 w-full relative z-10">
+    <div class="flex-1 flex items-center justify-center py-8 px-4 w-full relative z-10">
         <div class="w-full max-w-md">
             <div class="rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-sky-100 backdrop-blur-sm">
                 <div class="mb-6 text-center">
