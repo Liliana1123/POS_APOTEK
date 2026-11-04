@@ -97,6 +97,11 @@ class CustomDiscountController extends Controller
             \App\Models\ActivityLog::log('Create Promo', "Promo: {$discount->nama}, Persentase: {$discount->persentase}%", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
 
+        if ($request->expectsJson()) {
+            session()->flash('success', 'Custom discount berhasil ditambahkan.');
+            return response()->json(['message' => 'Custom discount berhasil ditambahkan.'], 201);
+        }
+
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil ditambahkan.');
     }
 
@@ -164,6 +169,11 @@ class CustomDiscountController extends Controller
             \App\Models\ActivityLog::log('Update Promo', "Promo: {$customDiscount->nama}, Persentase: {$customDiscount->persentase}%", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
 
+        if ($request->expectsJson()) {
+            session()->flash('success', 'Custom discount berhasil diperbarui.');
+            return response()->json(['message' => 'Custom discount berhasil diperbarui.']);
+        }
+
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil diperbarui.');
     }
 
@@ -175,6 +185,11 @@ class CustomDiscountController extends Controller
             $customDiscount->delete();
             \App\Models\ActivityLog::log('Delete Promo', "Promo: {$customDiscount->nama}", \App\Models\ActivityLog::CATEGORY_PROMO);
         });
+
+        if (request()->expectsJson() || request()->ajax()) {
+            session()->flash('success', 'Custom discount berhasil dihapus.');
+            return response()->json(['message' => 'Custom discount berhasil dihapus.']);
+        }
 
         return redirect()->route('custom-discount.index')->with('success', 'Custom discount berhasil dihapus.');
     }
@@ -231,7 +246,14 @@ class CustomDiscountController extends Controller
         foreach ($overlappingPromos as $promo) {
             // Semua Barang vs promo apa pun = konflik
             if ($newCakupan === 'semua' || $promo->cakupan === 'semua') {
-                return back()->withErrors(['conflict' => "Konflik jadwal dengan promo '{$promo->nama}' ({$promo->tanggal_mulai->format('Y-m-d')} s/d {$promo->tanggal_selesai->format('Y-m-d')}) karena salah satu mencakup semua barang."])->withInput();
+                $conflictMsg = "Konflik jadwal dengan promo '{$promo->nama}' ({$promo->tanggal_mulai->format('Y-m-d')} s/d {$promo->tanggal_selesai->format('Y-m-d')}) karena salah satu mencakup semua barang.";
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $conflictMsg,
+                        'errors' => ['conflict' => [$conflictMsg]],
+                    ], 422);
+                }
+                return back()->withErrors(['conflict' => $conflictMsg])->withInput();
             }
 
             $existingCategoryIds = $promo->kategoris->pluck('id')->toArray();
@@ -242,7 +264,14 @@ class CustomDiscountController extends Controller
             if (!empty($intersect)) {
                 $conflictingBarang = Barang::find(reset($intersect));
                 $barangName = $conflictingBarang ? $conflictingBarang->nama : 'Beberapa barang';
-                return back()->withErrors(['conflict' => "Konflik jadwal dengan promo '{$promo->nama}' ({$promo->tanggal_mulai->format('Y-m-d')} s/d {$promo->tanggal_selesai->format('Y-m-d')}) pada barang '{$barangName}'."])->withInput();
+                $conflictMsg = "Konflik jadwal dengan promo '{$promo->nama}' ({$promo->tanggal_mulai->format('Y-m-d')} s/d {$promo->tanggal_selesai->format('Y-m-d')}) pada barang '{$barangName}'.";
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $conflictMsg,
+                        'errors' => ['conflict' => [$conflictMsg]],
+                    ], 422);
+                }
+                return back()->withErrors(['conflict' => $conflictMsg])->withInput();
             }
         }
 

@@ -594,6 +594,7 @@
             return response.text().then(function (text) {
 
                 var body = {};
+                var isValidJson = true;
 
                 try {
 
@@ -603,6 +604,7 @@
 
                 } catch (error) {
 
+                    isValidJson = false;
                     body = {
                         message:
                             'Server tidak mengembalikan respons JSON yang valid.'
@@ -616,6 +618,8 @@
 
                     ok: response.ok,
 
+                    isValidJson: isValidJson,
+
                     body: body
 
                 };
@@ -625,6 +629,23 @@
         })
 
         .then(function (result) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | NON-JSON / PARSE ERROR
+            |--------------------------------------------------------------------------
+            */
+
+            if (!result.isValidJson) {
+
+                errorEl.textContent =
+                    result.body.message ||
+                    'Server tidak mengembalikan respons JSON yang valid.';
+
+                errorEl.classList.remove('hidden');
+
+                return;
+            }
 
             /*
             |--------------------------------------------------------------------------
