@@ -107,7 +107,13 @@
 
 <!-- Filter Card (Tampilan Layar) -->
 <div class="print:hidden">
-    <x-card-filter :action="route('activity-log')" :reset-url="route('activity-log')" :grid="true" grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7" :has-filter="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])" :live-search="true">
+    <x-card-filter :action="route('activity-log')"
+                   :reset-url="route('activity-log')"
+                   :grid="true"
+                   grid-cols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7"
+                   :has-reset="request()->anyFilled(['cari', 'kategori', 'user_id', 'dari', 'sampai'])"
+                   :live-search="true"
+                   table-target="#activity-log-table-container">
         <div class="relative sm:col-span-2 lg:col-span-2">
             <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari aksi, user, target..." class="form-input pr-8" aria-label="Cari Log" title="Cari Log">
             <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -144,7 +150,7 @@
 </div>
 
 <!-- Table Card (Tampilan Layar) -->
-<div class="table-custom-container print:hidden">
+<div id="activity-log-table-container" class="table-custom-container print:hidden">
     <div class="overflow-x-auto">
         <table class="table-custom min-w-[56rem]">
             <thead class="table-custom-header">

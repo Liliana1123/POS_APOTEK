@@ -115,9 +115,12 @@
             return false;
         }
 
-        var tableSel = form.dataset.tableTarget || '.table-custom-container';
+        var tableSel = form.dataset.tableTarget || '.table-custom-container:not(.print-table-wrapper):not(.print-only *)';
         var pagSel = form.dataset.paginationTarget || '.pagination-container';
         var tableContainer = document.querySelector(tableSel);
+        if (!tableContainer) {
+            tableContainer = document.querySelector('.table-custom-container');
+        }
         var pagContainer = document.querySelector(pagSel);
         if (!pagContainer && tableContainer && isPaginationElement(tableContainer.nextElementSibling)) {
             pagContainer = tableContainer.nextElementSibling;
@@ -149,6 +152,9 @@
             var doc = parser.parseFromString(html, 'text/html');
 
             var newTable = doc.querySelector(tableSel);
+            if (!newTable) {
+                newTable = doc.querySelector('.table-custom-container:not(.print-table-wrapper):not(.print-only *)') || doc.querySelector('.table-custom-container');
+            }
             var newPag = doc.querySelector(pagSel);
             if (!newPag && newTable && isPaginationElement(newTable.nextElementSibling)) {
                 newPag = newTable.nextElementSibling;
@@ -156,6 +162,13 @@
 
             if (newTable && tableContainer) {
                 tableContainer.innerHTML = newTable.innerHTML;
+            }
+
+            // Sinkronisasi template cetak jika ada di halaman
+            var oldPrint = document.querySelector('.print-only');
+            var newPrint = doc.querySelector('.print-only');
+            if (oldPrint && newPrint) {
+                oldPrint.innerHTML = newPrint.innerHTML;
             }
 
             var summarySelectors = ['.laporan-summary-cards', '.summary-container'];
