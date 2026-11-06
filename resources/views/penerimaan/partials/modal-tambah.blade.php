@@ -8,6 +8,7 @@
 
     <form action="{{ route('penerimaan.store') }}" method="POST" id="form-tambah-penerimaan" class="space-y-6">
         @csrf
+        <input type="hidden" name="items_json" id="items_json_tambah">
 
         <!-- Form Header Card -->
         <div class="card-base p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-start">
@@ -57,10 +58,16 @@
         <div class="card-base p-6">
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Detail Barang Diterima</h3>
-                <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
-                    <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
-                    <span>Tambah Item Barang</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-import-excel-tambah" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-emerald-700 bg-white border border-emerald-500 hover:bg-emerald-50 hover:border-emerald-600 active:bg-emerald-100 rounded-lg shadow-2xs transition-colors cursor-pointer" title="Import Data Obat dari Excel atau CSV">
+                        <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Import Excel</span>
+                    </button>
+                    <button type="button" id="btn-tambah-item-tambah" class="btn-secondary py-1 px-3 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+                        <x-heroicon-o-plus class="w-3.5 h-3.5 shrink-0" />
+                        <span>Tambah Item Barang</span>
+                    </button>
+                </div>
             </div>
 
             <div class="table-custom-container">
@@ -100,6 +107,16 @@
             <div class="mt-2 flex flex-col sm:flex-row justify-end gap-4 text-sm font-semibold">
                 <span>Total Tagihan:</span>
                 <span id="total-tagihan-tambah" class="text-blue-700 font-mono">Rp 0</span>
+            </div>
+
+            <div class="mt-3.5 flex justify-end">
+                <button type="button"
+                    id="btn-sinkron-pembayaran-tambah"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-white border border-blue-500 hover:bg-blue-50 hover:border-blue-600 active:bg-blue-100 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                    title="Sinkronkan ke Pembayaran">
+                    <x-heroicon-o-arrow-path class="w-4 h-4 text-blue-600 shrink-0" />
+                    <span>Sinkronkan ke Pembayaran</span>
+                </button>
             </div>
         </div>
 

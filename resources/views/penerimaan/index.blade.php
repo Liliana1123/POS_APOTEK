@@ -272,6 +272,9 @@
 <!-- Modal Tambah Faktur Penerimaan Baru -->
 @include('penerimaan.partials.modal-tambah')
 
+<!-- Modal Import Data Obat Excel/CSV -->
+@include('penerimaan.partials.modal-import-obat')
+
 
 <template id="row-template-tambah">
     <tr class="item-row hover:bg-gray-50 transition-colors">

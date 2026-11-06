@@ -85,7 +85,7 @@
     @php
     $bgType = $apotek?->background_type ?? 'default';
     $bgOpacity = ($apotek?->background_opacity ?? 40) / 100;
-    $bgUrl = $apotek?->background_url ?? asset('images/batik-pattern.png');
+    $bgUrl = $apotek?->background_url ?? asset('images/batik-pattern.webp');
     @endphp
 
     <!-- App Global Background Layer -->
@@ -173,7 +173,7 @@
                 $adaMaster = $u->hasPermission('master.barang') || $u->hasPermission('master.kategori')
                 || $u->hasPermission('master.satuan') || $u->hasPermission('master.pabrik')
                 || $u->hasPermission('master.supplier') || $u->hasPermission('master.pelanggan')
-                || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan')
+                || $u->hasPermission('sistem.kelola-user') || $u->hasPermission('sistem.pengaturan') || $u->hasPermission('sistem.pengaturan-pajak')
                 || $u->isSuperAdmin()
                 || $u->isAdmin();
                 @endphp
@@ -224,7 +224,7 @@
                     @if ($u->hasPermission('sistem.kelola-user'))
                     <x-nav-link route="user.index" pattern="user.*" icon="users" label="Kelola User" />
                     @endif
-                    @if ($u->hasPermission('sistem.pengaturan'))
+                    @if ($u->hasPermission('sistem.pengaturan') || $u->hasPermission('sistem.pengaturan-pajak'))
                     <x-nav-link route="pengaturan.index" pattern="pengaturan.*" icon="cog-6-tooth" label="Pengaturan Apotek" />
                     @endif
                     @if ($u->isAdmin() || $u->isSuperAdmin())

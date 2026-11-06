@@ -4,6 +4,7 @@
 const pageData = JSON.parse(document.getElementById('penjualan-data')?.textContent || '{}');
 const pelanggans = pageData.pelanggans || [];
 const barangs = pageData.barangs || [];
+const ppnConfig = pageData.ppn_config || null;
 
 
 
@@ -53,6 +54,9 @@ const btnHapusSemua = document.getElementById('btn-hapus-semua');
 const displaySubtotal = document.getElementById('display-subtotal');
 const displayDiskon = document.getElementById('display-diskon');
 const totalDisplay = document.getElementById('total-display');
+const checkboxKenakanPpn = document.getElementById('checkbox-kenakan-ppn');
+const displayPpn = document.getElementById('display-ppn');
+const displayDppInfo = document.getElementById('display-dpp-info');
 
 // Elements - Member Selection
 const btnPilihMember = document.getElementById('btn-pilih-member');
@@ -794,15 +798,49 @@ function renderKeranjang() {
         `;
     }).join('');
 
-    const grandTotal = subtotalKotor - totalNominalDiskon;
+    const subtotalBersih = Math.max(0, subtotalKotor - totalNominalDiskon);
+    const kenakanPpn = checkboxKenakanPpn && checkboxKenakanPpn.checked && ppnConfig && ppnConfig.is_aktif;
+
+    let dppNominal = 0;
+    let ppnNominal = 0;
+    let grandTotal = subtotalBersih;
+
+    if (kenakanPpn) {
+        const tarif = ppnConfig.tarif_persen || 0;
+        const dppPersen = ppnConfig.persentase_dpp || 100;
+        const tipe = ppnConfig.tipe_perlakuan_harga || 'eksklusif';
+
+        if (tipe === 'inklusif') {
+            const ratio = (tarif / 100) * (dppPersen / 100);
+            dppNominal = Math.round(subtotalBersih / (1 + ratio));
+            ppnNominal = Math.round(subtotalBersih - dppNominal);
+            grandTotal = subtotalBersih;
+        } else {
+            dppNominal = Math.round(subtotalBersih * (dppPersen / 100));
+            ppnNominal = Math.round(dppNominal * (tarif / 100));
+            grandTotal = subtotalBersih + ppnNominal;
+        }
+    }
+
     currentTotal = grandTotal;
 
     if (displaySubtotal) displaySubtotal.textContent = formatRupiah(subtotalKotor);
     if (displayDiskon) displayDiskon.textContent = formatRupiah(totalNominalDiskon);
+    if (displayPpn) displayPpn.textContent = formatRupiah(ppnNominal);
+    if (displayDppInfo) {
+        if (kenakanPpn && dppNominal > 0) {
+            displayDppInfo.textContent = '(DPP: ' + formatRupiah(dppNominal) + ')';
+            displayDppInfo.classList.remove('hidden');
+        } else {
+            displayDppInfo.classList.add('hidden');
+        }
+    }
     if (totalDisplay) totalDisplay.textContent = formatRupiah(grandTotal);
 
     updateMetodePembayaran();
 }
+
+checkboxKenakanPpn?.addEventListener('change', renderKeranjang);
 
 // Keranjang Quantity & Hapus Event Delegation
 keranjangItems?.addEventListener('click', (e) => {

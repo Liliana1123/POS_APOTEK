@@ -9,6 +9,7 @@ use App\Models\RiwayatPenerimaan;
 use App\Models\Penerimaan;
 use App\Models\PembayaranPenerimaan;
 use App\Models\Supplier;
+use App\Services\PenerimaanImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -123,6 +124,18 @@ class PenerimaanController extends Controller
 
     public function store(Request $request)
     {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(180);
+        }
+
+        // Decode items_json jika payload dikirim dalam bentuk string JSON (menghindari batas max_input_vars untuk 1.000+ batch)
+        if ($request->filled('items_json') && is_string($request->input('items_json'))) {
+            $decoded = json_decode($request->input('items_json'), true);
+            if (is_array($decoded) && !empty($decoded)) {
+                $request->merge(['items' => $decoded]);
+            }
+        }
+
         $data = $request->validate([
 
             'supplier_id' => 'required|exists:suppliers,id',
@@ -273,6 +286,16 @@ class PenerimaanController extends Controller
                 \App\Models\ActivityLog::CATEGORY_INVENTARIS
             );
         });
+
+        session()->flash('success', 'Penerimaan barang berhasil disimpan.');
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan barang berhasil disimpan.',
+                'redirect' => route('penerimaan.index'),
+            ]);
+        }
 
         return redirect()->route('penerimaan.index')->with('success', 'Penerimaan barang berhasil disimpan.');
     }
@@ -1005,5 +1028,65 @@ class PenerimaanController extends Controller
         });
 
         return redirect()->route('penerimaan.index')->with('success', 'Penerimaan berhasil dihapus.');
+    }
+
+    /**
+     * Unduh template file Excel untuk import penerimaan obat.
+     */
+    public function importTemplate(PenerimaanImportService $importService)
+    {
+        return $importService->downloadTemplate();
+    }
+
+    /**
+     * Parse file Excel / CSV yang diunggah dan kembalikan header serta baris preview awal.
+     */
+    public function importParse(Request $request, PenerimaanImportService $importService)
+    {
+        $request->validate([
+            'file' => 'required|file|max:10240', // Maks 10MB
+        ], [
+            'file.required' => 'Silakan pilih file Excel atau CSV terlebih dahulu.',
+            'file.file' => 'File yang diunggah tidak valid.',
+            'file.max' => 'Ukuran file tidak boleh lebih dari 10MB.',
+        ]);
+
+        try {
+            $result = $importService->parseUploadedFile($request->file('file'));
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Validasi baris data dari file import terhadap master barang dan aturan bisnis POS.
+     */
+    public function importValidate(Request $request, PenerimaanImportService $importService)
+    {
+        $request->validate([
+            'file_cache_id' => 'required|string',
+            'mapping' => 'required|array',
+        ], [
+            'file_cache_id.required' => 'ID file cache tidak ditemukan.',
+            'mapping.required' => 'Pemetaan kolom harus ditentukan.',
+        ]);
+
+        try {
+            $result = $importService->validateAndMatch(
+                $request->input('file_cache_id'),
+                $request->input('mapping', []),
+                $request->input('tanggal_penerimaan')
+            );
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 }

@@ -298,6 +298,37 @@
                             <span class="text-slate-500 font-medium">Subtotal</span>
                             <span id="display-subtotal" class="font-bold text-slate-800">Rp 0</span>
                         </div>
+
+                        <!-- Baris Checkbox Kenakan PPN & Tarif -->
+                        <div class="flex items-center justify-between text-xs py-0.5">
+                            <label class="inline-flex items-center gap-2 select-none {{ ($ppnAktif && $activePpn) ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed' }}" title="{{ ($ppnAktif && $activePpn) ? 'Centang untuk mengenakan PPN pada transaksi ini' : 'Fitur PPN sedang dinonaktifkan di Pengaturan Apotek' }}">
+                                <input type="checkbox"
+                                       id="checkbox-kenakan-ppn"
+                                       name="kenakan_ppn"
+                                       value="1"
+                                       {{ ($ppnAktif && $activePpn) ? '' : 'disabled' }}
+                                       class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                                <span class="text-slate-600 font-medium flex items-center gap-1.5">
+                                    <span>Kenakan PPN</span>
+                                    <span id="badge-tarif-ppn" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold {{ ($ppnAktif && $activePpn) ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-slate-100 text-slate-500 border border-slate-200' }}">
+                                        {{ ($ppnAktif && $activePpn) ? number_format($activePpn->tarif_persen, 2) . '%' : 'Nonaktif' }}
+                                    </span>
+                                </span>
+                            </label>
+                            <span id="label-perlakuan-ppn" class="text-[10px] text-slate-400 font-medium">
+                                {{ ($activePpn && $activePpn->tipe_perlakuan_harga === 'inklusif') ? '(Inklusif)' : '(Eksklusif)' }}
+                            </span>
+                        </div>
+
+                        <!-- Baris Nominal PPN -->
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-500 font-medium flex items-center gap-1">
+                                <span>Nominal PPN</span>
+                                <span id="display-dpp-info" class="text-[10px] text-slate-400 hidden">(DPP: Rp 0)</span>
+                            </span>
+                            <span id="display-ppn" class="font-bold text-blue-700">Rp 0</span>
+                        </div>
+
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-500 font-medium flex items-center gap-1">
                                 <span>% Diskon</span>
@@ -520,7 +551,7 @@
 
 {{-- Data JSON untuk halaman kasir (dibaca oleh resources/js/pages/penjualan-create.js) --}}
 <script type="application/json" id="penjualan-data">
-    @json(["pelanggans" => $pelanggans, "barangs" => $barangs])
+    {!! json_encode($penjualanPayload) !!}
 </script>
 
 @vite('resources/js/pages/penjualan-create.js')

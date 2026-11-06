@@ -721,10 +721,15 @@ class DashboardController extends Controller
     {
         $baseQuery = ActivityLog::query();
 
-        $dari = $request->input('dari', now()->startOfMonth()->format('Y-m-d'));
-        $sampai = $request->input('sampai', now()->endOfMonth()->format('Y-m-d'));
+        if ($request->has('dari') || $request->has('sampai')) {
+            $dari = $request->input('dari');
+            $sampai = $request->input('sampai');
+        } else {
+            $dari = now()->startOfMonth()->format('Y-m-d');
+            $sampai = now()->endOfMonth()->format('Y-m-d');
+        }
 
-        $baseQuery->dateRange('created_at', $request->dari, $request->sampai);
+        $baseQuery->dateRange('created_at', $dari, $sampai);
         $baseQuery->search(['action', 'target', 'user_name', 'user.name'], $request->cari);
 
         if ($request->filled('user_id')) {

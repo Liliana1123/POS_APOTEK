@@ -165,7 +165,7 @@ class PengaturanBackgroundTest extends TestCase
         $apotek->refresh();
         $this->assertEquals('custom', $apotek->background_type);
         $this->assertNull($apotek->background_image);
-        $this->assertStringContainsString('batik-pattern.png', $apotek->background_url);
+        $this->assertStringContainsString('batik-pattern.webp', $apotek->background_url);
         Storage::disk('public')->assertMissing('info-apotek/old_uploaded.jpg');
     }
 
@@ -197,5 +197,39 @@ class PengaturanBackgroundTest extends TestCase
         $apotek->refresh();
         $this->assertEquals('default', $apotek->background_type);
         $this->assertEquals(40, $apotek->background_opacity);
+    }
+
+    public function test_upload_image_exceeding_1mb_fails_validation(): void
+    {
+        $superadmin = User::where('role', 'superadmin')->first() ?? User::factory()->create([
+            'role' => 'superadmin',
+            'aktif' => true,
+        ]);
+
+        // File lebih besar dari 1024 KB (misal 1500 KB)
+        $largeLogo = UploadedFile::fake()->create('large_logo.png', 1500, 'image/png');
+        $largeBg = UploadedFile::fake()->create('large_bg.jpg', 1500, 'image/jpeg');
+
+        $response = $this->actingAs($superadmin)->put(route('pengaturan.update'), [
+            'nama_apotek' => 'Apotek Sehat Bahagia',
+            'logo' => $largeLogo,
+            'background_image' => $largeBg,
+        ]);
+
+        $response->assertSessionHasErrors(['logo', 'background_image']);
+    }
+
+    public function test_pengaturan_view_displays_1mb_limit_information(): void
+    {
+        $superadmin = User::where('role', 'superadmin')->first() ?? User::factory()->create([
+            'role' => 'superadmin',
+            'aktif' => true,
+        ]);
+
+        $response = $this->actingAs($superadmin)->get(route('pengaturan.index'));
+
+        $response->assertOk();
+        $response->assertSee('Maksimal 1 MB');
+        $response->assertSee('Maks 1MB');
     }
 }

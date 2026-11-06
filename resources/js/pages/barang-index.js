@@ -13,6 +13,23 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('detail-title-nama').textContent = data.nama;
         document.getElementById('detail-kode-apotek').textContent = data.kode_apotek;
         document.getElementById('detail-kode-kfa').textContent = data.kode_kfa;
+
+        var logoImg = document.getElementById('detail-golongan-logo');
+        var labelSpan = document.getElementById('detail-golongan-label');
+        if (logoImg) {
+            if (data.golongan_logo) {
+                logoImg.src = data.golongan_logo;
+                logoImg.alt = data.golongan_label;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+                logoImg.src = '';
+            }
+        }
+        if (labelSpan) {
+            labelSpan.textContent = data.golongan_label || '—';
+        }
+
         document.getElementById('detail-nama').textContent = data.nama;
         document.getElementById('detail-merk').textContent = data.merk;
         document.getElementById('detail-barcode').textContent = data.barcode;
@@ -92,6 +109,18 @@ document.addEventListener('DOMContentLoaded', function () {
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span>Memproses...</span>';
+            }
+        });
+    }
+
+    // --- AUTO-CHECK RESEP JIKA OBAT KERAS / NARKOTIKA ---
+    var selectGolongan = document.getElementById('golongan_obat');
+    if (selectGolongan) {
+        selectGolongan.addEventListener('change', function () {
+            var val = selectGolongan.value;
+            var resepCheck = document.querySelector('#modal-barang input[name="butuh_resep"]');
+            if (resepCheck && (val === 'keras' || val === 'narkotika')) {
+                resepCheck.checked = true;
             }
         });
     }

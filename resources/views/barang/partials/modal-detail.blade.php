@@ -27,6 +27,13 @@
                         <span class="text-gray-400 block text-[10px] uppercase font-bold">Kode KFA</span>
                         <span class="font-mono font-semibold text-gray-800 mt-0.5 block" id="detail-kode-kfa">—</span>
                     </div>
+                    <div class="p-2.5 bg-gray-50/80 rounded-lg sm:col-span-2">
+                        <span class="text-gray-400 block text-[10px] uppercase font-bold">Golongan Obat</span>
+                        <div class="flex items-center gap-2 mt-1">
+                            <img id="detail-golongan-logo" src="" alt="" class="w-6 h-6 object-contain hidden">
+                            <span class="font-semibold text-gray-800 text-xs" id="detail-golongan-label">—</span>
+                        </div>
+                    </div>
                     <div class="p-2.5 bg-gray-50/80 rounded-lg">
                         <span class="text-gray-400 block text-[10px] uppercase font-bold">Nama Barang</span>
                         <span class="font-semibold text-gray-900 mt-0.5 block" id="detail-nama">—</span>

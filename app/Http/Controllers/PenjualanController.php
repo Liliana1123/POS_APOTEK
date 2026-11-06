@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\DetailPenjualan;
 use App\Models\Pelanggan;
+use App\Models\PengaturanPpn;
 use App\Models\Penjualan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -187,7 +188,26 @@ class PenjualanController extends Controller
             ->filter(fn($b) => $b['stok'] > 0 && $b['harga'] !== null)
             ->values();
 
-        return view('penjualan.create', compact('pelanggans', 'barangs'));
+        $ppnAktif = PengaturanPpn::isPpnAktif();
+        $activePpn = PengaturanPpn::getActiveForDate();
+        $ppnConfig = [
+            'is_aktif' => (bool) ($ppnAktif && $activePpn),
+            'id' => $activePpn?->id,
+            'nama' => $activePpn?->nama,
+            'tarif_persen' => (float) ($activePpn?->tarif_persen ?? 0),
+            'metode' => $activePpn?->metode_perhitungan ?? 'standar',
+            'persentase_dpp' => (float) ($activePpn?->persentase_dpp ?? 100),
+            'tarif_efektif' => (float) ($activePpn?->tarif_efektif ?? 0),
+            'tipe_perlakuan_harga' => $activePpn?->tipe_perlakuan_harga ?? 'eksklusif',
+        ];
+
+        $penjualanPayload = [
+            'pelanggans' => $pelanggans,
+            'barangs' => $barangs,
+            'ppn_config' => $ppnConfig,
+        ];
+
+        return view('penjualan.create', compact('pelanggans', 'barangs', 'activePpn', 'ppnAktif', 'ppnConfig', 'penjualanPayload'));
     }
 
     public function export(Request $request)
@@ -294,6 +314,7 @@ class PenjualanController extends Controller
             'due_date' => 'nullable|date',
             'qris_lunas' => 'nullable|boolean',
             'debit_lunas' => 'nullable|boolean',
+            'kenakan_ppn' => 'nullable|boolean',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
             'items.*.jumlah' => 'required|integer|min:1',
@@ -604,7 +625,42 @@ class PenjualanController extends Controller
                     }
                 }
 
-                $penjualan->update(['total' => $totalFaktur]);
+                $subtotalBersih = $totalFaktur;
+                $kenakanPpn = $request->boolean('kenakan_ppn');
+                $ppnAktif = PengaturanPpn::isPpnAktif();
+                $ppnConfig = ($kenakanPpn && $ppnAktif) ? PengaturanPpn::getActiveForDate($data['tanggal']) : null;
+
+                if ($ppnConfig) {
+                    $calc = $ppnConfig->hitung($subtotalBersih);
+                    $penjualan->update([
+                        'kenakan_ppn' => true,
+                        'ppn_config_id' => $ppnConfig->id,
+                        'tarif_ppn_persen' => $ppnConfig->tarif_persen,
+                        'metode_ppn' => $ppnConfig->metode_perhitungan,
+                        'persentase_dpp' => $ppnConfig->persentase_dpp,
+                        'tipe_perlakuan_harga' => $ppnConfig->tipe_perlakuan_harga,
+                        'subtotal_bersih' => $subtotalBersih,
+                        'dpp_nominal' => $calc['dpp_nominal'],
+                        'ppn_nominal' => $calc['ppn_nominal'],
+                        'total' => $calc['total'],
+                    ]);
+                    $totalFaktur = $calc['total'];
+                } else {
+                    $penjualan->update([
+                        'kenakan_ppn' => false,
+                        'ppn_config_id' => null,
+                        'tarif_ppn_persen' => 0,
+                        'metode_ppn' => null,
+                        'persentase_dpp' => 100,
+                        'tipe_perlakuan_harga' => 'eksklusif',
+                        'subtotal_bersih' => $subtotalBersih,
+                        'dpp_nominal' => 0,
+                        'ppn_nominal' => 0,
+                        'total' => $subtotalBersih,
+                    ]);
+                    $totalFaktur = $subtotalBersih;
+                }
+
                 if ($data['metode_pembayaran'] === 'piutang') {
                     $pelanggan->increment('saldo_piutang', $totalFaktur);
                 }

@@ -83,6 +83,7 @@ $label = $submitLabel ?? ($grid ? 'Filter' : 'Cari');
             return params.toString();
         }
 
+<<<<<<< HEAD
         function updateClearButtonState(form) {
             var clearBtn = form.querySelector('[data-role="clear-filter"]');
             if (!clearBtn) return;
@@ -93,6 +94,70 @@ $label = $submitLabel ?? ($grid ? 'Filter' : 'Cari');
                     if (input.checked) hasValue = true;
                 } else if (input.value && input.value.trim() !== '') {
                     hasValue = true;
+=======
+        var tableSel = form.dataset.tableTarget || '.table-custom-container:not(.print-table-wrapper):not(.print-only *)';
+        var pagSel = form.dataset.paginationTarget || '.pagination-container';
+        var tableContainer = document.querySelector(tableSel);
+        if (!tableContainer) {
+            tableContainer = document.querySelector('.table-custom-container');
+        }
+        var pagContainer = document.querySelector(pagSel);
+        if (!pagContainer && tableContainer && isPaginationElement(tableContainer.nextElementSibling)) {
+            pagContainer = tableContainer.nextElementSibling;
+        }
+
+        if (tableContainer) {
+            tableContainer.classList.add('is-filtering');
+            tableContainer.style.pointerEvents = 'none';
+            if (!tableContainer.querySelector('.table-shimmer-progress')) {
+                var pBar = document.createElement('div');
+                pBar.className = 'table-shimmer-progress';
+                pBar.innerHTML = '<div class="table-shimmer-progress-bar"></div>';
+                tableContainer.insertBefore(pBar, tableContainer.firstChild);
+            }
+        }
+
+        fetch(targetUrl, {
+            signal: abortController.signal,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        })
+        .then(function(html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+
+            var newTable = doc.querySelector(tableSel);
+            if (!newTable) {
+                newTable = doc.querySelector('.table-custom-container:not(.print-table-wrapper):not(.print-only *)') || doc.querySelector('.table-custom-container');
+            }
+            var newPag = doc.querySelector(pagSel);
+            if (!newPag && newTable && isPaginationElement(newTable.nextElementSibling)) {
+                newPag = newTable.nextElementSibling;
+            }
+
+            if (newTable && tableContainer) {
+                tableContainer.innerHTML = newTable.innerHTML;
+            }
+
+            // Sinkronisasi template cetak jika ada di halaman
+            var oldPrint = document.querySelector('.print-only');
+            var newPrint = doc.querySelector('.print-only');
+            if (oldPrint && newPrint) {
+                oldPrint.innerHTML = newPrint.innerHTML;
+            }
+
+            var summarySelectors = ['.laporan-summary-cards', '.summary-container'];
+            summarySelectors.forEach(function(sel) {
+                var oldSum = document.querySelector(sel);
+                var newSum = doc.querySelector(sel);
+                if (oldSum && newSum) {
+                    oldSum.innerHTML = newSum.innerHTML;
+>>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                 }
             });
             if (hasValue) {

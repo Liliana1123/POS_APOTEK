@@ -732,6 +732,18 @@ class LaporanController extends Controller
     }
 
     // =========================================================
+    // FILTER STATUS PPN
+    // =========================================================
+    if ($request->filled('status_ppn')) {
+        $statusPpn = $request->input('status_ppn');
+        if ($statusPpn === 'dengan_ppn') {
+            $query->where('penjualans.kenakan_ppn', true);
+        } elseif ($statusPpn === 'tanpa_ppn') {
+            $query->where('penjualans.kenakan_ppn', false);
+        }
+    }
+
+    // =========================================================
     // SORTING & AMBIL DATA
     // =========================================================
     $sort = $request->input('sort', 'tanggal');
@@ -760,6 +772,9 @@ class LaporanController extends Controller
     )->sum('diskon');
     $totalPenjualanBersih = (clone $query)->sum('penjualans.total');
 
+    $totalPpn = (clone $query)->where('penjualans.kenakan_ppn', true)->sum('penjualans.ppn_nominal');
+    $totalDpp = (clone $query)->where('penjualans.kenakan_ppn', true)->sum('penjualans.dpp_nominal');
+
     $omzet = $totalPenjualanBersih + $totalDiskon;
 
     $transaksiMember = (clone $query)
@@ -784,6 +799,7 @@ class LaporanController extends Controller
             'Jenis Transaksi',
             'Metode Pembayaran',
             'Status Piutang',
+            'PPN',
             'Total Kotor',
             'Total Transaksi',
         ];
@@ -791,13 +807,15 @@ class LaporanController extends Controller
         $data = [];
         $totalKotor = 0;
         $totalTransaksi = 0;
+        $totalPpnExport = 0;
 
         foreach ($penjualans as $p) {
 
             $diskon = $p->detail->sum('diskon');
-            $kotor   = $p->total + $diskon;
+            $kotor   = ($p->subtotal_bersih > 0 ? $p->subtotal_bersih : ($p->total - $p->ppn_nominal)) + $diskon;
             $totalKotor      += $kotor;
             $totalTransaksi  += $p->total;
+            $totalPpnExport  += $p->ppn_nominal;
 
             // Jenis pelanggan
             if ($p->pelanggan && $p->pelanggan->is_member) {
@@ -837,6 +855,8 @@ class LaporanController extends Controller
                 }
             }
 
+            $ppnInfo = $p->kenakan_ppn ? ('Rp ' . number_format($p->ppn_nominal, 0, ',', '.') . ' (' . number_format($p->tarif_ppn_persen, 1) . '%)') : 'Rp 0';
+
             $data[] = [
                 $p->tanggal ? $p->tanggal->format('d M Y') : '—',
                 $p->no_faktur,
@@ -846,6 +866,7 @@ class LaporanController extends Controller
                 $jenisTransaksi,
                 $metode,
                 $statusPiutang,
+                $ppnInfo,
                 $kotor,
                 $p->total,
             ];
@@ -860,6 +881,7 @@ class LaporanController extends Controller
             '',
             '',
             '',
+            $totalPpnExport,
             $totalKotor,
             $totalTransaksi,
         ];
@@ -880,6 +902,8 @@ class LaporanController extends Controller
         'omzet',
         'totalDiskon',
         'totalPenjualanBersih',
+        'totalPpn',
+        'totalDpp',
         'transaksiMember',
         'transaksiNonMember',
         'dari',
@@ -1086,9 +1110,17 @@ class LaporanController extends Controller
             ')
             ->first();
 
-        $omzetKotor = (float) ($salesData->omzet_kotor ?? 0);
+        // Porsi PPN dari transaksi yang bertipe Inklusif (karena harga barang sudah memuat PPN, pajak harus dipisahkan dari pendapatan riil)
+        $ppnInklusif = (float) DB::table('penjualans')
+            ->whereBetween('tanggal', [$dari, $sampai])
+            ->where('kenakan_ppn', true)
+            ->where('tipe_perlakuan_harga', 'inklusif')
+            ->sum('ppn_nominal');
+
+        $rawPenjualanBersih = (float) ($salesData->penjualan_bersih ?? 0);
         $totalDiskon = (float) ($salesData->total_diskon ?? 0);
-        $penjualanBersih = max(0, $omzetKotor - $totalDiskon);
+        $penjualanBersih = max(0, $rawPenjualanBersih - $ppnInklusif);
+        $omzetKotor = $penjualanBersih + $totalDiskon;
         $hpp = (float) ($salesData->total_hpp ?? 0);
         $labaKotor = $penjualanBersih - $hpp;
         $jumlahTransaksi = (int) ($salesData->jumlah_transaksi ?? 0);
@@ -1112,12 +1144,21 @@ class LaporanController extends Controller
                 ->selectRaw('
                     COALESCE(SUM(dp.harga_jual * dp.jumlah), 0) as omzet_kotor,
                     COALESCE(SUM(dp.diskon), 0) as total_diskon,
+                    COALESCE(SUM(dp.subtotal), 0) as penjualan_bersih,
                     COALESCE(SUM(dr.harga_beli * dp.jumlah), 0) as total_hpp
                 ')
                 ->first();
-            $prevOmzetKotor   = (float) ($prevSalesData->omzet_kotor ?? 0);
+
+            $prevPpnInklusif = (float) DB::table('penjualans')
+                ->whereBetween('tanggal', [$prevDari, $prevSampai])
+                ->where('kenakan_ppn', true)
+                ->where('tipe_perlakuan_harga', 'inklusif')
+                ->sum('ppn_nominal');
+
+            $prevRawPenjualanBersih = (float) ($prevSalesData->penjualan_bersih ?? 0);
             $prevTotalDiskon  = (float) ($prevSalesData->total_diskon ?? 0);
-            $prevPenjualanBersih = max(0, $prevOmzetKotor - $prevTotalDiskon);
+            $prevPenjualanBersih = max(0, $prevRawPenjualanBersih - $prevPpnInklusif);
+            $prevOmzetKotor   = $prevPenjualanBersih + $prevTotalDiskon;
             $prevHpp          = (float) ($prevSalesData->total_hpp ?? 0);
             $prevLabaKotor    = $prevPenjualanBersih - $prevHpp;
             $prevTotalBeban   = (float) Beban::whereBetween('tanggal', [$prevDari, $prevSampai])->sum('nominal');
@@ -1228,10 +1269,34 @@ class LaporanController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
+        $ppnInklusifHarian = DB::table('penjualans')
+            ->whereBetween('tanggal', [$dari, $sampai])
+            ->where('kenakan_ppn', true)
+            ->where('tipe_perlakuan_harga', 'inklusif')
+            ->selectRaw('DATE(tanggal) as tgl, SUM(ppn_nominal) as ppn_inklusif')
+            ->groupBy(DB::raw('DATE(tanggal)'))
+            ->pluck('ppn_inklusif', 'tgl');
+
+        $rincianHarian->transform(function ($item) use ($ppnInklusifHarian) {
+            $ppnInc = (float) ($ppnInklusifHarian[$item->tanggal] ?? 0);
+            if ($ppnInc > 0) {
+                $item->penjualan_bersih = max(0, $item->penjualan_bersih - $ppnInc);
+                $item->omzet_kotor = $item->penjualan_bersih + $item->total_diskon;
+                $item->laba_kotor = $item->penjualan_bersih - $item->hpp;
+            }
+            return $item;
+        });
+
         $bebanHarian = Beban::whereBetween('tanggal', [$dari, $sampai])
             ->selectRaw('DATE(tanggal) as tanggal, SUM(nominal) as total_beban')
             ->groupBy(DB::raw('DATE(tanggal)'))
             ->pluck('total_beban', 'tanggal');
+
+        // Total PPN Keluaran yang dipungut selama periode
+        $totalPpnKeluaran = (float) DB::table('penjualans')
+            ->whereBetween('tanggal', [$dari, $sampai])
+            ->where('kenakan_ppn', true)
+            ->sum('ppn_nominal');
 
         // 7. Ekspor Excel (.xlsx) menggunakan OpenSpout
         if (in_array($request->query('export'), ['excel', 'xlsx'])) {
@@ -1268,7 +1333,8 @@ class LaporanController extends Controller
             $data[] = ['', '', '', ''];
             $data[] = ['V. LABA BERSIH OPERASIONAL (NET PROFIT)', 'Laba Kotor dikurangi Total Beban Operasional', ($penjualanBersih > 0 ? $marginBersihPersen . '%' : '0%'), $labaBersih];
             $data[] = ['', '', '', ''];
-            $data[] = ['VI. POSISI KEUANGAN OUTSTANDING (TERKINI)', '', '', ''];
+            $data[] = ['VI. INFORMASI PERPAJAKAN & POSISI KEUANGAN', '', '', ''];
+            $data[] = ['  Titipan PPN Terkumpul (Keluaran)', 'Kewajiban pajak ke kas negara (tidak diakui sebagai pendapatan apotek)', '', $totalPpnKeluaran];
             $data[] = ['  Total Piutang Member', $memberBerpiutangCount . ' member memiliki tagihan aktif', '', $totalPiutangMember];
             $data[] = ['  Total Utang Supplier', $countHutangBelumLunas . ' penerimaan barang belum lunas', '', $totalHutangSupplier];
 
@@ -1314,7 +1380,8 @@ class LaporanController extends Controller
             'bebanPerKategori',
             'daftarBeban',
             'rincianHarian',
-            'bebanHarian'
+            'bebanHarian',
+            'totalPpnKeluaran'
         ));
     }
 
