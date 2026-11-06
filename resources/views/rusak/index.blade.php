@@ -394,7 +394,7 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
 
 
 <script>
-    const dataRusak = @json($rusaks - > items());
+    const dataRusak = @json($rusaks->items());
 
     function formatTanggalRusak(tanggal) {
         if (!tanggal) {
@@ -641,7 +641,7 @@ $batches = $batches ?? \App\Models\DetailPenerimaan::with('barang')
         }
     });
 
-    @if($errors - > any())
+    @if($errors->any())
     openTambahRusak();
     @endif
 </script>

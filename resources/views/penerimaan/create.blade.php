@@ -804,9 +804,9 @@
         tambahBaris(false);
     }
 
-    @if($errors - > any())
+    @if($errors->any())
     setTimeout(() => {
-        applyServerErrorsCreate(@json($errors - > toArray()));
+        applyServerErrorsCreate(@json($errors->toArray()));
     }, 50);
     @endif
 

@@ -1129,11 +1129,7 @@
         const bgFileSizeText = document.getElementById('bg-file-size-text');
         const appBgOverlay = document.getElementById('app-background-overlay');
 
-        let isCustomUploaded = {
-            {
-                !empty($apotek - > background_image) ? 'true' : 'false'
-            }
-        };
+        let isCustomUploaded = {{ !empty($apotek->background_image) ? 'true' : 'false' }};
 
         const defaultBatikUrl = "{{ asset('images/batik-pattern.webp') }}";
         const defaultBatikSize = "{{ file_exists(public_path('images/batik-pattern.webp')) ? number_format(filesize(public_path('images/batik-pattern.webp')) / 1024, 2) . ' KB' : '4.68 KB' }}";

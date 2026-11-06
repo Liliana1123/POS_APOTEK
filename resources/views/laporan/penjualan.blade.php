@@ -54,15 +54,9 @@ fn () => \App\Models\InfoApotek::first()
         </thead>
         <tbody class="table-custom-body">
             @forelse($penjualans as $index => $penjualan)
-<<<<<<< HEAD
-            @php
-            $diskonFaktur = $penjualan->detail->sum('diskon');
-            $totalKotor = $penjualan->total + $diskonFaktur;
-=======
                 @php
                     $diskonFaktur = $penjualan->detail->sum('diskon');
                     $totalKotor = ($penjualan->subtotal_bersih > 0 ? $penjualan->subtotal_bersih : ($penjualan->total - $penjualan->ppn_nominal)) + $diskonFaktur;
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
 
             $jenisPelanggan = 'Pelanggan Umum';
             if ($penjualan->pelanggan && $penjualan->pelanggan->is_member) {
@@ -157,15 +151,9 @@ fn () => \App\Models\InfoApotek::first()
                         Rp {{ number_format($penjualan->total, 0, ',', '.') }}
                     </td>
                 </tr>
-<<<<<<< HEAD
-                @empty
-                <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
-                @endforelse
-=======
             @empty
                 <x-empty-state colspan="11" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi penjualan pada periode yang dipilih." />
             @endforelse
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
         </tbody>
     </table>
 
@@ -366,62 +354,36 @@ fn () => \App\Models\InfoApotek::first()
 
             {{-- Omzet Kotor --}}
             <div
-<<<<<<< HEAD
-                class="w-full rounded-lg bg-orange-50/90 border border-orange-200/90 px-2.5 py-1.5 sm:py-2 flex flex-col justify-center"
-                style="background-color: #fff7ed; border: 1px solid #fed7aa;">
-=======
                 class="w-full rounded-lg bg-orange-50/90 border border-orange-200/90 px-2 py-1.5 sm:py-2 flex flex-col justify-center"
                 style="background-color: #fff7ed; border: 1px solid #fed7aa;"
             >
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                 <span class="block text-[11px] sm:text-xs font-semibold text-orange-800 leading-tight" style="color: #9a3412;">
                     Omzet Kotor
                 </span>
 
-<<<<<<< HEAD
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-orange-600 tracking-tight"
-                    style="color: #ea580c;"
-                    data-countup="true"
-                    data-target="{{ (float)$omzet }}"
-                    data-prefix="Rp ">
-=======
                 <strong class="mt-0.5 block text-xs sm:text-sm lg:text-base font-bold text-orange-600 tracking-tight"
                         style="color: #ea580c;"
                         data-countup="true"
                         data-target="{{ (float)$omzet }}"
                         data-prefix="Rp ">
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                     Rp {{ number_format($omzet, 0, ',', '.') }}
                 </strong>
             </div>
 
             {{-- Total Potongan Diskon --}}
             <div
-<<<<<<< HEAD
-                class="w-full rounded-lg bg-purple-50/90 border border-purple-200/90 px-2.5 py-1.5 sm:py-2 flex flex-col justify-center"
-                style="background-color: #faf5ff; border: 1px solid #e9d5ff;">
-=======
                 class="w-full rounded-lg bg-purple-50/90 border border-purple-200/90 px-2 py-1.5 sm:py-2 flex flex-col justify-center"
                 style="background-color: #faf5ff; border: 1px solid #e9d5ff;"
             >
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                 <span class="block text-[11px] sm:text-xs font-semibold text-purple-800 leading-tight" style="color: #6b21a8;">
                     Total Diskon
                 </span>
 
-<<<<<<< HEAD
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-purple-600 tracking-tight"
-                    style="color: #9333ea;"
-                    data-countup="true"
-                    data-target="{{ (float)$totalDiskon }}"
-                    data-prefix="Rp ">
-=======
                 <strong class="mt-0.5 block text-xs sm:text-sm lg:text-base font-bold text-purple-600 tracking-tight"
                         style="color: #9333ea;"
                         data-countup="true"
                         data-target="{{ (float)$totalDiskon }}"
                         data-prefix="Rp ">
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                     Rp {{ number_format($totalDiskon, 0, ',', '.') }}
                 </strong>
             </div>
@@ -446,31 +408,18 @@ fn () => \App\Models\InfoApotek::first()
 
             {{-- Penjualan Bersih (Net) --}}
             <div
-<<<<<<< HEAD
-                class="w-full rounded-lg bg-emerald-50/80 border border-emerald-100/90 px-2.5 py-1.5 sm:py-2 flex flex-col justify-center"
-                style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
-=======
                 class="w-full rounded-lg bg-emerald-50/80 border border-emerald-100/90 px-2 py-1.5 sm:py-2 flex flex-col justify-center"
                 style="background-color: #ecfdf5; border: 1px solid #a7f3d0;"
             >
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                 <span class="block text-[11px] sm:text-xs font-semibold text-emerald-800 leading-tight" style="color: #065f46;">
                     Total Penjualan
                 </span>
 
-<<<<<<< HEAD
-                <strong class="mt-0.5 block text-sm sm:text-base lg:text-lg font-bold text-emerald-600 tracking-tight"
-                    style="color: #059669;"
-                    data-countup="true"
-                    data-target="{{ (float)$totalPenjualanBersih }}"
-                    data-prefix="Rp ">
-=======
                 <strong class="mt-0.5 block text-xs sm:text-sm lg:text-base font-bold text-emerald-600 tracking-tight"
                         style="color: #059669;"
                         data-countup="true"
                         data-target="{{ (float)$totalPenjualanBersih }}"
                         data-prefix="Rp ">
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                     Rp {{ number_format($totalPenjualanBersih, 0, ',', '.') }}
                 </strong>
             </div>
@@ -544,19 +493,13 @@ fn () => \App\Models\InfoApotek::first()
                         Status Piutang
                     </th>
 
-<<<<<<< HEAD
+                    <th scope="col" class="w-[9%] min-w-[7.5rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
+                        PPN
+                    </th>
+
                     <th scope="col" class="w-[12%] min-w-[8rem] !text-left !px-3.5 py-3.5 whitespace-nowrap">
                         Total Kotor
                     </th>
-=======
-                <th scope="col" class="w-[9%] min-w-[7.5rem] text-center !px-3.5 py-3.5 whitespace-nowrap">
-                    PPN
-                </th>
-
-                <th scope="col" class="w-[12%] min-w-[8rem] !text-left !px-3.5 py-3.5 whitespace-nowrap">
-                    Total Kotor
-                </th>
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
 
                     <th scope="col" class="w-[12%] min-w-[8.5rem] !text-left !px-3.5 py-3.5 whitespace-nowrap">
                         Total Transaksi
@@ -630,30 +573,10 @@ fn () => \App\Models\InfoApotek::first()
                         </div>
                     </td>
 
-<<<<<<< HEAD
                     {{-- Kasir --}}
                     <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
                         {{ $penjualan->user->name ?? 'Admin' }}
                     </td>
-=======
-                        {{-- PPN --}}
-                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                            @if($penjualan->kenakan_ppn)
-                                <span class="font-bold text-blue-700">Rp {{ number_format($penjualan->ppn_nominal, 0, ',', '.') }}</span>
-                                <span class="block text-[10px] text-slate-400">({{ number_format($penjualan->tarif_ppn_persen, 1) }}%)</span>
-                            @else
-                                <span class="text-slate-400">—</span>
-                            @endif
-                        </td>
-
-                        {{-- Total Kotor --}}
-                        <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                            @php
-                                $kotorLayar = ($penjualan->subtotal_bersih > 0 ? $penjualan->subtotal_bersih : ($penjualan->total - $penjualan->ppn_nominal)) + $diskonFaktur;
-                            @endphp
-                            Rp {{ number_format($kotorLayar, 0, ',', '.') }}
-                        </td>
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
 
                     {{-- Jenis Transaksi --}}
                     <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
@@ -737,9 +660,22 @@ fn () => \App\Models\InfoApotek::first()
 
                     </td>
 
+                    {{-- PPN --}}
+                    <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
+                        @if($penjualan->kenakan_ppn)
+                            <span class="font-bold text-blue-700">Rp {{ number_format($penjualan->ppn_nominal, 0, ',', '.') }}</span>
+                            <span class="block text-[10px] text-slate-400">({{ number_format($penjualan->tarif_ppn_persen, 1) }}%)</span>
+                        @else
+                            <span class="text-slate-400">—</span>
+                        @endif
+                    </td>
+
                     {{-- Total Kotor --}}
                     <td class="align-middle text-center text-gray-600 font-medium text-[11px] !px-3.5 py-3.5 whitespace-nowrap leading-snug">
-                        Rp {{ number_format($penjualan->total + $diskonFaktur, 0, ',', '.') }}
+                        @php
+                            $kotorLayar = ($penjualan->subtotal_bersih > 0 ? $penjualan->subtotal_bersih : ($penjualan->total - $penjualan->ppn_nominal)) + $diskonFaktur;
+                        @endphp
+                        Rp {{ number_format($kotorLayar, 0, ',', '.') }}
                     </td>
 
                     {{-- Total Transaksi --}}
@@ -749,11 +685,7 @@ fn () => \App\Models\InfoApotek::first()
                 </tr>
 
                 @empty
-<<<<<<< HEAD
-                <x-empty-state colspan="9" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
-=======
                     <x-empty-state colspan="10" title="Transaksi Tidak Ditemukan" description="Tidak ada data transaksi pada filter yang dipilih." />
->>>>>>> 4f27ed6ad0a93216d41f0fc2028a5a853c383548
                 @endforelse
 
             </tbody>
